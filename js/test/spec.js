@@ -1,8 +1,14 @@
-define(['src/abstract-crypto-service'], function(CryptoService) {
-    describe('crypto services loader test', function() {
+define(['src/aes-crypto-service', 'src/crypto-service-loader'], function(CryptoService, CryptoServiceLoader) {
+    describe('crypto service test', function() {
         it('can run a test', function() {
             expect(true).toBe(true);
-            console.log(CryptoService);
+            // console.log(CryptoService);
+        });
+    });
+
+    describe('crypto services loader test', function() {
+        it('can run a test', function() {
+          CryptoServiceLoader.get("12");
         });
     });
 });

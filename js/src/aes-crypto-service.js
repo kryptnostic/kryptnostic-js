@@ -1,4 +1,4 @@
-define('abstract-crypto-service',function() {
+define(function() {
     var BLOCK_CIPHER_ITERATIONS = 128;
     var BLOCK_CIPHER_KEY_SIZE = 16;
 

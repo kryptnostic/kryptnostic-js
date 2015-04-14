@@ -11,14 +11,13 @@ require.config({
     paths: {
         src: '../src'
     }
-}); 
-
-require(['src/abstract-crypto-service'],
-function   (cryptoService) {
-    console.log(cryptoService);
-    //jQuery, canvas and the app/sub module are all
-    //loaded and can be used here now.
 });
+
+require(['src/crypto-service-loader'],
+    function(cryptoServiceLoader) {
+        console.log(cryptoServiceLoader);
+        cryptoServiceLoader.get("0ae1f7f8-495a-46c8-8f9e-48c1e12afcdc");
+    });
 
 // var KRYPTNOSTIC = (function($, forge) {
 

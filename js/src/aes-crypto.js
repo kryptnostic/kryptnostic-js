@@ -7,9 +7,12 @@ define(['require', 'forge.min', 'src/abstract-crypto'], function(require) {
     // store keys locally
     // encrypt / decrypt public methods
     // public API
-    return function AesCryptoService(key) {
+    function AesCryptoService(key) {
+        if (!(this instanceof AesCryptoService)) {
+            throw new TypeError("AesCryptoService constructor cannot be called as a function.");
+        }
         this.key = key;
-        this.abstractCryptoService = new AbstractCryptoService();
+        this.abstractCryptoService = AbstractCryptoService;
     };
 
     AesCryptoService.BLOCK_CIPHER_KEY_SIZE = 16;
@@ -19,21 +22,19 @@ define(['require', 'forge.min', 'src/abstract-crypto'], function(require) {
 
         // create a block ciphertext from plaintext
         encrypt: function(plaintext) {
-            // generate random salt // empty salt
-            // generate random iv
-            var iv = forge.random.getBytesSync(BLOCK_CIPHER_KEY_SIZE);
-            var ciphertext = abstractCryptoService.encrypt(this.key, plaintext);
+            var iv = forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE);
+            var ciphertext = this.abstractCryptoService.encrypt(this.key, iv, plaintext);
             return {
-                iv: btoa(this.iv),
+                iv: btoa(iv),
+                salt: btoa(forge.random.getBytesSync(0)),
                 contents: btoa(ciphertext)
             };
         },
 
         // decrypt a block ciphertext into plaintext
         decrypt: function(blockCiphertext) {
-            // decode base64 values
-            return abstractCryptoService.decrypt(this.key, this.iv, atob(blockCiphertext.content));
-        },
+            return this.abstractCryptoService.decrypt(this.key, atob(blockCiphertext.iv), atob(blockCiphertext.contents));
+        }
     };
 
     return AesCryptoService;

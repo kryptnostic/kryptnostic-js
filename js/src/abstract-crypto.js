@@ -14,7 +14,6 @@ define(['require', 'forge.min'], function(require) {
     };
 
     function decrypt(key, iv, ciphertext) {
-    	debugger
         var decipher = forge.cipher.createDecipher('AES-CTR', key);
         decipher.start({
             iv: iv

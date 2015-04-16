@@ -3,7 +3,7 @@ define(['require', 'forge.min'], function(require) {
 
     var Forge = require('forge.min');
 
-    // takes in PEM formatted priv and pub keys
+    // takes in Forge private and public key objects
     function RsaCryptoService(privateKey, publicKey) {
         if (!(this instanceof RsaCryptoService)) {
             throw new TypeError("RsaCryptoService constructor cannot be called as a function.");
@@ -16,13 +16,18 @@ define(['require', 'forge.min'], function(require) {
         constructor: RsaCryptoService,
 
         encrypt: function(plaintext) {
-
+            var encrypted = this.publicKey.encrypt(plaintext, 'RSA-OAEP', {
+                md: Forge.md.sha1.create()
+            });
+            return encrypted;
         },
 
         decrypt: function(ciphertext) {
-
-        },
-
+            var decrypted = this.privateKey.decrypt(encrypted, 'RSA-OAEP', {
+                md: forge.md.sha1.create()
+            });
+            return decrypted;
+        }
     };
 
     return RsaCryptoService;

@@ -1,10 +1,11 @@
-define(['require', 'forge.min', 'src/abstract-crypto', 'src/aes-crypto', 'src/password-crypto', 'src/crypto-service-loader'], function(require) {
+define(['require', 'forge.min', 'src/abstract-crypto', 'src/aes-crypto', 'src/password-crypto', 'src/rsa-crypto', 'src/crypto-service-loader'], function(require) {
     var PASSWORD = 'crom';
     var AbstractCryptoService = require('src/abstract-crypto'),
         AesCryptoService = require('src/aes-crypto'),
         CryptoServiceLoader = require('src/crypto-service-loader'),
         PasswordCryptoService = require('src/password-crypto'),
-        Forge = require('forge.min');
+        RsaCryptoService = require('src/rsa-crypto');
+    Forge = require('forge.min');
 
     describe('abstract crypto service', function() {
         it('decrypts known-good values correctly', function() {
@@ -64,12 +65,18 @@ define(['require', 'forge.min', 'src/abstract-crypto', 'src/aes-crypto', 'src/pa
     });
 
     describe('RSA crypto class', function() {
-        
+        it('correctly decrypts a known-good ciphertext', function() {
+            var cryptoService = new RsaCryptoService();
+            
+
+        });
+
+        it('can decrypt what it encrypts', function() {
+
+        });
     });
 
     describe('crypto services loader', function() {
-        it('can run a test', function() {
-            CryptoServiceLoader.get("12");
-        });
+
     });
 });

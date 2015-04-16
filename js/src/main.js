@@ -13,8 +13,8 @@ require.config({
     }
 });
 
-require(['src/crypto-service-loader'],
-    function(cryptoServiceLoader) {
-        console.log(cryptoServiceLoader);
+require(['require','src/crypto-service-loader'], function(require) {
+        var CryptoServiceLoader = require('src/crypto-service-loader');
+        var cryptoServiceLoader = new CryptoServiceLoader();
         cryptoServiceLoader.get("0ae1f7f8-495a-46c8-8f9e-48c1e12afcdc");
     });

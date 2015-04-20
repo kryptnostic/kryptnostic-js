@@ -1,6 +1,6 @@
 define(['require', 'forge.min', 'src/abstract-crypto'], function(require) {
     'use strict';
-    var forge = require('forge.min'),
+    var Forge = require('forge.min'),
         AbstractCryptoService = require('src/abstract-crypto');
 
     // TODO create constructor
@@ -22,11 +22,11 @@ define(['require', 'forge.min', 'src/abstract-crypto'], function(require) {
 
         // create a block ciphertext from plaintext
         encrypt: function(plaintext) {
-            var iv = forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE);
+            var iv = Forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE);
             var ciphertext = this.abstractCryptoService.encrypt(this.key, iv, plaintext);
             return {
                 iv: btoa(iv),
-                salt: btoa(forge.random.getBytesSync(0)),
+                salt: btoa(Forge.random.getBytesSync(0)),
                 contents: btoa(ciphertext)
             };
         },

@@ -1,6 +1,6 @@
 define(['require', 'forge.min', 'src/abstract-crypto'], function(require) {
     'use strict';
-    var forge = require('forge.min'),
+    var Forge = require('forge.min'),
         AbstractCryptoService = require('src/abstract-crypto');
 
     function PasswordCryptoService(password) {
@@ -17,8 +17,8 @@ define(['require', 'forge.min', 'src/abstract-crypto'], function(require) {
     // pbkdf2 key derivation, using sha1
 
     function derive(password, salt, iterations, keySize) {
-        var md = forge.sha1.create();
-        return forge.pkcs5.pbkdf2(password, salt, iterations, keySize, md);
+        var md = Forge.sha1.create();
+        return Forge.pkcs5.pbkdf2(password, salt, iterations, keySize, md);
     }
 
     PasswordCryptoService.prototype = {
@@ -28,9 +28,9 @@ define(['require', 'forge.min', 'src/abstract-crypto'], function(require) {
          * Encrypt data in a block ciphertext.
          */
         encrypt: function(plaintext) {
-            var salt = forge.random.getBytesSync(PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE),
+            var salt = Forge.random.getBytesSync(PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE),
                 key = derive(this.password, salt, PasswordCryptoService.BLOCK_CIPHER_ITERATIONS, PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE),
-                iv = forge.random.getBytesSync(PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE);
+                iv = Forge.random.getBytesSync(PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE);
             return {
                 key: btoa(key),
                 contents: btoa(this.abstractCryptoService.encrypt(key, iv, plaintext)),

@@ -16,17 +16,17 @@ define(['require', 'forge.min'], function(require) {
         constructor: RsaCryptoService,
 
         encrypt: function(plaintext) {
-            var encrypted = this.publicKey.encrypt(plaintext, 'RSA-OAEP', {
+            var ciphertext = this.publicKey.encrypt(plaintext, 'RSA-OAEP', {
                 md: Forge.md.sha1.create()
             });
-            return encrypted;
+            return ciphertext;
         },
 
         decrypt: function(ciphertext) {
-            var decrypted = this.privateKey.decrypt(encrypted, 'RSA-OAEP', {
-                md: forge.md.sha1.create()
+            var plaintext = this.privateKey.decrypt(ciphertext, 'RSA-OAEP', {
+                md: Forge.md.sha1.create()
             });
-            return decrypted;
+            return plaintext;
         }
     };
 

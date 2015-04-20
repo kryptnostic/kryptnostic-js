@@ -13,6 +13,7 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "requirejs": "~2.1.17"
+    "requirejs": "~2.1.17",
+    "pako": "~0.2.6"
   }
 }

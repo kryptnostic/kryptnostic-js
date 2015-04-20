@@ -1,9 +1,11 @@
-define(['require', 'jquery', 'forge.min', 'src/password-crypto', 'src/rsa-crypto'], function(require) {
+define(['require', 'jquery', 'forge.min', 'pako', 'src/password-crypto', 'src/rsa-crypto', 'src/aes-crypto'], function(require) {
     'use strict';
     var jquery = require('jquery'),
         Forge = require('forge.min'),
+        Pako = require('pako'),
         PasswordCryptoService = require('src/password-crypto'),
-        RsaCryptoService = require('src/rsa-crypto');
+        RsaCryptoService = require('src/rsa-crypto'),
+        AesCryptoService = require('src/aes-crypto');
 
     var BASE_URL = 'http://localhost:8081/v1',
         DIR_URL = '/directory',
@@ -64,6 +66,7 @@ define(['require', 'jquery', 'forge.min', 'src/password-crypto', 'src/rsa-crypto
         return deferred.promise();
     };
 
+    // TODO cache locally
     function loadCryptoService(id) {
         return jquery.ajax({
             url: BASE_URL + DIR_URL + OBJ_URL + '/' + id,
@@ -78,17 +81,26 @@ define(['require', 'jquery', 'forge.min', 'src/password-crypto', 'src/rsa-crypto
     CryptoServiceLoader.prototype = {
         constructor: CryptoServiceLoader,
         get: function(id) {
+            var deferred = new jquery.Deferred();
             var privateKey;
             var cryptoServiceResponse;
             jquery.when(
                 getRsaCryptoService.call(this),
                 loadCryptoService(id)
             ).then(function(rsaCryptoService, cryptoServiceResponse) {
-                console.log(this.rsaCryptoService);
-                // create RSA crypto service with privateKey
-                console.log(cryptoServiceResponse);
-                // decrypt crypto service, create AES service
+                // decrypt crypto service
+                var deflatedCryptoService = rsaCryptoService.decrypt(atob(cryptoServiceResponse[0].data));
+                var buffer = Forge.util.createBuffer(deflatedCryptoService, 'raw');
+                // remove the prepended length integer
+                buffer.getBytes(4);
+                // inflate crypto service
+                var compBytes = buffer.getBytes(buffer.length());
+                var decompressedCryptoService = JSON.parse(Pako.inflate(compBytes, { to: 'string' }));
+                // create AesCryptoService
+                var objectCryptoService = new AesCryptoService(atob(decompressedCryptoService.key));
+                deferred.resolve(objectCryptoService);
             }.bind(this));
+            return deferred.promise();
         },
         set: function(cryptoService) {
             // RSA encrypt portions of request

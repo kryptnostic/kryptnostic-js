@@ -1,6 +1,7 @@
-define(['require', 'jquery', 'forge.min', 'pako', 'src/password-crypto', 'src/rsa-crypto', 'src/aes-crypto'], function(require) {
+define(['require', 'jquery', 'cookies', 'forge.min', 'pako', 'src/password-crypto', 'src/rsa-crypto', 'src/aes-crypto'], function(require) {
     'use strict';
     var jquery = require('jquery'),
+        Cookies = require('cookies'),
         Forge = require('forge.min'),
         Pako = require('pako'),
         PasswordCryptoService = require('src/password-crypto'),
@@ -11,8 +12,8 @@ define(['require', 'jquery', 'forge.min', 'pako', 'src/password-crypto', 'src/rs
         DIR_URL = '/directory',
         PUB_URL = '/public',
         PRIV_URL = '/private',
-        OBJ_URL = '/object';
-
+        OBJ_URL = '/object',
+        INT_SIZE = 4;
 
     function CryptoServiceLoader() {
         if (!(this instanceof CryptoServiceLoader)) {
@@ -41,8 +42,8 @@ define(['require', 'jquery', 'forge.min', 'pako', 'src/password-crypto', 'src/rs
             url: BASE_URL + DIR_URL + PRIV_URL,
             type: 'GET',
             beforeSend: function(xhr) {
-                xhr.setRequestHeader('X-Kryptnostic-Principal', 'krypt|vader');
-                xhr.setRequestHeader('X-Kryptnostic-Credential', 'fd81f8a7af1cb138bdce93350768b2b453ccf238908091501b05fe25616168b0');
+                xhr.setRequestHeader(CryptoServiceLoader.PRINCIPAL_COOKIE, Cookies.get(CryptoServiceLoader.PRINCIPAL_COOKIE));
+                xhr.setRequestHeader(CryptoServiceLoader.CREDENTIAL_COOKIE, Cookies.get(CryptoServiceLoader.CREDENTIAL_COOKIE));
             }
         });
 
@@ -66,17 +67,20 @@ define(['require', 'jquery', 'forge.min', 'pako', 'src/password-crypto', 'src/rs
         return deferred.promise();
     };
 
-    // TODO cache locally
+    // TODO cache object crypto services locally
     function loadCryptoService(id) {
         return jquery.ajax({
             url: BASE_URL + DIR_URL + OBJ_URL + '/' + id,
             type: 'GET',
             beforeSend: function(xhr) {
-                xhr.setRequestHeader('X-Kryptnostic-Principal', 'krypt|vader');
-                xhr.setRequestHeader('X-Kryptnostic-Credential', 'fd81f8a7af1cb138bdce93350768b2b453ccf238908091501b05fe25616168b0');
+                xhr.setRequestHeader(CryptoServiceLoader.PRINCIPAL_COOKIE, Cookies.get(CryptoServiceLoader.PRINCIPAL_COOKIE));
+                xhr.setRequestHeader(CryptoServiceLoader.CREDENTIAL_COOKIE, Cookies.get(CryptoServiceLoader.CREDENTIAL_COOKIE));
             }
         });
     };
+
+    CryptoServiceLoader.PRINCIPAL_COOKIE = 'X-Kryptnostic-Principal';
+    CryptoServiceLoader.CREDENTIAL_COOKIE = 'X-Kryptnostic-Credential';
 
     CryptoServiceLoader.prototype = {
         constructor: CryptoServiceLoader,
@@ -92,10 +96,12 @@ define(['require', 'jquery', 'forge.min', 'pako', 'src/password-crypto', 'src/rs
                 var deflatedCryptoService = rsaCryptoService.decrypt(atob(cryptoServiceResponse[0].data));
                 var buffer = Forge.util.createBuffer(deflatedCryptoService, 'raw');
                 // remove the prepended length integer
-                buffer.getBytes(4);
+                buffer.getBytes(INT_SIZE);
                 // inflate crypto service
                 var compBytes = buffer.getBytes(buffer.length());
-                var decompressedCryptoService = JSON.parse(Pako.inflate(compBytes, { to: 'string' }));
+                var decompressedCryptoService = JSON.parse(Pako.inflate(compBytes, {
+                    to: 'string'
+                }));
                 // create AesCryptoService
                 var objectCryptoService = new AesCryptoService(atob(decompressedCryptoService.key));
                 deferred.resolve(objectCryptoService);

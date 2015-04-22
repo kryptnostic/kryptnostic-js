@@ -3,7 +3,7 @@ define(['require', 'forge.min'], function(require) {
 
     var Forge = require('forge.min');
 
-    // takes in Forge private and public key objects
+    // Constructor args are Forge private and public key objects
     function RsaCryptoService(privateKey, publicKey) {
         if (!(this instanceof RsaCryptoService)) {
             throw new TypeError("RsaCryptoService constructor cannot be called as a function.");

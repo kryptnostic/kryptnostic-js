@@ -14,8 +14,8 @@ define(['require', 'forge.min', 'src/abstract-crypto'], function(require) {
 
     PasswordCryptoService.BLOCK_CIPHER_ITERATIONS = 128;
     PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE = 16;
+    
     // pbkdf2 key derivation, using sha1
-
     function derive(password, salt, iterations, keySize) {
         var md = Forge.sha1.create();
         return Forge.pkcs5.pbkdf2(password, salt, iterations, keySize, md);

@@ -22,23 +22,9 @@ define(['require', 'jquery', 'cookies', 'forge.min', 'pako', 'src/utils', 'src/p
         }
     };
 
-    // async wrapper in case keys have not yet instantiated from constructor call.
-    function getRsaCryptoService() {
-        var deferred = new jquery.Deferred();
-        if (typeof this.rsaCryptoService === 'undefined') {
-            loadRsaKeys().then(function(keypair) {
-                this.rsaCryptoService = new RsaCryptoService(keypair.privateKey, keypair.publicKey);
-                deferred.resolve(this.rsaCryptoService);
-            }.bind(this));
-        } else {
-            deferred.resolve(this.rsaCryptoService);
-        }
-        return deferred.promise();
-    };
-
     function loadRsaKeys() {
         var deferred = new jquery.Deferred(),
-            passwordCryptoService = new PasswordCryptoService("demo");
+            passwordCryptoService = getPasswordCryptoService();
         var request = jquery.ajax(SecurityUtils.wrapRequest({
             url: BASE_URL + DIR_URL + PRIV_URL,
             type: 'GET'
@@ -64,6 +50,25 @@ define(['require', 'jquery', 'cookies', 'forge.min', 'pako', 'src/utils', 'src/p
         return deferred.promise();
     };
 
+    // async wrapper in case keys have not yet instantiated from constructor call.
+    function getRsaCryptoService() {
+        var deferred = new jquery.Deferred();
+        if (typeof this.rsaCryptoService === 'undefined') {
+            loadRsaKeys().then(function(keypair) {
+                this.rsaCryptoService = new RsaCryptoService(keypair.privateKey, keypair.publicKey);
+                deferred.resolve(this.rsaCryptoService);
+            }.bind(this));
+        } else {
+            deferred.resolve(this.rsaCryptoService);
+        }
+        return deferred.promise();
+    };
+
+    // Synchronous
+    function getPasswordCryptoService() {
+        return new PasswordCryptoService("demo"); // TODO remove hardcoded password
+    };
+
     // TODO cache object crypto services locally
     function loadCryptoService(id) {
         return jquery.ajax(SecurityUtils.wrapRequest({
@@ -72,36 +77,41 @@ define(['require', 'jquery', 'cookies', 'forge.min', 'pako', 'src/utils', 'src/p
         }));
     };
 
+    function getObjectCryptoService(id) {
+        var deferred = new jquery.Deferred();
+        var privateKey;
+        var cryptoServiceResponse;
+        jquery.when(
+            getRsaCryptoService.call(this),
+            loadCryptoService(id)
+        ).then(function(rsaCryptoService, cryptoServiceResponse) {
+            // decrypt crypto service
+            var deflatedCryptoService = rsaCryptoService.decrypt(atob(cryptoServiceResponse[0].data));
+            var buffer = Forge.util.createBuffer(deflatedCryptoService, 'raw');
+            // remove the prepended length integer
+            buffer.getBytes(INT_SIZE);
+            // inflate crypto service
+            var compBytes = buffer.getBytes(buffer.length());
+            var decompressedCryptoService = JSON.parse(Pako.inflate(compBytes, {
+                to: 'string'
+            }));
+            // create AesCryptoService
+            var objectCryptoService = new AesCryptoService(atob(decompressedCryptoService.key));
+            deferred.resolve(objectCryptoService);
+        }.bind(this));
+        return deferred.promise();
+    };
+
+    function setObjectCryptoService(id, cryptoService) {
+        // TODO
+    };
+
     CryptoServiceLoader.prototype = {
         constructor: CryptoServiceLoader,
-        get: function(id) {
-            var deferred = new jquery.Deferred();
-            var privateKey;
-            var cryptoServiceResponse;
-            jquery.when(
-                getRsaCryptoService.call(this),
-                loadCryptoService(id)
-            ).then(function(rsaCryptoService, cryptoServiceResponse) {
-                // decrypt crypto service
-                var deflatedCryptoService = rsaCryptoService.decrypt(atob(cryptoServiceResponse[0].data));
-                var buffer = Forge.util.createBuffer(deflatedCryptoService, 'raw');
-                // remove the prepended length integer
-                buffer.getBytes(INT_SIZE);
-                // inflate crypto service
-                var compBytes = buffer.getBytes(buffer.length());
-                var decompressedCryptoService = JSON.parse(Pako.inflate(compBytes, {
-                    to: 'string'
-                }));
-                // create AesCryptoService
-                var objectCryptoService = new AesCryptoService(atob(decompressedCryptoService.key));
-                deferred.resolve(objectCryptoService);
-            }.bind(this));
-            return deferred.promise();
-        },
-        set: function(cryptoService) {
-            // RSA encrypt portions of request
-            // send request
-        }
+        getObjectCryptoService: getObjectCryptoService,
+        setObjectCryptoService: setObjectCryptoService,
+        getRsaCryptoService: getRsaCryptoService,
+        getPasswordCryptoService: getPasswordCryptoService
     };
 
     return CryptoServiceLoader;

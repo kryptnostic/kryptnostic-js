@@ -23,5 +23,5 @@ require(['require', 'cookies', 'src/utils', 'src/crypto-service-loader'], functi
     Cookies.set(SecurityUtils.PRINCIPAL_COOKIE, 'krypt|vader');
     Cookies.set(SecurityUtils.CREDENTIAL_COOKIE, 'fd81f8a7af1cb138bdce93350768b2b453ccf238908091501b05fe25616168b0');
     // get crypto service
-    cryptoServiceLoader.get("8ee6d9af-9916-411d-9720-1f1a5a7f3a4c");
+    cryptoServiceLoader.getObjectCryptoService("8ee6d9af-9916-411d-9720-1f1a5a7f3a4c");
 });

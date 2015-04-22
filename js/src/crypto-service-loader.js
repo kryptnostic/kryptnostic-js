@@ -1,4 +1,4 @@
-define(['require', 'jquery', 'cookies', 'forge.min', 'pako', 'src/password-crypto', 'src/rsa-crypto', 'src/aes-crypto'], function(require) {
+define(['require', 'jquery', 'cookies', 'forge.min', 'pako', 'src/utils', 'src/password-crypto', 'src/rsa-crypto', 'src/aes-crypto'], function(require) {
     'use strict';
     var jquery = require('jquery'),
         Cookies = require('cookies'),
@@ -6,7 +6,8 @@ define(['require', 'jquery', 'cookies', 'forge.min', 'pako', 'src/password-crypt
         Pako = require('pako'),
         PasswordCryptoService = require('src/password-crypto'),
         RsaCryptoService = require('src/rsa-crypto'),
-        AesCryptoService = require('src/aes-crypto');
+        AesCryptoService = require('src/aes-crypto'),
+        SecurityUtils = require('src/utils');
 
     var BASE_URL = 'http://localhost:8081/v1',
         DIR_URL = '/directory',
@@ -38,14 +39,10 @@ define(['require', 'jquery', 'cookies', 'forge.min', 'pako', 'src/password-crypt
     function loadRsaKeys() {
         var deferred = new jquery.Deferred(),
             passwordCryptoService = new PasswordCryptoService("demo");
-        var request = jquery.ajax({
+        var request = jquery.ajax(SecurityUtils.wrapRequest({
             url: BASE_URL + DIR_URL + PRIV_URL,
-            type: 'GET',
-            beforeSend: function(xhr) {
-                xhr.setRequestHeader(CryptoServiceLoader.PRINCIPAL_COOKIE, Cookies.get(CryptoServiceLoader.PRINCIPAL_COOKIE));
-                xhr.setRequestHeader(CryptoServiceLoader.CREDENTIAL_COOKIE, Cookies.get(CryptoServiceLoader.CREDENTIAL_COOKIE));
-            }
-        });
+            type: 'GET'
+        }));
 
         request.done(function(blockCiphertext) {
             var privateKeyBytes = passwordCryptoService.decrypt(blockCiphertext);
@@ -69,18 +66,11 @@ define(['require', 'jquery', 'cookies', 'forge.min', 'pako', 'src/password-crypt
 
     // TODO cache object crypto services locally
     function loadCryptoService(id) {
-        return jquery.ajax({
+        return jquery.ajax(SecurityUtils.wrapRequest({
             url: BASE_URL + DIR_URL + OBJ_URL + '/' + id,
-            type: 'GET',
-            beforeSend: function(xhr) {
-                xhr.setRequestHeader(CryptoServiceLoader.PRINCIPAL_COOKIE, Cookies.get(CryptoServiceLoader.PRINCIPAL_COOKIE));
-                xhr.setRequestHeader(CryptoServiceLoader.CREDENTIAL_COOKIE, Cookies.get(CryptoServiceLoader.CREDENTIAL_COOKIE));
-            }
-        });
+            type: 'GET'
+        }));
     };
-
-    CryptoServiceLoader.PRINCIPAL_COOKIE = 'X-Kryptnostic-Principal';
-    CryptoServiceLoader.CREDENTIAL_COOKIE = 'X-Kryptnostic-Credential';
 
     CryptoServiceLoader.prototype = {
         constructor: CryptoServiceLoader,
@@ -113,7 +103,6 @@ define(['require', 'jquery', 'cookies', 'forge.min', 'pako', 'src/password-crypt
             // send request
         }
     };
-
 
     return CryptoServiceLoader;
 });

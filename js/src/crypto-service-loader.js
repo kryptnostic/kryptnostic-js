@@ -16,45 +16,25 @@ define(['require', 'jquery', 'cookies', 'forge.min', 'pako', 'src/utils', 'src/p
         OBJ_URL = '/object',
         INT_SIZE = 4;
 
-    function CryptoServiceLoader() {
+    function CryptoServiceLoader(password) {
         if (!(this instanceof CryptoServiceLoader)) {
             throw new TypeError("CryptoServiceLoader constructor cannot be called as a function.");
         }
+        this.passwordCryptoService = new PasswordCryptoService(password);
     };
 
-    function loadRsaKeys() {
-        var deferred = new jquery.Deferred(),
-            passwordCryptoService = getPasswordCryptoService();
-        var request = jquery.ajax(SecurityUtils.wrapRequest({
-            url: BASE_URL + DIR_URL + PRIV_URL,
-            type: 'GET'
-        }));
-
-        request.done(function(blockCiphertext) {
-            var privateKeyBytes = passwordCryptoService.decrypt(blockCiphertext);
-            var privateKeyBuffer = Forge.util.createBuffer(privateKeyBytes, 'raw');
-            var privateKeyAsn1 = Forge.asn1.fromDer(privateKeyBuffer);
-            var privateKey = Forge.pki.privateKeyFromAsn1(privateKeyAsn1);
-            var publicKey = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e);
-
-            deferred.resolve({
-                privateKey: privateKey,
-                publicKey: publicKey
-            });
-        });
-
-        request.fail(function() {
-            deferred.reject();
-        });
-
-        return deferred.promise();
+    CryptoServiceLoader.prototype = {
+        constructor: CryptoServiceLoader
     };
 
-    // async wrapper in case keys have not yet instantiated from constructor call.
-    function getRsaCryptoService() {
+    CryptoServiceLoader.prototype.getPasswordCryptoService = function() {
+        return this.passwordCryptoService;
+    };
+
+    CryptoServiceLoader.prototype.getRsaCryptoService = function() {
         var deferred = new jquery.Deferred();
         if (typeof this.rsaCryptoService === 'undefined') {
-            loadRsaKeys().then(function(keypair) {
+            loadRsaKeys.call(this).then(function(keypair) {
                 this.rsaCryptoService = new RsaCryptoService(keypair.privateKey, keypair.publicKey);
                 deferred.resolve(this.rsaCryptoService);
             }.bind(this));
@@ -64,9 +44,60 @@ define(['require', 'jquery', 'cookies', 'forge.min', 'pako', 'src/utils', 'src/p
         return deferred.promise();
     };
 
-    // Synchronous
-    function getPasswordCryptoService() {
-        return new PasswordCryptoService("demo"); // TODO remove hardcoded password
+    CryptoServiceLoader.prototype.getObjectCryptoService = function(id) {
+        var deferred = new jquery.Deferred();
+        var privateKey;
+        var cryptoServiceResponse;
+        jquery.when(
+            this.getRsaCryptoService(),
+            loadCryptoService(id)
+        ).then(function(rsaCryptoService, cryptoServiceResponse) {
+            var deflatedCryptoService = rsaCryptoService.decrypt(atob(cryptoServiceResponse[0].data));
+            var buffer = Forge.util.createBuffer(deflatedCryptoService, 'raw');
+            buffer.getBytes(INT_SIZE); // remove the prepended length integer
+            var compBytes = buffer.getBytes(buffer.length());
+            var decompressedCryptoService = JSON.parse(Pako.inflate(compBytes, {
+                to: 'string'
+            })); // inflate crypto service
+            var objectCryptoService = new AesCryptoService(atob(decompressedCryptoService.key)); // create AesCryptoService
+
+            deferred.resolve(objectCryptoService);
+        }.bind(this));
+        return deferred.promise();
+    };
+
+    CryptoServiceLoader.prototype.setObjectCryptoService = function(id, cryptoService) {
+        // TODO
+    };
+
+    // Helper functions
+    function loadRsaKeys() {
+        var deferred = new jquery.Deferred();
+        var request = jquery.ajax(SecurityUtils.wrapRequest({
+            url: BASE_URL + DIR_URL + PRIV_URL,
+            type: 'GET'
+        }));
+
+        var resolveRsaKeys = function(blockCiphertext) {
+            var privateKeyBytes = this.getPasswordCryptoService().decrypt(blockCiphertext);
+            var privateKeyBuffer = Forge.util.createBuffer(privateKeyBytes, 'raw');
+            var privateKeyAsn1 = Forge.asn1.fromDer(privateKeyBuffer);
+            var privateKey = Forge.pki.privateKeyFromAsn1(privateKeyAsn1);
+            var publicKey = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e);
+
+            deferred.resolve({
+                privateKey: privateKey,
+                publicKey: publicKey
+            });
+        };
+
+        request.done(resolveRsaKeys.bind(this));
+
+        request.fail(function() {
+            deferred.reject();
+        });
+
+        return deferred.promise();
     };
 
     // TODO cache object crypto services locally
@@ -75,43 +106,6 @@ define(['require', 'jquery', 'cookies', 'forge.min', 'pako', 'src/utils', 'src/p
             url: BASE_URL + DIR_URL + OBJ_URL + '/' + id,
             type: 'GET'
         }));
-    };
-
-    function getObjectCryptoService(id) {
-        var deferred = new jquery.Deferred();
-        var privateKey;
-        var cryptoServiceResponse;
-        jquery.when(
-            getRsaCryptoService.call(this),
-            loadCryptoService(id)
-        ).then(function(rsaCryptoService, cryptoServiceResponse) {
-            // decrypt crypto service
-            var deflatedCryptoService = rsaCryptoService.decrypt(atob(cryptoServiceResponse[0].data));
-            var buffer = Forge.util.createBuffer(deflatedCryptoService, 'raw');
-            // remove the prepended length integer
-            buffer.getBytes(INT_SIZE);
-            // inflate crypto service
-            var compBytes = buffer.getBytes(buffer.length());
-            var decompressedCryptoService = JSON.parse(Pako.inflate(compBytes, {
-                to: 'string'
-            }));
-            // create AesCryptoService
-            var objectCryptoService = new AesCryptoService(atob(decompressedCryptoService.key));
-            deferred.resolve(objectCryptoService);
-        }.bind(this));
-        return deferred.promise();
-    };
-
-    function setObjectCryptoService(id, cryptoService) {
-        // TODO
-    };
-
-    CryptoServiceLoader.prototype = {
-        constructor: CryptoServiceLoader,
-        getObjectCryptoService: getObjectCryptoService,
-        setObjectCryptoService: setObjectCryptoService,
-        getRsaCryptoService: getRsaCryptoService,
-        getPasswordCryptoService: getPasswordCryptoService
     };
 
     return CryptoServiceLoader;

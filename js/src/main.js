@@ -17,7 +17,7 @@ require(['require', 'cookies', 'src/utils', 'src/crypto-service-loader'], functi
     var Cookies = require('cookies');
     var CryptoServiceLoader = require('src/crypto-service-loader'),
         SecurityUtils = require('src/utils');
-    var cryptoServiceLoader = new CryptoServiceLoader();
+    var cryptoServiceLoader = new CryptoServiceLoader("demo");
 
     // set auth cookies for e2e test
     Cookies.set(SecurityUtils.PRINCIPAL_COOKIE, 'krypt|vader');

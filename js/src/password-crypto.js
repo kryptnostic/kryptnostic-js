@@ -3,18 +3,24 @@ define(['require', 'forge.min', 'src/abstract-crypto'], function(require) {
     var Forge = require('forge.min'),
         AbstractCryptoService = require('src/abstract-crypto');
 
+    var DEFAULT_ALGORITHM = 'AES',
+        DEFAULT_MODE = 'CTR';
+
     function PasswordCryptoService(password) {
         if (!(this instanceof PasswordCryptoService)) {
             throw new TypeError("PasswordCryptoService constructor cannot be called as a function.");
         }
 
         this.password = password;
-        this.abstractCryptoService = AbstractCryptoService;
+        this.abstractCryptoService = new AbstractCryptoService({
+            algorithm: DEFAULT_ALGORITHM,
+            mode: DEFAULT_MODE
+        });
     };
 
     PasswordCryptoService.BLOCK_CIPHER_ITERATIONS = 128;
     PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE = 16;
-    
+
     // pbkdf2 key derivation, using sha1
     function derive(password, salt, iterations, keySize) {
         var md = Forge.sha1.create();
@@ -50,7 +56,7 @@ define(['require', 'forge.min', 'src/abstract-crypto'], function(require) {
         },
 
         _derive: function(password, salt, iterations, keySize) {
-        	return derive(password, salt, iterations, keySize);
+            return derive(password, salt, iterations, keySize);
         }
 
     };

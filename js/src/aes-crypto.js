@@ -3,12 +3,13 @@ define(['require', 'forge.min', 'src/abstract-crypto'], function(require) {
     var Forge = require('forge.min'),
         AbstractCryptoService = require('src/abstract-crypto');
 
-    function AesCryptoService(key) {
+    function AesCryptoService(cypher, key) {
         if (!(this instanceof AesCryptoService)) {
             throw new TypeError("AesCryptoService constructor cannot be called as a function.");
         }
         this.key = key;
-        this.abstractCryptoService = AbstractCryptoService;
+        this.cypher = cypher;
+        this.abstractCryptoService = new AbstractCryptoService(cypher);
     };
 
     AesCryptoService.BLOCK_CIPHER_KEY_SIZE = 16;

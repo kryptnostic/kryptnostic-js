@@ -8,15 +8,19 @@ define(['require', 'forge.min', 'src/abstract-crypto', 'src/aes-crypto', 'src/pa
     Forge = require('forge.min');
 
     describe('abstract crypto service', function() {
+        var cryptoService = new AbstractCryptoService({
+            algorithm: 'AES',
+            mode: 'CTR'
+        });
         it('decrypts known-good values correctly', function() {
-            var decrypted = AbstractCryptoService.decrypt(atob("5wb/Vhk7dmM6jvCgC1Lltg=="), atob("ewcVcNXbhKK463r41DFS2g=="), atob("6veqEBl0TNxneQfnfpLbeRey5Yfe4oIKOqrepHn5vac="));
+            var decrypted = cryptoService.decrypt(atob("5wb/Vhk7dmM6jvCgC1Lltg=="), atob("ewcVcNXbhKK463r41DFS2g=="), atob("6veqEBl0TNxneQfnfpLbeRey5Yfe4oIKOqrepHn5vac="));
             expect(decrypted).toBe("¢búð)lÚèKwz'öOXfþP¦ã¾þlTíMY");
         });
 
         it('can decrypt what it encrypts', function() {
             var plaintext = "may the force be with you",
-                encrypted = AbstractCryptoService.encrypt("5wb/Vhk7dmM6jvCgC1Lltg==", "ewcVcNXbhKK463r41DFS2g==", plaintext),
-                decrypted = AbstractCryptoService.decrypt("5wb/Vhk7dmM6jvCgC1Lltg==", "ewcVcNXbhKK463r41DFS2g==", encrypted);
+                encrypted = cryptoService.encrypt("5wb/Vhk7dmM6jvCgC1Lltg==", "ewcVcNXbhKK463r41DFS2g==", plaintext),
+                decrypted = cryptoService.decrypt("5wb/Vhk7dmM6jvCgC1Lltg==", "ewcVcNXbhKK463r41DFS2g==", encrypted);
             expect(decrypted).toBe(plaintext);
         });
     });
@@ -55,7 +59,11 @@ define(['require', 'forge.min', 'src/abstract-crypto', 'src/aes-crypto', 'src/pa
     describe('AES crypto class', function() {
         it('can decrypt what it encrypts', function() {
             var key = Forge.random.getBytesSync(PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE);
-            var cryptoService = new AesCryptoService(key),
+            var cypher = {
+                algorithm: 'AES',
+                mode: 'CTR'
+            };
+            var cryptoService = new AesCryptoService(cypher, key),
                 plaintext = "star wars NOPE yoda YUP";
             debugger
             var blockCiphertext = cryptoService.encrypt(plaintext),

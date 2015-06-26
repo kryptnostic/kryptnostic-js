@@ -1,4 +1,4 @@
-define(['require', 'jquery', 'cookies', 'forge.min', 'pako', 'src/utils', 'src/password-crypto', 'src/rsa-crypto', 'src/aes-crypto'], function(require) {
+define('soteria.crypto-service-loader', ['require', 'jquery', 'cookies', 'forge.min', 'pako', 'src/utils', 'src/password-crypto', 'src/rsa-crypto', 'src/aes-crypto'], function(require) {
     'use strict';
     var jquery = require('jquery'),
         Cookies = require('cookies'),
@@ -79,11 +79,11 @@ define(['require', 'jquery', 'cookies', 'forge.min', 'pako', 'src/utils', 'src/p
         }));
 
         var resolveRsaKeys = function(blockCiphertext) {
-            var privateKeyBytes = this.getPasswordCryptoService().decrypt(blockCiphertext);
+            var privateKeyBytes  = this.getPasswordCryptoService().decrypt(blockCiphertext);
             var privateKeyBuffer = Forge.util.createBuffer(privateKeyBytes, 'raw');
-            var privateKeyAsn1 = Forge.asn1.fromDer(privateKeyBuffer);
-            var privateKey = Forge.pki.privateKeyFromAsn1(privateKeyAsn1);
-            var publicKey = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e);
+            var privateKeyAsn1   = Forge.asn1.fromDer(privateKeyBuffer);
+            var privateKey       = Forge.pki.privateKeyFromAsn1(privateKeyAsn1);
+            var publicKey        = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e);
 
             deferred.resolve({
                 privateKey: privateKey,

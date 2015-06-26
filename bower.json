@@ -1,20 +1,22 @@
 {
-  "name": "soteria",
-  "version": "0.0.0",
-  "homepage": "https://github.com/kryptnostic/soteria",
+  "name"     : "soteria",
+  "version"  : "0.0.0",
+  "homepage" : "https://github.com/kryptnostic/soteria",
+  "main"     : "kryptnostic-crypto.js",
+  "license"  : "MIT",
+  "private"  : true,
   "authors": [
-    "Nick Hewitt <nick@kryptnostic.com>"
+    "Nick Hewitt <nick@kryptnostic.com>",
+    "Ryan Buckheit <ryan@kryptnostic.com>"
   ],
-  "main": "kryptnostic-crypto.js",
   "moduleType": [
     "amd",
     "globals"
   ],
-  "license": "MIT",
-  "private": true,
   "dependencies": {
-    "requirejs": "~2.1.17",
-    "pako": "~0.2.6",
-    "Cookies": "~1.2.1"
+    "require-cs" : "0.5.0",
+    "requirejs"  : "~2.1.17",
+    "pako"       : "~0.2.6",
+    "Cookies"    : "~1.2.1"
   }
 }

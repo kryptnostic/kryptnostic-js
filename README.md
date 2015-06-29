@@ -22,13 +22,20 @@ bower install
 npm install
 ```
 
+## conventions
+
+1. Files exporting classes should be named in `UpperCamelCase` (one class per file).
+2. Files exporting anything else should be named in `lower-kebab-case`.
+3. AMD module definition names should be prefixed with `soteria`, e.g. `soteria.storage-client`
+4. When using require for module definitions, prefer explicit `require(name)` calls to destructuring.
+
 ## building
 
 Builds use the require.js optimizer.
 Building will produce `soteria.js` and `soteria.min.js` in the `build` directory.
 
 ```
-./build.sh
+npm run build
 ```
 
 ## unit testing

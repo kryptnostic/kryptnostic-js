@@ -1,4 +1,4 @@
-define(['require', 'cookies'], function(require) {
+define('soteria.security-utils', ['require', 'cookies'], function(require) {
     'use strict';
     var Cookies                     = require('cookies');
     var SecurityUtils               = {};

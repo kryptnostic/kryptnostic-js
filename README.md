@@ -44,7 +44,9 @@ Karma and Jasmine are used for unit testing.
 
 To start the unit tests, run
 
-`npm run test`
+```
+npm run test
+```
 
 ## browser testing
 

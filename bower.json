@@ -2,7 +2,6 @@
   "name"     : "soteria",
   "version"  : "0.0.0",
   "homepage" : "https://github.com/kryptnostic/soteria",
-  "main"     : "kryptnostic-crypto.js",
   "license"  : "MIT",
   "private"  : true,
   "authors": [

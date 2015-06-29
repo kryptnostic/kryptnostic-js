@@ -7,7 +7,7 @@ define(['require', 'forge.min'], function(require) {
             throw new TypeError("AbstractCryptoService constructor cannot be called as a function.");
         }
         if (!(cypher.algorithm === 'AES' && cypher.mode === 'CTR')) {
-            throw "Cypher not implemented.";
+            throw "Cypher not implemented: " + cypher;
         }
         this.algorithm = cypher.algorithm;
         this.mode = cypher.mode;

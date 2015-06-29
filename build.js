@@ -13,7 +13,6 @@
       'lodash'                             : '../lib/lodash',
       'soteria.crypto-service-loader'      : './crypto-service-loader',
       'soteria.security-utils'             : './utils',
-      'soteria.session-storage-credential' : './session-storage-credential',
       'src/abstract-crypto'                : './abstract-crypto',
       'src/aes-crypto'                     : './aes-crypto',
       'src/password-crypto'                : './password-crypto',

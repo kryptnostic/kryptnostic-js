@@ -11,7 +11,8 @@
     "Ryan Buckheit <ryan@kryptnostic.com>"
   ],
   "scripts"     : {
-    "test" : "cd js && karma start && cd -"
+    "build" : "./build.sh",
+    "test"  : "cd js && karma start && cd -"
   },
   "repository": {
     "type" : "git",

@@ -35,12 +35,12 @@ require([
           kryptnosticObject = kryptnosticObject.decrypt(cryptoService)
 
           $(document).ready(function() {
-            $('body').append("<pre>"
+            $('body').append("<div class='kryptnostic-object'>"
               + kryptnosticObject.constructor.name + " "
               + kryptnosticObject.metadata.id
               + "\n"
               + JSON.stringify(kryptnosticObject,null,2)
-              + "</pre>");
+              + "</div>");
           });
         });
       });

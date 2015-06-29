@@ -50,7 +50,7 @@ npm run test
 
 ## browser testing
 
-For end-to-end testing, build using `build.sh` then open index.html in the browser.
+For end-to-end testing, build using `build.sh` then open demo/index.html in the browser.
 
 On chrome you need to disable web security to allow the page to communicate with locally running Kryptnostic servers.
 

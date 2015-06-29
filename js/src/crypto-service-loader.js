@@ -1,19 +1,29 @@
-define('soteria.crypto-service-loader', ['require', 'jquery', 'cookies', 'forge.min', 'pako', 'src/utils', 'src/password-crypto', 'src/rsa-crypto', 'src/aes-crypto'], function(require) {
+define('soteria.crypto-service-loader', [
+    'require',
+    'jquery',
+    'cookies',
+    'forge.min',
+    'pako',
+    'soteria.security-utils',
+    'src/password-crypto',
+    'src/rsa-crypto',
+    'src/aes-crypto'
+], function(require) {
     'use strict';
-    var jquery = require('jquery'),
-        Cookies = require('cookies'),
-        Forge = require('forge.min'),
-        Pako = require('pako'),
+    var jquery                = require('jquery'),
+        Cookies               = require('cookies'),
+        Forge                 = require('forge.min'),
+        Pako                  = require('pako'),
         PasswordCryptoService = require('src/password-crypto'),
-        RsaCryptoService = require('src/rsa-crypto'),
-        AesCryptoService = require('src/aes-crypto'),
-        SecurityUtils = require('src/utils');
+        RsaCryptoService      = require('src/rsa-crypto'),
+        AesCryptoService      = require('src/aes-crypto'),
+        SecurityUtils         = require('soteria.security-utils');
 
     var BASE_URL = 'http://localhost:8081/v1',
-        DIR_URL = '/directory',
-        PUB_URL = '/public',
+        DIR_URL  = '/directory',
+        PUB_URL  = '/public',
         PRIV_URL = '/private',
-        OBJ_URL = '/object',
+        OBJ_URL  = '/object',
         INT_SIZE = 4;
 
     function CryptoServiceLoader(password) {
@@ -59,7 +69,10 @@ define('soteria.crypto-service-loader', ['require', 'jquery', 'cookies', 'forge.
             var decompressedCryptoService = JSON.parse(Pako.inflate(compBytes, {
                 to: 'string'
             })); // inflate crypto service
-            var objectCryptoService = new AesCryptoService(atob(decompressedCryptoService.key)); // create AesCryptoService
+            var objectCryptoService = new AesCryptoService(
+                decompressedCryptoService.cypher,
+                atob(decompressedCryptoService.key)
+            ); // create AesCryptoService
 
             deferred.resolve(objectCryptoService);
         }.bind(this));

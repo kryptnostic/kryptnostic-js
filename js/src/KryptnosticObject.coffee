@@ -22,7 +22,7 @@ define 'soteria.kryptnostic-object', [
 
     # true if data is in chunked/encrypted form, false if in joined/decrypted form
     isEncrypted : ->
-      return _.isArray(this.body.data)
+      return _.isArray(@body.data)
 
     # decrypt object using a cryptoService
     decrypt : (cryptoService) ->

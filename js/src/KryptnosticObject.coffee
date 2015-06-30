@@ -10,7 +10,8 @@ define 'soteria.kryptnostic-object', [
 
   #
   # Chunked and encrypted representation of a document.
-  # Operations using instance methods do not mutate the object, but rather return a new instance.
+  # Decryption does not mutate the object, but rather returns a new instance.
+  #
   # Author: rbuckheit
   #
   class KryptnosticObject
@@ -26,10 +27,9 @@ define 'soteria.kryptnostic-object', [
     # decrypt object using a cryptoService
     decrypt : (cryptoService) ->
       if @isEncrypted(this)
-        chunkingStrategyUri   = @body.data.chunkingStrategy
-        chunkingStrategyClass = ChunkingStrategyRegistry.get(chunkingStrategyUri)
-        chunkingStrategy      = new chunkingStrategyClass()
         decryptedBlocks       = @body.data.map((chunk) -> cryptoService.decrypt(chunk.block))
+        chunkingStrategyClass = ChunkingStrategyRegistry.get(@body.data.chunkingStrategy)
+        chunkingStrategy      = new chunkingStrategyClass()
         data                  = chunkingStrategy.join(decryptedBlocks)
         raw                   = _.extend({}, _.cloneDeep(this), {body: {data}})
         return new KryptnosticObject(raw)

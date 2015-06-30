@@ -6,11 +6,17 @@
     optimize : 'none',
     wrap     : false,
     paths    : {
+      // library
+      // =======
       'cookies'                       : '../lib/cookies',
       'forge.min'                     : '../lib/forge.min',
       'jquery'                        : '../lib/jquery',
       'pako'                          : '../lib/pako',
       'lodash'                        : '../lib/lodash',
+      'revalidator'                   : '../lib/revalidator',
+
+      // soteria
+      // =======
       'soteria.crypto-service-loader' : './crypto-service-loader',
       'soteria.security-utils'        : './utils',
       'src/abstract-crypto'           : './abstract-crypto',

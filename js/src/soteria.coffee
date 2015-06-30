@@ -4,14 +4,24 @@
 #
 
 EXPORTED_MODULES = [
+  # library
+  # =======
   'require'
   'lodash'
+  'revalidator'
+
+  # soteria
+  # =======
   'soteria.crypto-service-loader'
   'cs!KryptnosticObject'
-  'cs!storage-client'
+  'cs!StorageClient'
   'cs!ChunkingStrategyRegistry'
   'cs!DefaultChunkingStrategy'
+  'cs!ObjectMetadata'
+  'cs!StorageRequest'
+  'cs!PendingObjectRequest'
 ]
+
 
 define('soteria', EXPORTED_MODULES, (require) ->
   'use strict'

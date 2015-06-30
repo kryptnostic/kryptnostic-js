@@ -4,3 +4,4 @@ unit tests
 package reorganization
 coffee conversions
 break down spec.js
+move schemas to new files

@@ -43,5 +43,4 @@ define 'soteria.pending-object-request', [
         console.error(JSON.stringify(this))
         throw new Error 'illegal pending object request'
 
-
   return PendingObjectRequest

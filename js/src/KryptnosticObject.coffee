@@ -31,8 +31,7 @@ define 'soteria.kryptnostic-object', [
         chunkingStrategy      = new chunkingStrategyClass()
         decryptedBlocks       = @body.data.map((chunk) -> cryptoService.decrypt(chunk.block))
         data                  = chunkingStrategy.join(decryptedBlocks)
-        body                  = _.extend({}, this.body, {data})
-        raw                   = _.extend({}, _.cloneDeep(this), {body})
+        raw                   = _.extend({}, _.cloneDeep(this), {body: {data}})
         return new KryptnosticObject(raw)
       else
         return this

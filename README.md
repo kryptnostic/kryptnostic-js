@@ -35,7 +35,7 @@ Builds use the require.js optimizer.
 Building will produce `soteria.js` and `soteria.min.js` in the `build` directory.
 
 ```
-npm run build
+./build.sh
 ```
 
 ## unit testing
@@ -45,7 +45,7 @@ Karma and Jasmine are used for unit testing.
 To start the unit tests, run
 
 ```
-npm run test
+./test.sh
 ```
 
 ## browser testing

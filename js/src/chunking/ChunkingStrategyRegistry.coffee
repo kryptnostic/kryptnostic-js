@@ -12,6 +12,7 @@ define 'soteria.chunking.registry', [
   #
   # Provides access to chunking strategies supported by the client.
   # Strategies are keyed by a URI on the strategy class.
+  #
   # Author: rbuckheit
   #
   class ChunkingStrategyRegistry

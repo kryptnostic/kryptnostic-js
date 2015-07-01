@@ -4,6 +4,8 @@ define(['require', 'forge.min', 'src/abstract-crypto'], function(require) {
     var Forge                 = require('forge.min');
     var AbstractCryptoService = require('src/abstract-crypto');
 
+    var BITS_PER_BYTE = 8;
+
     function AesCryptoService(cypher, key) {
         if (!(this instanceof AesCryptoService)) {
             throw new TypeError("AesCryptoService constructor cannot be called as a function.");
@@ -11,7 +13,7 @@ define(['require', 'forge.min', 'src/abstract-crypto'], function(require) {
         if (!key) {
             // TODO: get this CR'ed
             console.info('[AesCryptoService] no key passed! generating a key.')
-            key = Forge.random.getBytesSync(cypher.keySize / 8);
+            key = Forge.random.getBytesSync(cypher.keySize / BITS_PER_BYTE);
         }
         this.key                   = key;
         this.cypher                = cypher;

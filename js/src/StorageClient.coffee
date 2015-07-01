@@ -91,20 +91,5 @@ define('soteria.storage-client', [
           encryptedObject = kryptnosticObject.encrypt(cryptoService)
           console.info('[StorageClient] encrypted object ' + JSON.stringify(encryptedObject))
 
-        # Preconditions.checkArgument( !obj.getBody().isEncrypted() );
-        # String objId = obj.getMetadata().getId();
-        # // upload the object blocks
-        # if ( req.isStoreable() ) {
-        #     storeObject( obj );
-        # }
-
-        # EncryptedSearchSharingKey sharingKey = setupSharing(obj);
-
-        # if ( req.isSearchable() ) {
-        #     makeObjectSearchable( obj, sharingKey );
-        # }
-
-        # return objId;
-
   return StorageClient
 )

@@ -65,12 +65,7 @@ define 'soteria.kryptnostic-object', [
         chunkingStrategyClass = ChunkingStrategyRegistry.get(chunkingStrategyUri)
         chunkingStrategy      = new chunkingStrategyClass()
         blocks                = chunkingStrategy.split(@body.data)
-        console.info('[KryptnosticObject] blocks=' + JSON.stringify(blocks))
-        data                  = _.chain(blocks)
-                                 .map((block) -> cryptoService.encrypt(block))
-                                 .tap((blocks) -> console.info(blocks))
-                                 .value()
-        console.info('[KryptnosticObject] data=' + JSON.stringify(data))
+        data                  = blocks.map((block) -> cryptoService.encrypt(block))
         raw                   = _.extend({}, _.cloneDeep(this), {body: {data}})
         return new KryptnosticObject(raw)
 

@@ -26,6 +26,7 @@ EXPORTED_MODULES = [
   'cs!model/object/KryptnosticObject'
   'cs!model/object/ObjectMetadata'
   'cs!model/schema/validator'
+  'cs!http/ObjectApi'
 ]
 
 

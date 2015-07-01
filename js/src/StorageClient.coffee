@@ -1,10 +1,10 @@
 define('soteria.storage-client', [
   'require'
   'jquery'
-  'soteria.security-utils'
-  'soteria.kryptnostic-object'
-  'soteria.pending-object-request'
   'soteria.crypto-service-loader'
+  'soteria.kryptnostic-object'
+  'soteria.object-api'
+  'soteria.pending-object-request'
 ], (require) ->
   'use strict'
 
@@ -13,9 +13,7 @@ define('soteria.storage-client', [
   KryptnosticObject    = require 'soteria.kryptnostic-object'
   PendingObjectRequest = require 'soteria.pending-object-request'
   CryptoServiceLoader  = require 'soteria.crypto-service-loader'
-
-  # TODO: define a configurable URL provider.
-  OBJECT_URL    = 'http://localhost:8081/v1/object'
+  ObjectApi            = require 'soteria.object-api'
 
   #
   # Client for listing and loading Kryptnostic encrypted objects.
@@ -23,41 +21,39 @@ define('soteria.storage-client', [
   #
   class StorageClient
 
-    getObjectIds : (id) ->
-      jquery.ajax(SecurityUtils.wrapRequest({
-        url  : OBJECT_URL
-        type : 'GET'
-      }))
-      .then (data) ->
-        return data.data
+    constructor : ->
+      @objectApi = new ObjectApi()
+
+    getObjectIds : ->
+      return @objectApi.getObjectIds()
 
     getObject : (id) ->
-      jquery.ajax(SecurityUtils.wrapRequest({
-        url  : OBJECT_URL + '/' + id
-        type : 'GET'
-      }))
-      .then (data) ->
-        return KryptnosticObject.createFromEncrypted(data);
+      return @objectApi.getObject(id)
 
-    createPendingObject : (pendingRequest) ->
-      jquery.ajax(SecurityUtils.wrapRequest({
-        url         : OBJECT_URL + '/'
-        type        : 'PUT'
-        contentType : 'application/json',
-        data        : JSON.stringify(pendingRequest)
-      }))
-      .then (response) ->
-        console.info('[StorageClient] created pending ' + JSON.stringify(response));
-        return response.data.id
+    submitObjectBlocks : (kryptnosticObject) ->
+      unless kryptnosticObject.isEncrypted()
+        throw new Error('cannot submit blocks for an unencrypted object')
 
-    createPendingObjectFromExisting : (id) ->
-      jquery.ajax(SecurityUtils.wrapRequest({
-        url  : OBJECT_URL + '/' + id
-        type : 'PUT'
-      }))
-      .then (response) ->
-        console.info('[StorageClient] created pending from existing ' + JSON.stringify(response));
-        return response.data.id
+      objectId = kryptnosticObject.metadata.id
+      deferred = new jquery.Deferred()
+      promise  = deferred.promise()
+
+      kryptnosticObject.body.data.forEach (encryptableBlock) =>
+        promise = promise.then =>
+          @objectApi.updateObject(objectId, encryptableBlock)
+
+      deferred.resolve()
+
+      return promise
+
+      #   for ( EncryptableBlock input : obj.getBody().getEncryptedData() ) {
+      #       try {
+      #           objectApi.updateObject( objectId, input );
+      #       } catch ( ResourceNotFoundException | ResourceNotLockedException | BadRequestException e ) {
+      #           logger.error( "Failed to uploaded block. Should probably add a retry here!" );
+      #       }
+      #       logger.info( "Object block upload completed for object {} and block {}", objectId, input.getIndex() );
+      #   }
 
     uploadObject : (storageRequest) ->
       storageRequest.validate()
@@ -66,11 +62,11 @@ define('soteria.storage-client', [
       pendingPromise   = undefined
 
       if objectId?
-        pendingPromise = @createPendingObjectFromExisting(objectId)
+        pendingPromise = @objectApi.createPendingObjectFromExisting(objectId)
       else
         pendingOpts    = _.pick(storageRequest, 'type', 'parentObjectId')
         pendingRequest = new PendingObjectRequest(pendingOpts)
-        pendingPromise = @createPendingObject(pendingRequest)
+        pendingPromise = @objectApi.createPendingObject(pendingRequest)
 
       pendingPromise
       .then (id) ->
@@ -90,6 +86,7 @@ define('soteria.storage-client', [
           console.info('[StorageClient] encrypting object')
           encryptedObject = kryptnosticObject.encrypt(cryptoService)
           console.info('[StorageClient] encrypted object ' + JSON.stringify(encryptedObject))
+          submitObjectBlocks(encryptedObject)
 
   return StorageClient
 )

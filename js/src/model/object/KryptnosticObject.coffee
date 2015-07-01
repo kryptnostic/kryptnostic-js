@@ -16,7 +16,7 @@ define 'soteria.kryptnostic-object', [
 
   #
   # Representation of a Kryptnostic document.
-  # Document is either either in a chunked/encryped form or a joined/decrypted form.
+  # Document is either either in a chunked/encrypted form or a joined/decrypted form.
   # Encryption and decryption do not mutate the object, but rather return new instances.
   # Encryption and decryption will no-op if object is already in the desired state.
   #

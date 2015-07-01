@@ -3,10 +3,12 @@ define 'soteria.object-api', [
   'lodash'
   'jquery'
   'soteria.security-utils'
+  'soteria.kryptnostic-object'
 ], (require) ->
 
-  jquery        = require 'jquery'
-  SecurityUtils = require 'soteria.security-utils'
+  jquery            = require 'jquery'
+  SecurityUtils     = require 'soteria.security-utils'
+  KryptnosticObject = require 'soteria.kryptnostic-object'
 
   OBJECT_URL    = 'http://localhost:8081/v1/object'
 

@@ -8,6 +8,12 @@
 
 var MAX_OBJECTS_TO_LOAD = 1;
 
+var renderObject = function (kryptnosticObject) {
+  $(document).ready(function() {
+    $('body').append('<div class="kryptnostic-object">' + JSON.stringify(kryptnosticObject,null,2) + '</div>');
+  });
+};
+
 require([
   'require',
   'soteria.crypto-service-loader',
@@ -43,15 +49,11 @@ require([
     ids.forEach(function(id) {
       storageClient.getObject(id)
       .done(function(kryptnosticObject) {
+        renderObject(kryptnosticObject)
         cryptoServiceLoader.getObjectCryptoService(id)
         .done(function (cryptoService) {
           kryptnosticObject = kryptnosticObject.decrypt(cryptoService)
-
-          $(document).ready(function() {
-            $('body').append("<div class='kryptnostic-object'>"
-              + JSON.stringify(kryptnosticObject,null,2)
-              + "</div>");
-          });
+          renderObject(kryptnosticObject);
         });
       });
     });

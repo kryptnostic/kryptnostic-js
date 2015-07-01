@@ -6,7 +6,7 @@
 //
 
 
-var MAX_OBJECTS_TO_LOAD = 5;
+var MAX_OBJECTS_TO_LOAD = 1;
 
 require([
   'require',
@@ -34,7 +34,7 @@ require([
   storageClient.uploadObject(storageRequest)
   .done(function(result) {
     console.info('done uploadObject with result' + JSON.stringify(result))
-  });
+  })
 
   // download objects
   storageClient.getObjectIds()
@@ -49,9 +49,6 @@ require([
 
           $(document).ready(function() {
             $('body').append("<div class='kryptnostic-object'>"
-              + kryptnosticObject.constructor.name + " "
-              + kryptnosticObject.metadata.id
-              + "\n"
               + JSON.stringify(kryptnosticObject,null,2)
               + "</div>");
           });

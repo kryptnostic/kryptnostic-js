@@ -17,14 +17,14 @@ define(['require', 'forge.min'], function(require) {
 
     encrypt: function(plaintext) {
       var ciphertext = this.publicKey.encrypt(plaintext, 'RSA-OAEP', {
-        md: Forge.md.sha1.create()
+        md : Forge.md.sha1.create()
       });
       return ciphertext;
     },
 
     decrypt: function(ciphertext) {
       var plaintext = this.privateKey.decrypt(ciphertext, 'RSA-OAEP', {
-        md: Forge.md.sha1.create()
+        md : Forge.md.sha1.create()
       });
       return plaintext;
     }

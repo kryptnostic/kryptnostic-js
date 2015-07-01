@@ -34,7 +34,7 @@ define 'soteria.chunking.registry', [
         console.info("[ChunkingStrategyRegistry] loaded: '#{strategyUri}'")
         return @registry[strategyUri]
       else
-        console.error("[ChunkingStrategyRegistry] unknown uri '#{strategyUri}' returning default '#{DEFAULT_STRATEGY}'")
+        console.warn("[ChunkingStrategyRegistry] unknown uri '#{strategyUri}' returning default '#{DEFAULT_STRATEGY}'")
         console.info(JSON.stringify(@registry))
         return @registry[DEFAULT_STRATEGY]
 

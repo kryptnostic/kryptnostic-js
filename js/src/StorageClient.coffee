@@ -4,6 +4,7 @@ define('soteria.storage-client', [
   'soteria.security-utils'
   'soteria.kryptnostic-object'
   'soteria.pending-object-request'
+  'soteria.crypto-service-loader'
 ], (require) ->
   'use strict'
 
@@ -11,6 +12,7 @@ define('soteria.storage-client', [
   SecurityUtils        = require 'soteria.security-utils'
   KryptnosticObject    = require 'soteria.kryptnostic-object'
   PendingObjectRequest = require 'soteria.pending-object-request'
+  CryptoServiceLoader  = require 'soteria.crypto-service-loader'
 
   # TODO: define a configurable URL provider.
   OBJECT_URL    = 'http://localhost:8081/v1/object'
@@ -37,7 +39,7 @@ define('soteria.storage-client', [
       .then (data) ->
         return KryptnosticObject.createFromEncrypted(data);
 
-    _createPendingObject : (pendingRequest) ->
+    createPendingObject : (pendingRequest) ->
       jquery.ajax(SecurityUtils.wrapRequest({
         url         : OBJECT_URL + '/'
         type        : 'PUT'
@@ -48,7 +50,7 @@ define('soteria.storage-client', [
         console.info('[StorageClient] created pending ' + JSON.stringify(response));
         return response.data.id
 
-    _createPendingObjectFromExisting : (id) ->
+    createPendingObjectFromExisting : (id) ->
       jquery.ajax(SecurityUtils.wrapRequest({
         url  : OBJECT_URL + '/' + id
         type : 'PUT'
@@ -64,21 +66,30 @@ define('soteria.storage-client', [
       pendingPromise   = undefined
 
       if objectId?
-        pendingPromise = @_createPendingObjectFromExisting(objectId)
+        pendingPromise = @createPendingObjectFromExisting(objectId)
       else
         pendingOpts    = _.pick(storageRequest, 'type', 'parentObjectId')
         pendingRequest = new PendingObjectRequest(pendingOpts)
-        pendingPromise = @_createPendingObject(pendingRequest)
+        pendingPromise = @createPendingObject(pendingRequest)
 
       pendingPromise
       .then (id) ->
         kryptnosticObject = KryptnosticObject.createFromDecrypted({id, body})
 
         if kryptnosticObject.isEncrypted()
-          throw new Error('cannot upload object unless in decrypted state')
+          throw new Error('expected object to be in a decrypted state')
 
-        console.info('would upload object' + JSON.stringify(kryptnosticObject))
+        console.info('[StorageClient] object ' + JSON.stringify(kryptnosticObject))
 
+        cryptoServiceLoader = new CryptoServiceLoader('demo') #TODO
+
+        console.info('[StorageClient] made crypto service loader')
+
+        cryptoServiceLoader.getObjectCryptoService(id)
+        .then (cryptoService) ->
+          console.info('[StorageClient] encrypting object')
+          encryptedObject = kryptnosticObject.encrypt(cryptoService)
+          console.info('[StorageClient] encrypted object ' + JSON.stringify(encryptedObject))
 
         # Preconditions.checkArgument( !obj.getBody().isEncrypted() );
         # String objId = obj.getMetadata().getId();

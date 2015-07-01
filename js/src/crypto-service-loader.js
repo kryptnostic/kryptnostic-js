@@ -5,6 +5,7 @@ define('soteria.crypto-service-loader', [
   'forge.min',
   'pako',
   'soteria.security-utils',
+  'soteria.cypher',
   'src/password-crypto',
   'src/rsa-crypto',
   'src/aes-crypto'
@@ -19,6 +20,8 @@ define('soteria.crypto-service-loader', [
     RsaCryptoService      = require('src/rsa-crypto'),
     AesCryptoService      = require('src/aes-crypto'),
     SecurityUtils         = require('soteria.security-utils');
+
+  var Cypher = require('soteria.cypher')
 
   var BASE_URL = 'http://localhost:8081/v1',
     DIR_URL    = '/directory',
@@ -59,29 +62,45 @@ define('soteria.crypto-service-loader', [
     var deferred = new jquery.Deferred();
     var privateKey;
     var cryptoServiceResponse;
+
     jquery.when(
       this.getRsaCryptoService(),
       loadCryptoService(id)
     ).then(function(rsaCryptoService, cryptoServiceResponse) {
-      var deflatedCryptoService = rsaCryptoService.decrypt(atob(cryptoServiceResponse[0].data));
-      var buffer = Forge.util.createBuffer(deflatedCryptoService, 'raw');
-      buffer.getBytes(INT_SIZE); // remove the prepended length integer
-      var compBytes = buffer.getBytes(buffer.length());
-      var decompressedCryptoService = JSON.parse(Pako.inflate(compBytes, {
-        to: 'string'
-      })); // inflate crypto service
-      var objectCryptoService = new AesCryptoService(
-        decompressedCryptoService.cypher,
-        atob(decompressedCryptoService.key)
-      ); // create AesCryptoService
 
-      deferred.resolve(objectCryptoService);
+      var serializedCryptoService = cryptoServiceResponse[0].data;
+
+      if (! serializedCryptoService ) {
+        console.info('[CryptoServiceLoader] cryptoservice could not be loaded.');
+        console.info('[CryptoServiceLoader] creating a cryptoservice using defaults.')
+
+        var cryptoService = new AesCryptoService( Cypher.AES_CTR_128 );
+        this.setObjectCryptoService( id, cryptoService );
+        deferred.resolve(cryptoService);
+      }
+      else {
+        var deflatedCryptoService = rsaCryptoService.decrypt(atob(cryptoServiceResponse[0].data));
+        var buffer = Forge.util.createBuffer(deflatedCryptoService, 'raw');
+        buffer.getBytes(INT_SIZE); // remove the prepended length integer
+        var compBytes = buffer.getBytes(buffer.length());
+        var decompressedCryptoService = JSON.parse(Pako.inflate(compBytes, {
+          to : 'string'
+        })); // inflate crypto service
+        var objectCryptoService = new AesCryptoService(
+          decompressedCryptoService.cypher,
+          atob(decompressedCryptoService.key)
+        ); // create AesCryptoService
+
+        deferred.resolve(objectCryptoService);
+      }
+
     }.bind(this));
     return deferred.promise();
   };
 
   CryptoServiceLoader.prototype.setObjectCryptoService = function(id, cryptoService) {
     // TODO
+    console.warn('setObjectCryptoService is not implemented!')
   };
 
   // Helper functions
@@ -96,8 +115,8 @@ define('soteria.crypto-service-loader', [
       var privateKeyBytes  = this.getPasswordCryptoService().decrypt(blockCiphertext);
       var privateKeyBuffer = Forge.util.createBuffer(privateKeyBytes, 'raw');
       var privateKeyAsn1   = Forge.asn1.fromDer(privateKeyBuffer);
-      var privateKey     = Forge.pki.privateKeyFromAsn1(privateKeyAsn1);
-      var publicKey    = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e);
+      var privateKey       = Forge.pki.privateKeyFromAsn1(privateKeyAsn1);
+      var publicKey        = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e);
 
       deferred.resolve({
         privateKey: privateKey,
@@ -117,8 +136,8 @@ define('soteria.crypto-service-loader', [
   // TODO cache object crypto services locally
   function loadCryptoService(id) {
     return jquery.ajax(SecurityUtils.wrapRequest({
-      url: BASE_URL + DIR_URL + OBJ_URL + '/' + id,
-      type: 'GET'
+      url  : BASE_URL + DIR_URL + OBJ_URL + '/' + id,
+      type : 'GET'
     }));
   };
 

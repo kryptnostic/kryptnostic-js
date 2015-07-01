@@ -17,6 +17,7 @@
 
       // soteria
       // =======
+      'soteria.cypher'                : './cypher',
       'soteria.crypto-service-loader' : './crypto-service-loader',
       'soteria.security-utils'        : './utils',
       'src/abstract-crypto'           : './abstract-crypto',

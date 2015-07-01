@@ -13,6 +13,7 @@ EXPORTED_MODULES = [
   # soteria
   # =======
   'soteria.crypto-service-loader'
+  'soteria.cypher'
   'cs!KryptnosticObject'
   'cs!StorageClient'
   'cs!ChunkingStrategyRegistry'

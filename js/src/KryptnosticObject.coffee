@@ -11,8 +11,10 @@ define 'soteria.kryptnostic-object', [
   ObjectMetadata           = require 'soteria.object-metadata'
 
   #
-  # Chunked and encrypted representation of a document.
-  # Decryption does not mutate the object, but rather returns a new instance.
+  # Representation of a Kryptnostic document.
+  # Document is either either in a chunked/encryped form or a joined/decrypted form.
+  # Encryption and decryption do not mutate the object, but rather return new instances.
+  # Encryption and decryption will no-op if object is already in the desired state.
   #
   # Author: rbuckheit
   #
@@ -24,6 +26,7 @@ define 'soteria.kryptnostic-object', [
 
     # create using a raw json object from the api
     @createFromEncrypted : (raw) ->
+      # TODO: schema validation
       return new KryptnosticObject(raw)
 
     # create using a pending object id and unencrypted body
@@ -32,20 +35,43 @@ define 'soteria.kryptnostic-object', [
       body     = {data: body}
       return new KryptnosticObject({metadata, body})
 
-    # true if data is in chunked/encrypted form, false if in joined/decrypted form
+    # true if data is in chunked/encrypted form, false otherwise.
     isEncrypted : ->
       return _.isArray(@body.data)
 
-    # decrypt object using a cryptoService
+    # true if data is in joined/decrypted form, false otherwise.
+    isDecrypted : ->
+      return !@isEncrypted()
+
+    # decrypt and join object using a cryptoService
     decrypt : (cryptoService) ->
-      if @isEncrypted(this)
+      if @isDecrypted(this)
+        return this
+      else
         decryptedBlocks       = @body.data.map((chunk) -> cryptoService.decrypt(chunk.block))
-        chunkingStrategyClass = ChunkingStrategyRegistry.get(@body.data.chunkingStrategy)
+        chunkingStrategyUri   = @body.data.chunkingStrategy
+        chunkingStrategyClass = ChunkingStrategyRegistry.get(chunkingStrategyUri)
         chunkingStrategy      = new chunkingStrategyClass()
         data                  = chunkingStrategy.join(decryptedBlocks)
         raw                   = _.extend({}, _.cloneDeep(this), {body: {data}})
         return new KryptnosticObject(raw)
-      else
+
+    # chunk and encrypt using a cryptoService
+    encrypt : (cryptoService) ->
+      if @isEncrypted(this)
         return this
+      else
+        chunkingStrategyUri   = @body.data.chunkingStrategy
+        chunkingStrategyClass = ChunkingStrategyRegistry.get(chunkingStrategyUri)
+        chunkingStrategy      = new chunkingStrategyClass()
+        blocks                = chunkingStrategy.split(@body.data)
+        console.info('[KryptnosticObject] blocks=' + JSON.stringify(blocks))
+        data                  = _.chain(blocks)
+                                 .map((block) -> cryptoService.encrypt(block))
+                                 .tap((blocks) -> console.info(blocks))
+                                 .value()
+        console.info('[KryptnosticObject] data=' + JSON.stringify(data))
+        raw                   = _.extend({}, _.cloneDeep(this), {body: {data}})
+        return new KryptnosticObject(raw)
 
   return KryptnosticObject

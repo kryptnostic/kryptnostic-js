@@ -3,10 +3,14 @@ define 'soteria.kryptnostic-object', [
   'lodash'
   'soteria.chunking.registry'
   'soteria.object-metadata'
+  'soteria.schema.validator'
+  'soteria.schema.kryptnostic-object'
 ], (require) ->
   'use strict'
 
   _                        = require 'lodash'
+  validator                = require 'soteria.schema.validator'
+  SCHEMA                   = require 'soteria.schema.kryptnostic-object'
   ChunkingStrategyRegistry = require 'soteria.chunking.registry'
   ObjectMetadata           = require 'soteria.object-metadata'
 
@@ -23,6 +27,10 @@ define 'soteria.kryptnostic-object', [
     # construct using a raw json object
     constructor : (raw) ->
       _.extend(this, raw)
+      @validate()
+
+    validate : ->
+      validator.validate(this, KryptnosticObject, SCHEMA)
 
     # create using a raw json object from the api
     @createFromEncrypted : (raw) ->

@@ -14,14 +14,18 @@ EXPORTED_MODULES = [
   # =======
   'soteria.crypto-service-loader'
   'soteria.cypher'
-  'cs!KryptnosticObject'
   'cs!StorageClient'
   'cs!ChunkingStrategyRegistry'
   'cs!DefaultChunkingStrategy'
-  'cs!ObjectMetadata'
-  'cs!StorageRequest'
-  'cs!model/schema/pending-object-request'
+  'cs!model/request/StorageRequest'
   'cs!model/request/PendingObjectRequest'
+  'cs!model/schema/storage-request'
+  'cs!model/schema/pending-object-request'
+  'cs!model/schema/kryptnostic-object'
+  'cs!model/schema/object-metadata'
+  'cs!model/object/KryptnosticObject'
+  'cs!model/object/ObjectMetadata'
+  'cs!model/schema/validator'
 ]
 
 

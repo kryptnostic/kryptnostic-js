@@ -1,11 +1,12 @@
 (
   {
-    baseUrl  : 'js/src',
-    name     : 'cs!soteria',
-    out      : 'build/soteria.js',
-    optimize : 'none',
-    wrap     : false,
-    paths    : {
+    baseUrl                : 'js/src',
+    name                   : 'cs!soteria',
+    out                    : 'build/soteria.js',
+    optimize               : 'none',
+    wrap                   : false,
+    findNestedDependencies : true,
+    paths                  : {
       // library
       // =======
       'cookies'                       : '../lib/cookies',

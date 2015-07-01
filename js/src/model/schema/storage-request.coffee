@@ -1,11 +1,4 @@
-define 'soteria.storage-request', [
-  'require'
-  'lodash'
-  'revalidator'
-], (require) ->
-
-  _           = require 'lodash'
-  revalidator = window # TODO : gross
+define 'soteria.schema.storage-request', [], (require) ->
 
   SCHEMA = {
     properties: {
@@ -36,19 +29,4 @@ define 'soteria.storage-request', [
     }
   }
 
-  DEFAULT_OPTS = {type: 'object', version: 0}
-
-  class StorageRequest
-
-    constructor: (opts) ->
-      _.extend(this, opts, DEFAULT_OPTS)
-      @validate()
-
-    validate : ->
-      validation = revalidator.validate(this, SCHEMA)
-
-      if not validation.valid
-        console.error('storage request validation failed', validation)
-        throw new Error 'illegal storage request'
-
-  return StorageRequest
+  return SCHEMA

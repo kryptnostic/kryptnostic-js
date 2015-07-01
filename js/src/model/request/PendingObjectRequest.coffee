@@ -2,29 +2,14 @@ define 'soteria.pending-object-request', [
   'require'
   'lodash'
   'revalidator'
+  'soteria.schema.pending-object-request'
 ], (require) ->
-  _           = require 'lodash'
-  revalidator = window # TODO : gross
 
-  SCHEMA = {
-    properties: {
-      type : {
-        description : 'the type of object being stored'
-        type        : 'string'
-        required    : true
-        allowEmpty  : false
-      },
-      parentObjectId : {
-        description : 'id of the parent object if creating a child object'
-        type        : 'number'
-        required    : false
-        allowEmpty  : false
-      }
-    }
-  }
+  _            = require 'lodash'
+  SCHEMA       = require 'soteria.schema.pending-object-request'
+  revalidator  = window  # TODO : gross
 
   DEFAULT_OPTS = {}
-
 
   class PendingObjectRequest
 

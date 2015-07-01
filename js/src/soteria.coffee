@@ -20,7 +20,8 @@ EXPORTED_MODULES = [
   'cs!DefaultChunkingStrategy'
   'cs!ObjectMetadata'
   'cs!StorageRequest'
-  'cs!PendingObjectRequest'
+  'cs!model/schema/pending-object-request'
+  'cs!model/request/PendingObjectRequest'
 ]
 
 

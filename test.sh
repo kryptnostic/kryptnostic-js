@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./build.sh
+./build.sh --fast
 
 cd js
 karma start --single-run true

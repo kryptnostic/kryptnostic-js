@@ -3,15 +3,16 @@ define 'soteria.block-encryption-service', [
   'lodash'
   'forge.min'
   'soteria.encrypted-block'
+  'soteria.hash-function'
 ], (require) ->
   'use strict'
 
   _              = require 'lodash'
   forge          = require 'forge.min'
   EncryptedBlock = require 'soteria.encrypted-block'
+  HashFunction   = require 'soteria.hash-function'
 
-  VERIFY_HASH_FUNCTION = (data) ->
-    return forge.md.sha256.create().update(data).digest().toHex();
+  VERIFY_HASH_FUNCTION = HashFunction.SHA_256
 
   log = (message, args...) =>
     console.info("[BlockEncryptionService] #{message} #{args.map(JSON.stringify)}")
@@ -33,7 +34,7 @@ define 'soteria.block-encryption-service', [
         name        = cryptoService.encrypt(className)
         verify      = VERIFY_HASH_FUNCTION(block.contents)
         last        = (index == chunks.length - 1)
-        strategy    = {'@class': 'soteria.chunking.strategy.default'}
+        strategy    = {'@class': 'com.kryptnostic.kodex.v1.serialization.crypto.DefaultChunkingStrategy'}
         timeCreated = new Date().getTime()
 
         block = { block, name, verify, index, last, strategy, timeCreated }

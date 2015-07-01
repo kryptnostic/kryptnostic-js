@@ -63,7 +63,6 @@ define 'soteria.kryptnostic-object', [
       if @isDecrypted()
         return this
       else
-        # TODO: use the block encryption service!
         chunks                = @blockEncryptionService.decrypt(@body.data, cryptoService)
         chunkingStrategyUri   = @body.data.chunkingStrategy
         chunkingStrategyClass = ChunkingStrategyRegistry.get(chunkingStrategyUri)

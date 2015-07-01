@@ -15,6 +15,10 @@ define 'soteria.object-api', [
   log = (message, args...) ->
     console.info("[ObjectApi] #{message} #{args.map(JSON.stringify)}")
 
+  validateId = (id) ->
+    unless !!id
+      throw new Error('cannot submit block without an id!')
+
   #
   # HTTP Api for interacting with the /object endpoint of Kryptnostic Services.
   # Author: rbuckheit
@@ -32,6 +36,8 @@ define 'soteria.object-api', [
 
     # load a kryptnosticObject in encrypted form
     getObject : (id) ->
+      validateId(id)
+
       jquery.ajax(SecurityUtils.wrapRequest({
         url  : OBJECT_URL + '/' + id
         type : 'GET'
@@ -51,24 +57,29 @@ define 'soteria.object-api', [
       }))
       .then (response) ->
         log('created pending', response)
-        return response.data.id
+        return response.data
 
     # create a pending object for an object which already exists
     createPendingObjectFromExisting : (id) ->
+      validateId(id)
+
       jquery.ajax(SecurityUtils.wrapRequest({
         url  : OBJECT_URL + '/' + id
         type : 'PUT'
       }))
       .then (response) ->
         log('created pending from existing', response);
-        return response.data.id
+        return response.data
 
     # adds an encrypted block to a pending object
     updateObject : (id, encryptableBlock) ->
+      validateId(id)
+
       jquery.ajax(SecurityUtils.wrapRequest({
-        url  : OBJECT_URL + '/' + id
-        type : 'POST'
-        data : JSON.stringify(encryptableBlock)
+        url         : OBJECT_URL + '/' + id
+        type        : 'POST'
+        contentType : 'application/json',
+        data        : JSON.stringify(encryptableBlock)
       }))
       .then (response) ->
         log('submitted block', response)

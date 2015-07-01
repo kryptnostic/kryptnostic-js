@@ -15,6 +15,10 @@ define('soteria.storage-client', [
   CryptoServiceLoader  = require 'soteria.crypto-service-loader'
   ObjectApi            = require 'soteria.object-api'
 
+
+  log = (message, args...) ->
+    console.info("[StorageClient] #{message} #{args.map(JSON.stringify)}")
+
   #
   # Client for listing and loading Kryptnostic encrypted objects.
   # Author: rbuckheit
@@ -34,6 +38,8 @@ define('soteria.storage-client', [
       unless kryptnosticObject.isEncrypted()
         throw new Error('cannot submit blocks for an unencrypted object')
 
+      console.info(JSON.stringify(kryptnosticObject))
+
       objectId = kryptnosticObject.metadata.id
       deferred = new jquery.Deferred()
       promise  = deferred.promise()
@@ -45,15 +51,6 @@ define('soteria.storage-client', [
       deferred.resolve()
 
       return promise
-
-      #   for ( EncryptableBlock input : obj.getBody().getEncryptedData() ) {
-      #       try {
-      #           objectApi.updateObject( objectId, input );
-      #       } catch ( ResourceNotFoundException | ResourceNotLockedException | BadRequestException e ) {
-      #           logger.error( "Failed to uploaded block. Should probably add a retry here!" );
-      #       }
-      #       logger.info( "Object block upload completed for object {} and block {}", objectId, input.getIndex() );
-      #   }
 
     uploadObject : (storageRequest) ->
       storageRequest.validate()
@@ -69,24 +66,25 @@ define('soteria.storage-client', [
         pendingPromise = @objectApi.createPendingObject(pendingRequest)
 
       pendingPromise
-      .then (id) ->
+      .then (id) =>
+        log('pending id', id)
+
         kryptnosticObject = KryptnosticObject.createFromDecrypted({id, body})
 
         if kryptnosticObject.isEncrypted()
           throw new Error('expected object to be in a decrypted state')
 
-        console.info('[StorageClient] object ' + JSON.stringify(kryptnosticObject))
+        log('object', kryptnosticObject)
 
         cryptoServiceLoader = new CryptoServiceLoader('demo') #TODO
 
         console.info('[StorageClient] made crypto service loader')
 
         cryptoServiceLoader.getObjectCryptoService(id)
-        .then (cryptoService) ->
-          console.info('[StorageClient] encrypting object')
+        .then (cryptoService) =>
           encryptedObject = kryptnosticObject.encrypt(cryptoService)
-          console.info('[StorageClient] encrypted object ' + JSON.stringify(encryptedObject))
-          submitObjectBlocks(encryptedObject)
+          log('encrypted object', encryptedObject)
+          @submitObjectBlocks(encryptedObject)
 
   return StorageClient
 )

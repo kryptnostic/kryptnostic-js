@@ -10,7 +10,7 @@ define 'soteria.schema.object-metadata', [], (require) ->
       version          : { type: 'number' }
       total            : { type: 'number' }
       childObjectCount : { type: 'number' }
-      strategy         : { type: 'string' }
+      # strategy         : { type: 'string' }
       owners           : { type: 'array' }
       readers          : { type: 'array' }
       writers          : { type: 'array' }

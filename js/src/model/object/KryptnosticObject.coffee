@@ -14,6 +14,9 @@ define 'soteria.kryptnostic-object', [
   ChunkingStrategyRegistry = require 'soteria.chunking.registry'
   ObjectMetadata           = require 'soteria.object-metadata'
 
+  log = (message, args...) ->
+    console.info("[KryptnosticObject] #{message} #{args.map(JSON.stringify)}")
+
   #
   # Representation of a Kryptnostic document.
   # Document is either either in a chunked/encrypted form or a joined/decrypted form.
@@ -29,18 +32,19 @@ define 'soteria.kryptnostic-object', [
       _.extend(this, raw)
       @validate()
 
+    # validate json properies
     validate : ->
       validator.validate(this, KryptnosticObject, SCHEMA)
 
     # create using a raw json object from the api
     @createFromEncrypted : (raw) ->
-      # TODO: schema validation
       return new KryptnosticObject(raw)
 
     # create using a pending object id and unencrypted body
     @createFromDecrypted : ({id, body}) ->
       metadata = new ObjectMetadata({id})
-      body     = {data: body}
+      log('metadata', metadata)
+      body = {data: body}
       return new KryptnosticObject({metadata, body})
 
     # true if data is in chunked/encrypted form, false otherwise.

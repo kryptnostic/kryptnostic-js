@@ -18,6 +18,8 @@ define 'soteria.schema.validator', [
     if not validation.valid
       console.error('schema validation failed!', object.constructor.name)
       console.error(validation.errors)
+      console.error('the failed object was', object)
+      console.error('call trace', new Error().stack)
       throw new Error('schema validation failed', object.constructor.name)
 
   return {validate}

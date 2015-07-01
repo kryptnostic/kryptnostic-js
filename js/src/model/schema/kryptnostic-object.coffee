@@ -1,9 +1,12 @@
-define 'soteria.schema.kryptnostic-object', [], (require) ->
+define 'soteria.schema.kryptnostic-object', [
+  'require'
+  'soteria.schema.object-metadata'
+], (require) ->
 
-  # TODO: implement a schema
+  OBJECT_METADATA_SCHEMA = require 'soteria.schema.object-metadata'
 
   SCHEMA = {
     properties: {
-
+      metadata : OBJECT_METADATA_SCHEMA
     }
   }

@@ -64,11 +64,11 @@ define 'soteria.kryptnostic-object', [
         return this
       else
         # TODO: use the block encryption service!
-        decryptedBlocks       = @body.data.map((chunk) -> cryptoService.decrypt(chunk.block))
+        chunks                = @blockEncryptionService.decrypt(@body.data, cryptoService)
         chunkingStrategyUri   = @body.data.chunkingStrategy
         chunkingStrategyClass = ChunkingStrategyRegistry.get(chunkingStrategyUri)
         chunkingStrategy      = new chunkingStrategyClass()
-        data                  = chunkingStrategy.join(decryptedBlocks)
+        data                  = chunkingStrategy.join(chunks)
         raw                   = _.extend({}, _.cloneDeep(this), {body: {data}})
         return new KryptnosticObject(raw)
 

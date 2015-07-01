@@ -100,7 +100,7 @@ define('soteria.crypto-service-loader', [
 
   CryptoServiceLoader.prototype.setObjectCryptoService = function(id, cryptoService) {
     // TODO
-    console.warn('setObjectCryptoService is not implemented!')
+    console.error('setObjectCryptoService is not implemented!')
   };
 
   // Helper functions

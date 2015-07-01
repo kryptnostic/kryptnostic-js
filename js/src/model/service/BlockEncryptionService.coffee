@@ -27,6 +27,7 @@ define 'soteria.block-encryption-service', [
 
     constructor: ->
 
+    # convert raw data string chunks into encrypted blocks
     encrypt: (chunks, cryptoService) ->
       return chunks.map (chunk, index) ->
         className   = chunk.constructor.name
@@ -41,6 +42,15 @@ define 'soteria.block-encryption-service', [
         log('created raw block', block)
         return new EncryptedBlock(block)
 
-    # TODO add decrypt function with verify.
+    # convert encrypted blocks into string data chunks
+    decrypt : (chunks, cryptoService) ->
+      return chunks.map ({block, verify}) ->
+        computed = VERIFY_HASH_FUNCTION(block.contents)
+        unless verify is computed
+          log('block verify mismatch', {verify, computed})
+          throw new Error('cannot decrypt block because verify of block contents does not match.')
+        decrypted = cryptoService.decrypt(block)
+        log('decrypted block', decrypted)
+        return decrypted
 
   return BlockEncryptionService

@@ -45,7 +45,7 @@ define 'soteria.kryptnostic-object', [
 
     # decrypt and join object using a cryptoService
     decrypt : (cryptoService) ->
-      if @isDecrypted(this)
+      if @isDecrypted()
         return this
       else
         decryptedBlocks       = @body.data.map((chunk) -> cryptoService.decrypt(chunk.block))
@@ -58,7 +58,7 @@ define 'soteria.kryptnostic-object', [
 
     # chunk and encrypt using a cryptoService
     encrypt : (cryptoService) ->
-      if @isEncrypted(this)
+      if @isEncrypted()
         return this
       else
         chunkingStrategyUri   = @body.data.chunkingStrategy

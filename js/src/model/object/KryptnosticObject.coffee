@@ -5,6 +5,7 @@ define 'soteria.kryptnostic-object', [
   'soteria.object-metadata'
   'soteria.schema.validator'
   'soteria.schema.kryptnostic-object'
+  'soteria.block-encryption-service'
 ], (require) ->
   'use strict'
 
@@ -13,6 +14,7 @@ define 'soteria.kryptnostic-object', [
   SCHEMA                   = require 'soteria.schema.kryptnostic-object'
   ChunkingStrategyRegistry = require 'soteria.chunking.registry'
   ObjectMetadata           = require 'soteria.object-metadata'
+  BlockEncryptionService   = require 'soteria.block-encryption-service'
 
   log = (message, args...) ->
     console.info("[KryptnosticObject] #{message} #{args.map(JSON.stringify)}")
@@ -30,6 +32,7 @@ define 'soteria.kryptnostic-object', [
     # construct using a raw json object
     constructor : (raw) ->
       _.extend(this, raw)
+      @blockEncryptionService = new BlockEncryptionService()
       @validate()
 
     # validate json properies
@@ -60,6 +63,7 @@ define 'soteria.kryptnostic-object', [
       if @isDecrypted()
         return this
       else
+        # TODO: use the block encryption service!
         decryptedBlocks       = @body.data.map((chunk) -> cryptoService.decrypt(chunk.block))
         chunkingStrategyUri   = @body.data.chunkingStrategy
         chunkingStrategyClass = ChunkingStrategyRegistry.get(chunkingStrategyUri)
@@ -76,8 +80,8 @@ define 'soteria.kryptnostic-object', [
         chunkingStrategyUri   = @body.data.chunkingStrategy
         chunkingStrategyClass = ChunkingStrategyRegistry.get(chunkingStrategyUri)
         chunkingStrategy      = new chunkingStrategyClass()
-        blocks                = chunkingStrategy.split(@body.data)
-        data                  = blocks.map((block) -> cryptoService.encrypt(block))
+        chunks                = chunkingStrategy.split(@body.data)
+        data                  = @blockEncryptionService.encrypt(chunks, cryptoService)
         raw                   = _.extend({}, _.cloneDeep(this), {body: {data}})
         return new KryptnosticObject(raw)
 

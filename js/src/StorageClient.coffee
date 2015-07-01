@@ -38,8 +38,6 @@ define('soteria.storage-client', [
       unless kryptnosticObject.isEncrypted()
         throw new Error('cannot submit blocks for an unencrypted object')
 
-      console.info(JSON.stringify(kryptnosticObject))
-
       objectId = kryptnosticObject.metadata.id
       deferred = new jquery.Deferred()
       promise  = deferred.promise()

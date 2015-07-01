@@ -16,7 +16,7 @@ define 'soteria.object-metadata', [
       version          : 0
       total            : 0
       childObjectCount : 0
-      strategy         : 'soteria.chunking.strategy.default'
+      strategy         : {'@class' : 'soteria.chunking.strategy.default'}
       owners           : []
       readers          : []
       writers          : []
@@ -31,3 +31,5 @@ define 'soteria.object-metadata', [
 
     validate : =>
       validator.validate(this, ObjectMetadata, SCHEMA)
+
+  return ObjectMetadata

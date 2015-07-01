@@ -51,4 +51,4 @@ define 'soteria.storage-request', [
         console.error('storage request validation failed', validation)
         throw new Error 'illegal storage request'
 
-  # return StorageRequest
+  return StorageRequest

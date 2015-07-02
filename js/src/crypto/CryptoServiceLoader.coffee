@@ -9,6 +9,7 @@ define 'soteria.crypto-service-loader', [
   'soteria.password-crypto-service',
   'soteria.rsa-crypto-service',
   'soteria.aes-crypto-service'
+  'soteria.directory-api'
 ], (require) ->
   'use strict'
 
@@ -21,19 +22,13 @@ define 'soteria.crypto-service-loader', [
   AesCryptoService      = require('soteria.aes-crypto-service')
   SecurityUtils         = require('soteria.security-utils')
   Cypher                = require('soteria.cypher')
+  DirectoryApi          = require('soteria.directory-api')
 
-  BASE_URL = 'http://localhost:8081/v1'
-  DIR_URL  = '/directory'
-  PUB_URL  = '/public'
-  PRIV_URL = '/private'
-  OBJ_URL  = '/object'
   INT_SIZE = 4
 
-  loadCryptoService = (id) ->
-    return jquery.ajax(SecurityUtils.wrapRequest({
-      url  : BASE_URL + DIR_URL + OBJ_URL + '/' + id,
-      type : 'GET'
-    }))
+
+  log = (message, args...) ->
+    console.info("[CryptoServiceLoader] #{message} #{args.map(JSON.stringify)}")
 
   #
   # Loads cryptoservices which can be used for object decryption.
@@ -43,6 +38,7 @@ define 'soteria.crypto-service-loader', [
   class CryptoServiceLoader
 
     constructor: (password) ->
+      @directoryApi      = new DirectoryApi()
       @passwordCryptoService = new PasswordCryptoService(password)
       @rsaCryptoService      = undefined
 
@@ -52,7 +48,7 @@ define 'soteria.crypto-service-loader', [
     getRsaCryptoService: ->
       deferred = new jquery.Deferred();
 
-      if @rsaCryptoService is 'undefined'
+      unless @rsaCryptoService?
         @loadRsaKeys().then((keypair) =>
           @rsaCryptoService = new RsaCryptoService(keypair.privateKey, keypair.publicKey);
           deferred.resolve(@rsaCryptoService);
@@ -62,28 +58,28 @@ define 'soteria.crypto-service-loader', [
 
       return deferred.promise();
 
+    # TODO failure flag
     getObjectCryptoService: (id) ->
       deferred              = new jquery.Deferred();
 
       jquery.when(
         @getRsaCryptoService(),
-        loadCryptoService(id)
-      ).then (rsaCryptoService, cryptoServiceResponse) =>
-
-        serializedCryptoService = cryptoServiceResponse[0].data;
+        @directoryApi.getObjectCryptoService(id)
+      ).then (rsaCryptoService, serializedCryptoService) =>
 
         if !serializedCryptoService
-          console.info('[CryptoServiceLoader] cryptoservice could not be loaded. creating on-the-fly using defaults.')
+          log('no cryptoService exists for this object. creating one on-the-fly', {id})
           cryptoService = new AesCryptoService( Cypher.AES_CTR_128 )
           @setObjectCryptoService( id, cryptoService )
           deferred.resolve(cryptoService)
         else
-          deflatedCryptoService = rsaCryptoService.decrypt(atob(cryptoServiceResponse[0].data))
-          buffer = Forge.util.createBuffer(deflatedCryptoService, 'raw')
-          buffer.getBytes(INT_SIZE); # remove the prepended length integer
-          compBytes = buffer.getBytes(buffer.length());
-          decompressedCryptoService = JSON.parse(Pako.inflate(compBytes, { to : 'string' }));
-          objectCryptoService = new AesCryptoService(
+          deflatedCryptoService     = rsaCryptoService.decrypt(atob(serializedCryptoService))
+          buffer                    = Forge.util.createBuffer(deflatedCryptoService, 'raw')
+          discardBytes              = buffer.getBytes(INT_SIZE) # prepended length integer
+          compBytes                 = buffer.getBytes(buffer.length())
+          decompressedCryptoService = JSON.parse(Pako.inflate(compBytes, { to : 'string' }))
+          log('decompressed loaded crypto service: ', decompressedCryptoService)
+          objectCryptoService       = new AesCryptoService(
             decompressedCryptoService.cypher,
             atob(decompressedCryptoService.key)
           );
@@ -91,19 +87,17 @@ define 'soteria.crypto-service-loader', [
 
       return deferred.promise();
 
-
     setObjectCryptoService : (id, cryptoService) ->
-      console.error('[CryptoServiceLoader] setObjectCryptoService is not implemented!')
+      unless cryptoService.constructor.name is 'AesCryptoService'
+        throw new Error('serialization only implemented for AesCryptoService')
 
-      # private
-      # =======
+
+
+      console.error('[CryptoServiceLoader] setObjectCryptoService is not implemented!')
 
     loadRsaKeys : ->
       deferred = new jquery.Deferred();
-      request  = jquery.ajax(SecurityUtils.wrapRequest({
-        url  : BASE_URL + DIR_URL + PRIV_URL,
-        type : 'GET'
-      }));
+      request  = @directoryApi.getRsaKeys()
 
       resolveRsaKeys = (blockCiphertext) =>
         privateKeyBytes  = @getPasswordCryptoService().decrypt(blockCiphertext)

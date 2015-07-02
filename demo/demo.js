@@ -6,7 +6,7 @@
 //
 
 
-var MAX_OBJECTS_TO_LOAD = 1;
+var MAX_OBJECTS_TO_LOAD = 50;
 
 var renderObject = function (kryptnosticObject) {
   $(document).ready(function() {
@@ -49,7 +49,7 @@ require([
     ids.forEach(function(id) {
       storageClient.getObject(id)
       .done(function(kryptnosticObject) {
-        renderObject(kryptnosticObject)
+        // renderObject(kryptnosticObject)
         cryptoServiceLoader.getObjectCryptoService(id)
         .done(function (cryptoService) {
           kryptnosticObject = kryptnosticObject.decrypt(cryptoService)

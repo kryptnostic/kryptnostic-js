@@ -3,3 +3,4 @@ real logging system
 unit tests
 break down spec.js
 URL providers and cred providers
+commit hook run tests

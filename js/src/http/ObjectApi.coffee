@@ -1,6 +1,5 @@
 define 'soteria.object-api', [
   'require'
-  'lodash'
   'jquery'
   'soteria.security-utils'
   'soteria.kryptnostic-object'
@@ -20,7 +19,7 @@ define 'soteria.object-api', [
       throw new Error('cannot submit block without an id!')
 
   #
-  # HTTP Api for interacting with the /object endpoint of Kryptnostic Services.
+  # HTTP calls for interacting with the /object endpoint of Kryptnostic Services.
   # Author: rbuckheit
   #
   class ObjectApi

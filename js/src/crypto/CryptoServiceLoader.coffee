@@ -42,8 +42,6 @@ define 'soteria.crypto-service-loader', [
   #
   class CryptoServiceLoader
 
-    @type = 'COFFEE'
-
     constructor: (password) ->
       @passwordCryptoService = new PasswordCryptoService(password)
       @rsaCryptoService      = undefined

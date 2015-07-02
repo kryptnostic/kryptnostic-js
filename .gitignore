@@ -1,2 +1,6 @@
+build/*
 node_modules/*
 bower_components/*
+soteria.sublime-workspace
+npm-debug.log
+js/src/soteria.coffee

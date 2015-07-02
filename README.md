@@ -1,15 +1,56 @@
 # soteria
-A JS client for Kryptnostic crypto services.
+
+JavaScript client for Kryptnostic crypto services.
 
 ## development
-Requirejs for module loading.
 
-Bower and NPM for package management.
+This project uses:
+1. Bower and NPM for package management.
+2. require.js for package management.
+3. r.js optimizer for builds.
+4. Karma and Jasmine for unit testing.
 
-Karma and Jasmine for testing. To start unit tests run:
 
-`karma start`
+To set up, install node.js and npm, then run the following:
 
-For end-to-end testing open index.html in the browser. On chrome you need to disable web security and enable local cookies:
+```
+sudo npm install -g bower karma karma-cli requirejs
+bower install
+npm install
+```
 
-`open -n /Applications/Google\ Chrome.app --enable-file-cookies --disable-web-security`
+## conventions
+
+1. Files exporting classes should be named in `UpperCamelCase` (one class per file).
+2. Files exporting anything else should be named in `lower-kebab-case`.
+3. AMD module definition names should be prefixed with `soteria`, e.g. `soteria.storage-client`
+4. When using require for module definitions, prefer explicit `require(name)` calls to destructuring.
+
+## building
+
+Builds use the require.js optimizer.
+Building will produce `soteria.js` and `soteria.min.js` in the `build` directory.
+
+```
+./build.sh
+```
+
+## unit testing
+
+Karma and Jasmine are used for unit testing.
+
+To start the unit tests, run
+
+```
+./test.sh
+```
+
+## browser testing
+
+For end-to-end testing, build using `build.sh` then open demo/index.html in the browser.
+
+On chrome you need to disable web security to allow the page to communicate with locally running Kryptnostic servers.
+
+`open /Applications/Google\ Chrome.app -n --args --disable-web-security`
+
+Alternatively, you can use the CORS extension or create a proxy.

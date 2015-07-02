@@ -1,7 +1,6 @@
 define 'soteria.crypto-service-loader', [
   'require',
   'jquery',
-  'cookies',
   'forge.min',
   'pako',
   'soteria.logger'
@@ -15,7 +14,6 @@ define 'soteria.crypto-service-loader', [
   'use strict'
 
   jquery                = require 'jquery'
-  Cookies               = require 'cookies'
   Forge                 = require 'forge.min'
   Pako                  = require 'pako'
   PasswordCryptoService = require 'soteria.password-crypto-service'

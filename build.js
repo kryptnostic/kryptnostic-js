@@ -7,12 +7,12 @@
     wrap                   : false,
     findNestedDependencies : true,
     paths                  : {
-      'cookies'     : '../lib/cookies',
-      'forge.min'   : '../lib/forge.min',
-      'jquery'      : '../lib/jquery',
-      'pako'        : '../lib/pako',
-      'lodash'      : '../lib/lodash',
-      'revalidator' : '../lib/revalidator',
+      'require'     : '../../bower_components/requirejs/require',
+      'forge.min'   : '../../bower_components/forge/js/forge.min',
+      'jquery'      : '../../bower_components/jquery/dist/jquery',
+      'pako'        : '../../bower_components/pako/dist/pako',
+      'lodash'      : '../../bower_components/lodash/lodash',
+      'revalidator' : '../../node_modules/revalidator/lib/revalidator',
     },
     packages : [
       {
@@ -25,6 +25,6 @@
         location : '../../bower_components/coffeescript',
         main     : 'extras/coffee-script'
       }
-    ],
+    ]
   }
 )

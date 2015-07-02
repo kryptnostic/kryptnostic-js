@@ -14,10 +14,7 @@ This project uses:
 To set up, install node.js and npm, then run the following:
 
 ```
-sudo npm install -g bower
-sudo npm install -g karma
-sudo npm install -g karma-cli
-sudo npm install -g requirejs
+sudo npm install -g bower karma karma-cli requirejs
 bower install
 npm install
 ```

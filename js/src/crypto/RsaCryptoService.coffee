@@ -18,7 +18,7 @@ define 'soteria.rsa-crypto-service', [
       return ciphertext;
 
     decrypt: (ciphertext) ->
-      plaintext = this.privateKey.decrypt(ciphertext, 'RSA-OAEP', {
+      plaintext = @privateKey.decrypt(ciphertext, 'RSA-OAEP', {
         md : Forge.md.sha1.create()
       });
       return plaintext;

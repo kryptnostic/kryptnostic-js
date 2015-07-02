@@ -2,19 +2,17 @@ define 'soteria.directory-api', [
   'require'
   'jquery'
   'soteria.security-utils'
+  'soteria.logger'
 ], (require) ->
 
-  jquery        = require 'jquery'
-  SecurityUtils = require 'soteria.security-utils'
+  jquery             = require 'jquery'
+  SecurityUtils      = require 'soteria.security-utils'
+  Logger             = require 'soteria.logger'
 
   CRYPTO_SERVICE_URL = 'http://localhost:8081/v1/directory/object'
   PRIVATE_KEY_URL    = 'http://localhost:8081/v1/directory/private'
 
-  log = (message, args...) ->
-    console.info("[DirectoryApi] #{message} #{args.map(JSON.stringify)}")
-
-  error = (mesage, args...) ->
-    console.error("[DirectoryApi] #{message} #{args.map(JSON.stringify)}")
+  {log, error}       = Logger.get('DirectoryApi')
 
   validateId = (id) ->
     unless !!id

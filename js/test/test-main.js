@@ -9,11 +9,11 @@ var pathToModule = function(path) {
 Object.keys(window.__karma__.files).forEach(function(file) {
     if (TEST_REGEXP.test(file)) {
         // Normalize paths to RequireJS module names.
-        console.info('found TEST: ' + file);
+        window.console && console.info('found TEST: ' + file);
         allTestFiles.push(pathToModule(file));
     }
     if (SOTERIA_REGEXP.test(file)) {
-        console.info('found BUILD: ' + file);
+        window.console && console.info('found BUILD: ' + file);
         allTestFiles.push(file);
     }
 });

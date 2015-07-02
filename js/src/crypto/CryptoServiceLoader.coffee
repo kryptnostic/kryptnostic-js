@@ -4,6 +4,7 @@ define 'soteria.crypto-service-loader', [
   'cookies',
   'forge.min',
   'pako',
+  'soteria.logger'
   'soteria.security-utils',
   'soteria.cypher',
   'soteria.password-crypto-service',
@@ -13,22 +14,21 @@ define 'soteria.crypto-service-loader', [
 ], (require) ->
   'use strict'
 
-  jquery                = require('jquery')
-  Cookies               = require('cookies')
-  Forge                 = require('forge.min')
-  Pako                  = require('pako')
-  PasswordCryptoService = require('soteria.password-crypto-service')
-  RsaCryptoService      = require('soteria.rsa-crypto-service')
-  AesCryptoService      = require('soteria.aes-crypto-service')
-  SecurityUtils         = require('soteria.security-utils')
-  Cypher                = require('soteria.cypher')
-  DirectoryApi          = require('soteria.directory-api')
+  jquery                = require 'jquery'
+  Cookies               = require 'cookies'
+  Forge                 = require 'forge.min'
+  Pako                  = require 'pako'
+  PasswordCryptoService = require 'soteria.password-crypto-service'
+  RsaCryptoService      = require 'soteria.rsa-crypto-service'
+  AesCryptoService      = require 'soteria.aes-crypto-service'
+  SecurityUtils         = require 'soteria.security-utils'
+  Cypher                = require 'soteria.cypher'
+  DirectoryApi          = require 'soteria.directory-api'
+  Logger                = require 'soteria.logger'
 
   INT_SIZE = 4
 
-
-  log = (message, args...) ->
-    console.info("[CryptoServiceLoader] #{message} #{args.map(JSON.stringify)}")
+  {log, error} = Logger.get('CryptoServiceLoader')
 
   #
   # Loads cryptoservices which can be used for object decryption.
@@ -78,7 +78,7 @@ define 'soteria.crypto-service-loader', [
           discardBytes              = buffer.getBytes(INT_SIZE) # prepended length integer
           compBytes                 = buffer.getBytes(buffer.length())
           decompressedCryptoService = JSON.parse(Pako.inflate(compBytes, { to : 'string' }))
-          log('decompressed loaded crypto service: ', decompressedCryptoService)
+          log('decompressed loaded crypto service', decompressedCryptoService)
           objectCryptoService       = new AesCryptoService(
             decompressedCryptoService.cypher,
             atob(decompressedCryptoService.key)
@@ -93,7 +93,7 @@ define 'soteria.crypto-service-loader', [
 
 
 
-      console.error('[CryptoServiceLoader] setObjectCryptoService is not implemented!')
+      error('[CryptoServiceLoader] setObjectCryptoService is not implemented!')
 
     loadRsaKeys : ->
       deferred = new jquery.Deferred();

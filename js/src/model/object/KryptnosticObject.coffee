@@ -6,6 +6,7 @@ define 'soteria.kryptnostic-object', [
   'soteria.schema.validator'
   'soteria.schema.kryptnostic-object'
   'soteria.block-encryption-service'
+  'soteria.logger'
 ], (require) ->
   'use strict'
 
@@ -15,9 +16,9 @@ define 'soteria.kryptnostic-object', [
   ChunkingStrategyRegistry = require 'soteria.chunking.registry'
   ObjectMetadata           = require 'soteria.object-metadata'
   BlockEncryptionService   = require 'soteria.block-encryption-service'
+  Logger                   = require 'soteria.logger'
 
-  log = (message, args...) ->
-    console.info("[KryptnosticObject] #{message} #{args.map(JSON.stringify)}")
+  logger = Logger.get('KryptnosticObject')
 
   #
   # Representation of a Kryptnostic document.
@@ -46,7 +47,7 @@ define 'soteria.kryptnostic-object', [
     # create using a pending object id and unencrypted body
     @createFromDecrypted : ({id, body}) ->
       metadata = new ObjectMetadata({id})
-      log('metadata', metadata)
+      logger.info('metadata', metadata)
       body = {data: body}
       return new KryptnosticObject({metadata, body})
 

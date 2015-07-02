@@ -1,7 +1,10 @@
 define 'soteria.chunking.registry', [
   'require'
   'soteria.chunking.strategy.default'
+  'soteria.logger'
 ], (require) ->
+
+  logger = require('soteria.logger').get('ChunkingStrategyRegistry')
 
   DEFAULT_STRATEGY = 'soteria.chunking.strategy.default'
 
@@ -28,15 +31,15 @@ define 'soteria.chunking.registry', [
         throw new Error('cannot register strategy class without a uri')
       strategyUri            = strategyClass.URI
       @registry[strategyUri] = strategyClass
-      console.info("[ChunkingStrategyRegistry] registered: '#{strategyUri}'")
+      logger.info('registered', {strategyUri})
 
     @get : (strategyUri) ->
       if @registry[strategyUri]?
-        console.info("[ChunkingStrategyRegistry] loaded: '#{strategyUri}'")
+        logger.info('loaded', {strategyUri})
         return @registry[strategyUri]
       else
-        console.warn("[ChunkingStrategyRegistry] unknown uri '#{strategyUri}' returning default '#{DEFAULT_STRATEGY}'")
-        console.info(JSON.stringify(@registry))
+        logger.warn('unknown uri, returning default', {strategyUri, DEFAULT_STRATEGY})
+        logger.info(JSON.stringify(@registry))
         return @registry[DEFAULT_STRATEGY]
 
   ChunkingStrategyRegistry.initialize()

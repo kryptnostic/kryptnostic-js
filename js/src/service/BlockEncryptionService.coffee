@@ -4,6 +4,7 @@ define 'soteria.block-encryption-service', [
   'forge.min'
   'soteria.encrypted-block'
   'soteria.hash-function'
+  'soteria.logger'
 ], (require) ->
   'use strict'
 
@@ -11,11 +12,11 @@ define 'soteria.block-encryption-service', [
   forge          = require 'forge.min'
   EncryptedBlock = require 'soteria.encrypted-block'
   HashFunction   = require 'soteria.hash-function'
+  Logger         = require 'soteria.logger'
 
   VERIFY_HASH_FUNCTION = HashFunction.SHA_256
 
-  log = (message, args...) =>
-    console.info("[BlockEncryptionService] #{message} #{args.map(JSON.stringify)}")
+  logger = Logger.get('BlockEncryptionService')
 
   #
   # Service for encrypting and decrypting blocks of a kryptnostic object,
@@ -39,7 +40,7 @@ define 'soteria.block-encryption-service', [
         timeCreated = new Date().getTime()
 
         block = { block, name, verify, index, last, strategy, timeCreated }
-        log('created raw block', block)
+        logger.info('created raw block', block)
         return new EncryptedBlock(block)
 
     # convert encrypted blocks into string data chunks
@@ -47,10 +48,10 @@ define 'soteria.block-encryption-service', [
       return chunks.map ({block, verify}) ->
         computed = VERIFY_HASH_FUNCTION(block.contents)
         unless verify is computed
-          log('block verify mismatch', {verify, computed})
+          logger.info('block verify mismatch', {verify, computed})
           throw new Error('cannot decrypt block because verify of block contents does not match.')
         decrypted = cryptoService.decrypt(block)
-        log('decrypted block', decrypted)
+        logger.info('decrypted block', decrypted)
         return decrypted
 
   return BlockEncryptionService

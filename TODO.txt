@@ -1,5 +1,4 @@
 package revalidator as an AMD module
-real logging system
 unit tests
 break down spec.js
 URL providers and cred providers

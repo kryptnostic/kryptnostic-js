@@ -2,11 +2,15 @@ define 'soteria.aes-crypto-service', [
   'require',
   'forge.min',
   'soteria.abstract-crypto-service'
+  'soteria.logger'
 ], (require) ->
   'use strict';
 
   Forge                 = require('forge.min');
   AbstractCryptoService = require('soteria.abstract-crypto-service');
+  Logger                = require('soteria.logger')
+
+  logger = Logger.get('AesCryptoService')
 
   BITS_PER_BYTE         = 8
   BLOCK_CIPHER_KEY_SIZE = 16
@@ -15,7 +19,7 @@ define 'soteria.aes-crypto-service', [
 
     constructor: (@cypher, @key) ->
       if not @key
-        console.info('[AesCryptoService] no key passed! generating a key.')
+        logger.info('no key passed! generating a key.')
         @key = Forge.random.getBytesSync(cypher.keySize / BITS_PER_BYTE);
       @abstractCryptoService = new AbstractCryptoService(cypher)
 

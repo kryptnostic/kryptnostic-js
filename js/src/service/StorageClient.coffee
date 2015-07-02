@@ -3,6 +3,7 @@ define 'soteria.storage-client', [
   'jquery'
   'soteria.crypto-service-loader'
   'soteria.kryptnostic-object'
+  'soteria.logger'
   'soteria.object-api'
   'soteria.pending-object-request'
 ], (require) ->
@@ -14,10 +15,9 @@ define 'soteria.storage-client', [
   PendingObjectRequest = require 'soteria.pending-object-request'
   CryptoServiceLoader  = require 'soteria.crypto-service-loader'
   ObjectApi            = require 'soteria.object-api'
+  Logger               = require 'soteria.logger'
 
-
-  log = (message, args...) ->
-    console.info("[StorageClient] #{message} #{args.map(JSON.stringify)}")
+  logger = Logger.get('StorageClient')
 
   #
   # Client for listing and loading Kryptnostic encrypted objects.
@@ -65,23 +65,23 @@ define 'soteria.storage-client', [
 
       pendingPromise
       .then (id) =>
-        log('pending id', id)
+        logger.info('pending id', id)
 
         kryptnosticObject = KryptnosticObject.createFromDecrypted({id, body})
 
         if kryptnosticObject.isEncrypted()
           throw new Error('expected object to be in a decrypted state')
 
-        log('object', kryptnosticObject)
+        logger.info('object', kryptnosticObject)
 
         cryptoServiceLoader = new CryptoServiceLoader('demo') #TODO
 
-        console.info('[StorageClient] made crypto service loader')
+        logger.info('made crypto service loader')
 
         cryptoServiceLoader.getObjectCryptoService(id)
         .then (cryptoService) =>
           encryptedObject = kryptnosticObject.encrypt(cryptoService)
-          log('encrypted object', encryptedObject)
+          logger.info('encrypted object', encryptedObject)
           @submitObjectBlocks(encryptedObject)
 
   return StorageClient

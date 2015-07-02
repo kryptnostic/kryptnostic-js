@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# fail if anything goes wrong
+set -e
+
+./commit-hooks.rb
+
 ./pre-build.rb
 
 rm -rfv build/*;

@@ -1,6 +1,10 @@
 define 'soteria.schema.validator', [
+  'require'
   'revalidator'
+  'soteria.logger'
 ], (require) ->
+
+  logger = require('soteria.logger').get('validator')
 
   revalidator = window
 
@@ -16,10 +20,10 @@ define 'soteria.schema.validator', [
     validation = revalidator.validate(object, schema)
 
     if not validation.valid
-      console.error('schema validation failed!', object.constructor.name)
-      console.error(validation.errors)
-      console.error('the failed object was', object)
-      console.error('call trace', new Error().stack)
+      logger.error('schema validation failed!', object.constructor.name)
+      logger.error(validation.errors)
+      logger.error('the failed object was', object)
+      logger.error('call trace', new Error().stack)
       throw new Error('schema validation failed', object.constructor.name)
 
   return {validate}

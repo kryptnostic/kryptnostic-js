@@ -3,16 +3,17 @@ define 'soteria.object-api', [
   'jquery'
   'soteria.security-utils'
   'soteria.kryptnostic-object'
+  'soteria.logger'
 ], (require) ->
 
   jquery            = require 'jquery'
   SecurityUtils     = require 'soteria.security-utils'
   KryptnosticObject = require 'soteria.kryptnostic-object'
+  Logger            = require 'soteria.logger'
 
-  OBJECT_URL    = 'http://localhost:8081/v1/object'
+  OBJECT_URL        = 'http://localhost:8081/v1/object'
 
-  log = (message, args...) ->
-    console.info("[ObjectApi] #{message} #{args.map(JSON.stringify)}")
+  logger            = Logger.get('ObjectApi')
 
   validateId = (id) ->
     unless !!id
@@ -55,7 +56,7 @@ define 'soteria.object-api', [
         data        : JSON.stringify(pendingRequest)
       }))
       .then (response) ->
-        log('created pending', response)
+        logger.info('created pending', response)
         return response.data
 
     # create a pending object for an object which already exists
@@ -67,7 +68,7 @@ define 'soteria.object-api', [
         type : 'PUT'
       }))
       .then (response) ->
-        log('created pending from existing', response);
+        logger.info('created pending from existing', response);
         return response.data
 
     # adds an encrypted block to a pending object
@@ -81,4 +82,4 @@ define 'soteria.object-api', [
         data        : JSON.stringify(encryptableBlock)
       }))
       .then (response) ->
-        log('submitted block', response)
+        logger.info('submitted block', response)

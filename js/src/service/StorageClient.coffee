@@ -1,4 +1,4 @@
-define('soteria.storage-client', [
+define 'soteria.storage-client', [
   'require'
   'jquery'
   'soteria.crypto-service-loader'
@@ -85,4 +85,3 @@ define('soteria.storage-client', [
           @submitObjectBlocks(encryptedObject)
 
   return StorageClient
-)

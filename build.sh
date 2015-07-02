@@ -1,13 +1,13 @@
 #!/bin/bash
-if [[ $@ != **--fast** ]]; then
-  echo "running full build. please use the \"--fast\" option to do a partial build."
-fi
 
 ./pre-build.rb
 
 rm -rfv build/*;
-r.js -o build.js out=build/soteria.js optimize=none
 
-if [[ $@ != **--fast** ]]; then
+if [[ $@ != **--minify** ]]; then
+  echo "running development build (no minification)."
+  r.js -o build.js out=build/soteria.js optimize=none
+else
+  echo "running minified build. this will be slower."
   r.js -o build.js out=build/soteria.min.js optimize=uglify
 fi

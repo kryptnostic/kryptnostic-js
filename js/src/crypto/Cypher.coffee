@@ -7,4 +7,3 @@ define 'soteria.cypher', [], (require) ->
   return {
     AES_CTR_128: { algorithm : 'AES', mode: 'CTR', padding: 'NoPadding', keySize: 128 }
   }
-

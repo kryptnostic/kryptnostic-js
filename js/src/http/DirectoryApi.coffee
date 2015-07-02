@@ -55,5 +55,4 @@ define 'soteria.directory-api', [
         log('getRsaKeys', {response})
         return response
 
-
   return DirectoryApi

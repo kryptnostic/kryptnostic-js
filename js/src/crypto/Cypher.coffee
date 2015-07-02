@@ -1,8 +1,10 @@
-define('soteria.cypher', ['require'], function (require) {
+define 'soteria.cypher', [], (require) ->
 
-  // TODO: add rest of cyphers.
+  #
+  # Enumeration of cyphers.
+  # Author: rbuckheit
+  #
   return {
     AES_CTR_128: { algorithm : 'AES', mode: 'CTR', padding: 'NoPadding', keySize: 128 }
   }
 
-});

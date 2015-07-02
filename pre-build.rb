@@ -45,8 +45,8 @@ EXPORTED_MODULES = [
 
   # soteria
   # =======
-  'soteria.crypto-service-loader'
-  'soteria.cypher'
+  # 'soteria.crypto-service-loader'
+  # 'soteria.cypher'
   #{COFFEE_EXPORTS.map{|c| "'cs!#{c}'"}.join("\n  ")}
 ]
 

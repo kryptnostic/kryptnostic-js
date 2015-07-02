@@ -1,8 +1,5 @@
 package revalidator as an AMD module
 real logging system
 unit tests
-package reorganization
-coffee conversions
 break down spec.js
 URL providers and cred providers
-remove paths from build.js

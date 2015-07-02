@@ -31,9 +31,6 @@ COFFEE_EXPORTS = COFFEE_FILES.map{|f| get_relative_path(f)}.map{|f| remove_exten
 EXPORT_FILE_CONTENT = """
 #
 # AUTO_GENERATED: #{Time.new.inspect}
-#
-
-#
 # Pseudo-modile which includes all modules exported as part of soteria.
 # This file is for optimizer build purposes only and should not be required or edited.
 #
@@ -45,8 +42,6 @@ EXPORTED_MODULES = [
 
   # soteria
   # =======
-  # 'soteria.crypto-service-loader'
-  # 'soteria.cypher'
   #{COFFEE_EXPORTS.map{|c| "'cs!#{c}'"}.join("\n  ")}
 ]
 

@@ -1,12 +1,20 @@
 
-define(['require', 'forge.min', 'src/abstract-crypto', 'src/aes-crypto', 'src/password-crypto', 'src/rsa-crypto', 'src/crypto-service-loader'], function(require) {
+define([
+  'require',
+  'forge.min',
+  'soteria.aes-crypto-service',
+  'soteria.crypto-service-loader',
+  'soteria.password-crypto-service',
+  'soteria.rsa-crypto-service',
+  'soteria.abstract-crypto-service'
+], function(require) {
 
-  var AesCryptoService      = require('src/aes-crypto');
-  var CryptoServiceLoader   = require('src/crypto-service-loader');
-  var PasswordCryptoService = require('src/password-crypto');
-  var RsaCryptoService      = require('src/rsa-crypto');
+  var AesCryptoService      = require('soteria.aes-crypto-service');
+  var CryptoServiceLoader   = require('soteria.crypto-service-loader');
+  var PasswordCryptoService = require('soteria.password-crypto-service');
+  var RsaCryptoService      = require('soteria.rsa-crypto-service');
   var Forge                 = require('forge.min');
-  var AbstractCryptoService = require('src/abstract-crypto');
+  var AbstractCryptoService = require('soteria.abstract-crypto-service');
 
   var PASSWORD = 'crom';
 
@@ -66,7 +74,7 @@ define(['require', 'forge.min', 'src/abstract-crypto', 'src/aes-crypto', 'src/pa
       };
       var cryptoService = new AesCryptoService(cypher, key),
         plaintext = "star wars NOPE yoda YUP";
-      debugger
+
       var blockCiphertext = cryptoService.encrypt(plaintext),
         decrypted = cryptoService.decrypt(blockCiphertext);
       expect(decrypted).toBe(plaintext);

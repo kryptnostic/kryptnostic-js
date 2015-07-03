@@ -1,5 +1,5 @@
 var allTestFiles   = [];
-var TEST_REGEXP    = /(.*)(spec|test)\.js$/i;
+var TEST_REGEXP    = /(.*)(spec|test)\.(js|coffee)$/i;
 var SOTERIA_REGEXP = /soteria.js/;
 
 var pathToModule = function(path) {

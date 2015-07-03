@@ -11,8 +11,6 @@ define 'soteria.password-crypto-service', [
   DEFAULT_ALGORITHM     = 'AES'
   DEFAULT_MODE          = 'CTR'
 
-  BLOCK_CIPHER_ITERATIONS = 128
-  BLOCK_CIPHER_KEY_SIZE   = 16
 
   derive = (password, salt, iterations, keySize) ->
     md = Forge.sha1.create();
@@ -20,13 +18,17 @@ define 'soteria.password-crypto-service', [
 
   class PasswordCryptoService
 
+    @BLOCK_CIPHER_ITERATIONS : 128
+
+    @BLOCK_CIPHER_KEY_SIZE  : 16
+
     constructor: (@password) ->
       @abstractCryptoService = new AbstractCryptoService({ algorithm: DEFAULT_ALGORITHM, mode: DEFAULT_MODE })
 
     encrypt: (plaintext) ->
-      salt = Forge.random.getBytesSync(BLOCK_CIPHER_KEY_SIZE)
-      key  = derive(this.password, salt, BLOCK_CIPHER_ITERATIONS, BLOCK_CIPHER_KEY_SIZE)
-      iv   = Forge.random.getBytesSync(BLOCK_CIPHER_KEY_SIZE)
+      salt = Forge.random.getBytesSync(PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE)
+      key  = derive(this.password, salt, PasswordCryptoService.BLOCK_CIPHER_ITERATIONS, PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE)
+      iv   = Forge.random.getBytesSync(PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE)
 
       return {
         key      : btoa(key)
@@ -36,7 +38,7 @@ define 'soteria.password-crypto-service', [
       };
 
     decrypt: (blockCiphertext) ->
-      key      = derive(@password, atob(blockCiphertext.salt), BLOCK_CIPHER_ITERATIONS, BLOCK_CIPHER_KEY_SIZE)
+      key      = derive(@password, atob(blockCiphertext.salt), PasswordCryptoService.BLOCK_CIPHER_ITERATIONS, PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE)
       iv       = atob(blockCiphertext.iv)
       contents = atob(blockCiphertext.contents)
       return @abstractCryptoService.decrypt(key, iv, contents)

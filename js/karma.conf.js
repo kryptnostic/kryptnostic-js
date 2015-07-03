@@ -12,17 +12,6 @@ module.exports = function(config) {
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
     frameworks: ['jasmine', 'requirejs'],
 
-
-    plugins:[
-      'karma-jasmine',
-      'karma-requirejs',
-      'karma-coverage',
-      'karma-phantomjs-launcher',
-      'karma-chrome-launcher',
-      'karma-firefox-launcher',
-    ],
-
-
     // list of files / patterns to load in the browser
     files: [
       'test/test-main.js',
@@ -43,7 +32,7 @@ module.exports = function(config) {
 
     coffeePreprocessor: {
       options: {
-        bare      : true,
+        bare      : false,
         sourceMap : false
       },
       transformPath: function(path) {

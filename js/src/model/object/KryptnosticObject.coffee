@@ -33,7 +33,6 @@ define 'soteria.kryptnostic-object', [
     # construct using a raw json object
     constructor : (raw) ->
       _.extend(this, raw)
-      @blockEncryptionService = new BlockEncryptionService()
       @validate()
 
     # validate json properies
@@ -64,12 +63,13 @@ define 'soteria.kryptnostic-object', [
       if @isDecrypted()
         return this
       else
-        chunks                = @blockEncryptionService.decrypt(@body.data, cryptoService)
-        chunkingStrategyUri   = @body.data.chunkingStrategy
-        chunkingStrategyClass = ChunkingStrategyRegistry.get(chunkingStrategyUri)
-        chunkingStrategy      = new chunkingStrategyClass()
-        data                  = chunkingStrategy.join(chunks)
-        raw                   = _.extend({}, _.cloneDeep(this), {body: {data}})
+        blockEncryptionService = new BlockEncryptionService()
+        chunks                 = blockEncryptionService.decrypt(@body.data, cryptoService)
+        chunkingStrategyUri    = @body.data.chunkingStrategy
+        chunkingStrategyClass  = ChunkingStrategyRegistry.get(chunkingStrategyUri)
+        chunkingStrategy       = new chunkingStrategyClass()
+        data                   = chunkingStrategy.join(chunks)
+        raw                    = _.extend({}, _.cloneDeep(this), {body: {data}})
         return new KryptnosticObject(raw)
 
     # chunk and encrypt using a cryptoService
@@ -77,12 +77,13 @@ define 'soteria.kryptnostic-object', [
       if @isEncrypted()
         return this
       else
-        chunkingStrategyUri   = @body.data.chunkingStrategy
-        chunkingStrategyClass = ChunkingStrategyRegistry.get(chunkingStrategyUri)
-        chunkingStrategy      = new chunkingStrategyClass()
-        chunks                = chunkingStrategy.split(@body.data)
-        data                  = @blockEncryptionService.encrypt(chunks, cryptoService)
-        raw                   = _.extend({}, _.cloneDeep(this), {body: {data}})
+        blockEncryptionService = new BlockEncryptionService()
+        chunkingStrategyUri    = @body.data.chunkingStrategy
+        chunkingStrategyClass  = ChunkingStrategyRegistry.get(chunkingStrategyUri)
+        chunkingStrategy       = new chunkingStrategyClass()
+        chunks                 = chunkingStrategy.split(@body.data)
+        data                   = blockEncryptionService.encrypt(chunks, cryptoService)
+        raw                    = _.extend({}, _.cloneDeep(this), {body: {data}})
         return new KryptnosticObject(raw)
 
   return KryptnosticObject

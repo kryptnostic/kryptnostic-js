@@ -13,12 +13,20 @@ module.exports = function(config) {
     frameworks: ['jasmine', 'requirejs'],
 
 
+    plugins:[
+      'karma-jasmine',
+      'karma-requirejs',
+      'karma-coverage',
+      'karma-phantomjs-launcher',
+      'karma-chrome-launcher',
+      'karma-firefox-launcher',
+    ],
+
+
     // list of files / patterns to load in the browser
     files: [
       'test/test-main.js',
       '../build/soteria.js',
-      { pattern: 'src/*.js',            included: false },
-      { pattern: 'lib/*.js',            included: false },
       { pattern: 'test/**/*.js',        included: false },
       { pattern: 'test/**/*.coffee',    included: false }
     ],

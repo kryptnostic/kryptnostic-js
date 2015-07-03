@@ -28,12 +28,12 @@ define 'soteria.password-crypto-service', [
 
     encrypt: (plaintext) ->
       salt = Forge.random.getBytesSync(BLOCK_CIPHER_KEY_SIZE)
-      key  = derive(this.password, salt, BLOCK_CIPHER_ITERATIONS, BLOCK_CIPHER_KEY_SIZE)
+      key  = derive(@password, salt, BLOCK_CIPHER_ITERATIONS, BLOCK_CIPHER_KEY_SIZE)
       iv   = Forge.random.getBytesSync(BLOCK_CIPHER_KEY_SIZE)
 
       return {
         key      : btoa(key)
-        contents : btoa(this.abstractCryptoService.encrypt(key, iv, plaintext))
+        contents : btoa(@abstractCryptoService.encrypt(key, iv, plaintext))
         iv       : btoa(iv)
         salt     : btoa(salt)
       }

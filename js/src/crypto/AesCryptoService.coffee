@@ -15,6 +15,9 @@ define 'soteria.aes-crypto-service', [
   BITS_PER_BYTE         = 8
   BLOCK_CIPHER_KEY_SIZE = 16
 
+  #
+  # Author: nickdhewitt, rbuckheit
+  #
   class AesCryptoService
 
     constructor: (@cypher, @key) ->

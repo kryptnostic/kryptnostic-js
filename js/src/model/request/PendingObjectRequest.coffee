@@ -11,6 +11,10 @@ define 'soteria.pending-object-request', [
 
   DEFAULT_OPTS = {}
 
+  #
+  # JSON request to create a pending object in Kryptnostic services.
+  # Author: rbuckheit
+  #
   class PendingObjectRequest
 
     constructor : (opts) ->

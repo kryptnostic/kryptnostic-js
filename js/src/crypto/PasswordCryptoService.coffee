@@ -18,6 +18,9 @@ define 'soteria.password-crypto-service', [
     md = Forge.sha1.create();
     return Forge.pkcs5.pbkdf2(password, salt, iterations, keySize, md);
 
+  #
+  # Author: nickdhewitt, rbuckheit
+  #
   class PasswordCryptoService
 
     constructor: (@password) ->
@@ -33,7 +36,7 @@ define 'soteria.password-crypto-service', [
         contents : btoa(this.abstractCryptoService.encrypt(key, iv, plaintext))
         iv       : btoa(iv)
         salt     : btoa(salt)
-      };
+      }
 
     decrypt: (blockCiphertext) ->
       key      = derive(@password, atob(blockCiphertext.salt), BLOCK_CIPHER_ITERATIONS, BLOCK_CIPHER_KEY_SIZE)

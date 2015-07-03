@@ -31,7 +31,6 @@ define 'soteria.crypto-service-loader', [
 
   #
   # Loads cryptoservices which can be used for object decryption.
-  #
   # Author: nickdhewitt, rbuckheit
   #
   class CryptoServiceLoader
@@ -124,10 +123,7 @@ define 'soteria.crypto-service-loader', [
         privateKey       = Forge.pki.privateKeyFromAsn1(privateKeyAsn1)
         publicKey        = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e)
 
-        deferred.resolve({
-          privateKey : privateKey,
-          publicKey  : publicKey
-        });
+        deferred.resolve({privateKey, publicKey})
 
       request.done(resolveRsaKeys);
       request.fail( -> deferred.reject() );

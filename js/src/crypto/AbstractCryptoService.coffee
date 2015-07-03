@@ -7,6 +7,9 @@ define 'soteria.abstract-crypto-service', [
   Forge = require 'forge.min'
   _     = require 'lodash'
 
+  #
+  # Author: nickdhewitt, rbuckheit
+  #
   class AbstractCryptoService
 
     constructor: (cypher) ->

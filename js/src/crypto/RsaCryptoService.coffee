@@ -6,6 +6,9 @@ define 'soteria.rsa-crypto-service', [
 
   Forge = require('forge.min');
 
+  #
+  # Author: nickdhewitt, rbuckheit
+  #
   class RsaCryptoService
 
     # args are forge public and private key objects
@@ -14,13 +17,13 @@ define 'soteria.rsa-crypto-service', [
     encrypt: (plaintext) ->
       ciphertext = @publicKey.encrypt(plaintext, 'RSA-OAEP', {
         md : Forge.md.sha1.create()
-      });
-      return ciphertext;
+      })
+      return ciphertext
 
     decrypt: (ciphertext) ->
       plaintext = @privateKey.decrypt(ciphertext, 'RSA-OAEP', {
         md : Forge.md.sha1.create()
-      });
-      return plaintext;
+      })
+      return plaintext
 
   return RsaCryptoService;

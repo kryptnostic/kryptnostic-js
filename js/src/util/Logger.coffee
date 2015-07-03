@@ -27,4 +27,8 @@ define 'soteria.logger', [], (require) ->
       args = args.map(JSON.stringify)
       window.console && console.error("[#{@moduleName}] #{message} #{args}")
 
+    debug: (message, args...) ->
+      args = args.map(JSON.stringify)
+      window.console && console.debug("[#{@moduleName}] #{message} #{args}")
+
   return Logger

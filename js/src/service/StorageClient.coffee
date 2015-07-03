@@ -83,5 +83,7 @@ define 'soteria.storage-client', [
           encryptedObject = kryptnosticObject.encrypt(cryptoService)
           logger.info('encrypted object', encryptedObject)
           @submitObjectBlocks(encryptedObject)
+        .then ->
+          return id
 
   return StorageClient

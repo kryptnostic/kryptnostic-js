@@ -24,9 +24,10 @@ define 'soteria.crypto-service-loader', [
   DirectoryApi          = require 'soteria.directory-api'
   Logger                = require 'soteria.logger'
 
-  INT_SIZE = 4
+  INT_SIZE     = 4
+  EMPTY_BUFFER = ''
 
-  {log, error} = Logger.get('CryptoServiceLoader')
+  logger = Logger.get('CryptoServiceLoader')
 
   #
   # Loads cryptoservices which can be used for object decryption.
@@ -36,7 +37,7 @@ define 'soteria.crypto-service-loader', [
   class CryptoServiceLoader
 
     constructor: (password) ->
-      @directoryApi      = new DirectoryApi()
+      @directoryApi          = new DirectoryApi()
       @passwordCryptoService = new PasswordCryptoService(password)
       @rsaCryptoService      = undefined
 
@@ -66,7 +67,7 @@ define 'soteria.crypto-service-loader', [
       ).then (rsaCryptoService, serializedCryptoService) =>
 
         if !serializedCryptoService
-          log('no cryptoService exists for this object. creating one on-the-fly', {id})
+          logger.log('no cryptoService exists for this object. creating one on-the-fly', {id})
           cryptoService = new AesCryptoService( Cypher.AES_CTR_128 )
           @setObjectCryptoService( id, cryptoService )
           deferred.resolve(cryptoService)
@@ -75,8 +76,7 @@ define 'soteria.crypto-service-loader', [
           buffer                    = Forge.util.createBuffer(deflatedCryptoService, 'raw')
           discardBytes              = buffer.getBytes(INT_SIZE) # prepended length integer
           compBytes                 = buffer.getBytes(buffer.length())
-          decompressedCryptoService = JSON.parse(Pako.inflate(compBytes, { to : 'string' }))
-          log('decompressed loaded crypto service', decompressedCryptoService)
+          decompressedCryptoService = JSON.parse(Pako.inflate(compBytes, {to: 'string'}))
           objectCryptoService       = new AesCryptoService(
             decompressedCryptoService.cypher,
             atob(decompressedCryptoService.key)
@@ -85,15 +85,35 @@ define 'soteria.crypto-service-loader', [
 
       return deferred.promise();
 
-    setObjectCryptoService : (id, cryptoService) ->
+    setObjectCryptoService: (id, cryptoService) ->
       unless cryptoService.constructor.name is 'AesCryptoService'
         throw new Error('serialization only implemented for AesCryptoService')
 
+      # extract compressible fields into a raw object and stringify
+      {key, cypher}           = cryptoService
+      rawCryptoService        = {cypher, key: btoa(key)}
+      serializedCryptoService = JSON.stringify(rawCryptoService)
 
+      # compress the stringified cryptoservice, it will become part of payload
+      compressedCryptoService = Pako.deflate(serializedCryptoService, {to: 'string'})
 
-      error('[CryptoServiceLoader] setObjectCryptoService is not implemented!')
+      # determine size of the compressed cryptoService
+      cryptoServiceBuffer = Forge.util.createBuffer(EMPTY_BUFFER, 'raw')
+      cryptoServiceBuffer.putBytes(compressedCryptoService)
+      cryptoServiceByteCount = cryptoServiceBuffer.length()
 
-    loadRsaKeys : ->
+      # serialize everything into a buffer for transport
+      messageBuffer = Forge.util.createBuffer(EMPTY_BUFFER, 'raw')
+      messageBuffer.putInt32(cryptoServiceByteCount)
+      messageBuffer.putBytes(compressedCryptoService)
+
+      # encrypt the resulting message buffer and send it
+      @getRsaCryptoService()
+      .then (rsaCryptoService) =>
+        encryptedCryptoService = rsaCryptoService.encrypt(messageBuffer.data)
+        return @directoryApi.setObjectCryptoService(id, encryptedCryptoService)
+
+    loadRsaKeys: ->
       deferred = new jquery.Deferred();
       request  = @directoryApi.getRsaKeys()
 

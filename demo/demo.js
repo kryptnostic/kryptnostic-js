@@ -6,7 +6,7 @@
 //
 
 
-var MAX_OBJECTS_TO_LOAD = 50;
+var MAX_OBJECTS_TO_LOAD = 1;
 
 var renderObject = function (kryptnosticObject) {
   $(document).ready(function() {
@@ -38,9 +38,18 @@ require([
   var storageRequest = new StorageRequest({ body : 'test message' });
 
   storageClient.uploadObject(storageRequest)
-  .done(function(result) {
-    console.info('done uploadObject with result' + JSON.stringify(result))
-  })
+  .done(function(objectId) {
+    console.info('done uploadObject with result ' + JSON.stringify(objectId))
+
+    storageClient.getObject(objectId)
+    .done (function (kryptnosticObject){
+      cryptoServiceLoader.getObjectCryptoService(objectId)
+      .done (function (cryptoService){
+        kryptnosticObject = kryptnosticObject.decrypt(cryptoService)
+        renderObject(kryptnosticObject);
+      });
+    });
+  });
 
   // download objects
   storageClient.getObjectIds()
@@ -49,7 +58,7 @@ require([
     ids.forEach(function(id) {
       storageClient.getObject(id)
       .done(function(kryptnosticObject) {
-        // renderObject(kryptnosticObject)
+        renderObject(kryptnosticObject)
         cryptoServiceLoader.getObjectCryptoService(id)
         .done(function (cryptoService) {
           kryptnosticObject = kryptnosticObject.decrypt(cryptoService)

@@ -52,7 +52,7 @@ define 'soteria.object-api', [
       jquery.ajax(SecurityUtils.wrapRequest({
         url         : OBJECT_URL + '/'
         type        : 'PUT'
-        contentType : 'application/json',
+        contentType : 'application/json'
         data        : JSON.stringify(pendingRequest)
       }))
       .then (response) ->
@@ -78,7 +78,7 @@ define 'soteria.object-api', [
       jquery.ajax(SecurityUtils.wrapRequest({
         url         : OBJECT_URL + '/' + id
         type        : 'POST'
-        contentType : 'application/json',
+        contentType : 'application/json'
         data        : JSON.stringify(encryptableBlock)
       }))
       .then (response) ->

@@ -27,13 +27,14 @@ define 'soteria.password-crypto-service', [
       @abstractCryptoService = new AbstractCryptoService({ algorithm: DEFAULT_ALGORITHM, mode: DEFAULT_MODE })
 
     encrypt: (plaintext) ->
-      salt = Forge.random.getBytesSync(BLOCK_CIPHER_KEY_SIZE)
-      key  = derive(@password, salt, BLOCK_CIPHER_ITERATIONS, BLOCK_CIPHER_KEY_SIZE)
-      iv   = Forge.random.getBytesSync(BLOCK_CIPHER_KEY_SIZE)
+      salt     = Forge.random.getBytesSync(BLOCK_CIPHER_KEY_SIZE)
+      key      = derive(@password, salt, BLOCK_CIPHER_ITERATIONS, BLOCK_CIPHER_KEY_SIZE)
+      iv       = Forge.random.getBytesSync(BLOCK_CIPHER_KEY_SIZE)
+      contents = @abstractCryptoService.encrypt(key, iv, plaintext)
 
       return {
         key      : btoa(key)
-        contents : btoa(@abstractCryptoService.encrypt(key, iv, plaintext))
+        contents : btoa(contents)
         iv       : btoa(iv)
         salt     : btoa(salt)
       }
@@ -42,6 +43,7 @@ define 'soteria.password-crypto-service', [
       key      = derive(@password, atob(blockCiphertext.salt), BLOCK_CIPHER_ITERATIONS, BLOCK_CIPHER_KEY_SIZE)
       iv       = atob(blockCiphertext.iv)
       contents = atob(blockCiphertext.contents)
+
       return @abstractCryptoService.decrypt(key, iv, contents)
 
     _derive: (password, salt, iterations, keySize) ->

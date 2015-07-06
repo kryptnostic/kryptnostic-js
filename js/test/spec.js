@@ -1,7 +1,7 @@
 
 define([
   'require',
-  'forge.min',
+  'forge',
   'soteria.aes-crypto-service',
   'soteria.crypto-service-loader',
   'soteria.password-crypto-service',
@@ -13,7 +13,7 @@ define([
   var CryptoServiceLoader   = require('soteria.crypto-service-loader');
   var PasswordCryptoService = require('soteria.password-crypto-service');
   var RsaCryptoService      = require('soteria.rsa-crypto-service');
-  var Forge                 = require('forge.min');
+  var Forge                 = require('forge');
   var AbstractCryptoService = require('soteria.abstract-crypto-service');
 
   var PASSWORD = 'crom';

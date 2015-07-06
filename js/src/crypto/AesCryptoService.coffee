@@ -13,12 +13,13 @@ define 'soteria.aes-crypto-service', [
   logger = Logger.get('AesCryptoService')
 
   BITS_PER_BYTE         = 8
-  BLOCK_CIPHER_KEY_SIZE = 16
 
   #
   # Author: nickdhewitt, rbuckheit
   #
   class AesCryptoService
+
+    @BLOCK_CIPHER_KEY_SIZE : 16
 
     constructor: (@cypher, @key) ->
       if not @key
@@ -27,7 +28,7 @@ define 'soteria.aes-crypto-service', [
       @abstractCryptoService = new AbstractCryptoService(cypher)
 
     encrypt: (plaintext) ->
-      iv         = Forge.random.getBytesSync(BLOCK_CIPHER_KEY_SIZE)
+      iv         = Forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
       ciphertext = @abstractCryptoService.encrypt(@key, iv, plaintext)
 
       return {

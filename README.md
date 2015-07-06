@@ -5,6 +5,7 @@ JavaScript client for Kryptnostic crypto services.
 ## development
 
 This project uses:
+
 1. Bower and NPM for package management.
 2. require.js for package management.
 3. r.js optimizer for builds.
@@ -14,7 +15,7 @@ This project uses:
 To set up, install node.js and npm, then run the following:
 
 ```
-sudo npm install -g bower karma karma-cli requirejs
+sudo npm install -g bower karma-cli
 bower install
 npm install
 ```
@@ -47,7 +48,7 @@ To start the unit tests, run
 
 ## browser testing
 
-For end-to-end testing, build using `build.sh` then open demo/index.html in the browser.
+For end-to-end testing, build using `build.sh` then open `demo/index.html` in the browser.
 
 On chrome you need to disable web security to allow the page to communicate with locally running Kryptnostic servers.
 

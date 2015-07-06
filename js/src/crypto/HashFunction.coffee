@@ -1,9 +1,9 @@
 define 'soteria.hash-function', [
   'require'
-  'forge.min'
+  'forge'
 ], (require) ->
 
-  forge = require 'forge.min'
+  forge = require 'forge'
 
   #
   # Enumeration of hash functions utilized by soteria.

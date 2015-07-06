@@ -9,7 +9,7 @@ require 'json'
 
 JS_LIB_EXPORTS = [
   'require',
-  'forge.min',
+  'forge',
   'pako',
   'jquery',
   'lodash',

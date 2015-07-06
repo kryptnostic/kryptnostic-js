@@ -1,8 +1,7 @@
 define 'soteria.crypto-service-loader', [
   'require',
   'jquery',
-  'forge.min',
-  'pako',
+  'forge',
   'soteria.logger'
   'soteria.security-utils',
   'soteria.cypher',
@@ -10,12 +9,12 @@ define 'soteria.crypto-service-loader', [
   'soteria.rsa-crypto-service',
   'soteria.aes-crypto-service'
   'soteria.directory-api'
+  'soteria.deflating-marshaller'
 ], (require) ->
   'use strict'
 
   jquery                = require 'jquery'
-  Forge                 = require 'forge.min'
-  Pako                  = require 'pako'
+  Forge                 = require 'forge'
   PasswordCryptoService = require 'soteria.password-crypto-service'
   RsaCryptoService      = require 'soteria.rsa-crypto-service'
   AesCryptoService      = require 'soteria.aes-crypto-service'
@@ -23,21 +22,23 @@ define 'soteria.crypto-service-loader', [
   Cypher                = require 'soteria.cypher'
   DirectoryApi          = require 'soteria.directory-api'
   Logger                = require 'soteria.logger'
+  DeflatingMarshaller   = require 'soteria.deflating-marshaller'
 
-  INT_SIZE = 4
+  INT_SIZE     = 4
+  EMPTY_BUFFER = ''
 
-  {log, error} = Logger.get('CryptoServiceLoader')
+  logger = Logger.get('CryptoServiceLoader')
 
   #
   # Loads cryptoservices which can be used for object decryption.
-  #
   # Author: nickdhewitt, rbuckheit
   #
   class CryptoServiceLoader
 
     constructor: (password) ->
-      @directoryApi      = new DirectoryApi()
+      @directoryApi          = new DirectoryApi()
       @passwordCryptoService = new PasswordCryptoService(password)
+      @deflatingMarshaller   = new DeflatingMarshaller()
       @rsaCryptoService      = undefined
 
     getPasswordCryptoService: ->
@@ -66,17 +67,14 @@ define 'soteria.crypto-service-loader', [
       ).then (rsaCryptoService, serializedCryptoService) =>
 
         if !serializedCryptoService
-          log('no cryptoService exists for this object. creating one on-the-fly', {id})
+          logger.log('no cryptoService exists for this object. creating one on-the-fly', {id})
           cryptoService = new AesCryptoService( Cypher.AES_CTR_128 )
           @setObjectCryptoService( id, cryptoService )
           deferred.resolve(cryptoService)
         else
           deflatedCryptoService     = rsaCryptoService.decrypt(atob(serializedCryptoService))
-          buffer                    = Forge.util.createBuffer(deflatedCryptoService, 'raw')
-          discardBytes              = buffer.getBytes(INT_SIZE) # prepended length integer
-          compBytes                 = buffer.getBytes(buffer.length())
-          decompressedCryptoService = JSON.parse(Pako.inflate(compBytes, { to : 'string' }))
-          log('decompressed loaded crypto service', decompressedCryptoService)
+          inflatedCryptoService     = @deflatingMarshaller.unmarshall(deflatedCryptoService)
+          decompressedCryptoService = JSON.parse(inflatedCryptoService)
           objectCryptoService       = new AesCryptoService(
             decompressedCryptoService.cypher,
             atob(decompressedCryptoService.key)
@@ -85,15 +83,21 @@ define 'soteria.crypto-service-loader', [
 
       return deferred.promise();
 
-    setObjectCryptoService : (id, cryptoService) ->
+    setObjectCryptoService: (id, cryptoService) ->
       unless cryptoService.constructor.name is 'AesCryptoService'
         throw new Error('serialization only implemented for AesCryptoService')
 
+      {key, cypher}           = cryptoService
+      rawCryptoService        = {cypher, key: btoa(key)}
+      serializedCryptoService = JSON.stringify(rawCryptoService)
+      marshalled              = @deflatingMarshaller.marshall(serializedCryptoService)
 
+      @getRsaCryptoService()
+      .then (rsaCryptoService) =>
+        encryptedCryptoService = rsaCryptoService.encrypt(marshalled)
+        return @directoryApi.setObjectCryptoService(id, encryptedCryptoService)
 
-      error('[CryptoServiceLoader] setObjectCryptoService is not implemented!')
-
-    loadRsaKeys : ->
+    loadRsaKeys: ->
       deferred = new jquery.Deferred();
       request  = @directoryApi.getRsaKeys()
 
@@ -104,10 +108,7 @@ define 'soteria.crypto-service-loader', [
         privateKey       = Forge.pki.privateKeyFromAsn1(privateKeyAsn1)
         publicKey        = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e)
 
-        deferred.resolve({
-          privateKey : privateKey,
-          publicKey  : publicKey
-        });
+        deferred.resolve({privateKey, publicKey})
 
       request.done(resolveRsaKeys);
       request.fail( -> deferred.reject() );

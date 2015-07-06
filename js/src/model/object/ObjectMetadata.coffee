@@ -23,6 +23,10 @@ define 'soteria.object-metadata', [
       name             : {}
     }
 
+  #
+  # Representation of metadata for a KryptnosticObject.
+  # Author: rbuckheit
+  #
   class ObjectMetadata
 
     constructor : (opts) ->

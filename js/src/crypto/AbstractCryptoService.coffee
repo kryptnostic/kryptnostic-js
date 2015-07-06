@@ -1,16 +1,21 @@
 define 'soteria.abstract-crypto-service', [
   'require'
   'lodash'
-  'forge.min'
+  'forge'
+  'soteria.crypto-algorithm'
 ], (require) ->
 
-  Forge = require 'forge.min'
-  _     = require 'lodash'
+  Forge           = require 'forge'
+  _               = require 'lodash'
+  CryptoAlgorithm = require 'soteria.crypto-algorithm'
 
+  #
+  # Author: nickdhewitt, rbuckheit
+  #
   class AbstractCryptoService
 
     constructor: (cypher) ->
-      unless cypher.algorithm is 'AES' and cypher.mode is 'CTR'
+      unless cypher.algorithm is CryptoAlgorithm.AES and cypher.mode is 'CTR'
         throw new Error('Cypher not implemented')
       @algorithm = cypher.algorithm
       @mode      = cypher.mode

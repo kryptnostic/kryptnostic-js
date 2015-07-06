@@ -1,7 +1,7 @@
 define 'soteria.block-encryption-service', [
   'require'
   'lodash'
-  'forge.min'
+  'forge'
   'soteria.encrypted-block'
   'soteria.hash-function'
   'soteria.logger'
@@ -9,7 +9,7 @@ define 'soteria.block-encryption-service', [
   'use strict'
 
   _              = require 'lodash'
-  forge          = require 'forge.min'
+  forge          = require 'forge'
   EncryptedBlock = require 'soteria.encrypted-block'
   HashFunction   = require 'soteria.hash-function'
   Logger         = require 'soteria.logger'

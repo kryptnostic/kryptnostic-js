@@ -34,6 +34,9 @@ define 'soteria.storage-client', [
     getObject : (id) ->
       return @objectApi.getObject(id)
 
+    getObjectIdsByType : (type) ->
+      return @objectApi.getObjectIdsByType(type)
+
     submitObjectBlocks : (kryptnosticObject) ->
       unless kryptnosticObject.isEncrypted()
         throw new Error('cannot submit blocks for an unencrypted object')
@@ -83,5 +86,7 @@ define 'soteria.storage-client', [
           encryptedObject = kryptnosticObject.encrypt(cryptoService)
           logger.info('encrypted object', encryptedObject)
           @submitObjectBlocks(encryptedObject)
+        .then ->
+          return id
 
   return StorageClient

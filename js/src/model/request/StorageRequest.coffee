@@ -11,6 +11,10 @@ define 'soteria.storage-request', [
 
   DEFAULT_OPTS = { type: 'object', version: 0 }
 
+  #
+  # JSON request to store an object in Kryptnostic services.
+  # Author: rbuckheit
+  #
   class StorageRequest
 
     constructor: (opts) ->

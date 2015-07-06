@@ -1,4 +1,4 @@
-define 'soteria.pending-object-request', [
+define 'soteria.sharing-request', [
   'require'
   'lodash'
   'soteria.schema.pending-object-request'
@@ -6,22 +6,22 @@ define 'soteria.pending-object-request', [
 ], (require) ->
 
   _         = require 'lodash'
-  SCHEMA    = require 'soteria.schema.pending-object-request'
+  SCHEMA    = require 'soteria.schema.sharing-request'
   validator = require 'soteria.schema.validator'
 
   DEFAULT_OPTS = {}
 
   #
-  # JSON request to create a pending object in Kryptnostic services.
+  # JSON request to share an object in Kryptnostic services.
   # Author: rbuckheit
   #
-  class PendingObjectRequest
+  class SharingRequest
 
     constructor : (opts) ->
       _.extend(this, opts, DEFAULT_OPTS)
       @validate()
 
     validate : () ->
-      validator.validate(this, PendingObjectRequest, SCHEMA)
+      validator.validate(this, SharingRequest, SCHEMA)
 
-  return PendingObjectRequest
+  return SharingRequest

@@ -4,3 +4,4 @@ break down spec.js
 URL providers and cred providers
 commit hook run tests
 coffee linter
+real logger

@@ -1,11 +1,11 @@
 define 'soteria.password-crypto-service', [
   'require',
-  'forge.min',
+  'forge',
   'soteria.abstract-crypto-service'
 ], (require) ->
   'use strict'
 
-  Forge                 = require('forge.min')
+  Forge                 = require('forge')
   AbstractCryptoService = require('soteria.abstract-crypto-service')
 
   DEFAULT_ALGORITHM     = 'AES'

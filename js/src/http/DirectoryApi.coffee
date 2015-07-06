@@ -1,7 +1,7 @@
 define 'soteria.directory-api', [
   'require'
   'jquery'
-  'forge.min'
+  'forge'
   'soteria.security-utils'
   'soteria.logger'
 ], (require) ->
@@ -9,7 +9,7 @@ define 'soteria.directory-api', [
   jquery             = require 'jquery'
   SecurityUtils      = require 'soteria.security-utils'
   Logger             = require 'soteria.logger'
-  Forge              = require 'forge.min'
+  Forge              = require 'forge'
 
   CRYPTO_SERVICE_URL = 'http://localhost:8081/v1/directory/object'
   PRIVATE_KEY_URL    = 'http://localhost:8081/v1/directory/private'
@@ -22,7 +22,7 @@ define 'soteria.directory-api', [
 
   validateCrytpoServiceByteBuffer = (byteBufferStr) ->
     if not _.isString(byteBufferStr) or _.isEmpty(byteBufferStr)
-      throw new Error('cryptoservice byte buffer cannot be qempty or non-string')
+      throw new Error('cryptoservice byte buffer cannot be empty or non-string')
 
   #
   # HTTP calls for the /directory endpoint of Kryptnostic services.

@@ -1,12 +1,12 @@
 define 'soteria.aes-crypto-service', [
   'require',
-  'forge.min',
+  'forge',
   'soteria.abstract-crypto-service'
   'soteria.logger'
 ], (require) ->
   'use strict';
 
-  Forge                 = require('forge.min');
+  Forge                 = require('forge');
   AbstractCryptoService = require('soteria.abstract-crypto-service');
   Logger                = require('soteria.logger')
 

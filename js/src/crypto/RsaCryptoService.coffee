@@ -1,10 +1,10 @@
 define 'soteria.rsa-crypto-service', [
   'require',
-  'forge.min'
+  'forge'
 ], (require) ->
   'use strict';
 
-  Forge = require('forge.min');
+  Forge = require('forge');
 
   #
   # Author: nickdhewitt, rbuckheit

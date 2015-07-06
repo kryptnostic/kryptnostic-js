@@ -8,7 +8,7 @@
     findNestedDependencies : true,
     paths                  : {
       'require'     : '../../bower_components/requirejs/require',
-      'forge.min'   : '../../bower_components/forge/js/forge.min',
+      'forge'       : '../../bower_components/forge/js/forge.min',
       'jquery'      : '../../bower_components/jquery/dist/jquery',
       'pako'        : '../../bower_components/pako/dist/pako',
       'lodash'      : '../../bower_components/lodash/lodash',

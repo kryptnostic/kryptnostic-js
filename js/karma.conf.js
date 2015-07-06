@@ -12,13 +12,10 @@ module.exports = function(config) {
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
     frameworks: ['jasmine', 'requirejs'],
 
-
     // list of files / patterns to load in the browser
     files: [
       'test/test-main.js',
       '../build/soteria.js',
-      { pattern: 'src/*.js',            included: false },
-      { pattern: 'lib/*.js',            included: false },
       { pattern: 'test/**/*.js',        included: false },
       { pattern: 'test/**/*.coffee',    included: false }
     ],
@@ -35,7 +32,7 @@ module.exports = function(config) {
 
     coffeePreprocessor: {
       options: {
-        bare      : true,
+        bare      : false,
         sourceMap : false
       },
       transformPath: function(path) {

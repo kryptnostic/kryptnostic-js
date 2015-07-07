@@ -10,7 +10,6 @@ define 'soteria.sharing-client', [
   'soteria.rsa-compressing-encryption-service'
 ], (require) ->
 
-
   _                               = require 'lodash'
   Promise                         = require 'bluebird'
   Logger                          = require 'soteria.logger'

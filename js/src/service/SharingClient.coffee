@@ -51,7 +51,7 @@ define 'soteria.sharing-client', [
       realm               = 'krypt'
       sharingKey          = ''
 
-      cryptoServiceLoader.getObjectCryptoService(id)
+      return cryptoServiceLoader.getObjectCryptoService(id)
       .then (cryptoService) =>
         promiseMap = _.mapValues(_.object(usernames), (empty, username) =>
           return Promise.resolve(@directoryApi.getPublicKey(username))
@@ -76,8 +76,6 @@ define 'soteria.sharing-client', [
           logger.warn('sharing request will be sent with an empty sharing key')
           sharingRequest = new SharingRequest({id, users : seals, sharingKey})
           @sharingApi.shareObject(sharingRequest)
-
-      throw new Error 'unimplemented'
 
     revokeObject: (id, userKeys) ->
       throw new Error 'unimplemented'

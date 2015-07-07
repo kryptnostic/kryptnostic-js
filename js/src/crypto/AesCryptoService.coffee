@@ -4,11 +4,11 @@ define 'soteria.aes-crypto-service', [
   'soteria.abstract-crypto-service'
   'soteria.logger'
 ], (require) ->
-  'use strict';
+  'use strict'
 
-  Forge                 = require('forge');
-  AbstractCryptoService = require('soteria.abstract-crypto-service');
-  Logger                = require('soteria.logger')
+  Forge                 = require 'forge'
+  AbstractCryptoService = require 'soteria.abstract-crypto-service'
+  Logger                = require 'soteria.logger'
 
   logger = Logger.get('AesCryptoService')
 
@@ -24,7 +24,7 @@ define 'soteria.aes-crypto-service', [
     constructor: (@cypher, @key) ->
       if not @key
         logger.info('no key passed! generating a key.')
-        @key = Forge.random.getBytesSync(cypher.keySize / BITS_PER_BYTE);
+        @key = Forge.random.getBytesSync(cypher.keySize / BITS_PER_BYTE)
       @abstractCryptoService = new AbstractCryptoService(cypher)
 
     encrypt: (plaintext) ->
@@ -38,6 +38,8 @@ define 'soteria.aes-crypto-service', [
       }
 
     decrypt: (blockCiphertext) ->
-      return @abstractCryptoService.decrypt(@key, atob(blockCiphertext.iv), atob(blockCiphertext.contents))
+      iv       = atob(blockCiphertext.iv)
+      contents = atob(blockCiphertext.contents)
+      return @abstractCryptoService.decrypt(@key, iv, contents)
 
   return AesCryptoService

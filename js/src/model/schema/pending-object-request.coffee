@@ -1,7 +1,7 @@
- define 'soteria.schema.pending-object-request', [], (require) ->
+define 'soteria.schema.pending-object-request', [], (require) ->
 
   SCHEMA = {
-    properties: {
+    properties : {
       type : {
         description : 'the type of object being stored'
         type        : 'string'

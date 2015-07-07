@@ -36,7 +36,9 @@ define 'soteria.block-encryption-service', [
         name        = cryptoService.encrypt(className)
         verify      = VERIFY_HASH_FUNCTION(block.contents)
         last        = (index == chunks.length - 1)
-        strategy    = {'@class': 'com.kryptnostic.kodex.v1.serialization.crypto.DefaultChunkingStrategy'}
+        strategy    = {
+          '@class': 'com.kryptnostic.kodex.v1.serialization.crypto.DefaultChunkingStrategy'
+        }
         timeCreated = new Date().getTime()
 
         block = { block, name, verify, index, last, strategy, timeCreated }

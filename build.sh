@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# fail if anything goes wrong
-set -e
+#
+# Builds the distribution file soteria.js.
+# Author: rbuckheit
+#
 
-echo "running commit hooks..."
-./commit-hooks.rb
+set -e;
 
 echo "compiling libraries..."
 if [ -e bower_components/forge/js/forge.min.js ];
@@ -29,8 +30,8 @@ rm -rfv build/*;
 echo ""
 if [[ $@ != **--minify** ]]; then
   echo "running development build (no minification)..."
-  r.js -o build.js out=build/soteria.js optimize=none
+  ./node_modules/requirejs/bin/r.js -o build.js out=build/soteria.js optimize=none
 else
   echo "running minified build..."
-  r.js -o build.js out=build/soteria.min.js optimize=uglify
+  ./node_modules/requirejs/bin/r.js -o build.js out=build/soteria.min.js optimize=uglify
 fi

@@ -13,7 +13,8 @@ JS_LIB_EXPORTS = [
   'pako',
   'jquery',
   'lodash',
-  'revalidator'
+  'revalidator',
+  'bluebird'
 ]
 
 EXPORT_FILE_PATH = 'js/src/soteria.coffee'

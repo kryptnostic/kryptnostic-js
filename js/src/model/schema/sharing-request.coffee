@@ -4,7 +4,7 @@ define 'soteria.schema.sharing-request', [], (require) ->
     properties: {
       id : {
         description : 'id of the object being shared'
-        type        : 'number'
+        type        : 'string'
         required    : false
         allowEmpty  : false
       },
@@ -17,8 +17,8 @@ define 'soteria.schema.sharing-request', [], (require) ->
       sharingKey : {
         description : 'the document sharing key'
         type        : 'string'
-        required    : true
-        allowEmpty  : false
+        required    : false
+        allowEmpty  : true
       }
     }
   }

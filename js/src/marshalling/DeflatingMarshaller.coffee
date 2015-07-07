@@ -61,3 +61,5 @@ define 'soteria.deflating-marshaller', [
         throw new Error 'verifying byte count failed'
 
       return inflatedBytes
+
+  return DeflatingMarshaller

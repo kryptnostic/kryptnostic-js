@@ -11,7 +11,7 @@ define 'soteria.rsa-crypto-service', [
   #
   class RsaCryptoService
 
-    # args are forge public and private key objects
+    # construct from forge public and private key objects
     constructor: (@privateKey, @publicKey) ->
 
     encrypt: (plaintext) ->

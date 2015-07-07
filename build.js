@@ -7,11 +7,12 @@
     wrap                   : false,
     findNestedDependencies : true,
     paths                  : {
-      'require'     : '../../bower_components/requirejs/require',
+      'bluebird'    : '../../bower_components/bluebird/js/browser/bluebird',
       'forge'       : '../../bower_components/forge/js/forge.min',
       'jquery'      : '../../bower_components/jquery/dist/jquery',
-      'pako'        : '../../bower_components/pako/dist/pako',
       'lodash'      : '../../bower_components/lodash/lodash',
+      'pako'        : '../../bower_components/pako/dist/pako',
+      'require'     : '../../bower_components/requirejs/require',
       'revalidator' : '../../node_modules/revalidator/lib/revalidator',
     },
     packages : [

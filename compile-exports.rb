@@ -5,8 +5,6 @@
 # Author: rbuckheit
 #
 
-require 'json'
-
 JS_LIB_EXPORTS = [
   'require',
   'forge',

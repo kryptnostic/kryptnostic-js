@@ -61,8 +61,8 @@ define 'soteria.sharing-client', [
           )
         .then (userServicesMap) =>
           seals = _.mapValues(userServicesMap, (rsaCompService, username) =>
-            marshalled = @cryptoServiceMarshaller.marshall(cryptoService)
-            return rsaCompService.encrypt(marshalled)
+            marshalledCryptoService = @cryptoServiceMarshaller.marshall(cryptoService)
+            return rsaCompService.encrypt(marshalledCryptoService)
           )
           logger.info('seals', seals)
 

@@ -23,7 +23,6 @@ define 'soteria.public-key-envelope', [
         throw new Error 'no public key defined!'
 
     toRsaPublicKey: ->
-
       publicKeyBuffer = Forge.util.createBuffer(@publicKey, 'raw')
       publicKeyAsn1   = Forge.asn1.fromDer(publicKeyBuffer)
       publicKey       = Forge.pki.publicKeyFromAsn1(publicKeyAsn1)

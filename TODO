@@ -3,7 +3,6 @@ unit tests
 break down spec.js
 URL providers and cred providers
 commit hook run tests
-coffee linter
 real logger
 remove hard coded usernames and urls
 tests running on CI

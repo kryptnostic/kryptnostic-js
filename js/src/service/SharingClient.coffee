@@ -4,6 +4,7 @@ define 'soteria.sharing-client', [
   'bluebird'
   'soteria.logger'
   'soteria.sharing-api'
+  'soteria.sharing-request'
   'soteria.crypto-service-loader'
   'soteria.crypto-service-marshaller'
   'soteria.rsa-compressing-encryption-service'
@@ -15,6 +16,7 @@ define 'soteria.sharing-client', [
   Logger                          = require 'soteria.logger'
   SharingApi                      = require 'soteria.sharing-api'
   DirectoryApi                    = require 'soteria.directory-api'
+  SharingRequest                  = require 'soteria.sharing-request'
   CryptoServiceLoader             = require 'soteria.crypto-service-loader'
   CryptoServiceMarshaller         = require 'soteria.crypto-service-marshaller'
   RsaCompressingEncryptionService = require 'soteria.rsa-compressing-encryption-service'
@@ -44,7 +46,10 @@ define 'soteria.sharing-client', [
       validateId(id)
       validateUsernames(usernames)
 
-      cryptoServiceLoader = new CryptoServiceLoader('demo') # TODO
+      # TODO: fix hard coding
+      cryptoServiceLoader = new CryptoServiceLoader('demo')
+      realm               = 'krypt'
+      sharingKey          = ''
 
       cryptoServiceLoader.getObjectCryptoService(id)
       .then (cryptoService) =>
@@ -54,17 +59,23 @@ define 'soteria.sharing-client', [
 
         Promise.props(promiseMap)
         .then (userKeysMap) =>
-          logger.info('userKeysMap', userKeysMap)
-          return _.mapValues(userKeysMap, (keyEnvelope, username) =>
-            publicKey = keyEnvelope.toRsaPublicKey()
-            return new RsaCompressingEncryptionService(keyEnvelope)
-          )
-        .then (userServicesMap) =>
-          seals = _.mapValues(userServicesMap, (rsaCompService, username) =>
-            marshalledCryptoService = @cryptoServiceMarshaller.marshall(cryptoService)
-            return rsaCompService.encrypt(marshalledCryptoService)
-          )
+          seals = _.chain(userKeysMap)
+            .mapValues((keyEnvelope, username) =>
+              rsaCompressingService = new RsaCompressingEncryptionService(keyEnvelope.toRsaPublicKey())
+              marshalledCrypto      = @cryptoServiceMarshaller.marshall(cryptoService)
+              seal                  = rsaCompressingService.encrypt(marshalledCrypto)
+              sealBase64            = btoa(seal)
+              return sealBase64
+            )
+            .mapKeys((seal, username) =>
+              return "#{realm}|#{username}"
+            )
+            .value()
+
           logger.info('seals', seals)
+          logger.warn('sharing request will be sent with an empty sharing key')
+          sharingRequest = new SharingRequest({id, users : seals, sharingKey})
+          @sharingApi.shareObject(sharingRequest)
 
       throw new Error 'unimplemented'
 

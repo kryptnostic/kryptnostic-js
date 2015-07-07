@@ -1,7 +1,7 @@
 define 'soteria.sharing-request', [
   'require'
   'lodash'
-  'soteria.schema.pending-object-request'
+  'soteria.schema.sharing-request'
   'soteria.schema.validator'
 ], (require) ->
 

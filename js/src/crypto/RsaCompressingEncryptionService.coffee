@@ -2,10 +2,12 @@ define 'soteria.rsa-compressing-encryption-service', [
   'require'
   'forge'
   'soteria.crypto-algorithm'
+  'soteria.deflating-marshaller'
 ], (require) ->
 
-  CryptoAlgorithm = require 'soteria.crypto-algorithm'
-  Forge           = require 'forge'
+  Forge               = require 'forge'
+  CryptoAlgorithm     = require 'soteria.crypto-algorithm'
+  DeflatingMarshaller = require 'soteria.deflating-marshaller'
 
   #
   # Public-key based encrypting service used to encrypt other keys.
@@ -13,16 +15,16 @@ define 'soteria.rsa-compressing-encryption-service', [
   #
   # Author: rbuckheit
   #
-
   class RsaCompressingEncryptionService
 
-    constructor: (@cypher, @publicKey) ->
-      unless @cypher is CryptoAlgorithm.RSA
-        throw new Error 'Only RSA is supported for this service.'
+    constructor: (@publicKey) ->
+      @cypher     = CryptoAlgorithm.RSA
+      @marshaller = new DeflatingMarshaller()
 
-    encrypt: (plaintext) ->
-      # TODO deflate
-      ciphertext = @publicKey.encrypt(plaintext, 'RSA-OAEP', {
-        md : Forge.md.sha1.create()
-      })
+    encrypt: (data) ->
+      deflated   = @marshaller.marshall(data)
+      md         = Forge.md.sha1.create()
+      ciphertext = @publicKey.encrypt(deflated, 'RSA-OAEP', { md })
       return ciphertext
+
+  return RsaCompressingEncryptionService

@@ -3,16 +3,19 @@ define 'soteria.directory-api', [
   'jquery'
   'forge'
   'soteria.security-utils'
+  'soteria.public-key-envelope'
   'soteria.logger'
 ], (require) ->
 
   jquery             = require 'jquery'
   SecurityUtils      = require 'soteria.security-utils'
   Logger             = require 'soteria.logger'
+  PublicKeyEnvelope  = require 'soteria.public-key-envelope'
   Forge              = require 'forge'
 
   CRYPTO_SERVICE_URL = 'http://localhost:8081/v1/directory/object'
   PRIVATE_KEY_URL    = 'http://localhost:8081/v1/directory/private'
+  PUBLIC_KEY_URL     = 'http://localhost:8081/v1/directory/public'
 
   logger             = Logger.get('DirectoryApi')
 
@@ -67,5 +70,15 @@ define 'soteria.directory-api', [
       .then (response) ->
         logger.debug('getRsaKeys', {response})
         return response
+
+    # gets the public key of a user in the same realm as the caller.
+    getPublicKey: (username) ->
+      return jquery.ajax(SecurityUtils.wrapRequest({
+        url  : PUBLIC_KEY_URL + '/' + username
+        type : 'GET'
+      }))
+      .then (response) ->
+        logger.debug('getPublicKey', {response})
+        return new PublicKeyEnvelope(response)
 
   return DirectoryApi

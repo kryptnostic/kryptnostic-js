@@ -11,7 +11,6 @@ define 'soteria.password-crypto-service', [
   DEFAULT_ALGORITHM     = 'AES'
   DEFAULT_MODE          = 'CTR'
 
-
   derive = (password, salt, iterations, keySize) ->
     md = Forge.sha1.create();
     return Forge.pkcs5.pbkdf2(password, salt, iterations, keySize, md);
@@ -23,7 +22,7 @@ define 'soteria.password-crypto-service', [
 
     @BLOCK_CIPHER_ITERATIONS : 128
 
-    @BLOCK_CIPHER_KEY_SIZE  : 16
+    @BLOCK_CIPHER_KEY_SIZE   : 16
 
     constructor: (@password) ->
       @abstractCryptoService = new AbstractCryptoService({ algorithm: DEFAULT_ALGORITHM, mode: DEFAULT_MODE })

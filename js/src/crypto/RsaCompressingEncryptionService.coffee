@@ -18,7 +18,6 @@ define 'soteria.rsa-compressing-encryption-service', [
   class RsaCompressingEncryptionService
 
     constructor: (@publicKey) ->
-      @cypher     = CryptoAlgorithm.RSA
       @marshaller = new DeflatingMarshaller()
 
     encrypt: (data) ->

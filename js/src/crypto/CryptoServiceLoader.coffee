@@ -38,28 +38,28 @@ define 'soteria.crypto-service-loader', [
     constructor: (password) ->
       @directoryApi            = new DirectoryApi()
       @passwordCryptoService   = new PasswordCryptoService(password)
-      @cryptoServiceMarshaller = new CryptoServiceMarshaller()
+      @marshaller = new CryptoServiceMarshaller()
       @rsaCryptoService        = undefined
 
     getPasswordCryptoService: ->
       return @passwordCryptoService
 
     getRsaCryptoService: ->
-      deferred = new jquery.Deferred();
+      deferred = new jquery.Deferred()
 
       unless @rsaCryptoService?
         @loadRsaKeys().then((keypair) =>
-          @rsaCryptoService = new RsaCryptoService(keypair.privateKey, keypair.publicKey);
-          deferred.resolve(@rsaCryptoService);
+          @rsaCryptoService = new RsaCryptoService(keypair.privateKey, keypair.publicKey)
+          deferred.resolve(@rsaCryptoService)
         )
       else
-        deferred.resolve(@rsaCryptoService);
+        deferred.resolve(@rsaCryptoService)
 
-      return deferred.promise();
+      return deferred.promise()
 
     # TODO failure flag
     getObjectCryptoService: (id) ->
-      deferred              = new jquery.Deferred();
+      deferred              = new jquery.Deferred()
 
       jquery.when(
         @getRsaCryptoService(),
@@ -72,16 +72,16 @@ define 'soteria.crypto-service-loader', [
           @setObjectCryptoService( id, cryptoService )
           deferred.resolve(cryptoService)
         else
-          objectCryptoService = @cryptoServiceMarshaller.unmarshall(serializedCryptoService, rsaCryptoService)
-          deferred.resolve(objectCryptoService);
+          objectCryptoService = @marshaller.unmarshall(serializedCryptoService, rsaCryptoService)
+          deferred.resolve(objectCryptoService)
 
-      return deferred.promise();
+      return deferred.promise()
 
     setObjectCryptoService: (id, cryptoService) ->
       unless cryptoService.constructor.name is 'AesCryptoService'
         throw new Error('serialization only implemented for AesCryptoService')
 
-      marshalled = @cryptoServiceMarshaller.marshall(cryptoService)
+      marshalled = @marshaller.marshall(cryptoService)
 
       @getRsaCryptoService()
       .then (rsaCryptoService) =>
@@ -89,7 +89,7 @@ define 'soteria.crypto-service-loader', [
         return @directoryApi.setObjectCryptoService(id, encryptedCryptoService)
 
     loadRsaKeys: ->
-      deferred = new jquery.Deferred();
+      deferred = new jquery.Deferred()
       request  = @directoryApi.getRsaKeys()
 
       resolveRsaKeys = (blockCiphertext) =>
@@ -101,8 +101,8 @@ define 'soteria.crypto-service-loader', [
 
         deferred.resolve({privateKey, publicKey})
 
-      request.done(resolveRsaKeys);
-      request.fail( -> deferred.reject() );
-      return deferred.promise();
+      request.done(resolveRsaKeys)
+      request.fail( -> deferred.reject() )
+      return deferred.promise()
 
-  return CryptoServiceLoader;
+  return CryptoServiceLoader

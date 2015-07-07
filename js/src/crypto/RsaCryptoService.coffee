@@ -2,9 +2,9 @@ define 'soteria.rsa-crypto-service', [
   'require',
   'forge'
 ], (require) ->
-  'use strict';
+  'use strict'
 
-  Forge = require('forge');
+  Forge = require 'forge'
 
   #
   # Author: nickdhewitt, rbuckheit
@@ -26,4 +26,4 @@ define 'soteria.rsa-crypto-service', [
       })
       return plaintext
 
-  return RsaCryptoService;
+  return RsaCryptoService

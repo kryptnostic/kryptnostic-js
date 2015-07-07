@@ -47,7 +47,7 @@ define 'soteria.object-api', [
         type : 'GET'
       }))
       .then (data) ->
-        return KryptnosticObject.createFromEncrypted(data);
+        return KryptnosticObject.createFromEncrypted(data)
 
     # get all object ids of a particular type
     getObjectIdsByType: (type) ->
@@ -83,7 +83,7 @@ define 'soteria.object-api', [
         type : 'PUT'
       }))
       .then (response) ->
-        logger.debug('created pending from existing', response);
+        logger.debug('created pending from existing', response)
         return response.data
 
     # adds an encrypted block to a pending object

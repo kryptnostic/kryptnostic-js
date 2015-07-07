@@ -60,13 +60,14 @@ define 'soteria.sharing-client', [
         .then (userKeysMap) =>
           seals = _.chain(userKeysMap)
             .mapValues((keyEnvelope, username) =>
-              rsaCompressingService = new RsaCompressingEncryptionService(keyEnvelope.toRsaPublicKey())
+              publicKey             = keyEnvelope.toRsaPublicKey()
+              rsaCompressingService = new RsaCompressingEncryptionService(publicKey)
               marshalledCrypto      = @cryptoServiceMarshaller.marshall(cryptoService)
               seal                  = rsaCompressingService.encrypt(marshalledCrypto)
               sealBase64            = btoa(seal)
               return sealBase64
             )
-            .mapKeys((seal, username) =>
+            .mapKeys((seal, username) ->
               return "#{realm}|#{username}"
             )
             .value()

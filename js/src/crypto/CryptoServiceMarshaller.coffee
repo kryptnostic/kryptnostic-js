@@ -37,7 +37,7 @@ define 'soteria.crypto-service-marshaller', [
       objectCryptoService       = new AesCryptoService(
         decompressedCryptoService.cypher,
         atob(decompressedCryptoService.key)
-      );
+      )
 
       return objectCryptoService
 

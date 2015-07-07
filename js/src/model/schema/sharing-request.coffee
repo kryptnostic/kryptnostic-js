@@ -9,7 +9,7 @@ define 'soteria.schema.sharing-request', [], (require) ->
         allowEmpty  : false
       },
       users : {
-        description : 'map of userKey to encrypted bytes containing rsa compressing encryption service'
+        description : 'map of userKey to encrypted bytes containing RsaCompressingEncryptionService'
         type        : 'object'
         required    : false
         allowEmpty  : false

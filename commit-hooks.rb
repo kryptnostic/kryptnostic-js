@@ -28,10 +28,7 @@ COMMIT_HOOKS.each do |hook|
   command = "grep -r -I \"#{hook[:pattern]}\" #{SEARCH_PATH} --include=\"#{hook[:file_pattern]}\""
   puts command
 
-  violations = `#{command}`
-    .split("\n")
-    .map(&:chomp)
-    .reject {|line| line.match(hook[:exception])}
+  violations = `#{command}`.split("\n").map(&:chomp).reject{|line| line.match(hook[:exception])}
 
   violations.each do |violation|
     $stderr.puts "FAILED pattern '#{hook[:name]}'"

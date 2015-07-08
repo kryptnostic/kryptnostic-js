@@ -1,4 +1,3 @@
-
 define [
   'require',
   'forge',

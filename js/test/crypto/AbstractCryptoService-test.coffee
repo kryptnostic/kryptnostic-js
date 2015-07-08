@@ -1,4 +1,3 @@
-
 define [
   'require'
   'soteria.abstract-crypto-service'

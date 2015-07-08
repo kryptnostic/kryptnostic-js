@@ -15,12 +15,12 @@ find js -name *.coffee | xargs ./node_modules/coffeelint/bin/coffeelint;
 # commit hooks
 # ============
 echo "running commit hooks..."
-./commit-hooks.rb
+./commit-hooks.rb;
 
 # r.js build
 # ==========
 echo "building soteria.js...";
-./build.sh --fast;
+./build.sh;
 
 # karma tests
 # ===========

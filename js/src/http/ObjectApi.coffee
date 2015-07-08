@@ -1,18 +1,19 @@
 define 'soteria.object-api', [
   'require'
   'jquery'
-  'soteria.security-utils'
+  'soteria.configuration'
   'soteria.kryptnostic-object'
   'soteria.logger'
+  'soteria.security-utils'
 ], (require) ->
 
   jquery            = require 'jquery'
   SecurityUtils     = require 'soteria.security-utils'
   KryptnosticObject = require 'soteria.kryptnostic-object'
   Logger            = require 'soteria.logger'
+  Config            = require 'soteria.configuration'
 
-  OBJECT_URL        = 'http://localhost:8081/v1/object'
-  TYPE_PATH         = '/type'
+  objectUrl         = -> Config.get('servicesUrl') + '/object'
 
   logger            = Logger.get('ObjectApi')
 
@@ -32,7 +33,7 @@ define 'soteria.object-api', [
     # get all object ids accessible to the user
     getObjectIds : ->
       jquery.ajax(SecurityUtils.wrapRequest({
-        url  : OBJECT_URL
+        url  : objectUrl()
         type : 'GET'
       }))
       .then (response) ->
@@ -43,7 +44,7 @@ define 'soteria.object-api', [
       validateId(id)
 
       jquery.ajax(SecurityUtils.wrapRequest({
-        url  : OBJECT_URL + '/' + id
+        url  : objectUrl() + '/' + id
         type : 'GET'
       }))
       .then (data) ->
@@ -54,7 +55,7 @@ define 'soteria.object-api', [
       validateType(type)
 
       jquery.ajax(SecurityUtils.wrapRequest({
-        url  : OBJECT_URL + TYPE_PATH + '/' + type
+        url  : objectUrl() + '/type/' + type
         type : 'GET'
       }))
       .then (response) ->
@@ -65,7 +66,7 @@ define 'soteria.object-api', [
       pendingRequest.validate()
 
       jquery.ajax(SecurityUtils.wrapRequest({
-        url         : OBJECT_URL + '/'
+        url         : objectUrl() + '/'
         type        : 'PUT'
         contentType : 'application/json'
         data        : JSON.stringify(pendingRequest)
@@ -79,7 +80,7 @@ define 'soteria.object-api', [
       validateId(id)
 
       jquery.ajax(SecurityUtils.wrapRequest({
-        url  : OBJECT_URL + '/' + id
+        url  : objectUrl() + '/' + id
         type : 'PUT'
       }))
       .then (response) ->
@@ -91,7 +92,7 @@ define 'soteria.object-api', [
       validateId(id)
 
       jquery.ajax(SecurityUtils.wrapRequest({
-        url         : OBJECT_URL + '/' + id
+        url         : objectUrl() + '/' + id
         type        : 'POST'
         contentType : 'application/json'
         data        : JSON.stringify(encryptableBlock)

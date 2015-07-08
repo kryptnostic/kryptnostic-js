@@ -30,7 +30,7 @@ define 'soteria.object-metadata', [
   class ObjectMetadata
 
     constructor : (opts) ->
-      _.extend(this, opts, getDefaultOpts())
+      _.extend(this, getDefaultOpts(), opts)
       @validate()
 
     validate : =>

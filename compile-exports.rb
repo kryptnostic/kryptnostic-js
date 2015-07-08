@@ -6,13 +6,14 @@
 #
 
 JS_LIB_EXPORTS = [
-  'require',
+  'bluebird',
   'forge',
-  'pako',
   'jquery',
   'lodash',
-  'revalidator',
-  'bluebird'
+  'loglevel',
+  'pako',
+  'require',
+  'revalidator'
 ]
 
 EXPORT_FILE_PATH = 'js/src/soteria.coffee'

@@ -2,20 +2,22 @@ define 'soteria.directory-api', [
   'require'
   'jquery'
   'forge'
-  'soteria.security-utils'
-  'soteria.public-key-envelope'
+  'soteria.configuration'
   'soteria.logger'
+  'soteria.public-key-envelope'
+  'soteria.security-utils'
 ], (require) ->
 
+  Forge              = require 'forge'
   jquery             = require 'jquery'
   SecurityUtils      = require 'soteria.security-utils'
   Logger             = require 'soteria.logger'
   PublicKeyEnvelope  = require 'soteria.public-key-envelope'
-  Forge              = require 'forge'
+  Configuration      = require 'soteria.configuration'
 
-  CRYPTO_SERVICE_URL = 'http://localhost:8081/v1/directory/object'
-  PRIVATE_KEY_URL    = 'http://localhost:8081/v1/directory/private'
-  PUBLIC_KEY_URL     = 'http://localhost:8081/v1/directory/public'
+  cryptoServiceUrl   = -> Configuration.get('servicesUrl') + '/directory/object'
+  privateKeyUrl      = -> Configuration.get('servicesUrl') + '/directory/private'
+  publicKeyUrl       = -> Configuration.get('servicesUrl') + '/directory/public'
 
   logger             = Logger.get('DirectoryApi')
 
@@ -38,7 +40,7 @@ define 'soteria.directory-api', [
       validateId(objectId)
 
       return jquery.ajax(SecurityUtils.wrapRequest({
-        url  : CRYPTO_SERVICE_URL + '/' + objectId
+        url  : cryptoServiceUrl() + '/' + objectId
         type : 'GET'
       }))
       .then (response) ->
@@ -52,7 +54,7 @@ define 'soteria.directory-api', [
       validateCrytpoServiceByteBuffer(byteBufferStr)
 
       return jquery.ajax(SecurityUtils.wrapRequest({
-        url         : CRYPTO_SERVICE_URL + '/' + objectId
+        url         : cryptoServiceUrl() + '/' + objectId
         type        : 'POST'
         data        : JSON.stringify({data: btoa(byteBufferStr)})
         contentType : 'application/json'
@@ -64,7 +66,7 @@ define 'soteria.directory-api', [
     # gets encrypted RSA private keys for the current user
     getRsaKeys: ->
       return jquery.ajax(SecurityUtils.wrapRequest({
-        url  : PRIVATE_KEY_URL
+        url  : privateKeyUrl()
         type : 'GET'
       }))
       .then (response) ->
@@ -74,7 +76,7 @@ define 'soteria.directory-api', [
     # gets the public key of a user in the same realm as the caller.
     getPublicKey: (username) ->
       return jquery.ajax(SecurityUtils.wrapRequest({
-        url  : PUBLIC_KEY_URL + '/' + username
+        url  : publicKeyUrl() + '/' + username
         type : 'GET'
       }))
       .then (response) ->

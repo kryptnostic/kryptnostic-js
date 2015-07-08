@@ -67,7 +67,7 @@ define 'soteria.crypto-service-loader', [
       ).then (rsaCryptoService, serializedCryptoService) =>
 
         if !serializedCryptoService
-          logger.log('no cryptoService exists for this object. creating one on-the-fly', {id})
+          logger.info('no cryptoService exists for this object. creating one on-the-fly', {id})
           cryptoService = new AesCryptoService( Cypher.AES_CTR_128 )
           @setObjectCryptoService( id, cryptoService )
           deferred.resolve(cryptoService)

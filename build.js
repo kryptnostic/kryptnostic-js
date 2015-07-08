@@ -13,7 +13,8 @@
       'lodash'      : '../../bower_components/lodash/lodash',
       'pako'        : '../../bower_components/pako/dist/pako',
       'require'     : '../../bower_components/requirejs/require',
-      'revalidator' : '../../node_modules/revalidator/lib/revalidator',
+      'loglevel'    : '../../bower_components/loglevel/dist/loglevel',
+      'revalidator' : '../../node_modules/revalidator/lib/revalidator'
     },
     packages : [
       {

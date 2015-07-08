@@ -18,7 +18,7 @@ define 'soteria.sharing-request', [
   class SharingRequest
 
     constructor : (opts) ->
-      _.extend(this, opts, DEFAULT_OPTS)
+      _.extend(this, DEFAULT_OPTS, opts)
       @validate()
 
     validate : () ->

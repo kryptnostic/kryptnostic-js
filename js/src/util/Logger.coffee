@@ -1,7 +1,17 @@
-define 'soteria.logger', [], (require) ->
+define 'soteria.logger', [
+  'require'
+  'loglevel'
+], (require) ->
+
+  # log configuration
+  # =================
+
+  log     = require 'loglevel'
+  PERSIST = true
+  log.setLevel('trace', PERSIST)
 
   #
-  # Logger which prevents log calls to Console in IE.
+  # Proxy logger which appends module names before logging.
   # Author: rbuckheit
   #
   class Logger
@@ -11,24 +21,24 @@ define 'soteria.logger', [], (require) ->
 
     constructor : (@moduleName) ->
 
-    log : (message, args...) ->
+    trace : (message, args...) ->
       args = args.map(JSON.stringify)
-      window.console && console.log("[#{@moduleName}] #{message} #{args}")
+      log.trace("[#{@moduleName}] #{message} #{args}")
 
     info : (message, args...) ->
       args = args.map(JSON.stringify)
-      window.console && console.info("[#{@moduleName}] #{message} #{args}")
+      log.info("[#{@moduleName}] #{message} #{args}")
 
     warn : (message, args...) ->
       args = args.map(JSON.stringify)
-      window.console && console.warn("[#{@moduleName}] #{message} #{args}")
+      log.warn("[#{@moduleName}] #{message} #{args}")
 
     error : (message, args...) ->
       args = args.map(JSON.stringify)
-      window.console && console.error("[#{@moduleName}] #{message} #{args}")
+      log.error("[#{@moduleName}] #{message} #{args}")
 
     debug: (message, args...) ->
       args = args.map(JSON.stringify)
-      window.console && console.debug("[#{@moduleName}] #{message} #{args}")
+      log.debug("[#{@moduleName}] #{message} #{args}")
 
   return Logger

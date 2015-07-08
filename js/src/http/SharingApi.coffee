@@ -1,6 +1,7 @@
 define 'soteria.sharing-api', [
   'require'
   'jquery'
+  'soteria.configuration'
   'soteria.security-utils'
   'soteria.logger'
 ], (require) ->
@@ -8,8 +9,10 @@ define 'soteria.sharing-api', [
   jquery            = require 'jquery'
   SecurityUtils     = require 'soteria.security-utils'
   Logger            = require 'soteria.logger'
+  Config            = require 'soteria.configuration'
 
-  SHARING_URL       = 'http://localhost:8081/v1/share'
+  sharingUrl        = -> Config.get('servicesUrl') + '/share'
+
   TYPE_PATH         = '/type'
   SHARE_PATH        = '/share'
   REVOKE_PATH       = '/revoke'
@@ -27,7 +30,7 @@ define 'soteria.sharing-api', [
     # get all incoming shares
     getIncomingShares : ->
       jquery.ajax(SecurityUtils.wrapRequest({
-        url  : SHARING_URL + OBJECT_PATH
+        url  : sharingUrl() + OBJECT_PATH
         type : 'GET'
       }))
       .then (data) ->
@@ -38,7 +41,7 @@ define 'soteria.sharing-api', [
       sharingRequest.validate()
 
       jquery.ajax(SecurityUtils.wrapRequest({
-        url         : SHARING_URL + OBJECT_PATH + SHARE_PATH
+        url         : sharingUrl() + OBJECT_PATH + SHARE_PATH
         type        : 'POST'
         contentType : 'application/json'
         data        : JSON.stringify(sharingRequest)
@@ -52,7 +55,7 @@ define 'soteria.sharing-api', [
       revocationRequest.validate()
 
       jquery.ajax(SecurityUtils.wrapRequest({
-        url         : SHARING_URL + OBJECT_PATH + REVOKE_PATH
+        url         : sharingUrl() + OBJECT_PATH + REVOKE_PATH
         type        : 'POST'
         contentType : 'application/json'
         data        : JSON.stringify(revocationRequest)
@@ -66,7 +69,7 @@ define 'soteria.sharing-api', [
       keyRegistrationRequest.validate()
 
       jquery.ajax(SecurityUtils.wrapRequest({
-        url         : SHARING_URL + KEYS_PATH
+        url         : sharingUrl() + KEYS_PATH
         type        : 'POST'
         contentType : 'application/json'
         data        : JSON.stringify(keyRegistrationRequest)

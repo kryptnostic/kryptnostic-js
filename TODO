@@ -1,7 +1,2 @@
-package revalidator as an AMD module
-unit tests
-break down spec.js
-URL providers and cred providers
-real logger
-remove hard coded usernames and urls
-test coverage checking
+cred providers
+remove hard coded usernames

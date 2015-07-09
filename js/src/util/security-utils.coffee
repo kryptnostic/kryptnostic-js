@@ -1,19 +1,22 @@
-define 'soteria.security-utils', [], ->
+define 'soteria.security-utils', [
+  'require'
+  'soteria.credential-store'
+], (require) ->
   'use strict'
 
-  # TODO
+  CredentialStore = require 'soteria.credential-store'
 
   PRINCIPAL_COOKIE  = 'X-Kryptnostic-Principal'
   CREDENTIAL_COOKIE = 'X-Kryptnostic-Credential'
 
   wrapRequest = (request) ->
     request.beforeSend = (xhr) ->
-      # TODO: better cred storage strategy
-      principal  = sessionStorage.getItem('soteria.principal')
-      credential = sessionStorage.getItem('soteria.credential')
-
-      xhr.setRequestHeader(PRINCIPAL_COOKIE, principal)
-      xhr.setRequestHeader(CREDENTIAL_COOKIE, credential)
+      if CredentialStore.isInitialized()
+        {principal, credential} = CredentialStore.credentialProvider.load()
+        xhr.setRequestHeader(PRINCIPAL_COOKIE, principal)
+        xhr.setRequestHeader(CREDENTIAL_COOKIE, credential)
+      else
+        throw new Error 'user is not authenticated'
 
     return request
 

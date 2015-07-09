@@ -1,7 +1,6 @@
 define 'soteria.directory-api', [
   'require'
   'jquery'
-  'forge'
   'soteria.configuration'
   'soteria.logger'
   'soteria.public-key-envelope'
@@ -9,7 +8,6 @@ define 'soteria.directory-api', [
   'soteria.encrypted-block'
 ], (require) ->
 
-  Forge              = require 'forge'
   jquery             = require 'jquery'
   SecurityUtils      = require 'soteria.security-utils'
   Logger             = require 'soteria.logger'
@@ -86,11 +84,13 @@ define 'soteria.directory-api', [
         logger.debug('getPublicKey', {response})
         return new PublicKeyEnvelope(response)
 
+    # gets the user's encrypted salt.
+    # request is not wrapped because the user has not auth'ed yet.
     getSalt: ({username, realm}) ->
-      return jquery.ajax(SecurityUtils.wrapRequest({
+      return jquery.ajax({
         url  : saltUrl() + '/' + realm + '/' + username,
         type : 'GET'
-      }))
+      })
       .then (response) ->
         logger.info('getSalt', {response})
         return new EncryptedBlock(response)

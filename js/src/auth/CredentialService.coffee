@@ -3,7 +3,7 @@ define 'soteria.credential-service', [
   'forge'
   'soteria.directory-api'
   'soteria.password-crypto-service'
-], (require, forge, dirApi, pcs) ->
+], (require) ->
 
   Forge                 = require 'forge'
   DirectoryApi          = require 'soteria.directory-api'
@@ -28,22 +28,22 @@ define 'soteria.credential-service', [
     deriveCredential : ({username, password, realm}) ->
       iterations     = DEFAULT_ITERATIONS
       keySize        = DEFAULT_KEY_SIZE
-      passwordCrypto = new PasswordCryptoService(password)
+      passwordCrypto = new PasswordCryptoService()
 
       return @directoryApi.getSalt({username, realm})
       .then (encryptedSalt) ->
-        salt           = passwordCrypto.decrypt(encryptedSalt)
+        salt           = passwordCrypto.decrypt(encryptedSalt, password)
         md             = Forge.sha1.create()
         derived        = Forge.pkcs5.pbkdf2(password, salt, iterations, keySize, md)
         hexDerived     = Forge.util.bytesToHex(derived)
         return hexDerived
 
     deriveKeypair : ({password}) ->
-      passwordCrypto = new PasswordCryptoService(password)
+      passwordCrypto = new PasswordCryptoService()
 
       @directoryApi.getRsaKeys()
       .then (blockCiphertext) ->
-        privateKeyBytes  = passwordCrypto.decrypt(blockCiphertext)
+        privateKeyBytes  = passwordCrypto.decrypt(blockCiphertext, password)
         privateKeyBuffer = Forge.util.createBuffer(privateKeyBytes, 'raw')
         privateKeyAsn1   = Forge.asn1.fromDer(privateKeyBuffer)
         privateKey       = Forge.pki.privateKeyFromAsn1(privateKeyAsn1)

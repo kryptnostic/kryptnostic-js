@@ -1,7 +1,5 @@
 define 'soteria.schema.object-metadata', [], (require) ->
 
-  # TODO finish schema
-
   SCHEMA = {
     properties: {
       id               : { type: 'string' }

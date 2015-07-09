@@ -1,12 +1,10 @@
 define 'soteria.abstract-crypto-service', [
   'require'
-  'lodash'
   'forge'
   'soteria.crypto-algorithm'
 ], (require) ->
 
   Forge           = require 'forge'
-  _               = require 'lodash'
   CryptoAlgorithm = require 'soteria.crypto-algorithm'
 
   #

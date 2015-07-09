@@ -16,6 +16,7 @@ define 'soteria.password-crypto-service', [
     return Forge.pkcs5.pbkdf2(password, salt, iterations, keySize, md)
 
   #
+  # Crypto service which encrypts and decrypts using the user's password.
   # Author: nickdhewitt, rbuckheit
   #
   class PasswordCryptoService
@@ -24,18 +25,18 @@ define 'soteria.password-crypto-service', [
 
     @BLOCK_CIPHER_KEY_SIZE   : 16
 
-    constructor: (@password) ->
+    constructor: ->
       @abstractCryptoService = new AbstractCryptoService({
         algorithm : DEFAULT_ALGORITHM,
         mode      : DEFAULT_MODE
       })
 
-    encrypt: (plaintext) ->
+    encrypt: (plaintext, password) ->
       blockCipherKeySize    = PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE
       blockCipherIterations = PasswordCryptoService.BLOCK_CIPHER_ITERATIONS
 
       salt     = Forge.random.getBytesSync(blockCipherKeySize)
-      key      = derive(@password, salt, blockCipherIterations, blockCipherKeySize)
+      key      = derive(password, salt, blockCipherIterations, blockCipherKeySize)
       iv       = Forge.random.getBytesSync(blockCipherKeySize)
       contents = @abstractCryptoService.encrypt(key, iv, plaintext)
 
@@ -46,12 +47,12 @@ define 'soteria.password-crypto-service', [
         salt     : btoa(salt)
       }
 
-    decrypt: (blockCiphertext) ->
+    decrypt: (blockCiphertext, password) ->
       blockCipherKeySize    = PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE
       blockCipherIterations = PasswordCryptoService.BLOCK_CIPHER_ITERATIONS
 
       salt     = atob(blockCiphertext.salt)
-      key      = derive(@password, salt, blockCipherIterations, blockCipherKeySize)
+      key      = derive(password, salt, blockCipherIterations, blockCipherKeySize)
       iv       = atob(blockCiphertext.iv)
       contents = atob(blockCiphertext.contents)
 

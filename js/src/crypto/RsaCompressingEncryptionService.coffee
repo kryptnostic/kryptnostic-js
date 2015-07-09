@@ -6,7 +6,6 @@ define 'soteria.rsa-compressing-encryption-service', [
 ], (require) ->
 
   Forge               = require 'forge'
-  CryptoAlgorithm     = require 'soteria.crypto-algorithm'
   DeflatingMarshaller = require 'soteria.deflating-marshaller'
 
   #

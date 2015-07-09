@@ -3,19 +3,23 @@ define 'soteria.sharing-client', [
   'jquery'
   'bluebird'
   'soteria.logger'
+  'soteria.user-utils'
   'soteria.sharing-api'
+  'soteria.directory-api'
   'soteria.sharing-request'
+  'soteria.credential-store'
   'soteria.crypto-service-loader'
   'soteria.crypto-service-marshaller'
   'soteria.rsa-compressing-encryption-service'
 ], (require) ->
-
   _                               = require 'lodash'
   Promise                         = require 'bluebird'
   Logger                          = require 'soteria.logger'
+  UserUtils                       = require 'soteria.user-utils'
   SharingApi                      = require 'soteria.sharing-api'
   DirectoryApi                    = require 'soteria.directory-api'
   SharingRequest                  = require 'soteria.sharing-request'
+  CredentialStore                 = require 'soteria.credential-store'
   CryptoServiceLoader             = require 'soteria.crypto-service-loader'
   CryptoServiceMarshaller         = require 'soteria.crypto-service-marshaller'
   RsaCompressingEncryptionService = require 'soteria.rsa-compressing-encryption-service'
@@ -29,6 +33,7 @@ define 'soteria.sharing-client', [
   validateUsernames = (usernames) ->
     unless _.isArray(usernames)
       throw new Error 'usernames must be a list'
+
 
   #
   # Client for granting and revoking shared access to Kryptnostic objects.
@@ -45,9 +50,9 @@ define 'soteria.sharing-client', [
       validateId(id)
       validateUsernames(usernames)
 
-      # TODO: fix hard coding
+      {principal}         = CredentialStore.credentialProvider.load()
+      {realm}             = UserUtils.principalToComponents(principal)
       cryptoServiceLoader = new CryptoServiceLoader()
-      realm               = 'krypt'
       sharingKey          = ''
 
       return cryptoServiceLoader.getObjectCryptoService(id)
@@ -68,7 +73,7 @@ define 'soteria.sharing-client', [
               return sealBase64
             )
             .mapKeys((seal, username) ->
-              return "#{realm}|#{username}"
+              return UserUtils.componentsToPrincipal({realm, username})
             )
             .value()
 

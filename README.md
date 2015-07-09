@@ -46,6 +46,8 @@ To start the unit tests, run
 ./test.sh
 ```
 
+Tests named with the suffix `-test.coffee` will be picked up by the runner automatically.
+
 ## common problems
 
 1. Circular require.js dependencies will cause `require` calls to fail.. You will see an error like:

@@ -1,16 +1,13 @@
-define 'soteria.schema.encrypted-block', [], (require) ->
+define 'soteria.schema.encrypted-block', [
+  'require'
+  'soteria.schema.block-ciphertext'
+], (require) ->
 
-  BLOCK_CIPHERTEXT_SCHEMA = {
-    type: 'object'
-    properties: {
-      iv       : { type: 'string', required: true, allowEmpty: false }
-      salt     : { type: 'string', required: true, allowEmpty: true }
-      contents : { type: 'string', required: true, allowEmpty: false }
-    }
-  }
+  BLOCK_CIPHERTEXT_SCHEMA = require('soteria.schema.block-ciphertext')
 
   SCHEMA = {
-    properties: {
+    type       : 'object'
+    properties : {
       block : BLOCK_CIPHERTEXT_SCHEMA
       name  : BLOCK_CIPHERTEXT_SCHEMA
       verify: {

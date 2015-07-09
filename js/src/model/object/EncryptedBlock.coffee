@@ -18,6 +18,7 @@ define 'soteria.encrypted-block', [
 
     constructor : (raw) ->
       _.extend(this, raw)
+      @validate()
 
     validate : ->
       validator.validate(this, EncryptedBlock, SCHEMA)

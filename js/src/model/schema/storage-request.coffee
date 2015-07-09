@@ -1,4 +1,4 @@
-define 'soteria.schema.storage-request', [], (require) ->
+define 'soteria.schema.storage-request', [], ->
 
   SCHEMA = {
     properties: {

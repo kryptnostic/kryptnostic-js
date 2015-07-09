@@ -5,15 +5,15 @@ define 'soteria.directory-api', [
   'soteria.logger'
   'soteria.public-key-envelope'
   'soteria.security-utils'
-  'soteria.encrypted-block'
+  'soteria.block-ciphertext'
 ], (require) ->
 
-  jquery             = require 'jquery'
-  SecurityUtils      = require 'soteria.security-utils'
-  Logger             = require 'soteria.logger'
-  PublicKeyEnvelope  = require 'soteria.public-key-envelope'
-  Configuration      = require 'soteria.configuration'
-  EncryptedBlock     = require 'soteria.encrypted-block'
+  jquery            = require 'jquery'
+  SecurityUtils     = require 'soteria.security-utils'
+  Logger            = require 'soteria.logger'
+  PublicKeyEnvelope = require 'soteria.public-key-envelope'
+  Configuration     = require 'soteria.configuration'
+  BlockCiphertext   = require 'soteria.block-ciphertext'
 
   cryptoServiceUrl   = -> Configuration.get('servicesUrl') + '/directory/object'
   privateKeyUrl      = -> Configuration.get('servicesUrl') + '/directory/private'
@@ -72,7 +72,7 @@ define 'soteria.directory-api', [
       }))
       .then (response) ->
         logger.debug('getRsaKeys', {response})
-        return new EncryptedBlock(response)
+        return new BlockCiphertext(response)
 
     # gets the public key of a user in the same realm as the caller.
     getPublicKey: (username) ->
@@ -93,6 +93,6 @@ define 'soteria.directory-api', [
       })
       .then (response) ->
         logger.info('getSalt', {response})
-        return new EncryptedBlock(response)
+        return new BlockCiphertext(response)
 
   return DirectoryApi

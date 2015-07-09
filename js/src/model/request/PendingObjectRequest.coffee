@@ -21,7 +21,7 @@ define 'soteria.pending-object-request', [
       _.extend(this, DEFAULT_OPTS, opts)
       @validate()
 
-    validate : () ->
+    validate : ->
       validator.validate(this, PendingObjectRequest, SCHEMA)
 
   return PendingObjectRequest

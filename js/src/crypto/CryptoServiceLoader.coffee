@@ -18,7 +18,7 @@ define 'soteria.crypto-service-loader', [
   DirectoryApi            = require 'soteria.directory-api'
   Logger                  = require 'soteria.logger'
   CryptoServiceMarshaller = require 'soteria.crypto-service-marshaller'
-  CredentialStore   = require 'soteria.credential-store'
+  CredentialStore         = require 'soteria.credential-store'
 
   INT_SIZE     = 4
   EMPTY_BUFFER = ''

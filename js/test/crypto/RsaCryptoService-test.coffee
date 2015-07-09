@@ -87,6 +87,6 @@ define [
     it 'should decrypt what it encrypts', ->
       keypair       = Forge.rsa.generateKeyPair({bits: 1024, e: 0x10001})
       cryptoService = new RsaCryptoService(keypair.privateKey, keypair.publicKey)
-      plaintext     = "my heart is a blue ridge mountain"
+      plaintext     = 'my heart is a blue ridge mountain'
       recovered     = cryptoService.decrypt(cryptoService.encrypt(plaintext))
       expect(recovered).toBe(plaintext)

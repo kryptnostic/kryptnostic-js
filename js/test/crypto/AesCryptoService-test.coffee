@@ -15,7 +15,7 @@ define [
       key             = Forge.random.getBytesSync(PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE)
       cypher          = { algorithm: 'AES', mode: 'CTR' }
       cryptoService   = new AesCryptoService(cypher, key)
-      plaintext       = "star wars NOPE yoda YUP"
+      plaintext       = 'star wars NOPE yoda YUP'
       blockCiphertext = cryptoService.encrypt(plaintext)
       decrypted       = cryptoService.decrypt(blockCiphertext)
       expect(decrypted).toBe(plaintext)

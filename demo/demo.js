@@ -30,14 +30,14 @@ require([
   var Config                = require('soteria.configuration');
   var AuthenticationService = require('soteria.authentication-service');
 
-  var cryptoServiceLoader = new CryptoServiceLoader("demo");
+  var cryptoServiceLoader = new CryptoServiceLoader();
   var storageClient       = new StorageClient();
   var sharingClient       = new SharingClient();
 
   // configure the client
   Config.set({
     servicesUrl        : 'http://localhost:8081/v1',
-    credentialProvider : 'soteria.credential-provider.session'
+    credentialProvider : 'soteria.credential-provider.memory'
   });
 
   // authenticate the user
@@ -73,8 +73,6 @@ require([
       sharingClient.shareObject(objectId, shareWithUsers)
     });
 
-    // unauthenticate, if desired
-    AuthenticationService.destroy();
   });
 
 });

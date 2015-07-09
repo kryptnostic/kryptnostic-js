@@ -9,11 +9,11 @@ define 'soteria.configuration', [
 
   DEFAULTS = {
     servicesUrl        : 'http://localhost:8081/v1'
-    credentialProvider : 'soteria.credential-provider.session'
+    credentialProvider : 'soteria.credential-provider.memory'
   }
 
   #
-  # Stores global Soteria configuration.
+  # Stores global soteria configuration.
   # Author: rbuckheit
   #
   class ConfigurationService

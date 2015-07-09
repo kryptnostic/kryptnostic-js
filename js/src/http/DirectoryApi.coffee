@@ -74,7 +74,7 @@ define 'soteria.directory-api', [
       }))
       .then (response) ->
         logger.debug('getRsaKeys', {response})
-        return response
+        return new EncryptedBlock(response)
 
     # gets the public key of a user in the same realm as the caller.
     getPublicKey: (username) ->

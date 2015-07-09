@@ -32,18 +32,19 @@ define 'soteria.authentication-service', [
       promises = {
         providerClass : CredentialProviderLoader.load(providerUri)
         credential    : credentialService.deriveCredential({username, password, realm})
+        keypair       : credentialService.deriveKeypair({password})
       }
 
       Promise.props(promises)
-      .then ({providerClass, credential}) =>
+      .then ({providerClass, credential, keypair}) =>
         @credentialProvider = new providerClass()
         principal = "#{realm}|#{username}"
         log.info('derived credential', credential)
-        @credentialProvider.store({principal, credential})
+        @credentialProvider.store { principal, credential, keypair }
         log.info('authentication complete')
 
-    @unauthenticate: ->
-      log.info('unauthenticating')
+    @destroy: ->
+      log.info('destroying authentication')
       if @credentialProvider?
         @credentialProvider.destroy()
 

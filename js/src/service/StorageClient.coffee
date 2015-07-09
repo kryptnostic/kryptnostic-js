@@ -77,7 +77,7 @@ define 'soteria.storage-client', [
 
         logger.info('object', kryptnosticObject)
 
-        cryptoServiceLoader = new CryptoServiceLoader('demo') #TODO
+        cryptoServiceLoader = new CryptoServiceLoader()
 
         logger.info('made crypto service loader')
 

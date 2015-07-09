@@ -18,7 +18,7 @@ define 'soteria.credential-provider-loader', [
     @load : (uri) ->
       deferred = Promise.defer()
 
-      require [ uri ], (providerClass) =>
+      require [ uri ], (providerClass) ->
         unless providerClass?
           deferred.reject('unknown credential provider uri ' + uri)
         else

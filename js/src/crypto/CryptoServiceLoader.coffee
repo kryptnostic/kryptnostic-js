@@ -3,26 +3,24 @@ define 'soteria.crypto-service-loader', [
   'jquery',
   'forge',
   'soteria.logger'
-  'soteria.security-utils',
   'soteria.cypher',
-  'soteria.password-crypto-service',
   'soteria.rsa-crypto-service',
   'soteria.aes-crypto-service'
   'soteria.directory-api'
   'soteria.crypto-service-marshaller'
+  'soteria.authentication-service'
 ], (require) ->
   'use strict'
 
   jquery                  = require 'jquery'
   Forge                   = require 'forge'
-  PasswordCryptoService   = require 'soteria.password-crypto-service'
   RsaCryptoService        = require 'soteria.rsa-crypto-service'
   AesCryptoService        = require 'soteria.aes-crypto-service'
-  SecurityUtils           = require 'soteria.security-utils'
   Cypher                  = require 'soteria.cypher'
   DirectoryApi            = require 'soteria.directory-api'
   Logger                  = require 'soteria.logger'
   CryptoServiceMarshaller = require 'soteria.crypto-service-marshaller'
+  AuthenticationService   = require 'soteria.authentication-service'
 
   INT_SIZE     = 4
   EMPTY_BUFFER = ''
@@ -35,74 +33,38 @@ define 'soteria.crypto-service-loader', [
   #
   class CryptoServiceLoader
 
-    constructor: (password) ->
-      @directoryApi          = new DirectoryApi()
-      @passwordCryptoService = new PasswordCryptoService(password)
-      @marshaller            = new CryptoServiceMarshaller()
-      @rsaCryptoService      = undefined
-
-    getPasswordCryptoService: ->
-      return @passwordCryptoService
+    constructor: ->
+      @directoryApi     = new DirectoryApi()
+      @marshaller       = new CryptoServiceMarshaller()
 
     getRsaCryptoService: ->
-      deferred = new jquery.Deferred()
+      keypair = AuthenticationService.credentialProvider.load().keypair
+      return new RsaCryptoService(keypair.privateKey, keypair.publicKey)
 
-      unless @rsaCryptoService?
-        @loadRsaKeys().then((keypair) =>
-          @rsaCryptoService = new RsaCryptoService(keypair.privateKey, keypair.publicKey)
-          deferred.resolve(@rsaCryptoService)
-        )
-      else
-        deferred.resolve(@rsaCryptoService)
-
-      return deferred.promise()
-
-    # TODO failure flag
+    # TODO: this should take a {failOnLoad} flag so this can fail if the service can't be loaded.
+    # we should only allow on-the-fly generation in cases where we are creating objects.
     getObjectCryptoService: (id) ->
-      deferred              = new jquery.Deferred()
+      rsaCryptoService = @getRsaCryptoService()
 
-      jquery.when(
-        @getRsaCryptoService(),
-        @directoryApi.getObjectCryptoService(id)
-      ).then (rsaCryptoService, serializedCryptoService) =>
-
+      return  @directoryApi.getObjectCryptoService(id)
+      .then (serializedCryptoService) =>
         if !serializedCryptoService
           logger.info('no cryptoService exists for this object. creating one on-the-fly', {id})
           cryptoService = new AesCryptoService( Cypher.AES_CTR_128 )
           @setObjectCryptoService( id, cryptoService )
-          deferred.resolve(cryptoService)
+          return cryptoService
         else
-          objectCryptoService = @marshaller.unmarshall(serializedCryptoService, rsaCryptoService)
-          deferred.resolve(objectCryptoService)
-
-      return deferred.promise()
+          cryptoService = @marshaller.unmarshall(serializedCryptoService, rsaCryptoService)
+          return cryptoService
 
     setObjectCryptoService: (id, cryptoService) ->
       unless cryptoService.constructor.name is 'AesCryptoService'
         throw new Error('serialization only implemented for AesCryptoService')
 
-      marshalled = @marshaller.marshall(cryptoService)
+      marshalled             = @marshaller.marshall(cryptoService)
+      rsaCryptoService       = @getRsaCryptoService()
+      encryptedCryptoService = rsaCryptoService.encrypt(marshalled)
 
-      @getRsaCryptoService()
-      .then (rsaCryptoService) =>
-        encryptedCryptoService = rsaCryptoService.encrypt(marshalled)
-        return @directoryApi.setObjectCryptoService(id, encryptedCryptoService)
-
-    loadRsaKeys: ->
-      deferred = new jquery.Deferred()
-      request  = @directoryApi.getRsaKeys()
-
-      resolveRsaKeys = (blockCiphertext) =>
-        privateKeyBytes  = @getPasswordCryptoService().decrypt(blockCiphertext)
-        privateKeyBuffer = Forge.util.createBuffer(privateKeyBytes, 'raw')
-        privateKeyAsn1   = Forge.asn1.fromDer(privateKeyBuffer)
-        privateKey       = Forge.pki.privateKeyFromAsn1(privateKeyAsn1)
-        publicKey        = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e)
-
-        deferred.resolve({privateKey, publicKey})
-
-      request.done(resolveRsaKeys)
-      request.fail( -> deferred.reject() )
-      return deferred.promise()
+      return @directoryApi.setObjectCryptoService(id, encryptedCryptoService)
 
   return CryptoServiceLoader

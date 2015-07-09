@@ -46,7 +46,7 @@ define 'soteria.sharing-client', [
       validateUsernames(usernames)
 
       # TODO: fix hard coding
-      cryptoServiceLoader = new CryptoServiceLoader('demo')
+      cryptoServiceLoader = new CryptoServiceLoader()
       realm               = 'krypt'
       sharingKey          = ''
 

@@ -4,23 +4,25 @@ define 'soteria.configuration', [
   'soteria.logger'
 ], (require) ->
 
-  log = require 'soteria.logger'
+  Logger = require 'soteria.logger'
+  log    = Logger.get('ConfigurationService')
 
   DEFAULTS = {
-    servicesUrl : 'http://localhost:8081/v1'
+    servicesUrl        : 'http://localhost:8081/v1'
+    credentialProvider : 'soteria.credential-provider.session'
   }
 
   #
   # Stores global Soteria configuration.
   # Author: rbuckheit
   #
-
   class ConfigurationService
 
     @config : _.cloneDeep(DEFAULTS)
 
     @set : (opts) ->
       _.extend(ConfigurationService.config, opts)
+      log.info('configuration was updated', @config)
 
     @get : (key) ->
       if key?

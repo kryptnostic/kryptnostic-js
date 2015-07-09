@@ -6,6 +6,7 @@ define 'soteria.directory-api', [
   'soteria.logger'
   'soteria.public-key-envelope'
   'soteria.security-utils'
+  'soteria.encrypted-block'
 ], (require) ->
 
   Forge              = require 'forge'
@@ -14,10 +15,12 @@ define 'soteria.directory-api', [
   Logger             = require 'soteria.logger'
   PublicKeyEnvelope  = require 'soteria.public-key-envelope'
   Configuration      = require 'soteria.configuration'
+  EncryptedBlock     = require 'soteria.encrypted-block'
 
   cryptoServiceUrl   = -> Configuration.get('servicesUrl') + '/directory/object'
   privateKeyUrl      = -> Configuration.get('servicesUrl') + '/directory/private'
   publicKeyUrl       = -> Configuration.get('servicesUrl') + '/directory/public'
+  saltUrl            = -> Configuration.get('servicesUrl') + '/directory/salt'
 
   logger             = Logger.get('DirectoryApi')
 
@@ -82,5 +85,14 @@ define 'soteria.directory-api', [
       .then (response) ->
         logger.debug('getPublicKey', {response})
         return new PublicKeyEnvelope(response)
+
+    getSalt: ({username, realm}) ->
+      return jquery.ajax(SecurityUtils.wrapRequest({
+        url  : saltUrl() + '/' + realm + '/' + username,
+        type : 'GET'
+      }))
+      .then (response) ->
+        logger.info('getSalt', {response})
+        return new EncryptedBlock(response)
 
   return DirectoryApi

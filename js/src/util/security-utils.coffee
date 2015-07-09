@@ -1,6 +1,8 @@
 define 'soteria.security-utils', [], ->
   'use strict'
 
+  # TODO
+
   PRINCIPAL_COOKIE  = 'X-Kryptnostic-Principal'
   CREDENTIAL_COOKIE = 'X-Kryptnostic-Credential'
 

@@ -36,10 +36,10 @@ define 'soteria.crypto-service-loader', [
   class CryptoServiceLoader
 
     constructor: (password) ->
-      @directoryApi            = new DirectoryApi()
-      @passwordCryptoService   = new PasswordCryptoService(password)
-      @marshaller = new CryptoServiceMarshaller()
-      @rsaCryptoService        = undefined
+      @directoryApi          = new DirectoryApi()
+      @passwordCryptoService = new PasswordCryptoService(password)
+      @marshaller            = new CryptoServiceMarshaller()
+      @rsaCryptoService      = undefined
 
     getPasswordCryptoService: ->
       return @passwordCryptoService

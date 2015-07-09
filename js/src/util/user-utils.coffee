@@ -10,9 +10,14 @@ define 'soteria.user-utils', [
   #
 
   principalToComponents = (principal) ->
-    [realm, username] = principal.split(PRINCIPAL_SEPARATOR)
-    if !realm or !username
-      throw new Error 'missing realm or username'
+    split = principal.split(PRINCIPAL_SEPARATOR)
+    [realm, username, rest...] = split
+
+    unless _.isEmpty(rest)
+      throw new Error 'too many components in principal string'
+    unless !!realm and !!username
+      throw new Error 'invalid principal string'
+
     return {realm, username}
 
   componentsToPrincipal = ({realm, username}) ->

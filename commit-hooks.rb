@@ -21,6 +21,13 @@ COMMIT_HOOKS = [
     :pattern        => '',
     :exception      => /test-main.js|karma.conf.js/,
     :explanation    => 'raw js files are not allowed, please use coffeescript'
+  },
+  {
+    :name           => 'no TODO comments',
+    :file_pattern   => '*.coffee',
+    :pattern        => 'TODO',
+    :exception      => /authorized/,
+    :explanation    => 'fix TODO comments before committing'
   }
 ]
 

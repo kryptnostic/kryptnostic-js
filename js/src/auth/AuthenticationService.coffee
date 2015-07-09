@@ -15,6 +15,7 @@ define 'soteria.authentication-service', [
   CredentialProviderLoader = require 'soteria.credential-provider-loader'
   CredentialService        = require 'soteria.credential-service'
   UserUtils                = require 'soteria.user-utils'
+
   log = Logger.get('AuthenticationService')
 
   #

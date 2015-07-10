@@ -14,8 +14,8 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'test/test-main.js',
       '../build/soteria.js',
+      'test/test-main.js',
       { pattern: 'test/**/*.js',        included: false },
       { pattern: 'test/**/*.coffee',    included: false }
     ],
@@ -66,7 +66,6 @@ module.exports = function(config) {
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
     browsers: ['PhantomJS'],
-    // browsers: ['Chrome','Firefox','Safari'],
 
 
     // Continuous Integration mode

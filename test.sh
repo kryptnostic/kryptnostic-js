@@ -7,6 +7,10 @@
 
 set -e;
 
+mode=$1
+
+echo "running with mode $mode";
+
 # lint
 # ====
 echo "linting files...";
@@ -30,7 +34,12 @@ echo "building soteria.js...";
 # ===========
 echo "running unit tests...";
 cd js;
-../node_modules/karma-cli/bin/karma start --single-run true;
+if [[ $mode =~ "--full" ]]; then
+  echo "running in browsers"
+  ../node_modules/karma-cli/bin/karma start --single-run true --browsers Chrome,Safari,PhantomJS
+else
+  ../node_modules/karma-cli/bin/karma start --single-run true;
+fi
 cd -;
 
 # output

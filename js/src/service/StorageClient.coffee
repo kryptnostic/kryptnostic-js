@@ -52,6 +52,9 @@ define 'soteria.storage-client', [
 
       return promise
 
+    deleteObject : (id) ->
+      @objectApi.deleteObject(id)
+
     uploadObject : (storageRequest) ->
       storageRequest.validate()
 

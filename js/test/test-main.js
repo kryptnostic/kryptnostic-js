@@ -31,9 +31,6 @@ Object.keys(window.__karma__.files).forEach(function(file) {
   }
 });
 
-log.info('loading files:');
-log.info(JSON.stringify(allFilesOrdered,null,2));
-
 var allFilesOrdered = allBuildFiles.concat(allMockFiles).concat(allTestFiles);
 
 require.config({

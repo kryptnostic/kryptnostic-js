@@ -100,4 +100,15 @@ define 'soteria.object-api', [
       .then (response) ->
         logger.debug('submitted block', response)
 
+    # deletes an object
+    deleteObject : (id) ->
+      validateId(id)
+
+      jquery.ajax(SecurityUtils.wrapRequest({
+        url         : objectUrl() + '/' + id
+        type        : 'DELETE'
+      }))
+      .then (response) ->
+        logger.debug('deleted object', response)
+
   return ObjectApi

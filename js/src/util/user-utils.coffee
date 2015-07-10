@@ -1,6 +1,9 @@
 define 'soteria.user-utils', [
   'require'
+  'lodash'
 ], (require) ->
+
+  _ = require 'lodash'
 
   PRINCIPAL_SEPARATOR = '|'
 

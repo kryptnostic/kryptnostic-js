@@ -46,6 +46,18 @@ To start the unit tests, run
 ./test.sh
 ```
 
+Tests named with the suffix `-test.coffee` will be picked up by the runner automatically.
+
+## common problems
+
+1. Circular require.js dependencies will cause `require` calls to fail.. You will see an error like:
+
+```
+ Error: Module name "soteria.my-module" has not been loaded yet for context: _
+```
+
+This can be fixed by tracing dependencies of `soteria.my-module` and breaking the cycle.
+
 ## browser testing
 
 For end-to-end testing, build using `build.sh` then open `demo/index.html` in the browser.

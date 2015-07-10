@@ -17,6 +17,10 @@ find js -name *.coffee | xargs ./node_modules/coffeelint/bin/coffeelint;
 echo "running commit hooks..."
 ./commit-hooks.rb;
 
+# unused import checking
+echo "checking for unused imports..."
+./check-unused-imports.rb;
+
 # r.js build
 # ==========
 echo "building soteria.js...";

@@ -18,45 +18,61 @@ require([
   'soteria.storage-client',
   'soteria.storage-request',
   'soteria.sharing-client',
+  'soteria.configuration',
+  'soteria.authentication-service'
 ], function(require) {
 
-  var Promise             = require('bluebird');
-  var CryptoServiceLoader = require('soteria.crypto-service-loader');
-  var StorageClient       = require('soteria.storage-client');
-  var StorageRequest      = require('soteria.storage-request');
-  var SharingClient       = require('soteria.sharing-client');
+  var Promise               = require('bluebird');
+  var CryptoServiceLoader   = require('soteria.crypto-service-loader');
+  var StorageClient         = require('soteria.storage-client');
+  var StorageRequest        = require('soteria.storage-request');
+  var SharingClient         = require('soteria.sharing-client');
+  var Config                = require('soteria.configuration');
+  var AuthenticationService = require('soteria.authentication-service');
 
-  var cryptoServiceLoader = new CryptoServiceLoader("demo");
+  var cryptoServiceLoader = new CryptoServiceLoader();
   var storageClient       = new StorageClient();
   var sharingClient       = new SharingClient();
 
-  // set credentials
-  sessionStorage.setItem('soteria.principal', 'krypt|demo');
-  sessionStorage.setItem('soteria.credential', 'c1cc09e15a4529fcc50b57efde163dd2a9731d31be629fd9df4fd13bc70134f6');
-
-  // encrypt an object, upload, download, and decrypt
-  var storageRequest = new StorageRequest({ body : 'test message' });
-  storageClient.uploadObject(storageRequest)
-  .then(function(objectId) {
-    var loadPromises = {
-      kryptnosticObject : storageClient.getObject(objectId),
-      cryptoService     : cryptoServiceLoader.getObjectCryptoService(objectId)
-    }
-
-    Promise.props(loadPromises)
-    .then(function(result) {
-      var cryptoService     = result.cryptoService;
-      var kryptnosticObject = result.kryptnosticObject;
-      var decrypted         = kryptnosticObject.decrypt( cryptoService );
-      renderObject(decrypted)
-    })
+  // configure the client
+  Config.set({
+    servicesUrl        : 'http://localhost:8081/v1',
+    credentialProvider : 'soteria.credential-provider.memory'
   });
 
-  // create an object and share it with another user
-  var storageRequest = new StorageRequest({ body : 'this message will be shared' });
-  var shareWithUsers = ['ryan']
-  storageClient.uploadObject(storageRequest)
-  .then(function(objectId) {
-    sharingClient.shareObject(objectId, shareWithUsers)
+  // authenticate the user
+  AuthenticationService.authenticate({
+    username : 'demo',
+    password : 'demo',
+    realm    : 'krypt'
+  }).then(function(){
+
+    // encrypt an object, upload, download, and decrypt
+    var storageRequest = new StorageRequest({ body : 'test message' });
+    storageClient.uploadObject(storageRequest)
+    .then(function(objectId) {
+      var loadPromises = {
+        kryptnosticObject : storageClient.getObject(objectId),
+        cryptoService     : cryptoServiceLoader.getObjectCryptoService(objectId)
+      }
+
+      Promise.props(loadPromises)
+      .then(function(result) {
+        var cryptoService     = result.cryptoService;
+        var kryptnosticObject = result.kryptnosticObject;
+        var decrypted         = kryptnosticObject.decrypt( cryptoService );
+        renderObject(decrypted)
+      })
+    });
+
+    // create an object and share it with another user
+    var storageRequest = new StorageRequest({ body : 'this message will be shared' });
+    var shareWithUsers = ['ryan']
+    storageClient.uploadObject(storageRequest)
+    .then(function(objectId) {
+      sharingClient.shareObject(objectId, shareWithUsers)
+    });
+
   });
+
 });

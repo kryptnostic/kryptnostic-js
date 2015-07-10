@@ -1,4 +1,4 @@
-define 'soteria.schema.pending-object-request', [], (require) ->
+define 'soteria.schema.pending-object-request', [], ->
 
   SCHEMA = {
     properties : {

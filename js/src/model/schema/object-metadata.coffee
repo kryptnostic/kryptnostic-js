@@ -1,6 +1,4 @@
-define 'soteria.schema.object-metadata', [], (require) ->
-
-  # TODO finish schema
+define 'soteria.schema.object-metadata', [], ->
 
   SCHEMA = {
     properties: {

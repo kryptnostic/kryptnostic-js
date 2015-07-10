@@ -1,12 +1,10 @@
 define 'soteria.abstract-crypto-service', [
   'require'
-  'lodash'
   'forge'
   'soteria.crypto-algorithm'
 ], (require) ->
 
   Forge           = require 'forge'
-  _               = require 'lodash'
   CryptoAlgorithm = require 'soteria.crypto-algorithm'
 
   #
@@ -14,11 +12,9 @@ define 'soteria.abstract-crypto-service', [
   #
   class AbstractCryptoService
 
-    constructor: (cypher) ->
-      unless cypher.algorithm is CryptoAlgorithm.AES and cypher.mode is 'CTR'
-        throw new Error('Cypher not implemented')
-      @algorithm = cypher.algorithm
-      @mode      = cypher.mode
+    constructor: ({@algorithm, @mode}) ->
+      unless @algorithm is CryptoAlgorithm.AES and @mode is 'CTR'
+        throw new Error 'cypher not implemented'
 
     encrypt: (key, iv, plaintext) ->
       cipher = Forge.cipher.createCipher(@algorithm + '-' + @mode, key)

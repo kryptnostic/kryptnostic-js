@@ -1,23 +1,24 @@
 define 'soteria.directory-api', [
   'require'
   'jquery'
-  'forge'
   'soteria.configuration'
   'soteria.logger'
   'soteria.public-key-envelope'
   'soteria.security-utils'
+  'soteria.block-ciphertext'
 ], (require) ->
 
-  Forge              = require 'forge'
-  jquery             = require 'jquery'
-  SecurityUtils      = require 'soteria.security-utils'
-  Logger             = require 'soteria.logger'
-  PublicKeyEnvelope  = require 'soteria.public-key-envelope'
-  Configuration      = require 'soteria.configuration'
+  jquery            = require 'jquery'
+  SecurityUtils     = require 'soteria.security-utils'
+  Logger            = require 'soteria.logger'
+  PublicKeyEnvelope = require 'soteria.public-key-envelope'
+  Configuration     = require 'soteria.configuration'
+  BlockCiphertext   = require 'soteria.block-ciphertext'
 
   cryptoServiceUrl   = -> Configuration.get('servicesUrl') + '/directory/object'
   privateKeyUrl      = -> Configuration.get('servicesUrl') + '/directory/private'
   publicKeyUrl       = -> Configuration.get('servicesUrl') + '/directory/public'
+  saltUrl            = -> Configuration.get('servicesUrl') + '/directory/salt'
 
   logger             = Logger.get('DirectoryApi')
 
@@ -71,7 +72,7 @@ define 'soteria.directory-api', [
       }))
       .then (response) ->
         logger.debug('getRsaKeys', {response})
-        return response
+        return new BlockCiphertext(response)
 
     # gets the public key of a user in the same realm as the caller.
     getPublicKey: (username) ->
@@ -82,5 +83,16 @@ define 'soteria.directory-api', [
       .then (response) ->
         logger.debug('getPublicKey', {response})
         return new PublicKeyEnvelope(response)
+
+    # gets the user's encrypted salt.
+    # request is not wrapped because the user has not auth'ed yet.
+    getSalt: ({username, realm}) ->
+      return jquery.ajax({
+        url  : saltUrl() + '/' + realm + '/' + username,
+        type : 'GET'
+      })
+      .then (response) ->
+        logger.info('getSalt', {response})
+        return new BlockCiphertext(response)
 
   return DirectoryApi

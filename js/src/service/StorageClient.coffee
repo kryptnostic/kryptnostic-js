@@ -1,16 +1,15 @@
 define 'soteria.storage-client', [
   'require'
   'jquery'
-  'soteria.crypto-service-loader'
-  'soteria.kryptnostic-object'
   'soteria.logger'
   'soteria.object-api'
+  'soteria.kryptnostic-object'
+  'soteria.crypto-service-loader'
   'soteria.pending-object-request'
 ], (require) ->
   'use strict'
 
   jquery               = require 'jquery'
-  SecurityUtils        = require 'soteria.security-utils'
   KryptnosticObject    = require 'soteria.kryptnostic-object'
   PendingObjectRequest = require 'soteria.pending-object-request'
   CryptoServiceLoader  = require 'soteria.crypto-service-loader'
@@ -77,11 +76,11 @@ define 'soteria.storage-client', [
 
         logger.info('object', kryptnosticObject)
 
-        cryptoServiceLoader = new CryptoServiceLoader('demo') #TODO
+        cryptoServiceLoader = new CryptoServiceLoader()
 
         logger.info('made crypto service loader')
 
-        cryptoServiceLoader.getObjectCryptoService(id)
+        cryptoServiceLoader.getObjectCryptoService(id, {expectMiss: true})
         .then (cryptoService) =>
           encryptedObject = kryptnosticObject.encrypt(cryptoService)
           logger.info('encrypted object', encryptedObject)

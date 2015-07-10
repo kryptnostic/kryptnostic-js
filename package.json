@@ -4,7 +4,7 @@
   "description" : "JavaScript client for Kryptnostic services.",
   "main"        : "kryptnostic-crypto.js",
   "homepage"    : "https://github.com/kryptnostic/soteria",
-  "license"     : "ISC",
+  "license"     : "Apache-2.0",
   "author"      : "",
   "contributors": [
     "Nick Hewitt <nick@kryptnostic.com>",

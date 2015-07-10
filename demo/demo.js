@@ -47,7 +47,7 @@ require([
     realm    : 'krypt'
   }).then(function(){
 
-    // encrypt an object, upload, download, and decrypt
+    // encrypt an object, upload it, download it, and decrypt it.
     var storageRequest = new StorageRequest({ body : 'test message' });
     storageClient.uploadObject(storageRequest)
     .then(function(objectId) {
@@ -62,6 +62,9 @@ require([
         var kryptnosticObject = result.kryptnosticObject;
         var decrypted         = kryptnosticObject.decrypt( cryptoService );
         renderObject(decrypted)
+      })
+      .then(function() {
+        storageClient.deleteObject(objectId);
       })
     });
 

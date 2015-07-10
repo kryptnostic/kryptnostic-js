@@ -3,12 +3,14 @@ define 'soteria.aes-crypto-service', [
   'forge',
   'soteria.abstract-crypto-service'
   'soteria.logger'
+  'soteria.block-ciphertext'
 ], (require) ->
   'use strict'
 
   Forge                 = require 'forge'
   AbstractCryptoService = require 'soteria.abstract-crypto-service'
   Logger                = require 'soteria.logger'
+  BlockCiphertext       = require 'soteria.block-ciphertext'
 
   logger = Logger.get('AesCryptoService')
 
@@ -31,7 +33,7 @@ define 'soteria.aes-crypto-service', [
       iv         = Forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
       ciphertext = @abstractCryptoService.encrypt(@key, iv, plaintext)
 
-      return {
+      return new BlockCiphertext {
         iv       : btoa(iv)
         salt     : btoa(Forge.random.getBytesSync(0))
         contents : btoa(ciphertext)

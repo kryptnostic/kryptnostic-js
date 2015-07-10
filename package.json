@@ -21,6 +21,10 @@
   "bugs": {
     "url" : "https://github.com/kryptnostic/soteria/issues"
   },
+  "dependencies": {
+    "revalidator" : "^0.3.1",
+    "node-forge"  : "^0.6.25"
+  },
   "devDependencies": {
     "coffeelint"                : "^1.10.1",
     "jasmine-core"              : "^2.2.0",
@@ -35,9 +39,5 @@
     "karma-requirejs"           : "^0.2.2",
     "karma-safari-launcher"     : "^0.1.1",
     "phantomjs"                 : "^1.9.17",
-    "revalidator"               : "^0.3.1"
-  },
-  "dependencies": {
-    "node-forge" : "^0.6.25"
   }
 }

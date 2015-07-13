@@ -30,7 +30,7 @@ npm install
 ## building
 
 Builds use the require.js optimizer.
-Building will produce `soteria.js` and `soteria.min.js` in the `build` directory.
+Building will produce `soteria.js` in the `dist` directory.
 
 ```
 ./build.sh

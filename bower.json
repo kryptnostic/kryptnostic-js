@@ -1,13 +1,36 @@
 {
   "name"     : "soteria",
   "version"  : "0.0.0",
+  "main"     : "dist/soteria.js",
   "homepage" : "https://github.com/kryptnostic/soteria",
   "license"  : "Apache-2.0",
-  "private"  : true,
+  "private"  : false,
   "authors"  : [
     "Nick Hewitt <nick@kryptnostic.com>",
     "Ryan Buckheit <ryan@kryptnostic.com>"
   ],
+  "ignore" : [
+    ".gitignore",
+    ".travis.yml",
+    "bower.json",
+    "bower_components",
+    "build.js"
+    "build.sh",
+    "check-unused-imports.rb",
+    "coffeelint.json",
+    "commit-hooks.rb",
+    "compile-exports.rb",
+    "demo",
+    "js",
+    "node_modules",
+    "package.json",
+    "soteria.sublime-project",
+    "test.sh",
+  ],
+  "repository" : {
+    "type" : "git",
+    "url"  : "https://github.com/kryptnostic/soteria.git"
+  },
   "moduleType": [
     "amd",
     "globals"

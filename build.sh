@@ -2,14 +2,14 @@
 
 #
 # Builds the distribution file soteria.js.
+# Pass the --release flag to do a full release.
 # Author: rbuckheit
 #
 
 set -e;
 
 echo "compiling libraries..."
-if [ -e bower_components/forge/js/forge.min.js ];
-then
+if [[ -e bower_components/forge/js/forge.min.js && $@ != **--release** ]]; then
   echo "forge.min.js is already compiled. skipping!"
 else
   echo "compiling forge.min.js"
@@ -28,10 +28,11 @@ echo "cleaning build artifacts..."
 rm -rfv build/*;
 
 echo ""
-if [[ $@ != **--minify** ]]; then
+if [[ $@ != **--release** ]]; then
   echo "running development build (no minification)..."
-  ./node_modules/requirejs/bin/r.js -o build.js out=build/soteria.js optimize=none
+  ./node_modules/requirejs/bin/r.js -o build.js out=dist/soteria.js optimize=none
 else
-  echo "running minified build..."
-  ./node_modules/requirejs/bin/r.js -o build.js out=build/soteria.min.js optimize=uglify
+  echo "running full release build..."
+  ./node_modules/requirejs/bin/r.js -o build.js out=dist/soteria.js optimize=none
+  ./node_modules/requirejs/bin/r.js -o build.js out=dist/soteria.min.js optimize=uglify
 fi

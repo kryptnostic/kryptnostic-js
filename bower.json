@@ -14,7 +14,7 @@
     ".travis.yml",
     "bower.json",
     "bower_components",
-    "build.js"
+    "build.js",
     "build.sh",
     "check-unused-imports.rb",
     "coffeelint.json",
@@ -25,7 +25,7 @@
     "node_modules",
     "package.json",
     "soteria.sublime-project",
-    "test.sh",
+    "test.sh"
   ],
   "repository" : {
     "type" : "git",

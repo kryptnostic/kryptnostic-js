@@ -2,7 +2,7 @@
   {
     baseUrl                : 'js/src',
     name                   : 'cs!soteria',
-    out                    : 'build/soteria.js',
+    out                    : 'dist/soteria.js',
     optimize               : 'none',
     wrap                   : false,
     findNestedDependencies : true,

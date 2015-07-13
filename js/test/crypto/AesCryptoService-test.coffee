@@ -44,7 +44,7 @@ define [
     describe '#decrypt', ->
 
       it 'should be able to decrypt what it encrypts', ->
-        plaintext       = 'star wars NOPE yoda YUP'
+        plaintext       = 'sensitive data'
         blockCiphertext = cryptoService.encrypt(plaintext)
         decrypted       = cryptoService.decrypt(blockCiphertext)
         expect(decrypted).toBe(plaintext)

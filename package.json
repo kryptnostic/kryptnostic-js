@@ -1,43 +1,43 @@
 {
-  "name": "soteria",
-  "version": "1.0.0",
-  "description": "JavaScript client for Kryptnostic services.",
-  "main": "kryptnostic-crypto.js",
-  "homepage": "https://github.com/kryptnostic/soteria",
-  "license": "ISC",
-  "author": "",
+  "name"        : "soteria",
+  "version"     : "0.0.0",
+  "description" : "JavaScript client for Kryptnostic services.",
+  "main"        : "kryptnostic-crypto.js",
+  "homepage"    : "https://github.com/kryptnostic/soteria",
+  "license"     : "Apache-2.0",
+  "author"      : "",
   "contributors": [
     "Nick Hewitt <nick@kryptnostic.com>",
     "Ryan Buckheit <ryan@kryptnostic.com>"
   ],
   "scripts": {
-    "build": "./build.sh",
-    "test": "./test.sh"
+    "build" : "./build.sh",
+    "test"  : "./test.sh"
   },
   "repository": {
-    "type": "git",
-    "url": "https://github.com/kryptnostic/soteria.git"
+    "type" : "git",
+    "url"  : "https://github.com/kryptnostic/soteria.git"
   },
   "bugs": {
-    "url": "https://github.com/kryptnostic/soteria/issues"
-  },
-  "devDependencies": {
-    "coffeelint": "^1.10.1",
-    "jasmine-core": "^2.2.0",
-    "karma": "^0.12.37",
-    "karma-chrome-launcher": "^0.2.0",
-    "karma-cli": "^0.1.0",
-    "karma-coffee-preprocessor": "^0.2.1",
-    "karma-coverage": "^0.4.2",
-    "karma-firefox-launcher": "^0.1.6",
-    "karma-jasmine": "^0.3.6",
-    "karma-phantomjs-launcher": "^0.2.0",
-    "karma-requirejs": "^0.2.2",
-    "karma-safari-launcher": "^0.1.1",
-    "phantomjs": "^1.9.17",
-    "revalidator": "^0.3.1"
+    "url" : "https://github.com/kryptnostic/soteria/issues"
   },
   "dependencies": {
-    "node-forge": "^0.6.25"
+    "revalidator" : "^0.3.1",
+    "node-forge"  : "^0.6.25"
+  },
+  "devDependencies": {
+    "coffeelint"                : "^1.10.1",
+    "jasmine-core"              : "^2.2.0",
+    "karma"                     : "^0.12.37",
+    "karma-chrome-launcher"     : "^0.2.0",
+    "karma-cli"                 : "^0.1.0",
+    "karma-coffee-preprocessor" : "^0.2.1",
+    "karma-coverage"            : "^0.4.2",
+    "karma-firefox-launcher"    : "^0.1.6",
+    "karma-jasmine"             : "^0.3.6",
+    "karma-phantomjs-launcher"  : "^0.2.0",
+    "karma-requirejs"           : "^0.2.2",
+    "karma-safari-launcher"     : "^0.1.1",
+    "phantomjs"                 : "^1.9.17"
   }
 }

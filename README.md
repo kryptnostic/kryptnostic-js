@@ -40,10 +40,16 @@ Building will produce `soteria.js` and `soteria.min.js` in the `build` directory
 
 Karma and Jasmine are used for unit testing.
 
-To start the unit tests, run
+To start the unit tests, run:
 
 ```
 ./test.sh
+```
+
+To run the unit tests against a full suite of browsers, run:
+
+```
+./test.sh --full
 ```
 
 Tests named with the suffix `-test.coffee` will be picked up by the runner automatically.

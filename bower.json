@@ -2,7 +2,7 @@
   "name"     : "soteria",
   "version"  : "0.0.0",
   "homepage" : "https://github.com/kryptnostic/soteria",
-  "license"  : "MIT",
+  "license"  : "Apache-2.0",
   "private"  : true,
   "authors"  : [
     "Nick Hewitt <nick@kryptnostic.com>",
@@ -14,7 +14,6 @@
   ],
   "dependencies": {
     "bluebird"   : "2.9.32",
-    "Cookies"    : "1.2.1",
     "forge"      : "0.6.21",
     "jquery"     : "2.1.3",
     "lodash"     : "3.10.0",

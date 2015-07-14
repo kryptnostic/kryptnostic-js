@@ -16,6 +16,7 @@ define 'soteria.credential-store', [
     @destroy: ->
       if @credentialProvider?
         @credentialProvider.destroy()
+      @credentialProvider = undefined
 
     @isInitialized: ->
       return @credentialProvider?

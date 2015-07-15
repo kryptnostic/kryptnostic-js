@@ -19,7 +19,6 @@ JS_LIB_EXPORTS = [
 EXPORT_FILE_PATH = 'js/src/soteria.coffee'
 
 COFFEE_FILES = `find js/src -name "*.coffee"`.split.reject{|c| c.end_with?(EXPORT_FILE_PATH)}
-JS_LIB_FILES = `find js/lib -name "*.js"`.split
 
 def get_relative_path(path)
   return path.gsub('js/src/', '')

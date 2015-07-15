@@ -10,13 +10,13 @@ define 'soteria.schema.storage-request', [], ->
       },
       objectId : {
         description : 'preset object id if overwriting another object'
-        type        : 'number'
+        type        : 'string'
         required    : false
         allowEmpty  : false
       },
       parentObjectId : {
         description : 'id of the parent object if creating a child object'
-        type        : 'number'
+        type        : 'string'
         required    : false
         allowEmpty  : false
       }

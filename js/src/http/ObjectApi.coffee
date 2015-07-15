@@ -1,6 +1,7 @@
 define 'soteria.object-api', [
   'require'
   'jquery'
+  'bluebird'
   'soteria.configuration'
   'soteria.kryptnostic-object'
   'soteria.logger'
@@ -12,6 +13,7 @@ define 'soteria.object-api', [
   KryptnosticObject = require 'soteria.kryptnostic-object'
   Logger            = require 'soteria.logger'
   Config            = require 'soteria.configuration'
+  Promise           = require 'bluebird'
 
   objectUrl         = -> Config.get('servicesUrl') + '/object'
 
@@ -32,10 +34,10 @@ define 'soteria.object-api', [
 
     # get all object ids accessible to the user
     getObjectIds : ->
-      jquery.ajax(SecurityUtils.wrapRequest({
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
         url  : objectUrl()
         type : 'GET'
-      }))
+      })))
       .then (response) ->
         return response.data
 
@@ -43,10 +45,10 @@ define 'soteria.object-api', [
     getObject : (id) ->
       validateId(id)
 
-      jquery.ajax(SecurityUtils.wrapRequest({
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
         url  : objectUrl() + '/' + id
         type : 'GET'
-      }))
+      })))
       .then (data) ->
         return KryptnosticObject.createFromEncrypted(data)
 
@@ -54,10 +56,10 @@ define 'soteria.object-api', [
     getObjectIdsByType: (type) ->
       validateType(type)
 
-      jquery.ajax(SecurityUtils.wrapRequest({
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
         url  : objectUrl() + '/type/' + type
         type : 'GET'
-      }))
+      })))
       .then (response) ->
         return response.data
 
@@ -65,12 +67,12 @@ define 'soteria.object-api', [
     createPendingObject : (pendingRequest) ->
       pendingRequest.validate()
 
-      jquery.ajax(SecurityUtils.wrapRequest({
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
         url         : objectUrl() + '/'
         type        : 'PUT'
         contentType : 'application/json'
         data        : JSON.stringify(pendingRequest)
-      }))
+      })))
       .then (response) ->
         logger.debug('created pending', response)
         return response.data
@@ -79,10 +81,10 @@ define 'soteria.object-api', [
     createPendingObjectFromExisting : (id) ->
       validateId(id)
 
-      jquery.ajax(SecurityUtils.wrapRequest({
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
         url  : objectUrl() + '/' + id
         type : 'PUT'
-      }))
+      })))
       .then (response) ->
         logger.debug('created pending from existing', response)
         return response.data
@@ -91,12 +93,12 @@ define 'soteria.object-api', [
     updateObject : (id, encryptableBlock) ->
       validateId(id)
 
-      jquery.ajax(SecurityUtils.wrapRequest({
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
         url         : objectUrl() + '/' + id
         type        : 'POST'
         contentType : 'application/json'
         data        : JSON.stringify(encryptableBlock)
-      }))
+      })))
       .then (response) ->
         logger.debug('submitted block', response)
 
@@ -104,10 +106,10 @@ define 'soteria.object-api', [
     deleteObject : (id) ->
       validateId(id)
 
-      jquery.ajax(SecurityUtils.wrapRequest({
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
         url         : objectUrl() + '/' + id
         type        : 'DELETE'
-      }))
+      })))
       .then (response) ->
         logger.debug('deleted object', response)
 

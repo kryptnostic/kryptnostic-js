@@ -27,6 +27,7 @@ define 'soteria.credential-provider.memory', [
       return {@principal, @credential, @keypair}
 
     destroy: ->
+      log.info('destroy')
       @principal  = ZERO
       @credential = ZERO
       @keypair    = ZERO

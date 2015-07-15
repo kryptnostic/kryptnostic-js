@@ -10,7 +10,7 @@ define 'soteria.schema.pending-object-request', [], ->
       },
       parentObjectId : {
         description : 'id of the parent object if creating a child object'
-        type        : 'number'
+        type        : 'string'
         required    : false
         allowEmpty  : false
       }

@@ -18,6 +18,10 @@ define 'soteria.block-encryption-service', [
 
   logger = Logger.get('BlockEncryptionService')
 
+  TYPE_MAPPINGS = {
+    'String' : 'java.lang.String'
+  }
+
   #
   # Service for encrypting and decrypting blocks of a kryptnostic object,
   # and verifying integrity on encryption and decryption.
@@ -31,9 +35,13 @@ define 'soteria.block-encryption-service', [
     # convert raw data string chunks into encrypted blocks
     encrypt: (chunks, cryptoService) ->
       return chunks.map (chunk, index) ->
+        unless chunk.constructor.name in _.keys(TYPE_MAPPINGS)
+          throw new Error 'unsupported chunk type'
+
         className   = chunk.constructor.name
+        mappedClass = TYPE_MAPPINGS[className]
         block       = cryptoService.encrypt(chunk)
-        name        = cryptoService.encrypt(className)
+        name        = cryptoService.encrypt(mappedClass)
         verify      = VERIFY_HASH_FUNCTION(block.contents)
         last        = (index == chunks.length - 1)
         strategy    = {

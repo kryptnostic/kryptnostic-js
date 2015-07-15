@@ -35,6 +35,13 @@ COMMIT_HOOKS = [
     :pattern        => 'FIXME',
     :exception      => /authorized/,
     :explanation    => 'fix FIXME comments before committing'
+  },
+  {
+    :name           => 'no jquery promises',
+    :file_pattern   => '*.coffee',
+    :pattern        => 'jquery.ajax',
+    :exception      => /Promise.resolve/,
+    :explanation    => 'please wrap jquery promises with bluebird'
   }
 ]
 

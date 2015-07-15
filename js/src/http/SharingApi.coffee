@@ -1,6 +1,7 @@
 define 'soteria.sharing-api', [
   'require'
   'jquery'
+  'bluebird'
   'soteria.configuration'
   'soteria.security-utils'
   'soteria.logger'
@@ -10,6 +11,7 @@ define 'soteria.sharing-api', [
   SecurityUtils     = require 'soteria.security-utils'
   Logger            = require 'soteria.logger'
   Config            = require 'soteria.configuration'
+  Promise           = require 'bluebird'
 
   sharingUrl        = -> Config.get('servicesUrl') + '/share'
 
@@ -29,10 +31,10 @@ define 'soteria.sharing-api', [
 
     # get all incoming shares
     getIncomingShares : ->
-      jquery.ajax(SecurityUtils.wrapRequest({
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
         url  : sharingUrl() + OBJECT_PATH
         type : 'GET'
-      }))
+      })))
       .then (data) ->
         return data
 
@@ -40,12 +42,12 @@ define 'soteria.sharing-api', [
     shareObject: (sharingRequest) ->
       sharingRequest.validate()
 
-      jquery.ajax(SecurityUtils.wrapRequest({
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
         url         : sharingUrl() + OBJECT_PATH + SHARE_PATH
         type        : 'POST'
         contentType : 'application/json'
         data        : JSON.stringify(sharingRequest)
-      }))
+      })))
       .then (response) ->
         logger.debug('shareObject', response)
         return response.data
@@ -54,12 +56,12 @@ define 'soteria.sharing-api', [
     revokeObject: (revocationRequest) ->
       revocationRequest.validate()
 
-      jquery.ajax(SecurityUtils.wrapRequest({
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
         url         : sharingUrl() + OBJECT_PATH + REVOKE_PATH
         type        : 'POST'
         contentType : 'application/json'
         data        : JSON.stringify(revocationRequest)
-      }))
+      })))
       .then (response) ->
         logger.debug('revokeObject', response)
         return response.data
@@ -68,12 +70,12 @@ define 'soteria.sharing-api', [
     registerKeys: (keyRegistrationRequest) ->
       keyRegistrationRequest.validate()
 
-      jquery.ajax(SecurityUtils.wrapRequest({
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
         url         : sharingUrl() + KEYS_PATH
         type        : 'POST'
         contentType : 'application/json'
         data        : JSON.stringify(keyRegistrationRequest)
-      }))
+      })))
       .then (response) ->
         logger.debug('registerKeys', response)
         return response.data

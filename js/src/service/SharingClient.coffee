@@ -66,11 +66,11 @@ define 'soteria.sharing-client', [
         .then (userKeysMap) =>
           seals = _.chain(userKeysMap)
             .mapValues((keyEnvelope, username) =>
-              publicKey             = keyEnvelope.toRsaPublicKey()
-              rsaCompressingService = new RsaCryptoService({publicKey})
-              marshalledCrypto      = @cryptoServiceMarshaller.marshall(cryptoService)
-              seal                  = rsaCompressingService.encrypt(marshalledCrypto)
-              sealBase64            = btoa(seal)
+              publicKey        = keyEnvelope.toRsaPublicKey()
+              rsaCryptoService = new RsaCryptoService({publicKey})
+              marshalledCrypto = @cryptoServiceMarshaller.marshall(cryptoService)
+              seal             = rsaCryptoService.encrypt(marshalledCrypto)
+              sealBase64       = btoa(seal)
               return sealBase64
             )
             .mapKeys((seal, username) ->

@@ -20,6 +20,7 @@ define 'soteria.sharing-client', [
   DirectoryApi                    = require 'soteria.directory-api'
   SharingRequest                  = require 'soteria.sharing-request'
   CredentialStore                 = require 'soteria.credential-store'
+  RsaCryptoService                = require 'soteria.rsa-crypto-service'
   CryptoServiceLoader             = require 'soteria.crypto-service-loader'
   CryptoServiceMarshaller         = require 'soteria.crypto-service-marshaller'
   RsaCompressingEncryptionService = require 'soteria.rsa-compressing-encryption-service'
@@ -66,7 +67,7 @@ define 'soteria.sharing-client', [
           seals = _.chain(userKeysMap)
             .mapValues((keyEnvelope, username) =>
               publicKey             = keyEnvelope.toRsaPublicKey()
-              rsaCompressingService = new RsaCompressingEncryptionService(publicKey)
+              rsaCompressingService = new RsaCryptoService({publicKey})
               marshalledCrypto      = @cryptoServiceMarshaller.marshall(cryptoService)
               seal                  = rsaCompressingService.encrypt(marshalledCrypto)
               sealBase64            = btoa(seal)

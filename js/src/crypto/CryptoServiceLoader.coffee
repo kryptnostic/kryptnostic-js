@@ -39,7 +39,7 @@ define 'soteria.crypto-service-loader', [
 
     getRsaCryptoService: ->
       keypair = CredentialStore.credentialProvider.load().keypair
-      return new RsaCryptoService(keypair.privateKey, keypair.publicKey)
+      return new RsaCryptoService(keypair)
 
     getObjectCryptoService: (id, options) ->
       options          = _.defaults({}, options, DEFAULT_OPTS)

@@ -10,7 +10,6 @@ define 'soteria.sharing-client', [
   'soteria.credential-store'
   'soteria.crypto-service-loader'
   'soteria.crypto-service-marshaller'
-  'soteria.rsa-compressing-encryption-service'
 ], (require) ->
   _                       = require 'lodash'
   Promise                 = require 'bluebird'

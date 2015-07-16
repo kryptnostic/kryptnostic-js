@@ -1,6 +1,6 @@
 {
   "name"     : "soteria",
-  "version"  : "0.0.2",
+  "version"  : "0.0.3",
   "main"     : "dist/soteria.js",
   "homepage" : "https://github.com/kryptnostic/soteria",
   "license"  : "Apache-2.0",

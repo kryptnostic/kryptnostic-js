@@ -12,17 +12,17 @@ define 'soteria.sharing-client', [
   'soteria.crypto-service-marshaller'
   'soteria.rsa-compressing-encryption-service'
 ], (require) ->
-  _                               = require 'lodash'
-  Promise                         = require 'bluebird'
-  Logger                          = require 'soteria.logger'
-  UserUtils                       = require 'soteria.user-utils'
-  SharingApi                      = require 'soteria.sharing-api'
-  DirectoryApi                    = require 'soteria.directory-api'
-  SharingRequest                  = require 'soteria.sharing-request'
-  CredentialStore                 = require 'soteria.credential-store'
-  CryptoServiceLoader             = require 'soteria.crypto-service-loader'
-  CryptoServiceMarshaller         = require 'soteria.crypto-service-marshaller'
-  RsaCompressingEncryptionService = require 'soteria.rsa-compressing-encryption-service'
+  _                       = require 'lodash'
+  Promise                 = require 'bluebird'
+  Logger                  = require 'soteria.logger'
+  UserUtils               = require 'soteria.user-utils'
+  SharingApi              = require 'soteria.sharing-api'
+  DirectoryApi            = require 'soteria.directory-api'
+  SharingRequest          = require 'soteria.sharing-request'
+  CredentialStore         = require 'soteria.credential-store'
+  RsaCryptoService        = require 'soteria.rsa-crypto-service'
+  CryptoServiceLoader     = require 'soteria.crypto-service-loader'
+  CryptoServiceMarshaller = require 'soteria.crypto-service-marshaller'
 
   logger     = Logger.get('SharingClient')
 
@@ -65,11 +65,11 @@ define 'soteria.sharing-client', [
         .then (userKeysMap) =>
           seals = _.chain(userKeysMap)
             .mapValues((keyEnvelope, username) =>
-              publicKey             = keyEnvelope.toRsaPublicKey()
-              rsaCompressingService = new RsaCompressingEncryptionService(publicKey)
-              marshalledCrypto      = @cryptoServiceMarshaller.marshall(cryptoService)
-              seal                  = rsaCompressingService.encrypt(marshalledCrypto)
-              sealBase64            = btoa(seal)
+              publicKey        = keyEnvelope.toRsaPublicKey()
+              rsaCryptoService = new RsaCryptoService({publicKey})
+              marshalledCrypto = @cryptoServiceMarshaller.marshall(cryptoService)
+              seal             = rsaCryptoService.encrypt(marshalledCrypto)
+              sealBase64       = btoa(seal)
               return sealBase64
             )
             .mapKeys((seal, username) ->

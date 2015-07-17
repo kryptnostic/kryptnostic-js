@@ -8,8 +8,8 @@ define 'soteria.configuration', [
   log    = Logger.get('ConfigurationService')
 
   DEFAULTS = {
-    servicesUrl        : 'http://localhost:8081/v1'
-    credentialProvider : 'soteria.credential-provider.memory'
+    servicesUrl        : 'http://api.kryptnostic.com/v1'
+    credentialProvider : 'soteria.credential-provider.local-storage'
   }
 
   #

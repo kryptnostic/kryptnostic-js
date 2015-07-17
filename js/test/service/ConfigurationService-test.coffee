@@ -6,8 +6,8 @@ define [
   ConfigurationService = require 'soteria.configuration'
 
   EXPECTED_DEFAULTS = {
-    servicesUrl        : 'http://localhost:8081/v1'
-    credentialProvider : 'soteria.credential-provider.memory'
+    servicesUrl        : 'http://api.kryptnostic.com/v1'
+    credentialProvider : 'soteria.credential-provider.local-storage'
   }
 
   OVERRIDE_URL = 'http://localhost:9000/v1'

@@ -1,28 +1,25 @@
 define 'soteria.credential-provider-loader', [
   'require'
-  'bluebird'
   'soteria.logger'
+  'soteria.credential-provider.memory'
+  'soteria.credential-provider.local-storage'
 ], (require) ->
 
-  Promise = require 'bluebird'
   Logger  = require 'soteria.logger'
 
   log = Logger.get('CredentialProviderLoader')
 
   #
-  # Loads credential providers dynamically by their module uri.
+  # Loads credential providers by their module uri.
   # Author: rbuckheit
   #
   class CredentialProviderLoader
 
     @load : (uri) ->
-      deferred = Promise.defer()
+      module = require(uri)
 
-      require [ uri ], (providerClass) ->
-        unless providerClass?
-          deferred.reject('unknown credential provider uri ' + uri)
-        else
-          log.info('loaded credential provider', {uri})
-          return deferred.resolve(providerClass)
+      if module?
+        return module
+      else
+        throw new Error 'failed to load credential provider for URI ' + uri
 
-      return deferred.promise

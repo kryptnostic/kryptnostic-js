@@ -7,28 +7,21 @@ define [
   Forge             = require 'forge'
   KeypairSerializer = require 'soteria.keypair-serializer'
 
-  PUBLIC_KEY_COMPARE_FIELDS  = ['n', 'e']
-  PRIVATE_KEY_COMPARE_FIELDS = ['n', 'e', 'd', 'p', 'q', 'dP', 'dQ', 'qInv']
+  TEST_ENCRYPT_MESSAGE = 'foo'
 
   describe 'KeypairSerializer', ->
 
-    it 'should serialize and hydrate a keypair', ->
-      keypair      = Forge.rsa.generateKeyPair({bits: 2048, e: 0x10001})
-      serialized   = KeypairSerializer.serialize(keypair)
-      deserialized = KeypairSerializer.hydrate(serialized)
+    it 'should serialize and hygrate a keypair which can still decrypt messages', ->
 
-      PUBLIC_KEY_COMPARE_FIELDS.forEach (field) ->
-        expect(deserialized.publicKey[field]).toEqual(keypair.publicKey[field])
-      PRIVATE_KEY_COMPARE_FIELDS.forEach (field) ->
-        window.console && console.info('field',field)
-        window.console && console.info(JSON.stringify(deserialized.privateKey[field]))
-        expect(deserialized.privateKey[field]).toEqual(keypair.privateKey[field])
+      keypair               = Forge.rsa.generateKeyPair({bits: 2048, e: 0x10001})
+      serialized            = KeypairSerializer.serialize(keypair)
+      deserialized          = KeypairSerializer.hydrate(serialized)
 
-    describe '#serialize', ->
+      keypairEncrypted      = keypair.publicKey.encrypt(TEST_ENCRYPT_MESSAGE)
+      deserializedEncrypted = deserialized.publicKey.encrypt(TEST_ENCRYPT_MESSAGE)
 
-      it 'should serialize to a known value', ->
+      deserializedDecrypted = deserialized.privateKey.decrypt(keypairEncrypted)
+      keypairDecrypted      = keypair.privateKey.decrypt(deserializedEncrypted)
 
-    describe '#hydrate', ->
-
-      it 'should hydrate a known keypair', ->
-
+      expect(deserializedDecrypted).toBe(TEST_ENCRYPT_MESSAGE)
+      expect(keypairDecrypted).toBe(TEST_ENCRYPT_MESSAGE)

@@ -24,15 +24,15 @@ define 'soteria.keypair-serializer', [
 
       privateKeyAsn1   = Forge.pki.privateKeyToAsn1(keypair.privateKey)
       privateKeyBuffer = Forge.asn1.toDer(privateKeyAsn1)
-      privateKeyBase64 = btoa(privateKeyBuffer.data)
-      return privateKeyBase64
+      serialized       = btoa(privateKeyBuffer.data)
+      return serialized
 
     @hydrate : (serialized) ->
       if !serialized || isUndefined(serialized)
         log.warn('keypair not initialized')
         return undefined
 
-      privateKeyBuffer = atob(serialized)
+      privateKeyBuffer = Forge.util.createBuffer(atob(serialized), 'raw')
       privateKeyAsn1   = Forge.asn1.fromDer(privateKeyBuffer)
       privateKey       = Forge.pki.privateKeyFromAsn1(privateKeyAsn1)
       publicKey        = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e)

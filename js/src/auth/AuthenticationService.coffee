@@ -32,8 +32,8 @@ define 'soteria.authentication-service', [
 
       Promise.resolve()
       .then ->
-        log.info('authenticating', {username, realm})
-        credentialService.deriveCredential({username, password, realm})
+        log.info('authenticating', { username, realm })
+        credentialService.deriveCredential { username, password, realm }
       .then (_credential) ->
         credential = _credential
         log.info('derived credential', credential)

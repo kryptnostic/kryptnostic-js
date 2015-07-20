@@ -7,7 +7,7 @@ define 'soteria.crypto-service-loader', [
   'soteria.aes-crypto-service'
   'soteria.directory-api'
   'soteria.crypto-service-marshaller'
-  'soteria.credential-store'
+  'soteria.credential-loader'
 ], (require) ->
   'use strict'
 
@@ -18,7 +18,7 @@ define 'soteria.crypto-service-loader', [
   DirectoryApi            = require 'soteria.directory-api'
   Logger                  = require 'soteria.logger'
   CryptoServiceMarshaller = require 'soteria.crypto-service-marshaller'
-  CredentialStore         = require 'soteria.credential-store'
+  CredentialLoader        = require 'soteria.credential-loader'
 
   INT_SIZE     = 4
   EMPTY_BUFFER = ''
@@ -38,7 +38,7 @@ define 'soteria.crypto-service-loader', [
       @marshaller       = new CryptoServiceMarshaller()
 
     getRsaCryptoService: ->
-      keypair = CredentialStore.credentialProvider.load().keypair
+      {keypair} = CredentialLoader.getCredentials()
       return new RsaCryptoService(keypair)
 
     getObjectCryptoService: (id, options) ->

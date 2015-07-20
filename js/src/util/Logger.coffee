@@ -1,14 +1,27 @@
 define 'soteria.logger', [
   'require'
+  'lodash'
   'loglevel'
 ], (require) ->
+
+  log     = require 'loglevel'
+  _       = require 'lodash'
 
   # log configuration
   # =================
 
-  log     = require 'loglevel'
   PERSIST = true
+
   log.setLevel('trace', PERSIST)
+
+  # helpers
+  # =======
+
+  format = (message, args) ->
+    if _.isArray(args) && args.length
+      return "#{message} #{args.map(JSON.stringify)}"
+    else
+      return message
 
   #
   # Proxy logger which appends module names before logging.
@@ -22,23 +35,18 @@ define 'soteria.logger', [
     constructor : (@moduleName) ->
 
     trace : (message, args...) ->
-      args = args.map(JSON.stringify)
-      log.trace("[#{@moduleName}] #{message} #{args}")
+      log.trace("[#{@moduleName}] #{format(message, args)}")
 
     info : (message, args...) ->
-      args = args.map(JSON.stringify)
-      log.info("[#{@moduleName}] #{message} #{args}")
+      log.info("[#{@moduleName}] #{format(message, args)}")
 
     warn : (message, args...) ->
-      args = args.map(JSON.stringify)
-      log.warn("[#{@moduleName}] #{message} #{args}")
+      log.warn("[#{@moduleName}] #{format(message, args)}")
 
     error : (message, args...) ->
-      args = args.map(JSON.stringify)
-      log.error("[#{@moduleName}] #{message} #{args}")
+      log.error("[#{@moduleName}] #{format(message, args)}")
 
     debug: (message, args...) ->
-      args = args.map(JSON.stringify)
-      log.debug("[#{@moduleName}] #{message} #{args}")
+      log.debug("[#{@moduleName}] #{format(message, args)}")
 
   return Logger

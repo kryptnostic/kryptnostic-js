@@ -66,10 +66,4 @@ This can be fixed by tracing dependencies of `soteria.my-module` and breaking th
 
 ## browser testing
 
-For end-to-end testing, build using `build.sh` then open `demo/index.html` in the browser.
-
-On chrome you need to disable web security to allow the page to communicate with locally running Kryptnostic servers.
-
-`open /Applications/Google\ Chrome.app -n --args --disable-web-security`
-
-Alternatively, you can use the CORS extension or create a proxy.
+For an end-to-end demo, build using `build.sh` then open `demo/index.html` in the browser.

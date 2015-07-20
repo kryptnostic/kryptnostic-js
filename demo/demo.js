@@ -37,7 +37,6 @@ require([
   // configure the client
   Config.set({
     servicesUrl        : 'http://localhost:8081/v1',
-    credentialProvider : 'soteria.credential-provider.memory'
   });
 
   // authenticate the user

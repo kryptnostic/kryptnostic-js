@@ -11,7 +11,7 @@ define 'soteria.security-utils', [
 
   wrapRequest = (request) ->
     request.beforeSend = (xhr) ->
-      {principal, credential} = CredentialLoader.getCredentials()
+      { principal, credential } = CredentialLoader.getCredentials()
       xhr.setRequestHeader(PRINCIPAL_COOKIE, principal)
       xhr.setRequestHeader(CREDENTIAL_COOKIE, credential)
 

@@ -5,8 +5,6 @@ define 'soteria.credential-provider.memory', [
 
   Logger = require 'soteria.logger'
 
-  ZERO = ''
-
   log = Logger.get('InMemoryCredentialProvider')
 
   #
@@ -15,21 +13,20 @@ define 'soteria.credential-provider.memory', [
   #
   class InMemoryCredentialProvider
 
-    store: ({@principal, @credential, @keypair}) ->
-      log.info('store')
-      if !@principal or !@credential
+    @store: ({@principal, @credential, @keypair}) ->
+      unless !!@principal and !!@credential
         throw new Error 'must specify all credentials'
+      log.info('stored credentials')
 
-    load: ->
-      log.info('load')
-      if !@principal or !@credential
+    @load: ->
+      unless !!@principal and !!@credential
         throw new Error 'user is not authenticated'
-      return {@principal, @credential, @keypair}
+      return { @principal, @credential, @keypair }
 
-    destroy: ->
-      log.info('destroy')
-      @principal  = ZERO
-      @credential = ZERO
-      @keypair    = ZERO
+    @destroy: ->
+      @principal  = undefined
+      @credential = undefined
+      @keypair    = undefined
+      log.info('destroyed credentials')
 
   return InMemoryCredentialProvider

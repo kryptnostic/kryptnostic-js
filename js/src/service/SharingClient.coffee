@@ -7,7 +7,7 @@ define 'soteria.sharing-client', [
   'soteria.sharing-api'
   'soteria.directory-api'
   'soteria.sharing-request'
-  'soteria.credential-store'
+  'soteria.credential-loader'
   'soteria.crypto-service-loader'
   'soteria.crypto-service-marshaller'
 ], (require) ->
@@ -18,7 +18,7 @@ define 'soteria.sharing-client', [
   SharingApi              = require 'soteria.sharing-api'
   DirectoryApi            = require 'soteria.directory-api'
   SharingRequest          = require 'soteria.sharing-request'
-  CredentialStore         = require 'soteria.credential-store'
+  CredentialLoader        = require 'soteria.credential-loader'
   RsaCryptoService        = require 'soteria.rsa-crypto-service'
   CryptoServiceLoader     = require 'soteria.crypto-service-loader'
   CryptoServiceMarshaller = require 'soteria.crypto-service-marshaller'
@@ -49,12 +49,14 @@ define 'soteria.sharing-client', [
       validateId(id)
       validateUsernames(usernames)
 
-      {principal}         = CredentialStore.credentialProvider.load()
-      {realm}             = UserUtils.principalToComponents(principal)
+      {principal}         = CredentialLoader.getCredentials()
+      realm               = UserUtils.principalToComponents(principal).realm
       cryptoServiceLoader = new CryptoServiceLoader()
       sharingKey          = ''
 
-      return cryptoServiceLoader.getObjectCryptoService(id)
+      Promise.resolve()
+      .then ->
+        cryptoServiceLoader.getObjectCryptoService(id)
       .then (cryptoService) =>
         promiseMap = _.mapValues(_.object(usernames), (empty, username) =>
           return Promise.resolve(@directoryApi.getPublicKey(username))

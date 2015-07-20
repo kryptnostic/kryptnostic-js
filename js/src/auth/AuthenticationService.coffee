@@ -11,7 +11,6 @@ define 'soteria.authentication-service', [
   Promise                  = require 'bluebird'
   Logger                   = require 'soteria.logger'
   Config                   = require 'soteria.configuration'
-  CredentialStore          = require 'soteria.credential-store'
   CredentialProviderLoader = require 'soteria.credential-provider-loader'
   CredentialService        = require 'soteria.credential-service'
   UserUtils                = require 'soteria.user-utils'
@@ -24,32 +23,29 @@ define 'soteria.authentication-service', [
   #
   class AuthenticationService
 
-    @authenticate : ({username, password, realm}) ->
-      providerUri       = Config.get('credentialProvider')
-      credentialService = new CredentialService()
+    @authenticate: ({username, password, realm}) ->
+      {principal, credential, keypair} = {}
 
-      log.info('authenticating', {username, realm})
+      credentialService  = new CredentialService()
+      credentialProvider = CredentialProviderLoader.load(Config.get('credentialProvider'))
+      principal          = UserUtils.componentsToPrincipal({realm, username})
 
-      promises = {
-        providerClass : CredentialProviderLoader.load(providerUri)
-        credential    : credentialService.deriveCredential({username, password, realm})
-      }
-
-      Promise.props(promises)
-      .then ({providerClass, credential}) ->
+      Promise.resolve()
+      .then ->
+        log.info('authenticating', { username, realm })
+        credentialService.deriveCredential { username, password, realm }
+      .then (_credential) ->
+        credential = _credential
         log.info('derived credential', credential)
-        credentialProvider = new providerClass()
-        CredentialStore.store(credentialProvider)
-
-        principal = UserUtils.componentsToPrincipal({realm, username})
         credentialProvider.store { principal, credential }
-
-        return credentialService.deriveKeypair({password})
-        .then (keypair) ->
-          credentialProvider.store {principal, credential, keypair}
-          log.info('authentication complete')
+        credentialService.deriveKeypair({ password })
+      .then (_keypair) ->
+        keypair = _keypair
+        credentialProvider.store { principal, credential, keypair }
+        log.info('authentication complete')
 
     @destroy: ->
-      CredentialStore.destroy()
+      credentialProvider = CredentialProviderLoader.load(Config.get('credentialProvider'))
+      return credentialProvider.destroy()
 
   return AuthenticationService

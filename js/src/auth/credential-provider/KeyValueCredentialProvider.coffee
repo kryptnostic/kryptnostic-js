@@ -40,8 +40,6 @@ define 'soteria.credential-provider.key-value', [
         @storage.setItem(KEYPAIR_KEY, keypair)
 
     @load: (@storage) ->
-      log.info('load')
-
       principal  = @storage.getItem(PRINCIPAL_KEY)
       credential = @storage.getItem(CREDENTIAL_KEY)
       keypair    = @storage.getItem(KEYPAIR_KEY)

@@ -7,7 +7,7 @@ define [
 
   EXPECTED_DEFAULTS = {
     servicesUrl        : 'http://api.kryptnostic.com/v1'
-    credentialProvider : 'soteria.credential-provider.local-storage'
+    credentialProvider : 'soteria.credential-provider.session-storage'
   }
 
   OVERRIDE_URL = 'http://localhost:9000/v1'
@@ -16,7 +16,7 @@ define [
 
     describe 'initialization', ->
 
-      it 'should initialize with a default services URL of localhost', ->
+      it 'should initialize with a default services URL of production instance', ->
         expect(ConfigurationService.get('servicesUrl')).toBeDefined()
         expect(ConfigurationService.get('servicesUrl')).toBe(EXPECTED_DEFAULTS.servicesUrl)
 

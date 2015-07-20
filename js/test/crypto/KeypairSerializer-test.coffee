@@ -11,17 +11,20 @@ define [
 
   describe 'KeypairSerializer', ->
 
-    it 'should serialize and hygrate a keypair which can still decrypt messages', ->
-
+    it 'should serialize and deserialize a keypair which can still decrypt messages', ->
       keypair               = Forge.rsa.generateKeyPair({bits: 2048, e: 0x10001})
-      serialized            = KeypairSerializer.serialize(keypair)
-      deserialized          = KeypairSerializer.hydrate(serialized)
+      deserialized          = KeypairSerializer.hydrate(KeypairSerializer.serialize(keypair))
 
       keypairEncrypted      = keypair.publicKey.encrypt(TEST_ENCRYPT_MESSAGE)
-      deserializedEncrypted = deserialized.publicKey.encrypt(TEST_ENCRYPT_MESSAGE)
-
       deserializedDecrypted = deserialized.privateKey.decrypt(keypairEncrypted)
-      keypairDecrypted      = keypair.privateKey.decrypt(deserializedEncrypted)
 
       expect(deserializedDecrypted).toBe(TEST_ENCRYPT_MESSAGE)
+
+    it 'should serialize and deserialize a keypair which can still encrypt messages', ->
+      keypair               = Forge.rsa.generateKeyPair({bits: 2048, e: 0x10001})
+      deserialized          = KeypairSerializer.hydrate(KeypairSerializer.serialize(keypair))
+
+      deserializedEncrypted = deserialized.publicKey.encrypt(TEST_ENCRYPT_MESSAGE)
+      keypairDecrypted      = keypair.privateKey.decrypt(deserializedEncrypted)
+
       expect(keypairDecrypted).toBe(TEST_ENCRYPT_MESSAGE)

@@ -9,7 +9,7 @@ define 'soteria.configuration', [
 
   DEFAULTS = {
     servicesUrl        : 'http://api.kryptnostic.com/v1'
-    credentialProvider : 'soteria.credential-provider.local-storage'
+    credentialProvider : 'soteria.credential-provider.session-storage'
   }
 
   #

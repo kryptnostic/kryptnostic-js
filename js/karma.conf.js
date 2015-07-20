@@ -72,7 +72,8 @@ module.exports = function(config) {
     // if true, Karma captures browsers, runs the tests and exits
     singleRun: false,
 
-    captureTimeout: 100000,
-    browserNoActivityTimeout: 100000
+    captureTimeout           : 100000,
+
+    browserNoActivityTimeout : 100000
   });
 };

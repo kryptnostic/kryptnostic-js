@@ -3,6 +3,7 @@ define 'soteria.credential-provider-loader', [
   'soteria.logger'
   'soteria.credential-provider.memory'
   'soteria.credential-provider.local-storage'
+  'soteria.credential-provider.session-storage'
 ], (require) ->
 
   Logger  = require 'soteria.logger'

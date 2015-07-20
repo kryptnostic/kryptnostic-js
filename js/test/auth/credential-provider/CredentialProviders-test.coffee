@@ -21,10 +21,9 @@ define [
 
     beforeEach ->
       CredentialProvider.destroy()
-      id         = Math.floor(Math.random() * 1000)
-      principal  = "krypt|demo-#{id}"
-      keypair    = Forge.rsa.generateKeyPair({bits: 128, e: 0x10001})
+      principal  = 'krypt|demo'
       credential = 'fake-credential'
+      keypair    = Forge.rsa.generateKeyPair({bits: 128, e: 0x10001})
 
     afterEach ->
       CredentialProvider.destroy()

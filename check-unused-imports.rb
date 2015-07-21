@@ -5,11 +5,14 @@
 # Author: rbuckheit
 #
 
+def bash_green(string)
+  return "\033[1m\033[32m#{string}\033[0m\033[22m"
+end
+
 REQUIRE_PATTERN = /\s*(.*) = require(.*)/
 files = Dir.glob('js/**/*.coffee')
 
 files.each do |file|
-  puts "checking #{file}"
   lines         = File.readlines(file)
   require_lines = lines.select{|l| l.match(REQUIRE_PATTERN) }
 
@@ -24,5 +27,5 @@ files.each do |file|
       raise 'please fix this unused import.'
     end
   end
-
+  puts "#{file} #{bash_green("✓")}"
 end

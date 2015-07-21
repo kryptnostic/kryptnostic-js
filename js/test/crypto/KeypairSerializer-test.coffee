@@ -9,10 +9,15 @@ define [
 
   TEST_ENCRYPT_MESSAGE = 'foo'
 
+  {keypair} = {}
+
+  beforeEach ->
+    keypair = Forge.rsa.generateKeyPair({bits: 128, e: 0x10001})
+
+
   describe 'KeypairSerializer', ->
 
     it 'should serialize and deserialize a keypair which can still decrypt messages', ->
-      keypair               = Forge.rsa.generateKeyPair({bits: 2048, e: 0x10001})
       deserialized          = KeypairSerializer.hydrate(KeypairSerializer.serialize(keypair))
 
       keypairEncrypted      = keypair.publicKey.encrypt(TEST_ENCRYPT_MESSAGE)
@@ -21,7 +26,6 @@ define [
       expect(deserializedDecrypted).toBe(TEST_ENCRYPT_MESSAGE)
 
     it 'should serialize and deserialize a keypair which can still encrypt messages', ->
-      keypair               = Forge.rsa.generateKeyPair({bits: 2048, e: 0x10001})
       deserialized          = KeypairSerializer.hydrate(KeypairSerializer.serialize(keypair))
 
       deserializedEncrypted = deserialized.publicKey.encrypt(TEST_ENCRYPT_MESSAGE)

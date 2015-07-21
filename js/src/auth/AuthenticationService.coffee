@@ -38,7 +38,7 @@ define 'soteria.authentication-service', [
         credential = _credential
         log.info('derived credential')
         credentialProvider.store { principal, credential }
-        credentialService.deriveKeypair({ password })
+        credentialService.deriveKeypair { password }
       .then (_keypair) ->
         keypair = _keypair
         credentialProvider.store { principal, credential, keypair }

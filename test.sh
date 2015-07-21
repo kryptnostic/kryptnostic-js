@@ -13,26 +13,26 @@ echo "running with mode $mode";
 
 # lint
 # ====
-echo "linting files...";
+echo; echo "linting files...";
 find js -name *.coffee | xargs ./node_modules/coffeelint/bin/coffeelint;
 
 # commit hooks
 # ============
-echo "running commit hooks..."
+echo; echo "running commit hooks..."
 ./commit-hooks.rb;
 
 # unused import checking
-echo "checking for unused imports..."
+echo; echo "checking for unused imports..."
 ./check-unused-imports.rb;
 
 # r.js build
 # ==========
-echo "building soteria.js...";
+echo; echo "building soteria.js...";
 ./build.sh;
 
 # karma tests
 # ===========
-echo "running unit tests...";
+echo; echo "running unit tests...";
 cd js;
 if [[ $mode =~ "--full" ]]; then
   echo "running in browsers"

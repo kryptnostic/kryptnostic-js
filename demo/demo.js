@@ -80,7 +80,7 @@ require([
       sharingClient.shareObject(objectId, shareWithUsers)
     });
 
-    // delete an object and all of its children resursively
+    // delete an object and all of its children recursively
     storageClient.getObjectIds()
     .then(function(ids) {
       return treeLoader.load(_.last(ids));

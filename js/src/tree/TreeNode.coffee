@@ -34,7 +34,7 @@ define 'soteria.tree-node', [
       validateId(@id)
       validateChildren(@children)
 
-    # visits children depth-first and then the root note.
+    # visits children depth-first and then the root node
     visit : (visitor) ->
       log.info('visit root')
       Promise.all(_.map(@children, (child) ->

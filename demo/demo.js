@@ -19,7 +19,9 @@ require([
   'soteria.storage-request',
   'soteria.sharing-client',
   'soteria.configuration',
-  'soteria.authentication-service'
+  'soteria.authentication-service',
+  'soteria.tree-loader',
+  'soteria.deletion-visitor'
 ], function(require) {
 
   var Promise               = require('bluebird');
@@ -29,10 +31,13 @@ require([
   var SharingClient         = require('soteria.sharing-client');
   var Config                = require('soteria.configuration');
   var AuthenticationService = require('soteria.authentication-service');
+  var TreeLoader            = require('soteria.tree-loader');
+  var DeletionVisitor       = require('soteria.deletion-visitor');
 
   var cryptoServiceLoader = new CryptoServiceLoader();
   var storageClient       = new StorageClient();
   var sharingClient       = new SharingClient();
+  var treeLoader          = new TreeLoader();
 
   // configure the client
   Config.set({
@@ -75,6 +80,13 @@ require([
       sharingClient.shareObject(objectId, shareWithUsers)
     });
 
+    // delete an object and all of its children resursively
+    storageClient.getObjectIds()
+    .then(function(ids) {
+      return treeLoader.load(_.last(ids));
+    })
+    .then (function(tree) {
+      tree.visit(new DeletionVisitor());
+    });
   });
-
 });

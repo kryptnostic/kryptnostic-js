@@ -36,7 +36,7 @@ echo; echo "running unit tests...";
 cd js;
 if [[ $mode =~ "--full" ]]; then
   echo "running in browsers"
-  ../node_modules/karma-cli/bin/karma start --single-run true --browsers Chrome,Safari,PhantomJS
+  ../node_modules/karma-cli/bin/karma start --single-run true --browsers Chrome,Safari,PhantomJS,Firefox
 else
   ../node_modules/karma-cli/bin/karma start --single-run true;
 fi

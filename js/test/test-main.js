@@ -4,6 +4,7 @@ var allMockFiles   = [];
 
 var TEST_REGEXP    = /(.*)(spec|test)\.(js|coffee)$/i;
 var SOTERIA_REGEXP = /soteria.js/;
+var SINON_REGEXP   = /sinon.js/;
 var MOCK_REGEXP    = /mock(.*)\.(js)/;
 
 var pathToModule = function(path) {
@@ -23,6 +24,10 @@ Object.keys(window.__karma__.files).forEach(function(file) {
   }
   if (SOTERIA_REGEXP.test(file)) {
     log.info('found BUILD: ' + file);
+    allBuildFiles.push(file);
+  }
+  if (SINON_REGEXP.test(file)) {
+    log.info('found DEP: ' + file);
     allBuildFiles.push(file);
   }
   if (MOCK_REGEXP.test(file)) {

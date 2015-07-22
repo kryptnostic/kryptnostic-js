@@ -15,6 +15,7 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       '../dist/soteria.js',
+      '../bower_components/sinon-1.15.4/index.js',
       'test/test-main.js',
       { pattern: 'test/**/*.js',        included: false },
       { pattern: 'test/**/*.coffee',    included: false }

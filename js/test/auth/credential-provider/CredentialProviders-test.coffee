@@ -23,7 +23,7 @@ define [
       CredentialProvider.destroy()
       principal  = 'krypt|demo'
       credential = 'fake-credential'
-      keypair    = Forge.rsa.generateKeyPair({bits: 128, e: 0x10001})
+      keypair    = Forge.rsa.generateKeyPair({bits: 32, e: 0x10001})
 
     afterEach ->
       CredentialProvider.destroy()

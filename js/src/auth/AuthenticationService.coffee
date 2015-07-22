@@ -36,9 +36,9 @@ define 'soteria.authentication-service', [
         credentialService.deriveCredential { username, password, realm }
       .then (_credential) ->
         credential = _credential
-        log.info('derived credential', credential)
+        log.info('derived credential')
         credentialProvider.store { principal, credential }
-        credentialService.deriveKeypair({ password })
+        credentialService.deriveKeypair { password }
       .then (_keypair) ->
         keypair = _keypair
         credentialProvider.store { principal, credential, keypair }

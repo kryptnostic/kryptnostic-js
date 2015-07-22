@@ -6,6 +6,7 @@ define 'soteria.object-api', [
   'soteria.kryptnostic-object'
   'soteria.logger'
   'soteria.security-utils'
+  'soteria.object-metadata'
 ], (require) ->
 
   jquery            = require 'jquery'
@@ -14,6 +15,7 @@ define 'soteria.object-api', [
   Logger            = require 'soteria.logger'
   Config            = require 'soteria.configuration'
   Promise           = require 'bluebird'
+  ObjectMetadata    = require 'soteria.object-metadata'
 
   objectUrl         = -> Config.get('servicesUrl') + '/object'
 
@@ -51,6 +53,17 @@ define 'soteria.object-api', [
       })))
       .then (data) ->
         return KryptnosticObject.createFromEncrypted(data)
+
+    # load object metadata only without contents
+    getObjectMetadata: (id) ->
+      validateId(id)
+
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
+        url  : objectUrl() + '/' + id + '/metadata'
+        type : 'GET'
+      })))
+      .then (data) ->
+        return new ObjectMetadata(data)
 
     # get all object ids of a particular type
     getObjectIdsByType: (type) ->

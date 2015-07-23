@@ -22,8 +22,8 @@
     "url" : "https://github.com/kryptnostic/kryptnostic/issues"
   },
   "dependencies": {
-    "revalidator" : "^0.3.1",
-    "node-forge"  : "0.6.21"
+    "revalidator" : "0.3.1",
+    "node-forge"  : "0.6.30"
   },
   "devDependencies": {
     "coffeelint"                : "^1.10.1",

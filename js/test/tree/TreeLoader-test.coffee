@@ -2,18 +2,18 @@ define [
   'require'
   'sinon'
   'bluebird'
-  'soteria.tree-loader'
-  'soteria.logger'
-  'soteria.credential-loader'
+  'kryptnostic.tree-loader'
+  'kryptnostic.logger'
+  'kryptnostic.credential-loader'
 ], (require) ->
 
   MOCK_CREDS = { principal: 'krypt|demo', credential: 'fake', keypair: {}}
 
-  Logger           = require 'soteria.logger'
-  TreeLoader       = require 'soteria.tree-loader'
+  Logger           = require 'kryptnostic.logger'
+  TreeLoader       = require 'kryptnostic.tree-loader'
   sinon            = require 'sinon'
   Promise          = require 'bluebird'
-  CredentialLoader = require 'soteria.credential-loader'
+  CredentialLoader = require 'kryptnostic.credential-loader'
 
   log = Logger.get('TreeLoader')
 

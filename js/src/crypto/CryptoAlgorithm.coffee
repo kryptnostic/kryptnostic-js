@@ -1,9 +1,9 @@
-define 'soteria.crypto-algorithm', [
+define 'kryptnostic.crypto-algorithm', [
   'require'
 ], (require) ->
 
   #
-  # Enumeration of algorithms supported by soteria.
+  # Enumeration of algorithms supported by kryptnostic.
   # Author: rbuckheit
   #
 

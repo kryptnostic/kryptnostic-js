@@ -1,12 +1,12 @@
-define 'soteria.password-crypto-service', [
+define 'kryptnostic.password-crypto-service', [
   'require',
   'forge',
-  'soteria.abstract-crypto-service'
+  'kryptnostic.abstract-crypto-service'
 ], (require) ->
   'use strict'
 
   Forge                 = require('forge')
-  AbstractCryptoService = require('soteria.abstract-crypto-service')
+  AbstractCryptoService = require('kryptnostic.abstract-crypto-service')
 
   DEFAULT_ALGORITHM     = 'AES'
   DEFAULT_MODE          = 'CTR'

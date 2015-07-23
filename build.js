@@ -1,8 +1,8 @@
 (
   {
     baseUrl                : 'js/src',
-    name                   : 'cs!soteria',
-    out                    : 'dist/soteria.js',
+    name                   : 'cs!kryptnostic',
+    out                    : 'dist/kryptnostic.js',
     optimize               : 'none',
     wrap                   : false,
     findNestedDependencies : true,

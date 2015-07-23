@@ -27,7 +27,7 @@ echo; echo "checking for unused imports..."
 
 # r.js build
 # ==========
-echo; echo "building soteria.js...";
+echo; echo "building kryptnostic.js...";
 ./build.sh;
 
 # karma tests

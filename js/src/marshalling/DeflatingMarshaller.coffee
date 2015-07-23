@@ -1,4 +1,4 @@
-define 'soteria.deflating-marshaller', [
+define 'kryptnostic.deflating-marshaller', [
   'require'
   'pako'
   'forge'

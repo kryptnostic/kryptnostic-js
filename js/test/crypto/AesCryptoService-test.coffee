@@ -1,15 +1,15 @@
 define [
   'require',
   'forge',
-  'soteria.aes-crypto-service',
-  'soteria.password-crypto-service',
-  'soteria.block-ciphertext'
+  'kryptnostic.aes-crypto-service',
+  'kryptnostic.password-crypto-service',
+  'kryptnostic.block-ciphertext'
 ], (require) ->
 
-  AesCryptoService      = require 'soteria.aes-crypto-service'
-  PasswordCryptoService = require 'soteria.password-crypto-service'
+  AesCryptoService      = require 'kryptnostic.aes-crypto-service'
+  PasswordCryptoService = require 'kryptnostic.password-crypto-service'
   Forge                 = require 'forge'
-  BlockCiphertext       = require 'soteria.block-ciphertext'
+  BlockCiphertext       = require 'kryptnostic.block-ciphertext'
 
   CYPHER = { algorithm: 'AES', mode: 'CTR' }
 

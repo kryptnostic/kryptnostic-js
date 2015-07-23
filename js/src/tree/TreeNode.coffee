@@ -1,13 +1,13 @@
-define 'soteria.tree-node', [
+define 'kryptnostic.tree-node', [
   'require'
   'bluebird'
   'lodash'
-  'soteria.logger'
+  'kryptnostic.logger'
 ], (require) ->
 
   _       = require 'lodash'
   Promise = require 'bluebird'
-  Logger  = require 'soteria.logger'
+  Logger  = require 'kryptnostic.logger'
 
   log = Logger.get('TreeNode')
 

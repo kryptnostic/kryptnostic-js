@@ -1,16 +1,16 @@
-define 'soteria.tree-loader', [
+define 'kryptnostic.tree-loader', [
   'require'
   'bluebird'
-  'soteria.logger'
-  'soteria.tree-node'
-  'soteria.object-api'
-  'soteria.object-utils'
+  'kryptnostic.logger'
+  'kryptnostic.tree-node'
+  'kryptnostic.object-api'
+  'kryptnostic.object-utils'
 ], (require) ->
 
-  ObjectApi   = require 'soteria.object-api'
-  ObjectUtils = require 'soteria.object-utils'
-  TreeNode    = require 'soteria.tree-node'
-  Logger      = require 'soteria.logger'
+  ObjectApi   = require 'kryptnostic.object-api'
+  ObjectUtils = require 'kryptnostic.object-utils'
+  TreeNode    = require 'kryptnostic.tree-node'
+  Logger      = require 'kryptnostic.logger'
   Promise     = require 'bluebird'
 
   log = Logger.get('TreeLoader')

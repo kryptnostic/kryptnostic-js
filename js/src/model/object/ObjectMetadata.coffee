@@ -1,14 +1,14 @@
-define 'soteria.object-metadata', [
+define 'kryptnostic.object-metadata', [
   'require'
   'lodash'
-  'soteria.schema.validator'
-  'soteria.schema.object-metadata'
+  'kryptnostic.schema.validator'
+  'kryptnostic.schema.object-metadata'
 ], (require) ->
   'use strict'
 
   _         = require 'lodash'
-  validator = require 'soteria.schema.validator'
-  SCHEMA    = require 'soteria.schema.object-metadata'
+  validator = require 'kryptnostic.schema.validator'
+  SCHEMA    = require 'kryptnostic.schema.object-metadata'
 
   getDefaultOpts = ->
     return {
@@ -16,7 +16,7 @@ define 'soteria.object-metadata', [
       version          : 0
       total            : 0
       childObjectCount : 0
-      strategy         : {'@class' : 'soteria.chunking.strategy.default'}
+      strategy         : {'@class' : 'kryptnostic.chunking.strategy.default'}
       owners           : []
       readers          : []
       writers          : []

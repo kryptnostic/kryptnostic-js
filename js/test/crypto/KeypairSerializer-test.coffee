@@ -1,11 +1,11 @@
 define [
   'require'
   'forge'
-  'soteria.keypair-serializer'
+  'kryptnostic.keypair-serializer'
 ], (require) ->
 
   Forge             = require 'forge'
-  KeypairSerializer = require 'soteria.keypair-serializer'
+  KeypairSerializer = require 'kryptnostic.keypair-serializer'
 
   TEST_ENCRYPT_MESSAGE = 'foo'
 

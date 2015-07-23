@@ -1,6 +1,6 @@
 define [
   'require'
-  'soteria.public-key-envelope'
+  'kryptnostic.public-key-envelope'
 ],  (require) ->
 
   BASE64_PUBLIC_KEY = 'MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAjPtMyZrsuhw+nvKPsRAcB1fJIwMFW9r\
@@ -49,7 +49,7 @@ define [
     }
   }
 
-  PublicKeyEnvelope = require 'soteria.public-key-envelope'
+  PublicKeyEnvelope = require 'kryptnostic.public-key-envelope'
 
   describe 'PublicKeyEnvelope',  ->
 

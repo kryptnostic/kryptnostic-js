@@ -1,11 +1,11 @@
-define 'soteria.credential-loader', [
+define 'kryptnostic.credential-loader', [
   'require'
-  'soteria.configuration'
-  'soteria.credential-provider-loader'
+  'kryptnostic.configuration'
+  'kryptnostic.credential-provider-loader'
 ], (require) ->
 
-  Config                   = require 'soteria.configuration'
-  CredentialProviderLoader = require 'soteria.credential-provider-loader'
+  Config                   = require 'kryptnostic.configuration'
+  CredentialProviderLoader = require 'kryptnostic.credential-provider-loader'
 
   class CredentialLoader
 

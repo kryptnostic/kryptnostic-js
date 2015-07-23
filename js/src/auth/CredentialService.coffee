@@ -1,13 +1,13 @@
-define 'soteria.credential-service', [
+define 'kryptnostic.credential-service', [
   'require'
   'forge'
-  'soteria.directory-api'
-  'soteria.password-crypto-service'
+  'kryptnostic.directory-api'
+  'kryptnostic.password-crypto-service'
 ], (require) ->
 
   Forge                 = require 'forge'
-  DirectoryApi          = require 'soteria.directory-api'
-  PasswordCryptoService = require 'soteria.password-crypto-service'
+  DirectoryApi          = require 'kryptnostic.directory-api'
+  PasswordCryptoService = require 'kryptnostic.password-crypto-service'
 
   DEFAULT_ITERATIONS = 1000
   DEFAULT_KEY_SIZE   = 32

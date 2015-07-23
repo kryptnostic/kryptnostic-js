@@ -2,7 +2,7 @@
 
 //
 // Demo script for testing library. Loads some kryptnosticObjects from the Kryptnostic backend as a smoke test of library functioanlity.
-// All modules requried are loaded from the built soteria.js, so require.js configuration is not necessary.
+// All modules requried are loaded from the built kryptnostic.js, so require.js configuration is not necessary.
 //
 
 var renderObject = function (kryptnosticObject) {
@@ -14,25 +14,25 @@ var renderObject = function (kryptnosticObject) {
 require([
   'require',
   'bluebird',
-  'soteria.crypto-service-loader',
-  'soteria.storage-client',
-  'soteria.storage-request',
-  'soteria.sharing-client',
-  'soteria.configuration',
-  'soteria.authentication-service',
-  'soteria.tree-loader',
-  'soteria.deletion-visitor'
+  'kryptnostic.crypto-service-loader',
+  'kryptnostic.storage-client',
+  'kryptnostic.storage-request',
+  'kryptnostic.sharing-client',
+  'kryptnostic.configuration',
+  'kryptnostic.authentication-service',
+  'kryptnostic.tree-loader',
+  'kryptnostic.deletion-visitor'
 ], function(require) {
 
   var Promise               = require('bluebird');
-  var CryptoServiceLoader   = require('soteria.crypto-service-loader');
-  var StorageClient         = require('soteria.storage-client');
-  var StorageRequest        = require('soteria.storage-request');
-  var SharingClient         = require('soteria.sharing-client');
-  var Config                = require('soteria.configuration');
-  var AuthenticationService = require('soteria.authentication-service');
-  var TreeLoader            = require('soteria.tree-loader');
-  var DeletionVisitor       = require('soteria.deletion-visitor');
+  var CryptoServiceLoader   = require('kryptnostic.crypto-service-loader');
+  var StorageClient         = require('kryptnostic.storage-client');
+  var StorageRequest        = require('kryptnostic.storage-request');
+  var SharingClient         = require('kryptnostic.sharing-client');
+  var Config                = require('kryptnostic.configuration');
+  var AuthenticationService = require('kryptnostic.authentication-service');
+  var TreeLoader            = require('kryptnostic.tree-loader');
+  var DeletionVisitor       = require('kryptnostic.deletion-visitor');
 
   var cryptoServiceLoader = new CryptoServiceLoader();
   var storageClient       = new StorageClient();

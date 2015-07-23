@@ -1,9 +1,9 @@
 define [
   'require'
-  'soteria.user-utils'
+  'kryptnostic.user-utils'
 ], (require) ->
 
-  UserUtils = require 'soteria.user-utils'
+  UserUtils = require 'kryptnostic.user-utils'
 
   {componentsToPrincipal, principalToComponents} = UserUtils
 

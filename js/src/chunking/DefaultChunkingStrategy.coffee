@@ -1,4 +1,4 @@
-define 'soteria.chunking.strategy.default', [
+define 'kryptnostic.chunking.strategy.default', [
   'require',
   'lodash',
 ], (require) ->
@@ -15,7 +15,7 @@ define 'soteria.chunking.strategy.default', [
   #
   class DefaultChunkingStrategy
 
-    @URI : 'soteria.chunking.strategy.default'
+    @URI : 'kryptnostic.chunking.strategy.default'
 
     split : (data) ->
       return _.chain(data)

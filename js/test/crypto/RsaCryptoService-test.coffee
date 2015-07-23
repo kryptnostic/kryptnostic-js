@@ -1,10 +1,10 @@
 define [
   'require',
   'forge',
-  'soteria.rsa-crypto-service',
+  'kryptnostic.rsa-crypto-service',
 ], (require) ->
 
-  RsaCryptoService = require 'soteria.rsa-crypto-service'
+  RsaCryptoService = require 'kryptnostic.rsa-crypto-service'
   Forge            = require 'forge'
 
   PEM_PRIVATE_KEY = '-----BEGIN RSA PRIVATE KEY-----\

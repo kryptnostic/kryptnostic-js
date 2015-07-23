@@ -3,7 +3,7 @@ var allBuildFiles  = [];
 var allMockFiles   = [];
 
 var TEST_REGEXP    = /(.*)(spec|test)\.(js|coffee)$/i;
-var SOTERIA_REGEXP = /soteria.js/;
+var SOTERIA_REGEXP = /kryptnostic.js/;
 var SINON_REGEXP   = /sinon.js/;
 var MOCK_REGEXP    = /mock(.*)\.(js)/;
 

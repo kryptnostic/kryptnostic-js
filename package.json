@@ -1,9 +1,9 @@
 {
-  "name"        : "soteria",
+  "name"        : "kryptnostic-js",
   "version"     : "0.0.8",
   "description" : "JavaScript client for Kryptnostic services.",
   "main"        : "kryptnostic-crypto.js",
-  "homepage"    : "https://github.com/kryptnostic/soteria",
+  "homepage"    : "https://github.com/kryptnostic/kryptnostic",
   "license"     : "Apache-2.0",
   "author"      : "",
   "contributors": [
@@ -16,14 +16,14 @@
   },
   "repository": {
     "type" : "git",
-    "url"  : "https://github.com/kryptnostic/soteria.git"
+    "url"  : "https://github.com/kryptnostic/kryptnostic.git"
   },
   "bugs": {
-    "url" : "https://github.com/kryptnostic/soteria/issues"
+    "url" : "https://github.com/kryptnostic/kryptnostic/issues"
   },
   "dependencies": {
     "revalidator" : "^0.3.1",
-    "node-forge"  : "^0.6.25"
+    "node-forge"  : "0.6.21"
   },
   "devDependencies": {
     "coffeelint"                : "^1.10.1",

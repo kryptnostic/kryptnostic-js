@@ -1,20 +1,20 @@
-define 'soteria.storage-client', [
+define 'kryptnostic.storage-client', [
   'require'
   'jquery'
-  'soteria.logger'
-  'soteria.object-api'
-  'soteria.kryptnostic-object'
-  'soteria.crypto-service-loader'
-  'soteria.pending-object-request'
+  'kryptnostic.logger'
+  'kryptnostic.object-api'
+  'kryptnostic.kryptnostic-object'
+  'kryptnostic.crypto-service-loader'
+  'kryptnostic.pending-object-request'
 ], (require) ->
   'use strict'
 
   jquery               = require 'jquery'
-  KryptnosticObject    = require 'soteria.kryptnostic-object'
-  PendingObjectRequest = require 'soteria.pending-object-request'
-  CryptoServiceLoader  = require 'soteria.crypto-service-loader'
-  ObjectApi            = require 'soteria.object-api'
-  Logger               = require 'soteria.logger'
+  KryptnosticObject    = require 'kryptnostic.kryptnostic-object'
+  PendingObjectRequest = require 'kryptnostic.pending-object-request'
+  CryptoServiceLoader  = require 'kryptnostic.crypto-service-loader'
+  ObjectApi            = require 'kryptnostic.object-api'
+  Logger               = require 'kryptnostic.logger'
 
   logger = Logger.get('StorageClient')
 

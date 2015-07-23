@@ -44,7 +44,7 @@ EXPORTED_MODULES = [
   #{JS_LIB_EXPORTS.map{|ln| "'#{ln}'"}.join("\n  ")}
 
   # kryptnostic
-  # =======
+  # ===========
   #{COFFEE_EXPORTS.map{|c| "'cs!#{c}'"}.join("\n  ")}
 ]
 

@@ -1,13 +1,13 @@
 define [
   'require'
-  'soteria.configuration'
+  'kryptnostic.configuration'
 ], (require) ->
 
-  ConfigurationService = require 'soteria.configuration'
+  ConfigurationService = require 'kryptnostic.configuration'
 
   EXPECTED_DEFAULTS = {
     servicesUrl        : 'http://api.kryptnostic.com/v1'
-    credentialProvider : 'soteria.credential-provider.session-storage'
+    credentialProvider : 'kryptnostic.credential-provider.session-storage'
   }
 
   OVERRIDE_URL = 'http://localhost:9000/v1'

@@ -1,4 +1,4 @@
-define 'soteria.public-key-envelope', [
+define 'kryptnostic.public-key-envelope', [
   'require'
   'forge'
 ], (require) ->

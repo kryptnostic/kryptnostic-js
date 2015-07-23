@@ -1,19 +1,19 @@
-define 'soteria.authentication-service', [
+define 'kryptnostic.authentication-service', [
   'require'
   'bluebird'
-  'soteria.logger'
-  'soteria.configuration'
-  'soteria.credential-provider-loader'
-  'soteria.credential-service'
-  'soteria.user-utils'
+  'kryptnostic.logger'
+  'kryptnostic.configuration'
+  'kryptnostic.credential-provider-loader'
+  'kryptnostic.credential-service'
+  'kryptnostic.user-utils'
 ], (require) ->
 
   Promise                  = require 'bluebird'
-  Logger                   = require 'soteria.logger'
-  Config                   = require 'soteria.configuration'
-  CredentialProviderLoader = require 'soteria.credential-provider-loader'
-  CredentialService        = require 'soteria.credential-service'
-  UserUtils                = require 'soteria.user-utils'
+  Logger                   = require 'kryptnostic.logger'
+  Config                   = require 'kryptnostic.configuration'
+  CredentialProviderLoader = require 'kryptnostic.credential-provider-loader'
+  CredentialService        = require 'kryptnostic.credential-service'
+  UserUtils                = require 'kryptnostic.user-utils'
 
   log = Logger.get('AuthenticationService')
 

@@ -1,17 +1,17 @@
-define 'soteria.credential-provider.key-value', [
+define 'kryptnostic.credential-provider.key-value', [
   'require'
-  'soteria.logger'
-  'soteria.keypair-serializer'
+  'kryptnostic.logger'
+  'kryptnostic.keypair-serializer'
 ], (require) ->
 
-  Logger            = require 'soteria.logger'
-  KeypairSerializer = require 'soteria.keypair-serializer'
+  Logger            = require 'kryptnostic.logger'
+  KeypairSerializer = require 'kryptnostic.keypair-serializer'
 
   log = Logger.get('KeyValueCredentialProvider')
 
-  PRINCIPAL_KEY  = 'soteria.principal'
-  CREDENTIAL_KEY = 'soteria.credential'
-  KEYPAIR_KEY    = 'soteria.keypair'
+  PRINCIPAL_KEY  = 'kryptnostic.principal'
+  CREDENTIAL_KEY = 'kryptnostic.credential'
+  KEYPAIR_KEY    = 'kryptnostic.keypair'
 
   SERIALIZED_UNDEFINED_VALUE = 'undefined'
 

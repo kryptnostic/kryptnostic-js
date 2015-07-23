@@ -1,16 +1,16 @@
 define [
   'require'
   'forge'
-  'soteria.cypher'
-  'soteria.aes-crypto-service'
-  'soteria.block-encryption-service'
-  'soteria.hash-function'
+  'kryptnostic.cypher'
+  'kryptnostic.aes-crypto-service'
+  'kryptnostic.block-encryption-service'
+  'kryptnostic.hash-function'
 ], (require) ->
 
-  AesCryptoService       = require 'soteria.aes-crypto-service'
-  BlockEncryptionService = require 'soteria.block-encryption-service'
-  Cypher                 = require 'soteria.cypher'
-  HashFunction           = require 'soteria.hash-function'
+  AesCryptoService       = require 'kryptnostic.aes-crypto-service'
+  BlockEncryptionService = require 'kryptnostic.block-encryption-service'
+  Cypher                 = require 'kryptnostic.cypher'
+  HashFunction           = require 'kryptnostic.hash-function'
 
   {cryptoService, blockEncryption} = {}
 

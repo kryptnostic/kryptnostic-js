@@ -11,16 +11,16 @@ DATA_LONG_SPLIT = [
 # tests
 # =====
 
-define ['require', 'soteria.chunking.strategy.default'], (require) ->
+define ['require', 'kryptnostic.chunking.strategy.default'], (require) ->
 
-  DefaultChunkingStrategy = require('soteria.chunking.strategy.default')
+  DefaultChunkingStrategy = require('kryptnostic.chunking.strategy.default')
 
   describe 'DefaultChunkingStrategy', ->
 
     describe 'URI', ->
 
       it 'should not change because it is long term serialized', ->
-        expectedUri = 'soteria.chunking.strategy.default'
+        expectedUri = 'kryptnostic.chunking.strategy.default'
         expect(DefaultChunkingStrategy.URI).toEqual(expectedUri)
 
     describe '#split', ->

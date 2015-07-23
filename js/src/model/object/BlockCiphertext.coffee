@@ -1,14 +1,14 @@
-define 'soteria.block-ciphertext', [
+define 'kryptnostic.block-ciphertext', [
   'require'
   'lodash'
-  'soteria.schema.validator'
-  'soteria.schema.block-ciphertext'
+  'kryptnostic.schema.validator'
+  'kryptnostic.schema.block-ciphertext'
 ], (require) ->
   'use strict'
 
   _         = require 'lodash'
-  validator = require 'soteria.schema.validator'
-  SCHEMA    = require 'soteria.schema.block-ciphertext'
+  validator = require 'kryptnostic.schema.validator'
+  SCHEMA    = require 'kryptnostic.schema.block-ciphertext'
 
   #
   # Represents a block ciphertext.

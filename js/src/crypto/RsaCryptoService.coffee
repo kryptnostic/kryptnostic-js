@@ -1,4 +1,4 @@
-define 'soteria.rsa-crypto-service', [
+define 'kryptnostic.rsa-crypto-service', [
   'require',
   'forge'
 ], (require) ->

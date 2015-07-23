@@ -7,9 +7,9 @@ TEST_SHA_256  = 'THVpo2vnSWpvHKGDBEgynzEDgpaoMxp5t1WCREngZMQ='
 # tests
 # =====
 
-define ['require', 'soteria.hash-function'], (require) ->
+define ['require', 'kryptnostic.hash-function'], (require) ->
 
-  HashFunction = require 'soteria.hash-function'
+  HashFunction = require 'kryptnostic.hash-function'
 
   describe 'HashFunction', ->
 

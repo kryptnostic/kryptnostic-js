@@ -1,21 +1,21 @@
-define 'soteria.object-api', [
+define 'kryptnostic.object-api', [
   'require'
   'jquery'
   'bluebird'
-  'soteria.configuration'
-  'soteria.kryptnostic-object'
-  'soteria.logger'
-  'soteria.security-utils'
-  'soteria.object-metadata'
+  'kryptnostic.configuration'
+  'kryptnostic.kryptnostic-object'
+  'kryptnostic.logger'
+  'kryptnostic.security-utils'
+  'kryptnostic.object-metadata'
 ], (require) ->
 
   jquery            = require 'jquery'
-  SecurityUtils     = require 'soteria.security-utils'
-  KryptnosticObject = require 'soteria.kryptnostic-object'
-  Logger            = require 'soteria.logger'
-  Config            = require 'soteria.configuration'
+  SecurityUtils     = require 'kryptnostic.security-utils'
+  KryptnosticObject = require 'kryptnostic.kryptnostic-object'
+  Logger            = require 'kryptnostic.logger'
+  Config            = require 'kryptnostic.configuration'
   Promise           = require 'bluebird'
-  ObjectMetadata    = require 'soteria.object-metadata'
+  ObjectMetadata    = require 'kryptnostic.object-metadata'
 
   objectUrl         = -> Config.get('servicesUrl') + '/object'
 

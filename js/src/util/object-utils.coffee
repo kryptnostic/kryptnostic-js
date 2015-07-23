@@ -1,4 +1,4 @@
-define 'soteria.object-utils', [
+define 'kryptnostic.object-utils', [
   'require'
 ], (require) ->
 

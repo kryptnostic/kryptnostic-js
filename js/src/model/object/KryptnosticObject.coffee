@@ -1,22 +1,22 @@
-define 'soteria.kryptnostic-object', [
+define 'kryptnostic.kryptnostic-object', [
   'require'
   'lodash'
-  'soteria.chunking.registry'
-  'soteria.object-metadata'
-  'soteria.schema.validator'
-  'soteria.schema.kryptnostic-object'
-  'soteria.block-encryption-service'
-  'soteria.logger'
+  'kryptnostic.chunking.registry'
+  'kryptnostic.object-metadata'
+  'kryptnostic.schema.validator'
+  'kryptnostic.schema.kryptnostic-object'
+  'kryptnostic.block-encryption-service'
+  'kryptnostic.logger'
 ], (require) ->
   'use strict'
 
   _                        = require 'lodash'
-  validator                = require 'soteria.schema.validator'
-  SCHEMA                   = require 'soteria.schema.kryptnostic-object'
-  ChunkingStrategyRegistry = require 'soteria.chunking.registry'
-  ObjectMetadata           = require 'soteria.object-metadata'
-  BlockEncryptionService   = require 'soteria.block-encryption-service'
-  Logger                   = require 'soteria.logger'
+  validator                = require 'kryptnostic.schema.validator'
+  SCHEMA                   = require 'kryptnostic.schema.kryptnostic-object'
+  ChunkingStrategyRegistry = require 'kryptnostic.chunking.registry'
+  ObjectMetadata           = require 'kryptnostic.object-metadata'
+  BlockEncryptionService   = require 'kryptnostic.block-encryption-service'
+  Logger                   = require 'kryptnostic.logger'
 
   logger = Logger.get('KryptnosticObject')
 

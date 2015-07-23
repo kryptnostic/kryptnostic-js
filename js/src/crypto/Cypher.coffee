@@ -1,4 +1,4 @@
-define 'soteria.cypher', [], (require) ->
+define 'kryptnostic.cypher', [], (require) ->
 
   #
   # Enumeration of cyphers.

@@ -1,13 +1,13 @@
-define 'soteria.pending-object-request', [
+define 'kryptnostic.pending-object-request', [
   'require'
   'lodash'
-  'soteria.schema.pending-object-request'
-  'soteria.schema.validator'
+  'kryptnostic.schema.pending-object-request'
+  'kryptnostic.schema.validator'
 ], (require) ->
 
   _         = require 'lodash'
-  SCHEMA    = require 'soteria.schema.pending-object-request'
-  validator = require 'soteria.schema.validator'
+  SCHEMA    = require 'kryptnostic.schema.pending-object-request'
+  validator = require 'kryptnostic.schema.validator'
 
   DEFAULT_OPTS = {}
 

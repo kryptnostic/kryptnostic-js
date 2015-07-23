@@ -1,4 +1,4 @@
-define 'soteria.user-utils', [
+define 'kryptnostic.user-utils', [
   'require'
   'lodash'
 ], (require) ->

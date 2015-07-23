@@ -1,9 +1,9 @@
-define 'soteria.credential-provider.memory', [
+define 'kryptnostic.credential-provider.memory', [
   'require'
-  'soteria.logger'
+  'kryptnostic.logger'
 ], (require) ->
 
-  Logger = require 'soteria.logger'
+  Logger = require 'kryptnostic.logger'
 
   log = Logger.get('InMemoryCredentialProvider')
 

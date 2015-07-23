@@ -1,9 +1,9 @@
-define 'soteria.schema.encrypted-block', [
+define 'kryptnostic.schema.encrypted-block', [
   'require'
-  'soteria.schema.block-ciphertext'
+  'kryptnostic.schema.block-ciphertext'
 ], (require) ->
 
-  BLOCK_CIPHERTEXT_SCHEMA = require('soteria.schema.block-ciphertext')
+  BLOCK_CIPHERTEXT_SCHEMA = require('kryptnostic.schema.block-ciphertext')
 
   SCHEMA = {
     type       : 'object'

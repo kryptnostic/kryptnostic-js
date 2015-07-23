@@ -1,4 +1,4 @@
-define 'soteria.logger', [
+define 'kryptnostic.logger', [
   'require'
   'lodash'
   'loglevel'

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Builds the distribution file soteria.js.
+# Builds the distribution file kryptnostic.js.
 # Pass the --release flag to do a full release.
 # Author: rbuckheit
 #
@@ -30,9 +30,9 @@ rm -rfv build/*;
 echo ""
 if [[ $@ != **--release** ]]; then
   echo "running development build (no minification)..."
-  ./node_modules/requirejs/bin/r.js -o build.js out=dist/soteria.js optimize=none
+  ./node_modules/requirejs/bin/r.js -o build.js out=dist/kryptnostic.js optimize=none
 else
   echo "running full release build..."
-  ./node_modules/requirejs/bin/r.js -o build.js out=dist/soteria.js optimize=none
-  ./node_modules/requirejs/bin/r.js -o build.js out=dist/soteria.min.js optimize=uglify
+  ./node_modules/requirejs/bin/r.js -o build.js out=dist/kryptnostic.js optimize=none
+  ./node_modules/requirejs/bin/r.js -o build.js out=dist/kryptnostic.min.js optimize=uglify
 fi

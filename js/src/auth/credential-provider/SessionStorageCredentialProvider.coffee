@@ -1,9 +1,9 @@
-define 'soteria.credential-provider.session-storage', [
+define 'kryptnostic.credential-provider.session-storage', [
   'require'
-  'soteria.credential-provider.key-value'
+  'kryptnostic.credential-provider.key-value'
 ], (require) ->
 
-  KeyValueCredentialProvider = require 'soteria.credential-provider.key-value'
+  KeyValueCredentialProvider = require 'kryptnostic.credential-provider.key-value'
 
   #
   # Credential provider which stores credentials in session storage.

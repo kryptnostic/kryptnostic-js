@@ -16,7 +16,7 @@ JS_LIB_EXPORTS = [
   'revalidator'
 ]
 
-EXPORT_FILE_PATH = 'js/src/soteria.coffee'
+EXPORT_FILE_PATH = 'js/src/kryptnostic.coffee'
 
 COFFEE_FILES = `find js/src -name "*.coffee"`.split.reject{|c| c.end_with?(EXPORT_FILE_PATH)}
 
@@ -34,7 +34,7 @@ COFFEE_EXPORTS = COFFEE_FILES.map{|f| get_relative_path(f)}.map{|f| remove_exten
 EXPORT_FILE_CONTENT = """
 #
 # AUTO_GENERATED: #{Time.new.inspect}
-# Pseudo-module which includes all modules exported as part of soteria.
+# Pseudo-module which includes all modules exported as part of kryptnostic.
 # This file is for optimizer build purposes only and should not be required or edited.
 #
 
@@ -43,13 +43,13 @@ EXPORTED_MODULES = [
   # =======
   #{JS_LIB_EXPORTS.map{|ln| "'#{ln}'"}.join("\n  ")}
 
-  # soteria
-  # =======
+  # kryptnostic
+  # ===========
   #{COFFEE_EXPORTS.map{|c| "'cs!#{c}'"}.join("\n  ")}
 ]
 
 
-define('soteria', EXPORTED_MODULES, (require) ->
+define('kryptnostic', EXPORTED_MODULES, (require) ->
   'use strict'
   return {}
 )

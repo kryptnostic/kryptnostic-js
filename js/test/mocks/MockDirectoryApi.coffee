@@ -1,10 +1,10 @@
-define 'soteria.mock.directory-api', [
+define 'kryptnostic.mock.directory-api', [
   'require'
   'bluebird'
-  'soteria.block-ciphertext'
+  'kryptnostic.block-ciphertext'
 ], (require) ->
 
-  BlockCiphertext = require 'soteria.block-ciphertext'
+  BlockCiphertext = require 'kryptnostic.block-ciphertext'
   Promise         = require 'bluebird'
 
   SALT_BLOCK_CIPHERTEXT = {

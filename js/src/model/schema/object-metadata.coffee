@@ -1,4 +1,4 @@
-define 'soteria.schema.object-metadata', [], ->
+define 'kryptnostic.schema.object-metadata', [], ->
 
   SCHEMA = {
     properties: {

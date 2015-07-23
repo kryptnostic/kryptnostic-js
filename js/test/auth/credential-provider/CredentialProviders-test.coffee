@@ -1,15 +1,15 @@
 define [
   'require'
   'forge'
-  'soteria.credential-provider.session-storage'
-  'soteria.credential-provider.local-storage'
-  'soteria.credential-provider.memory'
+  'kryptnostic.credential-provider.session-storage'
+  'kryptnostic.credential-provider.local-storage'
+  'kryptnostic.credential-provider.memory'
 ], (require) ->
 
   Forge                            = require 'forge'
-  SessionStorageCredentialProvider = require 'soteria.credential-provider.session-storage'
-  LocalStorageCredentialProvider   = require 'soteria.credential-provider.local-storage'
-  InMemoryCredentialProvider       = require 'soteria.credential-provider.memory'
+  SessionStorageCredentialProvider = require 'kryptnostic.credential-provider.session-storage'
+  LocalStorageCredentialProvider   = require 'kryptnostic.credential-provider.local-storage'
+  InMemoryCredentialProvider       = require 'kryptnostic.credential-provider.memory'
 
   [
     LocalStorageCredentialProvider,

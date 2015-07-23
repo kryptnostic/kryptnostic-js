@@ -1,4 +1,4 @@
-define 'soteria.hash-function', [
+define 'kryptnostic.hash-function', [
   'require'
   'forge'
 ], (require) ->
@@ -6,7 +6,7 @@ define 'soteria.hash-function', [
   forge = require 'forge'
 
   #
-  # Enumeration of hash functions utilized by soteria.
+  # Enumeration of hash functions utilized by kryptnostic.
   # Author: rbuckheit
   #
 

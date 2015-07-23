@@ -1,10 +1,10 @@
-define 'soteria.schema.validator', [
+define 'kryptnostic.schema.validator', [
   'require'
   'revalidator'
-  'soteria.logger'
+  'kryptnostic.logger'
 ], (require) ->
 
-  logger = require('soteria.logger').get('validator')
+  logger = require('kryptnostic.logger').get('validator')
 
   revalidator = window
 

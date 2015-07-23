@@ -1,13 +1,13 @@
-define 'soteria.deletion-visitor', [
+define 'kryptnostic.deletion-visitor', [
   'require'
   'bluebird'
-  'soteria.logger'
-  'soteria.storage-client'
+  'kryptnostic.logger'
+  'kryptnostic.storage-client'
 ], (require) ->
 
   Promise       = require 'bluebird'
-  Logger        = require 'soteria.logger'
-  StorageClient = require 'soteria.storage-client'
+  Logger        = require 'kryptnostic.logger'
+  StorageClient = require 'kryptnostic.storage-client'
 
   log = Logger.get('DeletionVisitor')
 

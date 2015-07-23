@@ -1,10 +1,10 @@
-define 'soteria.security-utils', [
+define 'kryptnostic.security-utils', [
   'require'
-  'soteria.credential-loader'
+  'kryptnostic.credential-loader'
 ], (require) ->
   'use strict'
 
-  CredentialLoader = require 'soteria.credential-loader'
+  CredentialLoader = require 'kryptnostic.credential-loader'
 
   PRINCIPAL_COOKIE  = 'X-Kryptnostic-Principal'
   CREDENTIAL_COOKIE = 'X-Kryptnostic-Credential'

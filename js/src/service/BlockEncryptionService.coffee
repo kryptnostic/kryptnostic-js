@@ -1,18 +1,18 @@
-define 'soteria.block-encryption-service', [
+define 'kryptnostic.block-encryption-service', [
   'require'
   'lodash'
   'forge'
-  'soteria.encrypted-block'
-  'soteria.hash-function'
-  'soteria.logger'
+  'kryptnostic.encrypted-block'
+  'kryptnostic.hash-function'
+  'kryptnostic.logger'
 ], (require) ->
   'use strict'
 
   _              = require 'lodash'
   forge          = require 'forge'
-  EncryptedBlock = require 'soteria.encrypted-block'
-  HashFunction   = require 'soteria.hash-function'
-  Logger         = require 'soteria.logger'
+  EncryptedBlock = require 'kryptnostic.encrypted-block'
+  HashFunction   = require 'kryptnostic.hash-function'
+  Logger         = require 'kryptnostic.logger'
 
   VERIFY_HASH_FUNCTION = HashFunction.SHA_256
 

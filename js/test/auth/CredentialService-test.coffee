@@ -1,11 +1,11 @@
 define [
   'require'
-  'soteria.credential-service'
-  'soteria.mock.directory-api'
+  'kryptnostic.credential-service'
+  'kryptnostic.mock.directory-api'
 ], (require) ->
 
-  CredentialService = require 'soteria.credential-service'
-  MockDirectoryApi  = require 'soteria.mock.directory-api'
+  CredentialService = require 'kryptnostic.credential-service'
+  MockDirectoryApi  = require 'kryptnostic.mock.directory-api'
 
   # mock
   # ====

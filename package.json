@@ -1,11 +1,15 @@
 {
-  "name"        : "soteria",
-  "version"     : "0.0.8",
+  "name"        : "kryptnostic-js",
+  "version"     : "0.0.9",
   "description" : "JavaScript client for Kryptnostic services.",
   "main"        : "kryptnostic-crypto.js",
-  "homepage"    : "https://github.com/kryptnostic/soteria",
+  "homepage"    : "https://github.com/kryptnostic/kryptnostic-js",
   "license"     : "Apache-2.0",
-  "author"      : "",
+  "author"      : "Ryan Buckheit <ryan@kryptnostic.com>",
+  "repository": {
+    "type" : "git",
+    "url"  : "https://github.com/kryptnostic/kryptnostic-js.git"
+  },
   "contributors": [
     "Nick Hewitt <nick@kryptnostic.com>",
     "Ryan Buckheit <ryan@kryptnostic.com>"
@@ -14,16 +18,13 @@
     "build" : "./build.sh",
     "test"  : "./test.sh"
   },
-  "repository": {
-    "type" : "git",
-    "url"  : "https://github.com/kryptnostic/soteria.git"
-  },
+
   "bugs": {
-    "url" : "https://github.com/kryptnostic/soteria/issues"
+    "url" : "https://github.com/kryptnostic/kryptnostic-js/issues"
   },
   "dependencies": {
-    "revalidator" : "^0.3.1",
-    "node-forge"  : "^0.6.25"
+    "revalidator" : "0.3.1",
+    "node-forge"  : "0.6.30"
   },
   "devDependencies": {
     "coffeelint"                : "^1.10.1",

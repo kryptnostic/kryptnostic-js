@@ -1,4 +1,4 @@
-define 'soteria.schema.sharing-request', [], ->
+define 'kryptnostic.schema.sharing-request', [], ->
 
   SCHEMA = {
     properties: {

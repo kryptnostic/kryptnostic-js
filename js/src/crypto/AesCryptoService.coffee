@@ -1,16 +1,16 @@
-define 'soteria.aes-crypto-service', [
+define 'kryptnostic.aes-crypto-service', [
   'require',
   'forge',
-  'soteria.abstract-crypto-service'
-  'soteria.logger'
-  'soteria.block-ciphertext'
+  'kryptnostic.abstract-crypto-service'
+  'kryptnostic.logger'
+  'kryptnostic.block-ciphertext'
 ], (require) ->
   'use strict'
 
   Forge                 = require 'forge'
-  AbstractCryptoService = require 'soteria.abstract-crypto-service'
-  Logger                = require 'soteria.logger'
-  BlockCiphertext       = require 'soteria.block-ciphertext'
+  AbstractCryptoService = require 'kryptnostic.abstract-crypto-service'
+  Logger                = require 'kryptnostic.logger'
+  BlockCiphertext       = require 'kryptnostic.block-ciphertext'
 
   logger = Logger.get('AesCryptoService')
 

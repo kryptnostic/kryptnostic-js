@@ -1,11 +1,11 @@
-define 'soteria.abstract-crypto-service', [
+define 'kryptnostic.abstract-crypto-service', [
   'require'
   'forge'
-  'soteria.crypto-algorithm'
+  'kryptnostic.crypto-algorithm'
 ], (require) ->
 
   Forge           = require 'forge'
-  CryptoAlgorithm = require 'soteria.crypto-algorithm'
+  CryptoAlgorithm = require 'kryptnostic.crypto-algorithm'
 
   #
   # Author: nickdhewitt, rbuckheit

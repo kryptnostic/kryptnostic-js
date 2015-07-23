@@ -1,24 +1,24 @@
-define 'soteria.crypto-service-loader', [
+define 'kryptnostic.crypto-service-loader', [
   'require',
   'jquery',
-  'soteria.logger'
-  'soteria.cypher',
-  'soteria.rsa-crypto-service',
-  'soteria.aes-crypto-service'
-  'soteria.directory-api'
-  'soteria.crypto-service-marshaller'
-  'soteria.credential-loader'
+  'kryptnostic.logger'
+  'kryptnostic.cypher',
+  'kryptnostic.rsa-crypto-service',
+  'kryptnostic.aes-crypto-service'
+  'kryptnostic.directory-api'
+  'kryptnostic.crypto-service-marshaller'
+  'kryptnostic.credential-loader'
 ], (require) ->
   'use strict'
 
   jquery                  = require 'jquery'
-  RsaCryptoService        = require 'soteria.rsa-crypto-service'
-  AesCryptoService        = require 'soteria.aes-crypto-service'
-  Cypher                  = require 'soteria.cypher'
-  DirectoryApi            = require 'soteria.directory-api'
-  Logger                  = require 'soteria.logger'
-  CryptoServiceMarshaller = require 'soteria.crypto-service-marshaller'
-  CredentialLoader        = require 'soteria.credential-loader'
+  RsaCryptoService        = require 'kryptnostic.rsa-crypto-service'
+  AesCryptoService        = require 'kryptnostic.aes-crypto-service'
+  Cypher                  = require 'kryptnostic.cypher'
+  DirectoryApi            = require 'kryptnostic.directory-api'
+  Logger                  = require 'kryptnostic.logger'
+  CryptoServiceMarshaller = require 'kryptnostic.crypto-service-marshaller'
+  CredentialLoader        = require 'kryptnostic.credential-loader'
 
   INT_SIZE     = 4
   EMPTY_BUFFER = ''

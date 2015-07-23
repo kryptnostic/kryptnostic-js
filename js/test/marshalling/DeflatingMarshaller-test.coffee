@@ -1,9 +1,9 @@
 define [
   'require'
-  'soteria.deflating-marshaller'
+  'kryptnostic.deflating-marshaller'
 ], (require) ->
 
-  DeflatingMarshaller = require 'soteria.deflating-marshaller'
+  DeflatingMarshaller = require 'kryptnostic.deflating-marshaller'
 
   TEST_DATA_1            = 'testing deflate string'
   TEST_DATA_1_MARSHALLED = 'AAAAFnicK0ktLsnMS1dISU3LSSxJVSguKQJyAWQWCKs='

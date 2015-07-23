@@ -1,14 +1,14 @@
-define 'soteria.encrypted-block', [
+define 'kryptnostic.encrypted-block', [
   'require'
   'lodash'
-  'soteria.schema.validator'
-  'soteria.schema.encrypted-block'
+  'kryptnostic.schema.validator'
+  'kryptnostic.schema.encrypted-block'
 ], (require) ->
   'use strict'
 
   _         = require 'lodash'
-  validator = require 'soteria.schema.validator'
-  SCHEMA    = require 'soteria.schema.encrypted-block'
+  validator = require 'kryptnostic.schema.validator'
+  SCHEMA    = require 'kryptnostic.schema.encrypted-block'
 
   #
   # Represents a block of encrypted data stored as part of a kryptnostic object.

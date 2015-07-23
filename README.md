@@ -1,6 +1,14 @@
-# soteria
+# kryptnostic.js
 
-Soteria is a JavaScript client which allows users to build applications which store data securely. The client encrypts all data in the browser so that it is secured in flight and at rest. Soteria also supports searching on encrypted objects and sharing/access control to give users full control over how and when their data is shared.
+`kryptnostic.js` is a JavaScript client which allows users to build applications which store data securely. The client encrypts all data in the browser so that it is secured in flight and at rest. `kryptnostic.js` also supports searching on encrypted objects and sharing/access control to give users full control over how and when their data is shared.
+
+## installation
+
+To install this project, run the following:
+
+```
+bower install kryptnostic-js
+```
 
 ## development
 
@@ -24,13 +32,13 @@ npm install
 
 1. Files exporting classes should be named in `UpperCamelCase` (one class per file).
 2. Files exporting anything else should be named in `lower-kebab-case`.
-3. AMD module definition names should be prefixed with `soteria`, e.g. `soteria.storage-client`
+3. AMD module definition names should be prefixed with `kryptnostic`, e.g. `kryptnostic.storage-client`
 4. When using require for module definitions, prefer explicit `require(name)` calls to destructuring.
 
 ## building
 
 Builds use the require.js optimizer.
-Building will produce `soteria.js` in the `dist` directory.
+Building will produce `kryptnostic.js` in the `dist` directory.
 
 ```
 ./build.sh
@@ -59,10 +67,10 @@ Tests named with the suffix `-test.coffee` will be picked up by the runner autom
 1. Circular require.js dependencies will cause `require` calls to fail.. You will see an error like:
 
 ```
- Error: Module name "soteria.my-module" has not been loaded yet for context: _
+ Error: Module name "kryptnostic.my-module" has not been loaded yet for context: _
 ```
 
-This can be fixed by tracing dependencies of `soteria.my-module` and breaking the cycle.
+This can be fixed by tracing dependencies of `kryptnostic.my-module` and breaking the cycle.
 
 ## browser testing
 

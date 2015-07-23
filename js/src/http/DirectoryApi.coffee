@@ -1,20 +1,20 @@
-define 'soteria.directory-api', [
+define 'kryptnostic.directory-api', [
   'require'
   'jquery'
   'bluebird'
-  'soteria.configuration'
-  'soteria.logger'
-  'soteria.public-key-envelope'
-  'soteria.security-utils'
-  'soteria.block-ciphertext'
+  'kryptnostic.configuration'
+  'kryptnostic.logger'
+  'kryptnostic.public-key-envelope'
+  'kryptnostic.security-utils'
+  'kryptnostic.block-ciphertext'
 ], (require) ->
 
   jquery            = require 'jquery'
-  SecurityUtils     = require 'soteria.security-utils'
-  Logger            = require 'soteria.logger'
-  PublicKeyEnvelope = require 'soteria.public-key-envelope'
-  Configuration     = require 'soteria.configuration'
-  BlockCiphertext   = require 'soteria.block-ciphertext'
+  SecurityUtils     = require 'kryptnostic.security-utils'
+  Logger            = require 'kryptnostic.logger'
+  PublicKeyEnvelope = require 'kryptnostic.public-key-envelope'
+  Configuration     = require 'kryptnostic.configuration'
+  BlockCiphertext   = require 'kryptnostic.block-ciphertext'
   Promise           = require 'bluebird'
 
   cryptoServiceUrl   = -> Configuration.get('servicesUrl') + '/directory/object'

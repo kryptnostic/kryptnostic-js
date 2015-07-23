@@ -1,13 +1,13 @@
-define 'soteria.storage-request', [
+define 'kryptnostic.storage-request', [
   'require'
   'lodash'
-  'soteria.schema.storage-request'
-  'soteria.schema.validator'
+  'kryptnostic.schema.storage-request'
+  'kryptnostic.schema.validator'
 ], (require) ->
 
   _            = require 'lodash'
-  SCHEMA       = require 'soteria.schema.storage-request'
-  validator    = require 'soteria.schema.validator'
+  SCHEMA       = require 'kryptnostic.schema.storage-request'
+  validator    = require 'kryptnostic.schema.validator'
 
   DEFAULT_OPTS = { type: 'object', version: 0 }
 

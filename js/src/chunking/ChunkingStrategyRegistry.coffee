@@ -1,12 +1,12 @@
-define 'soteria.chunking.registry', [
+define 'kryptnostic.chunking.registry', [
   'require'
-  'soteria.chunking.strategy.default'
-  'soteria.logger'
+  'kryptnostic.chunking.strategy.default'
+  'kryptnostic.logger'
 ], (require) ->
 
-  logger = require('soteria.logger').get('ChunkingStrategyRegistry')
+  logger = require('kryptnostic.logger').get('ChunkingStrategyRegistry')
 
-  DEFAULT_STRATEGY = 'soteria.chunking.strategy.default'
+  DEFAULT_STRATEGY = 'kryptnostic.chunking.strategy.default'
 
   STRATEGIES = [
     DEFAULT_STRATEGY

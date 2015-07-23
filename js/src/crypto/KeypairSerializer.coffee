@@ -1,11 +1,11 @@
-define 'soteria.keypair-serializer', [
+define 'kryptnostic.keypair-serializer', [
   'require'
   'forge'
-  'soteria.logger'
+  'kryptnostic.logger'
 ], (require) ->
 
   Forge  = require 'forge'
-  Logger = require 'soteria.logger'
+  Logger = require 'kryptnostic.logger'
 
   log = Logger.get('KeypairSerializer')
 

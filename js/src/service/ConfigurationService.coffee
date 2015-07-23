@@ -1,19 +1,19 @@
-define 'soteria.configuration', [
+define 'kryptnostic.configuration', [
   'require'
   'lodash'
-  'soteria.logger'
+  'kryptnostic.logger'
 ], (require) ->
 
-  Logger = require 'soteria.logger'
+  Logger = require 'kryptnostic.logger'
   log    = Logger.get('ConfigurationService')
 
   DEFAULTS = {
     servicesUrl        : 'http://api.kryptnostic.com/v1'
-    credentialProvider : 'soteria.credential-provider.session-storage'
+    credentialProvider : 'kryptnostic.credential-provider.session-storage'
   }
 
   #
-  # Stores global soteria configuration.
+  # Stores global kryptnostic configuration.
   # Author: rbuckheit
   #
   class ConfigurationService

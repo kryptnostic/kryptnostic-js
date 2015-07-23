@@ -1,16 +1,16 @@
-define 'soteria.sharing-api', [
+define 'kryptnostic.sharing-api', [
   'require'
   'jquery'
   'bluebird'
-  'soteria.configuration'
-  'soteria.security-utils'
-  'soteria.logger'
+  'kryptnostic.configuration'
+  'kryptnostic.security-utils'
+  'kryptnostic.logger'
 ], (require) ->
 
   jquery            = require 'jquery'
-  SecurityUtils     = require 'soteria.security-utils'
-  Logger            = require 'soteria.logger'
-  Config            = require 'soteria.configuration'
+  SecurityUtils     = require 'kryptnostic.security-utils'
+  Logger            = require 'kryptnostic.logger'
+  Config            = require 'kryptnostic.configuration'
   Promise           = require 'bluebird'
 
   sharingUrl        = -> Config.get('servicesUrl') + '/share'

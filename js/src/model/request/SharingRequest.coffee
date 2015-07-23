@@ -1,13 +1,13 @@
-define 'soteria.sharing-request', [
+define 'kryptnostic.sharing-request', [
   'require'
   'lodash'
-  'soteria.schema.sharing-request'
-  'soteria.schema.validator'
+  'kryptnostic.schema.sharing-request'
+  'kryptnostic.schema.validator'
 ], (require) ->
 
   _         = require 'lodash'
-  SCHEMA    = require 'soteria.schema.sharing-request'
-  validator = require 'soteria.schema.validator'
+  SCHEMA    = require 'kryptnostic.schema.sharing-request'
+  validator = require 'kryptnostic.schema.validator'
 
   DEFAULT_OPTS = {}
 

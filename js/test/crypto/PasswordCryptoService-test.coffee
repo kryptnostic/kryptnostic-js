@@ -1,9 +1,9 @@
 define [
   'require'
-  'soteria.password-crypto-service'
+  'kryptnostic.password-crypto-service'
 ], (require) ->
 
-  PasswordCryptoService = require 'soteria.password-crypto-service'
+  PasswordCryptoService = require 'kryptnostic.password-crypto-service'
 
   PASSWORD_1 = 'crom'
   PASSWORD_2 = 'demo'

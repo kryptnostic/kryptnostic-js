@@ -1,4 +1,4 @@
-define 'soteria.schema.block-ciphertext', [], ->
+define 'kryptnostic.schema.block-ciphertext', [], ->
 
   SCHEMA = {
     type: 'object'

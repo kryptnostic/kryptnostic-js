@@ -1,11 +1,11 @@
-define 'soteria.crypto-service-marshaller', [
+define 'kryptnostic.crypto-service-marshaller', [
   'require'
-  'soteria.deflating-marshaller'
-  'soteria.aes-crypto-service'
+  'kryptnostic.deflating-marshaller'
+  'kryptnostic.aes-crypto-service'
 ], (require) ->
 
-  DeflatingMarshaller = require 'soteria.deflating-marshaller'
-  AesCryptoService    = require 'soteria.aes-crypto-service'
+  DeflatingMarshaller = require 'kryptnostic.deflating-marshaller'
+  AesCryptoService    = require 'kryptnostic.aes-crypto-service'
 
   #
   # Service for serializing and marshalling CryptoServices using the DeflatingMarshaller.

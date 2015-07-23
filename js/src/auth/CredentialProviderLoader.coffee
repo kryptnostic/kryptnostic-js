@@ -1,12 +1,12 @@
-define 'soteria.credential-provider-loader', [
+define 'kryptnostic.credential-provider-loader', [
   'require'
-  'soteria.logger'
-  'soteria.credential-provider.memory'
-  'soteria.credential-provider.local-storage'
-  'soteria.credential-provider.session-storage'
+  'kryptnostic.logger'
+  'kryptnostic.credential-provider.memory'
+  'kryptnostic.credential-provider.local-storage'
+  'kryptnostic.credential-provider.session-storage'
 ], (require) ->
 
-  Logger  = require 'soteria.logger'
+  Logger  = require 'kryptnostic.logger'
 
   log = Logger.get('CredentialProviderLoader')
 

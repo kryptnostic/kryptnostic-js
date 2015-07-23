@@ -3,7 +3,7 @@
   "version"     : "0.0.8",
   "description" : "JavaScript client for Kryptnostic services.",
   "main"        : "kryptnostic-crypto.js",
-  "homepage"    : "https://github.com/kryptnostic/kryptnostic",
+  "homepage"    : "https://github.com/kryptnostic/kryptnostic-js  ",
   "license"     : "Apache-2.0",
   "author"      : "",
   "contributors": [
@@ -16,10 +16,10 @@
   },
   "repository": {
     "type" : "git",
-    "url"  : "https://github.com/kryptnostic/kryptnostic.git"
+    "url"  : "https://github.com/kryptnostic/kryptnostic-js.git"
   },
   "bugs": {
-    "url" : "https://github.com/kryptnostic/kryptnostic/issues"
+    "url" : "https://github.com/kryptnostic/kryptnostic-js/issues"
   },
   "dependencies": {
     "revalidator" : "0.3.1",

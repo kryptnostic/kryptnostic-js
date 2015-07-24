@@ -65,3 +65,5 @@ define 'kryptnostic.permission-change-visitor', [
           .pluck('name')
           .unique()
           .value()
+
+        return usernames

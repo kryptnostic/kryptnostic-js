@@ -100,7 +100,7 @@ define 'kryptnostic.sharing-client', [
         return Promise.resolve()
 
       Promise.resolve()
-      .then =>
+      .then ->
         validateId(id)
         validateUsernames(usernames)
 
@@ -109,7 +109,7 @@ define 'kryptnostic.sharing-client', [
         userKeys    = usernamesToKeys(usernames, realm)
 
         revocationRequest = new RevocationRequest { id, userKeys }
-      .then ->
+      .then =>
         @sharingApi.revokeObject(revocationRequest)
       .then ->
         log.info('revoked access', revocationRequest)

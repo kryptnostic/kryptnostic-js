@@ -85,7 +85,7 @@ require([
     // change permissions on a whole tree of objects recursively
     var storageRequest = new StorageRequest({ body : 'this message will be shared' });
     var addVistor      = new PermissionChangeVisitor(['demo','ryan']);
-    var removeVisitor  = new PermissionChangeVisitor(['demo'])
+    var removeVisitor  = new PermissionChangeVisitor(['demo']);
     storageClient.uploadObject(storageRequest)
     .then(function(objectId) {
       treeLoader.load(objectId)

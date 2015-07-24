@@ -108,7 +108,7 @@ define 'kryptnostic.sharing-client', [
         realm       = UserUtils.principalToComponents(principal).realm
         userKeys    = usernamesToKeys(usernames, realm)
 
-        revocationRequest = new RevocationRequest { id, userKeys }
+        revocationRequest = new RevocationRequest { id, users: userKeys }
       .then =>
         @sharingApi.revokeObject(revocationRequest)
       .then ->

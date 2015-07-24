@@ -8,7 +8,7 @@ define 'kryptnostic.schema.revocation-request', [], ->
         required    : true
         allowEmpty  : false
       },
-      usersKeys : {
+      users : {
         description : 'list of user keys whose access must be revoked'
         type        : 'array'
         required    : true

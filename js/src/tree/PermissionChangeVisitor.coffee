@@ -24,7 +24,7 @@ define 'kryptnostic.permission-change-visitor', [
       @sharingClient = new SharingClient()
       @changed       = []
       @failed        = []
-      @result        = undefined
+      @changedUsers  = {}
 
     visit: (id) ->
       Promise.resolve()
@@ -52,8 +52,7 @@ define 'kryptnostic.permission-change-visitor', [
       .then =>
         @sharingClient.shareObject(id, usersAdd)
       .then =>
-        @changedUsers = { addedUsers: usersAdd, removedUsers: usersRemove }
-        return @changedUsers
+        @changedUsers[id] = { addedUsers: usersAdd, removedUsers: usersRemove }
 
     getParticipants: (id) ->
       Promise.resolve()

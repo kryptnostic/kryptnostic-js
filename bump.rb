@@ -54,25 +54,25 @@ unless gets().start_with?('y')
 end
 
 puts; puts "starting gitflow release..."
-
 `gtool gitflow_release_start #{new_version}`
 
 puts; puts "bumping to v#{new_version}..."
-
 rewrite_version(NPM_FILE, new_version)
 rewrite_version(BOWER_FILE, new_version)
 
 puts; puts "building release dists..."
-
 `./build.sh --release`
 
 puts; puts "committing release bump changes..."
 `git add -A && git commit -m 'bump versions and dists'`
 
-puts; puts "finishing gitflow release"
+puts; puts "finishing gitflow release..."
 `gtool gitflow_release_finish #{new_version}`
 
-puts; puts "pushing gitflow release"
+puts; puts "pushing gitflow release..."
 `gtool push_release`
+
+puts; puts "cleaning up dev tag..."
+`gtool delete_tag v#{new_version}-dev`
 
 exit()

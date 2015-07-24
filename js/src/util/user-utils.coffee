@@ -28,7 +28,11 @@ define 'kryptnostic.user-utils', [
       throw new Error 'missing realm or username'
     return [realm, username].join(PRINCIPAL_SEPARATOR)
 
+  componentsToUserKey = ({realm, username}) ->
+    return {name: username, realm: realm}
+
   return {
     componentsToPrincipal
     principalToComponents
+    componentsToUserKey
   }

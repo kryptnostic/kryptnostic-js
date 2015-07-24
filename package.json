@@ -1,6 +1,6 @@
 {
   "name"        : "kryptnostic-js",
-  "version"     : "0.0.10",
+  "version"     : "0.0.11",
   "description" : "JavaScript client for Kryptnostic services.",
   "main"        : "kryptnostic-crypto.js",
   "homepage"    : "https://github.com/kryptnostic/kryptnostic-js",

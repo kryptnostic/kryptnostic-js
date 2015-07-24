@@ -84,15 +84,15 @@ require([
 
     // change permissions on a whole tree of objects recursively
     var storageRequest = new StorageRequest({ body : 'this message will be shared' });
-    var addVistor      = new PermissionChangeVisitor(['demo','ryan']);
+    var addVisitor      = new PermissionChangeVisitor(['demo','ryan']);
     var removeVisitor  = new PermissionChangeVisitor(['demo']);
     storageClient.uploadObject(storageRequest)
     .then(function(objectId) {
       treeLoader.load(objectId)
       .then (function(tree) {
-        tree.visit(addVistor)
+        tree.visit(addVisitor)
         .then (function() {
-          console.info('vistor changed: ', JSON.stringify(addVistor.changedUsers));
+          console.info('vistor changed: ', JSON.stringify(addVisitor.changedUsers));
           return tree.visit(removeVisitor)
           .then (function() {
             console.info('vistor changed: ', JSON.stringify(removeVisitor.changedUsers));

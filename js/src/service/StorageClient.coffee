@@ -49,6 +49,9 @@ define 'kryptnostic.storage-client', [
     getObjectIdsByType : (type) ->
       return @objectApi.getObjectIdsByType(type)
 
+    getObjectMetadata : (id) ->
+      return @objectApi.getObjectMetadata(id)
+
     submitObjectBlocks : (kryptnosticObject) ->
       unless kryptnosticObject.isEncrypted()
         throw new Error('cannot submit blocks for an unencrypted object')

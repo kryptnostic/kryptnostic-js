@@ -7,6 +7,7 @@ define 'kryptnostic.sharing-client', [
   'kryptnostic.sharing-api'
   'kryptnostic.directory-api'
   'kryptnostic.sharing-request'
+  'kryptnostic.revocation-request'
   'kryptnostic.credential-loader'
   'kryptnostic.crypto-service-loader'
   'kryptnostic.crypto-service-marshaller'
@@ -18,21 +19,27 @@ define 'kryptnostic.sharing-client', [
   SharingApi              = require 'kryptnostic.sharing-api'
   DirectoryApi            = require 'kryptnostic.directory-api'
   SharingRequest          = require 'kryptnostic.sharing-request'
+  RevocationRequest       = require 'kryptnostic.revocation-request'
   CredentialLoader        = require 'kryptnostic.credential-loader'
   RsaCryptoService        = require 'kryptnostic.rsa-crypto-service'
   CryptoServiceLoader     = require 'kryptnostic.crypto-service-loader'
   CryptoServiceMarshaller = require 'kryptnostic.crypto-service-marshaller'
 
-  logger     = Logger.get('SharingClient')
+  log     = Logger.get('SharingClient')
 
   validateId = (id) ->
     if !id
+      log.error('illegal id', id)
       throw new Error 'object id must be specified!'
 
   validateUsernames = (usernames) ->
     unless _.isArray(usernames)
+      log.error('illegal usernames', usernames)
       throw new Error 'usernames must be a list'
 
+  usernamesToKeys = (usernames, realm) ->
+    return _.map usernames, (username) ->
+      return UserUtils.componentsToUserKey {username, realm}
 
   #
   # Client for granting and revoking shared access to Kryptnostic objects.
@@ -46,6 +53,9 @@ define 'kryptnostic.sharing-client', [
       @cryptoServiceMarshaller = new CryptoServiceMarshaller()
 
     shareObject: (id, usernames) ->
+      if _.isEmpty(usernames)
+        return Promise.resolve()
+
       validateId(id)
       validateUsernames(usernames)
 
@@ -78,13 +88,33 @@ define 'kryptnostic.sharing-client', [
             )
             .value()
 
-          logger.info('seals', seals)
-          logger.warn('sharing request will be sent with an empty sharing key')
+          log.info('seals', seals)
+          log.warn('sharing request will be sent with an empty sharing key')
           sharingRequest = new SharingRequest({id, users : seals, sharingKey})
           @sharingApi.shareObject(sharingRequest)
 
-    revokeObject: (id, userKeys) ->
-      throw new Error 'unimplemented'
+    revokeObject: (id, usernames) ->
+      {revocationRequest} = {}
+
+      if _.isEmpty(usernames)
+        return Promise.resolve()
+
+      Promise.resolve()
+      .then =>
+        validateId(id)
+        validateUsernames(usernames)
+
+        {principal} = CredentialLoader.getCredentials()
+        realm       = UserUtils.principalToComponents(principal).realm
+        userKeys    = usernamesToKeys(usernames, realm)
+
+        log.error('userkeys', userKeys)
+
+        revocationRequest = new RevocationRequest { id, userKeys }
+      .then ->
+        @sharingApi.revokeObject(revocationRequest)
+      .then ->
+        log.info('revoked access', revocationRequest)
 
     processIncomingShares: ->
       throw new Error 'unimplemented'

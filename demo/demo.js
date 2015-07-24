@@ -95,7 +95,7 @@ require([
           console.info('vistor changed: ', JSON.stringify(addVisitor.changedUsers));
           return tree.visit(removeVisitor)
           .then (function() {
-            console.info('vistor changed: ', JSON.stringify(removeVisitor.changedUsers));
+            console.info('visitor changed: ', JSON.stringify(removeVisitor.changedUsers));
           });
         });
       })

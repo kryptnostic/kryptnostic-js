@@ -19,11 +19,11 @@ define 'kryptnostic.storage-client', [
   logger = Logger.get('StorageClient')
 
   validateId = (id) ->
-    unless id? and _.isString(id) and not _.isEmpty(id)
+    unless _.isString(id) and not _.isEmpty(id)
       throw new Error 'must specify a string id'
 
   validateBody = (body) ->
-    unless body? and _.isString(body) and not _.isEmpty(body)
+    unless _.isString(body) and not _.isEmpty(body)
       throw new Error 'object body cannot be empty!'
 
   validateDecrypted = (kryptnosticObject) ->
@@ -72,7 +72,7 @@ define 'kryptnostic.storage-client', [
 
     appendObject : (id, body) ->
       Promise.resolve()
-      .then =>
+      .then ->
         validateId(id)
         validateBody(body)
       .then =>

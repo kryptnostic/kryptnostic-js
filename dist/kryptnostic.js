@@ -35759,7 +35759,7 @@ define("revalidator", function(){});
 (function() {
   define('kryptnostic.storage-client', ['require', 'jquery', 'kryptnostic.logger', 'kryptnostic.object-api', 'kryptnostic.kryptnostic-object', 'kryptnostic.crypto-service-loader', 'kryptnostic.pending-object-request'], function(require) {
     'use strict';
-    var CryptoServiceLoader, KryptnosticObject, Logger, ObjectApi, PendingObjectRequest, StorageClient, jquery, logger;
+    var CryptoServiceLoader, KryptnosticObject, Logger, ObjectApi, PendingObjectRequest, StorageClient, jquery, logger, validateBody, validateDecrypted, validateId;
     jquery = require('jquery');
     KryptnosticObject = require('kryptnostic.kryptnostic-object');
     PendingObjectRequest = require('kryptnostic.pending-object-request');
@@ -35767,9 +35767,25 @@ define("revalidator", function(){});
     ObjectApi = require('kryptnostic.object-api');
     Logger = require('kryptnostic.logger');
     logger = Logger.get('StorageClient');
+    validateId = function(id) {
+      if (!(_.isString(id) && !_.isEmpty(id))) {
+        throw new Error('must specify a string id');
+      }
+    };
+    validateBody = function(body) {
+      if (!(_.isString(body) && !_.isEmpty(body))) {
+        throw new Error('object body cannot be empty!');
+      }
+    };
+    validateDecrypted = function(kryptnosticObject) {
+      if (kryptnosticObject.isEncrypted()) {
+        throw new Error('expected object to be in decrypted state');
+      }
+    };
     StorageClient = (function() {
       function StorageClient() {
         this.objectApi = new ObjectApi();
+        this.cryptoServiceLoader = new CryptoServiceLoader();
       }
 
       StorageClient.prototype.getObjectIds = function() {
@@ -35804,7 +35820,41 @@ define("revalidator", function(){});
       };
 
       StorageClient.prototype.deleteObject = function(id) {
-        return this.objectApi.deleteObject(id);
+        return Promise.resolve().then((function(_this) {
+          return function() {
+            validateId(id);
+            return _this.objectApi.deleteObject(id);
+          };
+        })(this));
+      };
+
+      StorageClient.prototype.appendObject = function(id, body) {
+        return Promise.resolve().then(function() {
+          validateId(id);
+          return validateBody(body);
+        }).then((function(_this) {
+          return function() {
+            return _this.objectApi.createPendingObjectFromExisting(id);
+          };
+        })(this)).then((function(_this) {
+          return function() {
+            var kryptnosticObject;
+            kryptnosticObject = KryptnosticObject.createFromDecrypted({
+              id: id,
+              body: body
+            });
+            validateDecrypted(kryptnosticObject);
+            return _this.cryptoServiceLoader.getObjectCryptoService(id, {
+              expectMiss: false
+            }).then(function(cryptoService) {
+              var encrypted;
+              encrypted = kryptnosticObject.encrypt(cryptoService);
+              return _this.submitObjectBlocks(encrypted);
+            }).then(function() {
+              return id;
+            });
+          };
+        })(this));
       };
 
       StorageClient.prototype.uploadObject = function(storageRequest) {
@@ -35821,25 +35871,18 @@ define("revalidator", function(){});
         }
         return pendingPromise.then((function(_this) {
           return function(id) {
-            var cryptoServiceLoader, kryptnosticObject;
-            logger.info('pending id', id);
+            var kryptnosticObject;
             kryptnosticObject = KryptnosticObject.createFromDecrypted({
               id: id,
               body: body
             });
-            if (kryptnosticObject.isEncrypted()) {
-              throw new Error('expected object to be in a decrypted state');
-            }
-            logger.info('object', kryptnosticObject);
-            cryptoServiceLoader = new CryptoServiceLoader();
-            logger.info('made crypto service loader');
-            return cryptoServiceLoader.getObjectCryptoService(id, {
+            validateDecrypted(kryptnosticObject);
+            return _this.cryptoServiceLoader.getObjectCryptoService(id, {
               expectMiss: true
             }).then(function(cryptoService) {
-              var encryptedObject;
-              encryptedObject = kryptnosticObject.encrypt(cryptoService);
-              logger.info('encrypted object', encryptedObject);
-              return _this.submitObjectBlocks(encryptedObject);
+              var encrypted;
+              encrypted = kryptnosticObject.encrypt(cryptoService);
+              return _this.submitObjectBlocks(encrypted);
             }).then(function() {
               return id;
             });

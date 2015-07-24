@@ -18,6 +18,18 @@ define 'kryptnostic.storage-client', [
 
   logger = Logger.get('StorageClient')
 
+  validateId = (id) ->
+    unless _.isString(id) and not _.isEmpty(id)
+      throw new Error 'must specify a string id'
+
+  validateBody = (body) ->
+    unless _.isString(body) and not _.isEmpty(body)
+      throw new Error 'object body cannot be empty!'
+
+  validateDecrypted = (kryptnosticObject) ->
+    if kryptnosticObject.isEncrypted()
+      throw new Error 'expected object to be in decrypted state'
+
   #
   # Client for listing and loading Kryptnostic encrypted objects.
   # Author: rbuckheit
@@ -25,7 +37,8 @@ define 'kryptnostic.storage-client', [
   class StorageClient
 
     constructor : ->
-      @objectApi = new ObjectApi()
+      @objectApi           = new ObjectApi()
+      @cryptoServiceLoader = new CryptoServiceLoader()
 
     getObjectIds : ->
       return @objectApi.getObjectIds()
@@ -49,11 +62,31 @@ define 'kryptnostic.storage-client', [
           @objectApi.updateObject(objectId, encryptableBlock)
 
       deferred.resolve()
-
       return promise
 
     deleteObject : (id) ->
-      @objectApi.deleteObject(id)
+      Promise.resolve()
+      .then =>
+        validateId(id)
+        return @objectApi.deleteObject(id)
+
+    appendObject : (id, body) ->
+      Promise.resolve()
+      .then ->
+        validateId(id)
+        validateBody(body)
+      .then =>
+        @objectApi.createPendingObjectFromExisting(id)
+      .then =>
+        kryptnosticObject = KryptnosticObject.createFromDecrypted({id, body})
+        validateDecrypted(kryptnosticObject)
+
+        @cryptoServiceLoader.getObjectCryptoService(id, {expectMiss: false})
+        .then (cryptoService) =>
+          encrypted = kryptnosticObject.encrypt(cryptoService)
+          @submitObjectBlocks(encrypted)
+        .then ->
+          return id
 
     uploadObject : (storageRequest) ->
       storageRequest.validate()
@@ -70,24 +103,13 @@ define 'kryptnostic.storage-client', [
 
       pendingPromise
       .then (id) =>
-        logger.info('pending id', id)
-
         kryptnosticObject = KryptnosticObject.createFromDecrypted({id, body})
+        validateDecrypted(kryptnosticObject)
 
-        if kryptnosticObject.isEncrypted()
-          throw new Error('expected object to be in a decrypted state')
-
-        logger.info('object', kryptnosticObject)
-
-        cryptoServiceLoader = new CryptoServiceLoader()
-
-        logger.info('made crypto service loader')
-
-        cryptoServiceLoader.getObjectCryptoService(id, {expectMiss: true})
+        @cryptoServiceLoader.getObjectCryptoService(id, {expectMiss: true})
         .then (cryptoService) =>
-          encryptedObject = kryptnosticObject.encrypt(cryptoService)
-          logger.info('encrypted object', encryptedObject)
-          @submitObjectBlocks(encryptedObject)
+          encrypted = kryptnosticObject.encrypt(cryptoService)
+          @submitObjectBlocks(encrypted)
         .then ->
           return id
 

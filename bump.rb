@@ -55,7 +55,7 @@ end
 
 puts; puts "starting gitflow release..."
 
-`gt gitflow_release_start #{new_version}`
+`gtool gitflow_release_start #{new_version}`
 
 puts; puts "bumping to v#{new_version}..."
 
@@ -68,5 +68,11 @@ puts; puts "building release dists..."
 
 puts; puts "committing release bump changes..."
 `git add -A && git commit -m 'bump versions and dists'`
+
+puts; puts "finishing gitflow release"
+`gtool gitflow_release_finish #{new_version}`
+
+puts; puts "pushing gitflow release"
+`gtool push_release`
 
 exit()

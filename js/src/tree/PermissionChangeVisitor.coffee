@@ -13,6 +13,11 @@ define 'kryptnostic.permission-change-visitor', [
 
   log = Logger.get('PermissionChangeVisitor')
 
+  validateId = (id) ->
+    unless _.isString(id) and not _.isEmpty(id)
+      log.error('illegal id argument', {id})
+      throw new Error 'illegal id argument'
+
   #
   # Changes permissions on the visited object nodes.
   # Author: rbuckheit
@@ -29,6 +34,7 @@ define 'kryptnostic.permission-change-visitor', [
     visit: (id) ->
       Promise.resolve()
       .then =>
+        validateId(id)
         @changePermissions(id)
       .then =>
         @changed.push(id)
@@ -42,6 +48,7 @@ define 'kryptnostic.permission-change-visitor', [
 
       Promise.resolve()
       .then =>
+        validateId(id)
         @getParticipants(id)
       .then (current) =>
         usersAdd    = _.difference(@users, current)
@@ -52,11 +59,12 @@ define 'kryptnostic.permission-change-visitor', [
       .then =>
         @sharingClient.shareObject(id, usersAdd)
       .then =>
-        @changedUsers[id] = { addedUsers: usersAdd, removedUsers: usersRemove }
+        @changedUsers[id] = { added: usersAdd, removed: usersRemove }
 
     getParticipants: (id) ->
       Promise.resolve()
       .then =>
+        validateId(id)
         @storageClient.getObjectMetadata(id)
       .then (metadata) ->
         usernames = _.chain([metadata.owners, metadata.readers, metadata.writers])

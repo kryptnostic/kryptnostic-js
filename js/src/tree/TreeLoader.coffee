@@ -24,10 +24,14 @@ define 'kryptnostic.tree-loader', [
     constructor: ->
       @objectApi = new ObjectApi()
 
-    load: (id) ->
-      log.info('load', id)
+    load: (id, { depth } = {}) ->
+      { recurse } = {}
 
       return Promise.resolve()
+      .then ->
+        depth = depth - 1
+        log.info('load', id)
+        recurse = _.isNaN(depth) or depth > 0
       .then =>
         @objectApi.getObjectMetadata(id)
       .then (metadata) =>
@@ -35,7 +39,11 @@ define 'kryptnostic.tree-loader', [
         childIndices       = [0...childObjectCount]
         return Promise.all(_.map(childIndices, (index) =>
           childId = ObjectUtils.createChildId(id, index)
-          return @load(childId)
+
+          if recurse
+            return @load(childId, { depth })
+          else
+            return new TreeNode(childId, [])
         ))
       .then (children) ->
         children = _.compact(children)

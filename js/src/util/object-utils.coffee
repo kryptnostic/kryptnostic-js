@@ -2,7 +2,19 @@ define 'kryptnostic.object-utils', [
   'require'
 ], (require) ->
 
-  createChildId = (id, index) ->
-    return "#{id}~#{index}"
+  CHILD_SEPARATOR = '~'
 
-  return { createChildId }
+  createChildId = (id, index) ->
+    return "#{id}#{CHILD_SEPARATOR}#{index}"
+
+  isChildId = (id) ->
+    return id.indexOf(CHILD_SEPARATOR) >= 0
+
+  getChildIndex = (id) ->
+    return _.parseInt(_.last(id.split(CHILD_SEPARATOR)))
+
+  return {
+    isChildId,
+    createChildId,
+    getChildIndex
+  }

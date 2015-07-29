@@ -8,10 +8,10 @@ define 'kryptnostic.authentication-stage', [
   #
 
   AuthenticationStage = {
-    DERIVE_CREDENTIAL  : 'deriving credential'
-    RSA_KEYGEN         : 'generating rsa keypair'
-    DERIVE_KEYPAIR     : 'deriving rsa keypair'
-    COMPLETED          : 'authentication complete'
+    DERIVE_CREDENTIAL : 'deriving credential'
+    RSA_KEYGEN        : 'generating rsa keypair'
+    DERIVE_KEYPAIR    : 'deriving rsa keypair'
+    COMPLETED         : 'authentication complete'
   }
 
   return AuthenticationStage

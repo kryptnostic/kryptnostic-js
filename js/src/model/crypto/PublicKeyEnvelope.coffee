@@ -14,7 +14,7 @@ define 'kryptnostic.public-key-envelope', [
   class PublicKeyEnvelope
 
     # construct from raw json.
-    constructor: ({@publicKey}) ->
+    constructor: ({ @publicKey }) ->
       @publicKey = atob(@publicKey)
       @validate()
 

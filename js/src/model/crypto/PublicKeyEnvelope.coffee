@@ -13,6 +13,10 @@ define 'kryptnostic.public-key-envelope', [
   #
   class PublicKeyEnvelope
 
+    @createFromBuffer : (publicKeyBuffer) ->
+      publicKey = btoa(publicKeyBuffer)
+      return new PublicKeyEnvelope({ publicKey })
+
     # construct from raw json.
     constructor: ({@publicKey}) ->
       @publicKey = atob(@publicKey)

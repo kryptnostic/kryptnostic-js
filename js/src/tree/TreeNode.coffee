@@ -14,6 +14,8 @@ define 'kryptnostic.tree-node', [
   validateId = (id) ->
     if _.isEmpty(id)
       throw new Error 'no root id provided'
+    if not _.isString(id)
+      throw new Error 'id is not a string'
 
   validateChildren = (children) ->
     unless _.isArray(children)

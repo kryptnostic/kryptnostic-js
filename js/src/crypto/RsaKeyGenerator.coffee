@@ -15,7 +15,7 @@ define 'kryptnostic.rsa-key-generator', [
   class RsaKeyGenerator
 
     @generateKeypair: ->
-      params = {bits: RSA_KEY_SIZE, e: EXPONENT}
+      params = { bits: RSA_KEY_SIZE, e: EXPONENT }
       log.info('generating keypair', params)
       return Forge.rsa.generateKeyPair(params)
 

@@ -130,7 +130,7 @@ define 'kryptnostic.directory-api', [
         if _.isEmpty(response)
           throw new Error 'incorrect username or password'
         else
-         return new BlockCiphertext(response)
+          return new BlockCiphertext(response)
 
     # gets users in the specified realm
     getUsers: ({ realm }) ->

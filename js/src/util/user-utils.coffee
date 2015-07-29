@@ -21,15 +21,15 @@ define 'kryptnostic.user-utils', [
     unless !!realm and !!username
       throw new Error 'invalid principal string'
 
-    return {realm, username}
+    return { realm, username }
 
-  componentsToPrincipal = ({realm, username}) ->
+  componentsToPrincipal = ({ realm, username }) ->
     if !realm or !username
       throw new Error 'missing realm or username'
     return [realm, username].join(PRINCIPAL_SEPARATOR)
 
-  componentsToUserKey = ({realm, username}) ->
-    return {name: username, realm: realm}
+  componentsToUserKey = ({ realm, username }) ->
+    return { name: username, realm: realm }
 
   return {
     componentsToPrincipal

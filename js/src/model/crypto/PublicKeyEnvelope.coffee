@@ -21,8 +21,8 @@ define 'kryptnostic.public-key-envelope', [
       publicKey = btoa(publicKeyBuffer)
       return new PublicKeyEnvelope({ publicKey })
 
-    # construct from a base 64 public key
-    constructor: ({@publicKey}) ->
+    # construct from raw json.
+    constructor: ({ @publicKey }) ->
       @validate()
 
     validate: ->

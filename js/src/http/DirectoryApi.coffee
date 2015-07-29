@@ -49,7 +49,7 @@ define 'kryptnostic.directory-api', [
         type : 'GET'
       })))
       .then (response) ->
-        logger.info('getCryptoService', {objectId, response})
+        logger.info('getCryptoService', { objectId, response })
         serializedCryptoService = response.data
         return serializedCryptoService
 
@@ -61,11 +61,11 @@ define 'kryptnostic.directory-api', [
       Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
         url         : cryptoServiceUrl() + '/' + objectId
         type        : 'POST'
-        data        : JSON.stringify({data: btoa(byteBufferStr)})
+        data        : JSON.stringify({ data: btoa(byteBufferStr) })
         contentType : APPLICATION_JSON_CONTENT_TYPE
       })))
       .then (response) ->
-        logger.info('setObjectCryptoService', {response})
+        logger.info('setObjectCryptoService', { response })
         return response
 
     # gets encrypted RSA private keys for the current user
@@ -79,7 +79,7 @@ define 'kryptnostic.directory-api', [
           logger.warn('getPrivateKey - no key available')
           return undefined
         else
-          logger.debug('getPrivateKey', {response})
+          logger.debug('getPrivateKey', { response })
           return new BlockCiphertext(response)
 
     # uploads a password-encrypted private key.
@@ -93,7 +93,7 @@ define 'kryptnostic.directory-api', [
         contentType : APPLICATION_JSON_CONTENT_TYPE
       })))
       .then (response) ->
-        logger.debug('setPrivateKey', {response})
+        logger.debug('setPrivateKey', { response })
 
     # uploads a user's public key.
     setPublicKey: (publicKeyEnvelope) ->
@@ -106,7 +106,7 @@ define 'kryptnostic.directory-api', [
         contentType : APPLICATION_JSON_CONTENT_TYPE
       })))
       .then (response) ->
-        logger.debug('setPublicKey', {response})
+        logger.debug('setPublicKey', { response })
 
     # gets the public key of a user in the same realm as the caller.
     getPublicKey: (username) ->
@@ -115,18 +115,18 @@ define 'kryptnostic.directory-api', [
         type : 'GET'
       })))
       .then (response) ->
-        logger.debug('getPublicKey', {response})
+        logger.debug('getPublicKey', { response })
         return new PublicKeyEnvelope(response)
 
     # gets the user's encrypted salt.
     # request is not wrapped because the user has not auth'ed yet.
-    getSalt: ({username, realm}) ->
+    getSalt: ({ username, realm }) ->
       Promise.resolve(jquery.ajax({
         url  : saltUrl() + '/' + realm + '/' + username,
         type : 'GET'
       }))
       .then (response) ->
-        logger.info('getSalt', {response})
+        logger.info('getSalt', { response })
         return new BlockCiphertext(response)
 
   return DirectoryApi

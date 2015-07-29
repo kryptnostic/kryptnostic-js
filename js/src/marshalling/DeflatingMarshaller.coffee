@@ -39,7 +39,7 @@ define 'kryptnostic.deflating-marshaller', [
       validateBytes(bytes)
 
       uncompressedLength = countBytes(bytes)
-      compressedBytes    = Pako.deflate(bytes, {to: 'string'})
+      compressedBytes    = Pako.deflate(bytes, { to: 'string' })
       buffer             = Forge.util.createBuffer(EMPTY_BUFFER, 'raw')
 
       buffer.putInt32(uncompressedLength)
@@ -54,7 +54,7 @@ define 'kryptnostic.deflating-marshaller', [
       buffer          = Forge.util.createBuffer(bytes, 'raw')
       verifyLength    = buffer.getInt32(INTEGER_BYTE_COUNT)
       compressedBytes = buffer.getBytes(buffer.length())
-      inflatedBytes   = Pako.inflate(compressedBytes, {to: 'string'})
+      inflatedBytes   = Pako.inflate(compressedBytes, { to: 'string' })
       inflatedLength  = countBytes(inflatedBytes)
 
       if verifyLength isnt inflatedLength

@@ -28,4 +28,4 @@ define 'kryptnostic.schema.validator', [
       })
       throw new Error('schema validation failed for ' + object.constructor.name)
 
-  return {validate}
+  return { validate }

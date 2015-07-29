@@ -50,7 +50,7 @@ define 'kryptnostic.credential-service', [
 
     initializeKeypair : ({ password }) ->
       log.info('initializeKeypair')
-      {publicKey, privateKey, keypair} = {}
+      { publicKey, privateKey, keypair } = {}
 
       Promise.resolve()
       .then =>

@@ -81,10 +81,10 @@ define 'kryptnostic.storage-client', [
       .then =>
         @objectApi.createPendingObjectFromExisting(id)
       .then =>
-        kryptnosticObject = KryptnosticObject.createFromDecrypted({id, body})
+        kryptnosticObject = KryptnosticObject.createFromDecrypted({ id, body })
         validateDecrypted(kryptnosticObject)
 
-        @cryptoServiceLoader.getObjectCryptoService(id, {expectMiss: false})
+        @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss: false })
         .then (cryptoService) =>
           encrypted = kryptnosticObject.encrypt(cryptoService)
           @submitObjectBlocks(encrypted)
@@ -94,8 +94,8 @@ define 'kryptnostic.storage-client', [
     uploadObject : (storageRequest) ->
       storageRequest.validate()
 
-      {body, objectId} = storageRequest
-      pendingPromise   = undefined
+      { body, objectId } = storageRequest
+      pendingPromise     = undefined
 
       if objectId?
         pendingPromise = @objectApi.createPendingObjectFromExisting(objectId)
@@ -106,10 +106,10 @@ define 'kryptnostic.storage-client', [
 
       pendingPromise
       .then (id) =>
-        kryptnosticObject = KryptnosticObject.createFromDecrypted({id, body})
+        kryptnosticObject = KryptnosticObject.createFromDecrypted({ id, body })
         validateDecrypted(kryptnosticObject)
 
-        @cryptoServiceLoader.getObjectCryptoService(id, {expectMiss: true})
+        @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss: true })
         .then (cryptoService) =>
           encrypted = kryptnosticObject.encrypt(cryptoService)
           @submitObjectBlocks(encrypted)

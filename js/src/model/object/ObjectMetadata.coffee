@@ -16,7 +16,7 @@ define 'kryptnostic.object-metadata', [
       version          : 0
       total            : 0
       childObjectCount : 0
-      strategy         : {'@class' : 'kryptnostic.chunking.strategy.default'}
+      strategy         : { '@class' : 'kryptnostic.chunking.strategy.default' }
       owners           : []
       readers          : []
       writers          : []

@@ -23,12 +23,12 @@ define 'kryptnostic.authentication-service', [
   #
   class AuthenticationService
 
-    @authenticate: ({username, password, realm}) ->
-      {principal, credential, keypair} = {}
+    @authenticate: ({ username, password, realm }) ->
+      { principal, credential, keypair } = {}
 
       credentialService  = new CredentialService()
       credentialProvider = CredentialProviderLoader.load(Config.get('credentialProvider'))
-      principal          = UserUtils.componentsToPrincipal({realm, username})
+      principal          = UserUtils.componentsToPrincipal({ realm, username })
 
       Promise.resolve()
       .then ->

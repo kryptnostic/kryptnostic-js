@@ -1,16 +1,18 @@
 define [
   'require'
+  'sinon'
   'kryptnostic.credential-service'
   'kryptnostic.mock.directory-api'
 ], (require) ->
 
+  sinon             = require 'sinon'
   CredentialService = require 'kryptnostic.credential-service'
   MockDirectoryApi  = require 'kryptnostic.mock.directory-api'
 
   # mock
   # ====
 
-  CREDS = {username: 'demo', password: 'demo', realm: 'krypt'}
+  CREDS = { username: 'demo', password: 'demo', realm: 'krypt' }
 
   EXPECTED_KEYPAIR = {
     privateKey: {
@@ -175,14 +177,21 @@ define [
     }
   }
 
+  EXPECTED_PUBLIC_KEY_BASE64 =
+    'MCowDQYJKoZIhvcNAQEBBQADGQAwFgIJAAAAAAwAC+wAAgkAAAAADAAL7AA='
+
   # setup
   # =====
 
-  {credentialService} = {}
+  { credentialService } = {}
 
   beforeEach ->
     credentialService              = new CredentialService()
     credentialService.directoryApi = new MockDirectoryApi()
+    sinon.stub(credentialService.rsaKeyGenerator, 'generateKeypair').returns(EXPECTED_KEYPAIR)
+
+  afterEach ->
+    credentialService.rsaKeyGenerator.generateKeypair.restore()
 
   describe 'CredentialService', ->
 
@@ -201,3 +210,33 @@ define [
         .then (keypair) ->
           expect(JSON.parse(JSON.stringify(keypair))).toEqual(EXPECTED_KEYPAIR)
           done()
+
+    describe '#initializeKeypair', ->
+
+      it 'should initialize an RSA keypair and send the components to the directory api', (done) ->
+        credentialService.initializeKeypair(CREDS)
+        .then (keypair) ->
+          expect(keypair).toBeDefined()
+          expect(keypair).toEqual(EXPECTED_KEYPAIR)
+
+          { publicKey, privateKey } = credentialService.directoryApi
+
+          # public
+          # ======
+          expect(publicKey).toBeDefined()
+          expect(publicKey.constructor.name).toBe('PublicKeyEnvelope')
+          expect(publicKey.publicKey).toBe(EXPECTED_PUBLIC_KEY_BASE64)
+          expect(-> publicKey.validate()).not.toThrow()
+
+          # private
+          # =======
+          expect(privateKey).toBeDefined()
+          expect(privateKey.constructor.name).toBe('BlockCiphertext')
+          expect(privateKey.contents).toBeDefined()
+          expect(privateKey.iv).toBeDefined()
+          expect(privateKey.salt).toBeDefined()
+          expect(-> privateKey.validate()).not.toThrow()
+          done()
+
+
+

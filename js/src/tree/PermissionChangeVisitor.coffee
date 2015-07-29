@@ -15,7 +15,7 @@ define 'kryptnostic.permission-change-visitor', [
 
   validateId = (id) ->
     unless _.isString(id) and not _.isEmpty(id)
-      log.error('illegal id argument', {id})
+      log.error('illegal id argument', { id })
       throw new Error 'illegal id argument'
 
   #
@@ -39,12 +39,12 @@ define 'kryptnostic.permission-change-visitor', [
       .then =>
         @changed.push(id)
       .catch (e) =>
-        log.error('failed to change permissions', {id})
-        log.error('error', _.extend({}, e, {msg: e.message, stack: e.stack}))
+        log.error('failed to change permissions', { id })
+        log.error('error', _.extend({}, e, { msg: e.message, stack: e.stack }))
         @failed.push(id)
 
     changePermissions: (id) ->
-      {usersAdd, usersRemove} = {}
+      { usersAdd, usersRemove } = {}
 
       Promise.resolve()
       .then =>
@@ -53,7 +53,7 @@ define 'kryptnostic.permission-change-visitor', [
       .then (current) =>
         usersAdd    = _.difference(@users, current)
         usersRemove = _.difference(current, @users)
-        log.info('changePermissions', {id, usersRemove, usersAdd})
+        log.info('changePermissions', { id, usersRemove, usersAdd })
       .then =>
         @sharingClient.revokeObject(id, usersRemove)
       .then =>

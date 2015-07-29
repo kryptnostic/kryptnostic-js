@@ -79,13 +79,13 @@ define [
     it 'should correctly decrypt a known-good ciphertext', ->
       privateKey    = Forge.pki.privateKeyFromPem(PEM_PRIVATE_KEY)
       publicKey     = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e)
-      cryptoService = new RsaCryptoService({privateKey, publicKey})
+      cryptoService = new RsaCryptoService({ privateKey, publicKey })
       ciphertext    = atob(CIPHERTEXT_BASE_64)
       plaintext     = cryptoService.decrypt(ciphertext)
       expect(atob(PLAINTEXT_BASE_64)).toBe(plaintext)
 
     it 'should decrypt what it encrypts', ->
-      keypair       = Forge.rsa.generateKeyPair({bits: 1024, e: 0x10001})
+      keypair       = Forge.rsa.generateKeyPair({ bits: 1024, e: 0x10001 })
       cryptoService = new RsaCryptoService(keypair)
       plaintext     = 'my heart is a blue ridge mountain'
       recovered     = cryptoService.decrypt(cryptoService.encrypt(plaintext))

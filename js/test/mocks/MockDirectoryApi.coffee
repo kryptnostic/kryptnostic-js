@@ -56,10 +56,16 @@ define 'kryptnostic.mock.directory-api', [
 
   class MockDirectoryApi
 
-    getSalt: ({username, realm}) ->
+    getSalt: ({ username, realm }) ->
       return Promise.resolve(new BlockCiphertext(SALT_BLOCK_CIPHERTEXT))
 
-    getRsaKeys: ->
+    getPrivateKey: ->
       return Promise.resolve(new BlockCiphertext(RSA_KEY_BLOCK_CIPERTEXT))
+
+    setPrivateKey: (@privateKey) ->
+      return Promise.resolve()
+
+    setPublicKey: (@publicKey) ->
+      return Promise.resolve()
 
   return MockDirectoryApi

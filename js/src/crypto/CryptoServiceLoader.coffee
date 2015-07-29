@@ -25,7 +25,7 @@ define 'kryptnostic.crypto-service-loader', [
 
   logger = Logger.get('CryptoServiceLoader')
 
-  DEFAULT_OPTS = {expectMiss: false}
+  DEFAULT_OPTS = { expectMiss: false }
 
   #
   # Loads cryptoservices which can be used for object decryption.
@@ -38,18 +38,18 @@ define 'kryptnostic.crypto-service-loader', [
       @marshaller       = new CryptoServiceMarshaller()
 
     getRsaCryptoService: ->
-      {keypair} = CredentialLoader.getCredentials()
+      { keypair } = CredentialLoader.getCredentials()
       return new RsaCryptoService(keypair)
 
     getObjectCryptoService: (id, options) ->
       options          = _.defaults({}, options, DEFAULT_OPTS)
-      {expectMiss}     = options
+      { expectMiss }   = options
       rsaCryptoService = @getRsaCryptoService()
 
       return  @directoryApi.getObjectCryptoService(id)
       .then (serializedCryptoService) =>
         if !serializedCryptoService && expectMiss
-          logger.info('no cryptoService exists for this object. creating one on-the-fly', {id})
+          logger.info('no cryptoService exists for this object. creating one on-the-fly', { id })
           cryptoService = new AesCryptoService( Cypher.AES_CTR_128 )
           @setObjectCryptoService( id, cryptoService )
           return cryptoService

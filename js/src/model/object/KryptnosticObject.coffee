@@ -44,11 +44,11 @@ define 'kryptnostic.kryptnostic-object', [
       return new KryptnosticObject(raw)
 
     # create using a pending object id and unencrypted body
-    @createFromDecrypted : ({id, body}) ->
-      metadata = new ObjectMetadata({id})
+    @createFromDecrypted : ({ id, body }) ->
+      metadata = new ObjectMetadata({ id })
       logger.info('metadata', metadata)
-      body = {data: body}
-      return new KryptnosticObject({metadata, body})
+      body = { data: body }
+      return new KryptnosticObject({ metadata, body })
 
     # true if data is in chunked/encrypted form, false otherwise.
     isEncrypted : ->
@@ -69,7 +69,7 @@ define 'kryptnostic.kryptnostic-object', [
         chunkingStrategyClass  = ChunkingStrategyRegistry.get(chunkingStrategyUri)
         chunkingStrategy       = new chunkingStrategyClass()
         data                   = chunkingStrategy.join(chunks)
-        raw                    = _.extend({}, _.cloneDeep(this), {body: {data}})
+        raw                    = _.extend({}, _.cloneDeep(this), { body: { data } })
         return new KryptnosticObject(raw)
 
     # chunk and encrypt using a cryptoService
@@ -83,7 +83,7 @@ define 'kryptnostic.kryptnostic-object', [
         chunkingStrategy       = new chunkingStrategyClass()
         chunks                 = chunkingStrategy.split(@body.data)
         data                   = blockEncryptionService.encrypt(chunks, cryptoService)
-        raw                    = _.extend({}, _.cloneDeep(this), {body: {data}})
+        raw                    = _.extend({}, _.cloneDeep(this), { body: { data } })
         return new KryptnosticObject(raw)
 
   return KryptnosticObject

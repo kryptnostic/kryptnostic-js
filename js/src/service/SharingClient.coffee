@@ -39,7 +39,7 @@ define 'kryptnostic.sharing-client', [
 
   usernamesToKeys = (usernames, realm) ->
     return _.map usernames, (username) ->
-      return UserUtils.componentsToUserKey {username, realm}
+      return UserUtils.componentsToUserKey({ username, realm })
 
   #
   # Client for granting and revoking shared access to Kryptnostic objects.
@@ -59,7 +59,7 @@ define 'kryptnostic.sharing-client', [
       validateId(id)
       validateUsernames(usernames)
 
-      {principal}         = CredentialLoader.getCredentials()
+      { principal }       = CredentialLoader.getCredentials()
       realm               = UserUtils.principalToComponents(principal).realm
       cryptoServiceLoader = new CryptoServiceLoader()
       sharingKey          = ''
@@ -77,24 +77,24 @@ define 'kryptnostic.sharing-client', [
           seals = _.chain(userKeysMap)
             .mapValues((keyEnvelope, username) =>
               publicKey        = keyEnvelope.toRsaPublicKey()
-              rsaCryptoService = new RsaCryptoService({publicKey})
+              rsaCryptoService = new RsaCryptoService({ publicKey })
               marshalledCrypto = @cryptoServiceMarshaller.marshall(cryptoService)
               seal             = rsaCryptoService.encrypt(marshalledCrypto)
               sealBase64       = btoa(seal)
               return sealBase64
             )
             .mapKeys((seal, username) ->
-              return UserUtils.componentsToPrincipal({realm, username})
+              return UserUtils.componentsToPrincipal({ realm, username })
             )
             .value()
 
           log.info('seals', seals)
           log.warn('sharing request will be sent with an empty sharing key')
-          sharingRequest = new SharingRequest({id, users : seals, sharingKey})
+          sharingRequest = new SharingRequest({ id, users : seals, sharingKey })
           @sharingApi.shareObject(sharingRequest)
 
     revokeObject: (id, usernames) ->
-      {revocationRequest} = {}
+      { revocationRequest } = {}
 
       if _.isEmpty(usernames)
         return Promise.resolve()
@@ -104,9 +104,9 @@ define 'kryptnostic.sharing-client', [
         validateId(id)
         validateUsernames(usernames)
 
-        {principal} = CredentialLoader.getCredentials()
-        realm       = UserUtils.principalToComponents(principal).realm
-        userKeys    = usernamesToKeys(usernames, realm)
+        { principal } = CredentialLoader.getCredentials()
+        realm         = UserUtils.principalToComponents(principal).realm
+        userKeys      = usernamesToKeys(usernames, realm)
 
         revocationRequest = new RevocationRequest { id, users: userKeys }
       .then =>

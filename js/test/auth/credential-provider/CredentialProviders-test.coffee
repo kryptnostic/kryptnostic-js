@@ -17,13 +17,13 @@ define [
     InMemoryCredentialProvider
   ].forEach (CredentialProvider) ->
 
-    {principal, credential, keypair} = {}
+    { principal, credential, keypair } = {}
 
     beforeEach ->
       CredentialProvider.destroy()
       principal  = 'krypt|demo'
       credential = 'fake-credential'
-      keypair    = Forge.rsa.generateKeyPair({bits: 32, e: 0x10001})
+      keypair    = Forge.rsa.generateKeyPair({ bits: 32, e: 0x10001 })
 
     afterEach ->
       CredentialProvider.destroy()
@@ -33,21 +33,21 @@ define [
       describe '#store', ->
 
         it 'should store a complete credential', ->
-          CredentialProvider.store({principal, credential, keypair})
+          CredentialProvider.store({ principal, credential, keypair })
 
         it 'should store a credential without keypair', ->
-          CredentialProvider.store({principal, credential})
+          CredentialProvider.store({ principal, credential })
 
         it 'should throw if credential is missing', ->
-          expect( -> CredentialProvider.store({principal, keypair}) ).toThrow()
+          expect( -> CredentialProvider.store({ principal, keypair }) ).toThrow()
 
         it 'should throw if principal is missing', ->
-          expect( -> CredentialProvider.store({credential, keypair}) ).toThrow()
+          expect( -> CredentialProvider.store({ credential, keypair }) ).toThrow()
 
       describe '#load', ->
 
         it 'should load all stored credentials', ->
-          CredentialProvider.store({principal, credential, keypair})
+          CredentialProvider.store({ principal, credential, keypair })
           loaded = CredentialProvider.load()
 
           expect(loaded.keypair).toBeDefined()
@@ -60,7 +60,7 @@ define [
       describe '#destroy', ->
 
         it 'should destroy all stored credentials', ->
-          CredentialProvider.store({principal, credential, keypair})
+          CredentialProvider.store({ principal, credential, keypair })
           CredentialProvider.destroy()
 
           expect( -> CredentialProvider.load() ).toThrow()

@@ -17,7 +17,7 @@ define 'kryptnostic.crypto-service-marshaller', [
       @deflatingMarshaller = new DeflatingMarshaller()
 
     marshall: (cryptoService) ->
-      {key, cypher} = cryptoService
+      { key, cypher } = cryptoService
 
       if cryptoService.constructor.name isnt 'AesCryptoService'
         throw new Error 'serialization only implemented for AesCryptoService'
@@ -26,7 +26,7 @@ define 'kryptnostic.crypto-service-marshaller', [
       if !cypher
         throw new Error 'cypher cannot be blank'
 
-      rawCryptoService        = {cypher, key: btoa(key)}
+      rawCryptoService        = { cypher, key: btoa(key) }
       serializedCryptoService = JSON.stringify(rawCryptoService)
       return @deflatingMarshaller.marshall(serializedCryptoService)
 

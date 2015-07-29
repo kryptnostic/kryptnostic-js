@@ -52,18 +52,17 @@ define 'kryptnostic.block-encryption-service', [
         timeCreated = new Date().getTime()
 
         block = { block, name, verify, index, last, strategy, timeCreated }
-        logger.info('created raw block', block)
+        logger.info('created block', block)
         return new EncryptedBlock(block)
 
     # convert encrypted blocks into string data chunks
     decrypt : (blocks, cryptoService) ->
-      return blocks.map ({block, verify}) ->
+      return blocks.map ({ block, verify }) ->
         computed = VERIFY_HASH_FUNCTION(block.contents)
         unless verify is computed
-          logger.info('block verify mismatch', {verify, computed})
+          logger.info('block verify mismatch', { verify, computed })
           throw new Error('cannot decrypt block because verify of block contents does not match.')
         decrypted = cryptoService.decrypt(block)
-        logger.info('decrypted block', decrypted)
         return decrypted
 
   return BlockEncryptionService

@@ -6,6 +6,7 @@ define 'kryptnostic.authentication-service', [
   'kryptnostic.credential-provider-loader'
   'kryptnostic.credential-service'
   'kryptnostic.user-utils'
+  'kryptnostic.authentication-stage'
 ], (require) ->
 
   Promise                  = require 'bluebird'
@@ -14,6 +15,7 @@ define 'kryptnostic.authentication-service', [
   CredentialProviderLoader = require 'kryptnostic.credential-provider-loader'
   CredentialService        = require 'kryptnostic.credential-service'
   UserUtils                = require 'kryptnostic.user-utils'
+  AuthenticationStage      = require 'kryptnostic.authentication-stage'
 
   log = Logger.get('AuthenticationService')
 
@@ -23,7 +25,7 @@ define 'kryptnostic.authentication-service', [
   #
   class AuthenticationService
 
-    @authenticate: ({ username, password, realm }) ->
+    @authenticate: ( { username, password, realm }, authCallback = -> ) ->
       { principal, credential, keypair } = {}
 
       credentialService  = new CredentialService()
@@ -33,15 +35,16 @@ define 'kryptnostic.authentication-service', [
       Promise.resolve()
       .then ->
         log.info('authenticating', { username, realm })
-        credentialService.deriveCredential { username, password, realm }
+        credentialService.deriveCredential({ username, password, realm }, authCallback)
       .then (_credential) ->
         credential = _credential
         log.info('derived credential')
         credentialProvider.store { principal, credential }
-        credentialService.deriveKeypair { password }
+        credentialService.deriveKeypair({ password }, authCallback)
       .then (_keypair) ->
         keypair = _keypair
         credentialProvider.store { principal, credential, keypair }
+        authCallback(AuthenticationStage.COMPLETED)
         log.info('authentication complete')
 
     @destroy: ->

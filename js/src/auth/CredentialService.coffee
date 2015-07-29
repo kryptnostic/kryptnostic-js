@@ -37,7 +37,7 @@ define 'kryptnostic.credential-service', [
       @directoryApi    = new DirectoryApi()
       @rsaKeyGenerator = new RsaKeyGenerator()
 
-    deriveCredential : ({ username, password, realm }, authCallback) ->
+    deriveCredential : ({ username, password, realm }, authCallback = -> ) ->
       { iterations, keySize, passwordCrypto } = {}
 
       Promise.resolve()
@@ -54,7 +54,7 @@ define 'kryptnostic.credential-service', [
         hexDerived     = Forge.util.bytesToHex(derived)
         return hexDerived
 
-    initializeKeypair : ({ password }, authCallback) ->
+    initializeKeypair : ({ password }, authCallback = -> ) ->
       { publicKey, privateKey, keypair } = {}
 
       Promise.resolve()
@@ -84,7 +84,7 @@ define 'kryptnostic.credential-service', [
         log.error(e)
         log.error('keypair generation failed!', e)
 
-    deriveKeypair : ({ password }, authCallback) ->
+    deriveKeypair : ({ password }, authCallback = -> ) ->
       Promise.resolve()
       .then =>
         authCallback(AuthenticationStage.DERIVE_KEYPAIR)

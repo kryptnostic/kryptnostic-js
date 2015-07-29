@@ -15,9 +15,9 @@ define 'kryptnostic.schema.object-metadata', [], ->
         type        : 'object'
         description : 'encrypted class name'
         properties : {
-          iv       : {type: 'string'}
-          salt     : {type:'string'}
-          contents : {type: 'string'}
+          iv       : { type: 'string' }
+          salt     : { type: 'string' }
+          contents : { type: 'string' }
         }
       }
       strategy : {

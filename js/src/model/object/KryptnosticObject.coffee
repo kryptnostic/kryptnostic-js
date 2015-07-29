@@ -47,7 +47,7 @@ define 'kryptnostic.kryptnostic-object', [
     @createFromDecrypted : ({ id, body }) ->
       metadata = new ObjectMetadata({ id })
       logger.info('metadata', metadata)
-      body = {data: body}
+      body = { data: body }
       return new KryptnosticObject({ metadata, body })
 
     # true if data is in chunked/encrypted form, false otherwise.

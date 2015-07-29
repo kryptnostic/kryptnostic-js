@@ -52,7 +52,7 @@ define 'kryptnostic.credential-service', [
       {publicKey, privateKey, keypair} = {}
 
       Promise.resolve()
-      .then =>
+      .then ->
         keypair        = RsaKeyGenerator.generateKeypair()
         passwordCrypto = new PasswordCryptoService()
 

@@ -9,10 +9,10 @@ define [
 
   TEST_ENCRYPT_MESSAGE = 'foo'
 
-  {keypair} = {}
+  { keypair } = {}
 
   beforeEach ->
-    keypair = Forge.rsa.generateKeyPair({bits: 128, e: 0x10001})
+    keypair = Forge.rsa.generateKeyPair({ bits: 128, e: 0x10001 })
 
 
   describe 'KeypairSerializer', ->

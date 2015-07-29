@@ -29,7 +29,7 @@ define 'kryptnostic.tree-node', [
   class TreeNode
 
     constructor: (@id, @children = []) ->
-      log.info('construct', {@id, @children})
+      log.info('construct', { @id, @children })
 
       validateId(@id)
       validateChildren(@children)

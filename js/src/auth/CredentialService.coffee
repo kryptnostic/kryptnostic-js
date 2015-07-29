@@ -89,7 +89,7 @@ define 'kryptnostic.credential-service', [
           return Promise.resolve(@initializeKeypair({ password }))
         else
           log.info('using existing keypair')
-          passwordCrypto = new PasswordCryptoService()
+          passwordCrypto   = new PasswordCryptoService()
           privateKeyBytes  = passwordCrypto.decrypt(blockCiphertext, password)
           privateKeyBuffer = Forge.util.createBuffer(privateKeyBytes, 'raw')
           privateKeyAsn1   = Forge.asn1.fromDer(privateKeyBuffer)

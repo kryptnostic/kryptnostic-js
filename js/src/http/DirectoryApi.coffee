@@ -24,13 +24,15 @@ define 'kryptnostic.directory-api', [
 
   logger             = Logger.get('DirectoryApi')
 
+  APPLICATION_JSON_CONTENT_TYPE = 'application/json'
+
   validateId = (id) ->
     unless !!id
-      throw new Error('cannot request or upload crypto service without an id!')
+      throw new Error 'cannot request or upload crypto service without an id!'
 
   validateCrytpoServiceByteBuffer = (byteBufferStr) ->
     if not _.isString(byteBufferStr) or _.isEmpty(byteBufferStr)
-      throw new Error('cryptoservice byte buffer cannot be empty or non-string')
+      throw new Error 'cryptoservice byte buffer cannot be empty or non-string'
 
   #
   # HTTP calls for the /directory endpoint of Kryptnostic services.
@@ -42,7 +44,7 @@ define 'kryptnostic.directory-api', [
     getObjectCryptoService: (objectId) ->
       validateId(objectId)
 
-      return Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
         url  : cryptoServiceUrl() + '/' + objectId
         type : 'GET'
       })))
@@ -56,29 +58,59 @@ define 'kryptnostic.directory-api', [
       validateId(objectId)
       validateCrytpoServiceByteBuffer(byteBufferStr)
 
-      return Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
         url         : cryptoServiceUrl() + '/' + objectId
         type        : 'POST'
         data        : JSON.stringify({ data: btoa(byteBufferStr) })
-        contentType : 'application/json'
+        contentType : APPLICATION_JSON_CONTENT_TYPE
       })))
       .then (response) ->
         logger.info('setObjectCryptoService', { response })
         return response
 
     # gets encrypted RSA private keys for the current user
-    getRsaKeys: ->
-      return Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
+    getPrivateKey: ->
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
         url  : privateKeyUrl()
         type : 'GET'
       })))
       .then (response) ->
-        logger.debug('getRsaKeys', { response })
-        return new BlockCiphertext(response)
+        if _.isEmpty(response)
+          logger.warn('getPrivateKey - no key available')
+          return undefined
+        else
+          logger.debug('getPrivateKey', { response })
+          return new BlockCiphertext(response)
+
+    # uploads a password-encrypted private key.
+    setPrivateKey: (blockCiphertext) ->
+      blockCiphertext.validate()
+
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
+        url         : privateKeyUrl(),
+        type        : 'PUT'
+        data        : JSON.stringify(blockCiphertext)
+        contentType : APPLICATION_JSON_CONTENT_TYPE
+      })))
+      .then (response) ->
+        logger.debug('setPrivateKey', { response })
+
+    # uploads a user's public key.
+    setPublicKey: (publicKeyEnvelope) ->
+      publicKeyEnvelope.validate()
+
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
+        url         : publicKeyUrl()
+        type        : 'PUT'
+        data        : JSON.stringify(publicKeyEnvelope)
+        contentType : APPLICATION_JSON_CONTENT_TYPE
+      })))
+      .then (response) ->
+        logger.debug('setPublicKey', { response })
 
     # gets the public key of a user in the same realm as the caller.
     getPublicKey: (username) ->
-      return Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
         url  : publicKeyUrl() + '/' + username
         type : 'GET'
       })))
@@ -89,7 +121,7 @@ define 'kryptnostic.directory-api', [
     # gets the user's encrypted salt.
     # request is not wrapped because the user has not auth'ed yet.
     getSalt: ({ username, realm }) ->
-      return Promise.resolve(jquery.ajax({
+      Promise.resolve(jquery.ajax({
         url  : saltUrl() + '/' + realm + '/' + username,
         type : 'GET'
       }))

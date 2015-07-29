@@ -38,13 +38,10 @@ define 'kryptnostic.tree-node', [
 
     # visits children depth-first and then the root node
     visit : (visitor) ->
-      log.info('visit root')
       Promise.all(_.map(@children, (child) ->
-        log.info('visit child', child)
         return child.visit(visitor)
       ))
       .then =>
-        log.info('visit', @id)
         return visitor.visit(@id)
 
   return TreeNode

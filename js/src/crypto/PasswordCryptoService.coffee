@@ -5,8 +5,9 @@ define 'kryptnostic.password-crypto-service', [
 ], (require) ->
   'use strict'
 
-  Forge                 = require('forge')
-  AbstractCryptoService = require('kryptnostic.abstract-crypto-service')
+  Forge                 = require 'forge'
+  AbstractCryptoService = require 'kryptnostic.abstract-crypto-service'
+  BlockCiphertext       = require 'kryptnostic.block-ciphertext'
 
   DEFAULT_ALGORITHM     = 'AES'
   DEFAULT_MODE          = 'CTR'
@@ -40,8 +41,7 @@ define 'kryptnostic.password-crypto-service', [
       iv       = Forge.random.getBytesSync(blockCipherKeySize)
       contents = @abstractCryptoService.encrypt(key, iv, plaintext)
 
-      return {
-        key      : btoa(key)
+      return new BlockCiphertext {
         contents : btoa(contents)
         iv       : btoa(iv)
         salt     : btoa(salt)

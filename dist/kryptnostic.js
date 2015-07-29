@@ -34629,7 +34629,7 @@ define("revalidator", function(){});
       function RsaKeyGenerator() {}
 
       RsaKeyGenerator.prototype.generate = function(params) {
-        return Forge.rsa.generateKeypair(params);
+        return Forge.rsa.generateKeyPair(params);
       };
 
       RsaKeyGenerator.prototype.generateKeypair = function() {

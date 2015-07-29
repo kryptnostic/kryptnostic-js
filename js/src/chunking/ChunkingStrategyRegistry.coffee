@@ -31,14 +31,14 @@ define 'kryptnostic.chunking.registry', [
         throw new Error('cannot register strategy class without a uri')
       strategyUri            = strategyClass.URI
       @registry[strategyUri] = strategyClass
-      logger.info('registered', {strategyUri})
+      logger.info('registered', { strategyUri })
 
     @get : (strategyUri) ->
       if @registry[strategyUri]?
-        logger.info('loaded', {strategyUri})
+        logger.info('loaded', { strategyUri })
         return @registry[strategyUri]
       else
-        logger.warn('unknown uri, returning default', {strategyUri, DEFAULT_STRATEGY})
+        logger.warn('unknown uri, returning default', { strategyUri, DEFAULT_STRATEGY })
         logger.info(JSON.stringify(@registry))
         return @registry[DEFAULT_STRATEGY]
 

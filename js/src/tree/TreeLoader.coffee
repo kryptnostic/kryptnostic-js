@@ -35,8 +35,8 @@ define 'kryptnostic.tree-loader', [
       .then =>
         @objectApi.getObjectMetadata(id)
       .then (metadata) =>
-        {childObjectCount} = metadata
-        childIndices       = [0...childObjectCount]
+        { childObjectCount } = metadata
+        childIndices         = [0...childObjectCount]
         return Promise.all(_.map(childIndices, (index) =>
           childId = ObjectUtils.createChildId(id, index)
 
@@ -49,8 +49,8 @@ define 'kryptnostic.tree-loader', [
         children = _.compact(children)
         return new TreeNode(id, children)
       .catch (e) ->
-        {message, stack} = e
-        log.error('failed to load', {e, message, stack})
+        { message, stack } = e
+        log.error('failed to load', { e, message, stack })
         return undefined
 
   return TreeLoader

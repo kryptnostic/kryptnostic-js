@@ -13,7 +13,7 @@ define 'kryptnostic.credential-provider.session-storage', [
 
     @delegate : window.sessionStorage
 
-    @store: ({principal, credential, keypair}) ->
+    @store: ({ principal, credential, keypair }) ->
       return KeyValueCredentialProvider.store(@delegate, { principal, credential, keypair })
 
     @load: ->

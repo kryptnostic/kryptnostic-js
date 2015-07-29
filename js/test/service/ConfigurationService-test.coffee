@@ -23,16 +23,16 @@ define [
     describe '#get', ->
 
       it 'should fetch whole config object if no key', ->
-        ConfigurationService.set({servicesUrl : OVERRIDE_URL})
+        ConfigurationService.set({ servicesUrl : OVERRIDE_URL })
         expected = _.extend({}, EXPECTED_DEFAULTS, { servicesUrl : OVERRIDE_URL })
         expect(ConfigurationService.get()).toEqual(expected)
 
       it 'should fetch a single key if specified', ->
-        ConfigurationService.set({someKey: 'someValue'})
+        ConfigurationService.set({ someKey: 'someValue' })
         expect(ConfigurationService.get('someKey')).toBe('someValue')
 
     describe '#set', ->
 
       it 'should overwrite a default', ->
-        ConfigurationService.set({servicesUrl : 'http://localhost:9000/v1'})
+        ConfigurationService.set({ servicesUrl : 'http://localhost:9000/v1' })
         expect(ConfigurationService.get('servicesUrl')).toBe('http://localhost:9000/v1')

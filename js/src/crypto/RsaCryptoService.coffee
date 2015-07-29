@@ -12,7 +12,7 @@ define 'kryptnostic.rsa-crypto-service', [
   class RsaCryptoService
 
     # construct from forge public and private key objects
-    constructor: ({@privateKey, @publicKey}) ->
+    constructor: ({ @privateKey, @publicKey }) ->
 
     encrypt: (plaintext) ->
       ciphertext = @publicKey.encrypt(plaintext, 'RSA-OAEP', {

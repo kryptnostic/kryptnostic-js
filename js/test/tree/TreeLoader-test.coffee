@@ -7,7 +7,7 @@ define [
   'kryptnostic.credential-loader'
 ], (require) ->
 
-  MOCK_CREDS = { principal: 'krypt|demo', credential: 'fake', keypair: {}}
+  MOCK_CREDS = { principal: 'krypt|demo', credential: 'fake', keypair: {} }
 
   Logger           = require 'kryptnostic.logger'
   TreeLoader       = require 'kryptnostic.tree-loader'
@@ -33,7 +33,7 @@ define [
   NODE_4_0   = '4~0'
   NODE_4_0_0 = '4~0~0'
 
-  MOCK_METADATA_BY_MOCK_ID             = { }
+  MOCK_METADATA_BY_MOCK_ID             = {}
   MOCK_METADATA_BY_MOCK_ID[NODE_1]     = { childObjectCount: 1 }
   MOCK_METADATA_BY_MOCK_ID[NODE_1_0]   = { childObjectCount: 0 }
   MOCK_METADATA_BY_MOCK_ID[NODE_2]     = { childObjectCount: 3 }
@@ -41,13 +41,13 @@ define [
   MOCK_METADATA_BY_MOCK_ID[NODE_2_2]   = { childObjectCount: 0 }
   MOCK_METADATA_BY_MOCK_ID[NODE_4]     = { childObjectCount: 1 }
   MOCK_METADATA_BY_MOCK_ID[NODE_4_0]   = { childObjectCount: 1 }
-  MOCK_METADATA_BY_MOCK_ID[NODE_4_0_0] = { childObjectCount: 0}
+  MOCK_METADATA_BY_MOCK_ID[NODE_4_0_0] = { childObjectCount: 0 }
 
 
   # setup
   # =====
 
-  {treeLoader} = {}
+  { treeLoader } = {}
 
   beforeEach ->
     treeLoader = new TreeLoader()

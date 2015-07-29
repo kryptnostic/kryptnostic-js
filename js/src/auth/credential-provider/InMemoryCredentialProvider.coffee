@@ -13,7 +13,7 @@ define 'kryptnostic.credential-provider.memory', [
   #
   class InMemoryCredentialProvider
 
-    @store: ({@principal, @credential, @keypair}) ->
+    @store: ({ @principal, @credential, @keypair }) ->
       unless !!@principal and !!@credential
         throw new Error 'must specify all credentials'
       log.info('stored credentials')

@@ -25,12 +25,12 @@ define 'kryptnostic.credential-service', [
     constructor: ->
       @directoryApi = new DirectoryApi()
 
-    deriveCredential : ({username, password, realm}) ->
+    deriveCredential : ({ username, password, realm }) ->
       iterations     = DEFAULT_ITERATIONS
       keySize        = DEFAULT_KEY_SIZE
       passwordCrypto = new PasswordCryptoService()
 
-      return @directoryApi.getSalt({username, realm})
+      return @directoryApi.getSalt({ username, realm })
       .then (encryptedSalt) ->
         salt           = passwordCrypto.decrypt(encryptedSalt, password)
         md             = Forge.sha1.create()
@@ -38,7 +38,7 @@ define 'kryptnostic.credential-service', [
         hexDerived     = Forge.util.bytesToHex(derived)
         return hexDerived
 
-    deriveKeypair : ({password}) ->
+    deriveKeypair : ({ password }) ->
       passwordCrypto = new PasswordCryptoService()
 
       @directoryApi.getRsaKeys()

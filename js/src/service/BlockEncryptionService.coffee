@@ -57,10 +57,10 @@ define 'kryptnostic.block-encryption-service', [
 
     # convert encrypted blocks into string data chunks
     decrypt : (blocks, cryptoService) ->
-      return blocks.map ({block, verify}) ->
+      return blocks.map ({ block, verify }) ->
         computed = VERIFY_HASH_FUNCTION(block.contents)
         unless verify is computed
-          logger.info('block verify mismatch', {verify, computed})
+          logger.info('block verify mismatch', { verify, computed })
           throw new Error('cannot decrypt block because verify of block contents does not match.')
         decrypted = cryptoService.decrypt(block)
         return decrypted

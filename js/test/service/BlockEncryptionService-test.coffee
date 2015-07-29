@@ -12,7 +12,7 @@ define [
   Cypher                 = require 'kryptnostic.cypher'
   HashFunction           = require 'kryptnostic.hash-function'
 
-  {cryptoService, blockEncryption} = {}
+  { cryptoService, blockEncryption } = {}
 
   KEY = 'abcdefghijklmnop'
 

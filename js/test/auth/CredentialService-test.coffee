@@ -10,7 +10,7 @@ define [
   # mock
   # ====
 
-  CREDS = {username: 'demo', password: 'demo', realm: 'krypt'}
+  CREDS = { username: 'demo', password: 'demo', realm: 'krypt' }
 
   EXPECTED_KEYPAIR = {
     privateKey: {
@@ -178,7 +178,7 @@ define [
   # setup
   # =====
 
-  {credentialService} = {}
+  { credentialService } = {}
 
   beforeEach ->
     credentialService              = new CredentialService()

@@ -6,6 +6,7 @@ define 'kryptnostic.credential-service', [
   'kryptnostic.directory-api'
   'kryptnostic.rsa-key-generator'
   'kryptnostic.password-crypto-service'
+  'kryptnostic.authentication-stage'
 ], (require) ->
 
   Logger                = require 'kryptnostic.logger'
@@ -15,6 +16,7 @@ define 'kryptnostic.credential-service', [
   PasswordCryptoService = require 'kryptnostic.password-crypto-service'
   RsaKeyGenerator       = require 'kryptnostic.rsa-key-generator'
   PublicKeyEnvelope     = require 'kryptnostic.public-key-envelope'
+  AuthenticationStage   = require 'kryptnostic.authentication-stage'
 
   DEFAULT_ITERATIONS = 1000
   DEFAULT_KEY_SIZE   = 32
@@ -35,12 +37,16 @@ define 'kryptnostic.credential-service', [
       @directoryApi    = new DirectoryApi()
       @rsaKeyGenerator = new RsaKeyGenerator()
 
-    deriveCredential : ({ username, password, realm }) ->
-      iterations     = DEFAULT_ITERATIONS
-      keySize        = DEFAULT_KEY_SIZE
-      passwordCrypto = new PasswordCryptoService()
+    deriveCredential : ({ username, password, realm }, authCallback) ->
+      { iterations, keySize, passwordCrypto } = {}
 
-      return @directoryApi.getSalt({ username, realm })
+      Promise.resolve()
+      .then =>
+        authCallback(AuthenticationStage.DERIVE_CREDENTIAL)
+        iterations     = DEFAULT_ITERATIONS
+        keySize        = DEFAULT_KEY_SIZE
+        passwordCrypto = new PasswordCryptoService()
+        @directoryApi.getSalt({ username, realm })
       .then (encryptedSalt) ->
         salt           = passwordCrypto.decrypt(encryptedSalt, password)
         md             = Forge.sha1.create()
@@ -48,8 +54,7 @@ define 'kryptnostic.credential-service', [
         hexDerived     = Forge.util.bytesToHex(derived)
         return hexDerived
 
-    initializeKeypair : ({ password }) ->
-      log.info('initializeKeypair')
+    initializeKeypair : ({ password }, authCallback) ->
       { publicKey, privateKey, keypair } = {}
 
       Promise.resolve()
@@ -79,14 +84,16 @@ define 'kryptnostic.credential-service', [
         log.error(e)
         log.error('keypair generation failed!', e)
 
-    deriveKeypair : ({ password }) ->
+    deriveKeypair : ({ password }, authCallback) ->
       Promise.resolve()
       .then =>
+        authCallback(AuthenticationStage.DERIVE_KEYPAIR)
         @directoryApi.getPrivateKey()
       .then (blockCiphertext) =>
         if _.isEmpty(blockCiphertext)
+          authCallback(AuthenticationStage.RSA_KEYGEN)
           log.info('no keypair exists, generating on-the-fly')
-          return Promise.resolve(@initializeKeypair({ password }))
+          return Promise.resolve(@initializeKeypair({ password }, authCallback))
         else
           log.info('using existing keypair')
           passwordCrypto   = new PasswordCryptoService()

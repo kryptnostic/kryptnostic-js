@@ -26,7 +26,7 @@ define 'kryptnostic.credential-provider.key-value', [
   #
   class KeyValueCredentialProvider
 
-    @store: (@storage, {principal, credential, keypair}) ->
+    @store: (@storage, { principal, credential, keypair }) ->
       log.info('store')
 
       unless isDefined(principal) and isDefined(credential)

@@ -21,6 +21,7 @@ define 'kryptnostic.directory-api', [
   privateKeyUrl      = -> Configuration.get('servicesUrl') + '/directory/private'
   publicKeyUrl       = -> Configuration.get('servicesUrl') + '/directory/public'
   saltUrl            = -> Configuration.get('servicesUrl') + '/directory/salt'
+  usersInRealmUrl    = -> Configuration.get('servicesUrl') + '/directory'
 
   logger             = Logger.get('DirectoryApi')
 
@@ -128,5 +129,15 @@ define 'kryptnostic.directory-api', [
       .then (response) ->
         logger.info('getSalt', { response })
         return new BlockCiphertext(response)
+
+    # gets users in the specified realm
+    getUsers: ({ realm }) ->
+      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
+        url  : usersInRealmUrl() + '/' + realm
+        type : 'GET'
+      })))
+      .then (users) ->
+        logger.info('getUsers', users)
+        return _.pluck(users, 'name')
 
   return DirectoryApi

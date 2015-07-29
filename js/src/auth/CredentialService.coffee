@@ -32,7 +32,8 @@ define 'kryptnostic.credential-service', [
   class CredentialService
 
     constructor: ->
-      @directoryApi = new DirectoryApi()
+      @directoryApi    = new DirectoryApi()
+      @rsaKeyGenerator = new RsaKeyGenerator()
 
     deriveCredential : ({ username, password, realm }) ->
       iterations     = DEFAULT_ITERATIONS
@@ -52,8 +53,8 @@ define 'kryptnostic.credential-service', [
       {publicKey, privateKey, keypair} = {}
 
       Promise.resolve()
-      .then ->
-        keypair        = RsaKeyGenerator.generateKeypair()
+      .then =>
+        keypair        = @rsaKeyGenerator.generateKeypair()
         passwordCrypto = new PasswordCryptoService()
 
         privateKeyAsn1       = Forge.pki.privateKeyToAsn1(keypair.privateKey)

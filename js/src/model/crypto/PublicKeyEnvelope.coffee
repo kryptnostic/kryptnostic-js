@@ -1,9 +1,13 @@
 define 'kryptnostic.public-key-envelope', [
   'require'
   'forge'
+  'kryptnostic.logger'
 ], (require) ->
 
-  Forge = require 'forge'
+  Forge  = require 'forge'
+  Logger = require 'kryptnostic.logger'
+
+  log = Logger.get('PublicKeyEnvelope')
 
   #
   # Wrapper for a public key HTTP response, which can convert raw binary
@@ -17,9 +21,8 @@ define 'kryptnostic.public-key-envelope', [
       publicKey = btoa(publicKeyBuffer)
       return new PublicKeyEnvelope({ publicKey })
 
-    # construct from raw json.
+    # construct from a base 64 public key
     constructor: ({@publicKey}) ->
-      @publicKey = atob(@publicKey)
       @validate()
 
     validate: ->
@@ -27,7 +30,8 @@ define 'kryptnostic.public-key-envelope', [
         throw new Error 'no public key defined!'
 
     toRsaPublicKey: ->
-      publicKeyBuffer = Forge.util.createBuffer(@publicKey, 'raw')
+      publicKey       = atob(@publicKey)
+      publicKeyBuffer = Forge.util.createBuffer(publicKey, 'raw')
       publicKeyAsn1   = Forge.asn1.fromDer(publicKeyBuffer)
       publicKey       = Forge.pki.publicKeyFromAsn1(publicKeyAsn1)
       return publicKey

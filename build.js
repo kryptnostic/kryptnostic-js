@@ -16,6 +16,8 @@
       'loglevel'    : '../../bower_components/loglevel/dist/loglevel',
       'revalidator' : '../../node_modules/revalidator/lib/revalidator'
     },
+    // these dependencies are used in the build process but not in the dist.
+    exclude  : [ 'cs', 'coffee-script' ],
     packages : [
       {
         name     : 'cs',

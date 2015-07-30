@@ -1,6 +1,5 @@
 define 'kryptnostic.sharing-client', [
   'require'
-  'jquery'
   'bluebird'
   'kryptnostic.logger'
   'kryptnostic.user-utils'

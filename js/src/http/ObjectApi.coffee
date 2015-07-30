@@ -1,6 +1,6 @@
 define 'kryptnostic.object-api', [
   'require'
-  'jquery'
+  'axios'
   'bluebird'
   'kryptnostic.configuration'
   'kryptnostic.kryptnostic-object'
@@ -9,7 +9,7 @@ define 'kryptnostic.object-api', [
   'kryptnostic.object-metadata'
 ], (require) ->
 
-  jquery            = require 'jquery'
+  axios             = require 'axios'
   SecurityUtils     = require 'kryptnostic.security-utils'
   KryptnosticObject = require 'kryptnostic.kryptnostic-object'
   Logger            = require 'kryptnostic.logger'
@@ -19,15 +19,20 @@ define 'kryptnostic.object-api', [
 
   objectUrl         = -> Config.get('servicesUrl') + '/object'
 
-  logger            = Logger.get('ObjectApi')
+  log            = Logger.get('ObjectApi')
+
+  DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
 
   validateId = (id) ->
     if !id
-      throw new Error('missing or empty id')
+      throw new Error 'missing or empty id'
+    if !_.isString(id)
+      throw new Error 'id must be a string'
 
   validateType = (type) ->
     if !type
-      throw new Error('missing or empty object type')
+      throw new Error 'missing or empty object type'
+
   #
   # HTTP calls for interacting with the /object endpoint of Kryptnostic Services.
   # Author: rbuckheit
@@ -36,94 +41,100 @@ define 'kryptnostic.object-api', [
 
     # get all object ids accessible to the user
     getObjectIds : ->
-      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
-        url  : objectUrl()
-        type : 'GET'
+      Promise.resolve(axios(SecurityUtils.wrapRequest({
+        url    : objectUrl()
+        method : 'GET'
       })))
       .then (response) ->
-        return response.data
+        objectIds = response.data.data
+        log.info('objectIds', objectIds)
+        return objectIds
 
     # load a kryptnosticObject in encrypted form
     getObject : (id) ->
       validateId(id)
 
-      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
-        url  : objectUrl() + '/' + id
-        type : 'GET'
+      Promise.resolve(axios(SecurityUtils.wrapRequest({
+        url    : objectUrl() + '/' + id
+        method : 'GET'
       })))
-      .then (data) ->
-        return KryptnosticObject.createFromEncrypted(data)
+      .then (response) ->
+        raw = response.data
+        return KryptnosticObject.createFromEncrypted(raw)
 
     # load object metadata only without contents
     getObjectMetadata: (id) ->
       validateId(id)
 
-      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
-        url  : objectUrl() + '/' + id + '/metadata'
-        type : 'GET'
+      Promise.resolve(axios(SecurityUtils.wrapRequest({
+        url    : objectUrl() + '/' + id + '/metadata'
+        method : 'GET'
       })))
-      .then (data) ->
-        return new ObjectMetadata(data)
+      .then (response) ->
+        raw = response.data
+        return new ObjectMetadata(raw)
 
     # get all object ids of a particular type
     getObjectIdsByType: (type) ->
       validateType(type)
 
-      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
-        url  : objectUrl() + '/type/' + type
-        type : 'GET'
+      Promise.resolve(axios(SecurityUtils.wrapRequest({
+        url    : objectUrl() + '/type/' + type
+        method : 'GET'
       })))
       .then (response) ->
-        return response.data
+        objectIds = response.data
+        return objectIds
 
     # create a pending object for a new object and return an id
     createPendingObject : (pendingRequest) ->
       pendingRequest.validate()
 
-      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
+      Promise.resolve(axios(SecurityUtils.wrapRequest({
         url         : objectUrl() + '/'
-        type        : 'PUT'
-        contentType : 'application/json'
+        method      : 'PUT'
+        headers     : _.clone(DEFAULT_HEADER)
         data        : JSON.stringify(pendingRequest)
       })))
       .then (response) ->
-        logger.debug('created pending', response)
-        return response.data
+        id = response.data.data
+        log.debug('created pending', { id })
+        return id
 
     # create a pending object for an object which already exists
     createPendingObjectFromExisting : (id) ->
       validateId(id)
 
-      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
-        url  : objectUrl() + '/' + id
-        type : 'PUT'
+      Promise.resolve(axios(SecurityUtils.wrapRequest({
+        url    : objectUrl() + '/' + id
+        method : 'PUT'
       })))
       .then (response) ->
-        logger.debug('created pending from existing', response)
+        log.debug('created pending from existing', { id })
         return response.data
 
     # adds an encrypted block to a pending object
     updateObject : (id, encryptableBlock) ->
       validateId(id)
 
-      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
+      Promise.resolve(axios(SecurityUtils.wrapRequest({
         url         : objectUrl() + '/' + id
-        type        : 'POST'
-        contentType : 'application/json'
+        method      : 'POST'
+        headers     : _.clone(DEFAULT_HEADER)
         data        : JSON.stringify(encryptableBlock)
       })))
       .then (response) ->
-        logger.debug('submitted block', response)
+        log.debug('submitted block', { id })
 
     # deletes an object
     deleteObject : (id) ->
       validateId(id)
 
-      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
+      Promise.resolve(axios(SecurityUtils.wrapRequest({
         url         : objectUrl() + '/' + id
-        type        : 'DELETE'
+        method      : 'DELETE'
       })))
       .then (response) ->
-        logger.debug('deleted object', response)
+        log.debug('deleted object', { id })
 
   return ObjectApi

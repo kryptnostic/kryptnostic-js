@@ -1,6 +1,6 @@
 define 'kryptnostic.directory-api', [
   'require'
-  'jquery'
+  'axios'
   'bluebird'
   'kryptnostic.configuration'
   'kryptnostic.logger'
@@ -9,7 +9,7 @@ define 'kryptnostic.directory-api', [
   'kryptnostic.block-ciphertext'
 ], (require) ->
 
-  jquery            = require 'jquery'
+  axios             = require 'axios'
   SecurityUtils     = require 'kryptnostic.security-utils'
   Logger            = require 'kryptnostic.logger'
   PublicKeyEnvelope = require 'kryptnostic.public-key-envelope'
@@ -23,9 +23,10 @@ define 'kryptnostic.directory-api', [
   saltUrl            = -> Configuration.get('servicesUrl') + '/directory/salt'
   usersInRealmUrl    = -> Configuration.get('servicesUrl') + '/directory'
 
-  logger             = Logger.get('DirectoryApi')
+  log             = Logger.get('DirectoryApi')
 
-  APPLICATION_JSON_CONTENT_TYPE = 'application/json'
+
+  DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
 
   validateId = (id) ->
     unless !!id
@@ -43,103 +44,114 @@ define 'kryptnostic.directory-api', [
 
     # returns a serialized cryptoservice for the requested object
     getObjectCryptoService: (objectId) ->
-      validateId(objectId)
+      Promise.resolve()
+      .then ->
+        validateId(objectId)
 
-      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
-        url  : cryptoServiceUrl() + '/' + objectId
-        type : 'GET'
-      })))
+        Promise.resolve(axios(SecurityUtils.wrapRequest({
+          url    : cryptoServiceUrl() + '/' + objectId
+          method : 'GET'
+        })))
       .then (response) ->
-        logger.info('getCryptoService', { objectId, response })
-        serializedCryptoService = response.data
+        serializedCryptoService = response.data.data
+        log.info('getObjectCryptoService', { objectId })
         return serializedCryptoService
 
     # stores a serialized cryptoservice for the requested object
     setObjectCryptoService: (objectId, byteBufferStr) ->
-      validateId(objectId)
-      validateCrytpoServiceByteBuffer(byteBufferStr)
+      Promise.resolve()
+      .then ->
+        validateId(objectId)
+        validateCrytpoServiceByteBuffer(byteBufferStr)
 
-      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
-        url         : cryptoServiceUrl() + '/' + objectId
-        type        : 'POST'
-        data        : JSON.stringify({ data: btoa(byteBufferStr) })
-        contentType : APPLICATION_JSON_CONTENT_TYPE
-      })))
+        Promise.resolve(axios(SecurityUtils.wrapRequest({
+          url     : cryptoServiceUrl() + '/' + objectId
+          method  : 'POST'
+          data    : JSON.stringify({ data: btoa(byteBufferStr) })
+          headers : _.clone(DEFAULT_HEADER)
+        })))
       .then (response) ->
-        logger.info('setObjectCryptoService', { response })
-        return response
+        log.info('setObjectCryptoService', { objectId })
+        return response.data
 
     # gets encrypted RSA private keys for the current user
     getPrivateKey: ->
-      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
-        url  : privateKeyUrl()
-        type : 'GET'
+      Promise.resolve(axios(SecurityUtils.wrapRequest({
+        url    : privateKeyUrl()
+        method : 'GET'
       })))
       .then (response) ->
-        if _.isEmpty(response)
-          logger.warn('getPrivateKey - no key available')
+        ciphertext = response.data
+        if _.isEmpty(ciphertext)
+          log.warn('getPrivateKey - no key available')
           return undefined
         else
-          logger.debug('getPrivateKey', { response })
-          return new BlockCiphertext(response)
+          log.debug('getPrivateKey', { ciphertext })
+          return new BlockCiphertext(ciphertext)
 
     # uploads a password-encrypted private key.
     setPrivateKey: (blockCiphertext) ->
-      blockCiphertext.validate()
-
-      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
-        url         : privateKeyUrl(),
-        type        : 'PUT'
-        data        : JSON.stringify(blockCiphertext)
-        contentType : APPLICATION_JSON_CONTENT_TYPE
-      })))
+      Promise.resolve()
+      .then ->
+        blockCiphertext.validate()
+        Promise.resolve(axios(SecurityUtils.wrapRequest({
+          url     : privateKeyUrl(),
+          method  : 'PUT'
+          data    : JSON.stringify(blockCiphertext)
+          headers : _.clone(DEFAULT_HEADER)
+        })))
       .then (response) ->
-        logger.debug('setPrivateKey', { response })
+        log.debug('setPrivateKey', { response })
 
     # uploads a user's public key.
     setPublicKey: (publicKeyEnvelope) ->
-      publicKeyEnvelope.validate()
-
-      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
-        url         : publicKeyUrl()
-        type        : 'PUT'
-        data        : JSON.stringify(publicKeyEnvelope)
-        contentType : APPLICATION_JSON_CONTENT_TYPE
-      })))
+      Promise.resolve()
+      .then ->
+        publicKeyEnvelope.validate()
+        Promise.resolve(axios(SecurityUtils.wrapRequest({
+          url     : publicKeyUrl()
+          method  : 'PUT'
+          data    : JSON.stringify(publicKeyEnvelope)
+          headers : _.clone(DEFAULT_HEADER)
+        })))
       .then (response) ->
-        logger.debug('setPublicKey', { response })
+        log.debug('setPublicKey', { response })
 
     # gets the public key of a user in the same realm as the caller.
     getPublicKey: (username) ->
-      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
-        url  : publicKeyUrl() + '/' + username
-        type : 'GET'
+      Promise.resolve(axios(SecurityUtils.wrapRequest({
+        url    : publicKeyUrl() + '/' + username
+        method : 'GET'
       })))
       .then (response) ->
-        logger.debug('getPublicKey', { response })
-        return new PublicKeyEnvelope(response)
+        envelope = response.data
+        log.debug('getPublicKey', { envelope })
+        return new PublicKeyEnvelope(envelope)
 
     # gets the user's encrypted salt.
     # request is not wrapped because the user has not auth'ed yet.
     getSalt: ({ username, realm }) ->
-      Promise.resolve(jquery.ajax({
-        url  : saltUrl() + '/' + realm + '/' + username,
-        type : 'GET'
+      Promise.resolve(axios({
+        url    : saltUrl() + '/' + realm + '/' + username,
+        method : 'GET'
       }))
       .then (response) ->
-        if _.isEmpty(response)
+        ciphertext = response.data
+        log.info('ciphertext', ciphertext)
+        if _.isEmpty(ciphertext)
           throw new Error 'incorrect username or password'
         else
-          return new BlockCiphertext(response)
+          return new BlockCiphertext(ciphertext)
 
     # gets users in the specified realm
     getUsers: ({ realm }) ->
-      Promise.resolve(jquery.ajax(SecurityUtils.wrapRequest({
-        url  : usersInRealmUrl() + '/' + realm
-        type : 'GET'
+      Promise.resolve(axios(SecurityUtils.wrapRequest({
+        url    : usersInRealmUrl() + '/' + realm
+        method : 'GET'
       })))
-      .then (users) ->
-        logger.info('getUsers', users)
+      .then (response) ->
+        users = response.data
+        log.info('getUsers', users)
         return _.pluck(users, 'name')
 
   return DirectoryApi

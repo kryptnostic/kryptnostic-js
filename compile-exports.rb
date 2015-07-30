@@ -6,9 +6,9 @@
 #
 
 JS_LIB_EXPORTS = [
+  'axios',
   'bluebird',
   'forge',
-  'jquery',
   'lodash',
   'loglevel',
   'pako',

@@ -20,7 +20,7 @@ define ['require', 'kryptnostic.chunking.strategy.default'], (require) ->
     describe 'URI', ->
 
       it 'should not change because it is long term serialized', ->
-        expectedUri = 'kryptnostic.chunking.strategy.default'
+        expectedUri = 'com.kryptnostic.kodex.v1.serialization.crypto.DefaultChunkingStrategy'
         expect(DefaultChunkingStrategy.URI).toEqual(expectedUri)
 
     describe '#split', ->

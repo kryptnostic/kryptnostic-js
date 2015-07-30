@@ -23,7 +23,7 @@ define 'kryptnostic.sharing-api', [
 
   logger            = Logger.get('SharingApi')
 
-  CONTENT_TYPE_HEADER = {'Content-Type' : 'application/json'}
+  DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
 
   #
   # HTTP calls for interacting with the /share endpoint of Kryptnostic Services.
@@ -34,7 +34,7 @@ define 'kryptnostic.sharing-api', [
     # get all incoming shares
     getIncomingShares : ->
       axios(SecurityUtils.wrapRequest({
-        url  : sharingUrl() + OBJECT_PATH
+        url    : sharingUrl() + OBJECT_PATH
         method : 'GET'
       }))
       .then (response) ->
@@ -49,7 +49,7 @@ define 'kryptnostic.sharing-api', [
         axios(SecurityUtils.wrapRequest({
           url     : sharingUrl() + OBJECT_PATH + SHARE_PATH
           method  : 'POST'
-          headers : _.clone(CONTENT_TYPE_HEADER)
+          headers : _.clone(DEFAULT_HEADER)
           data    : JSON.stringify(sharingRequest)
         }))
       .then (response) ->
@@ -62,7 +62,7 @@ define 'kryptnostic.sharing-api', [
       axios(SecurityUtils.wrapRequest({
         url     : sharingUrl() + OBJECT_PATH + REVOKE_PATH
         method  : 'POST'
-        headers : _.clone(CONTENT_TYPE_HEADER)
+        headers : _.clone(DEFAULT_HEADER)
         data    : JSON.stringify(revocationRequest)
       }))
       .then (response) ->
@@ -75,7 +75,7 @@ define 'kryptnostic.sharing-api', [
       axios(SecurityUtils.wrapRequest({
         url     : sharingUrl() + KEYS_PATH
         method  : 'POST'
-        headers : _.clone(CONTENT_TYPE_HEADER)
+        headers : _.clone(DEFAULT_HEADER)
         data    : JSON.stringify(keyRegistrationRequest)
       }))
       .then (response) ->

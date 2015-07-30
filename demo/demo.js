@@ -41,7 +41,7 @@ require([
 
   // configure the client
   Config.set({
-    servicesUrl        : 'http://localhost:8081/v1',
+    servicesUrl : 'http://localhost:8081/v1',
   });
 
   // authenticate the user

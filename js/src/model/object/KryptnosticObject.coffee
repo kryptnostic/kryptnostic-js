@@ -18,7 +18,7 @@ define 'kryptnostic.kryptnostic-object', [
   BlockEncryptionService   = require 'kryptnostic.block-encryption-service'
   Logger                   = require 'kryptnostic.logger'
 
-  logger = Logger.get('KryptnosticObject')
+  log = Logger.get('KryptnosticObject')
 
   #
   # Representation of a Kryptnostic document.
@@ -46,7 +46,7 @@ define 'kryptnostic.kryptnostic-object', [
     # create using a pending object id and unencrypted body
     @createFromDecrypted : ({ id, body }) ->
       metadata = new ObjectMetadata({ id })
-      logger.info('metadata', metadata)
+      log.info('metadata', metadata)
       body = { data: body }
       return new KryptnosticObject({ metadata, body })
 
@@ -65,7 +65,7 @@ define 'kryptnostic.kryptnostic-object', [
       else
         blockEncryptionService = new BlockEncryptionService()
         chunks                 = blockEncryptionService.decrypt(@body.data, cryptoService)
-        chunkingStrategyUri    = @body.data.chunkingStrategy
+        chunkingStrategyUri    = @metadata.strategy['@class']
         chunkingStrategyClass  = ChunkingStrategyRegistry.get(chunkingStrategyUri)
         chunkingStrategy       = new chunkingStrategyClass()
         data                   = chunkingStrategy.join(chunks)
@@ -78,7 +78,7 @@ define 'kryptnostic.kryptnostic-object', [
         return this
       else
         blockEncryptionService = new BlockEncryptionService()
-        chunkingStrategyUri    = @body.data.chunkingStrategy
+        chunkingStrategyUri    = @metadata.strategy['@class']
         chunkingStrategyClass  = ChunkingStrategyRegistry.get(chunkingStrategyUri)
         chunkingStrategy       = new chunkingStrategyClass()
         chunks                 = chunkingStrategy.split(@body.data)

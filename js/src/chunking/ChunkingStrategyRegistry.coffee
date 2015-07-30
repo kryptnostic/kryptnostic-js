@@ -8,19 +8,18 @@ define 'kryptnostic.chunking.registry', [
 
   DEFAULT_STRATEGY = 'kryptnostic.chunking.strategy.default'
 
-  STRATEGIES = [
-    DEFAULT_STRATEGY
-  ]
+  STRATEGIES = [ DEFAULT_STRATEGY ]
 
   #
   # Provides access to chunking strategies supported by the client.
   # Strategies are keyed by a URI on the strategy class.
+  # Strategies are keyed by the Java class name of the canonical implementation.
   #
   # Author: rbuckheit
   #
   class ChunkingStrategyRegistry
 
-    @registry : {}
+    @registry = {}
 
     @initialize : ->
       STRATEGIES.forEach (strategy) =>
@@ -35,10 +34,9 @@ define 'kryptnostic.chunking.registry', [
 
     @get : (strategyUri) ->
       if @registry[strategyUri]?
-        logger.info('loaded', { strategyUri })
         return @registry[strategyUri]
       else
-        logger.warn('unknown uri, returning default', { strategyUri, DEFAULT_STRATEGY })
+        logger.warn('unknown strategy, using default', { strategyUri })
         logger.info(JSON.stringify(@registry))
         return @registry[DEFAULT_STRATEGY]
 

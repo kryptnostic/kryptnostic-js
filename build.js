@@ -9,13 +9,15 @@
     paths                  : {
       'bluebird'    : '../../bower_components/bluebird/js/browser/bluebird',
       'forge'       : '../../bower_components/forge/js/forge.min',
-      'jquery'      : '../../bower_components/jquery/dist/jquery',
+      'axios'       : '../../bower_components/axios/dist/axios.amd.min',
       'lodash'      : '../../bower_components/lodash/lodash',
       'pako'        : '../../bower_components/pako/dist/pako',
       'require'     : '../../bower_components/requirejs/require',
       'loglevel'    : '../../bower_components/loglevel/dist/loglevel',
       'revalidator' : '../../node_modules/revalidator/lib/revalidator'
     },
+    // these dependencies are used in the build process but not in the dist.
+    exclude  : [ 'cs', 'coffee-script' ],
     packages : [
       {
         name     : 'cs',

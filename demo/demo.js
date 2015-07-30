@@ -6,9 +6,7 @@
 //
 
 var renderObject = function (kryptnosticObject) {
-  $(document).ready(function() {
-    $('.kryptnostic-object').html(JSON.stringify(kryptnosticObject,null,2));
-  });
+  _.first(document.getElementsByClassName('kryptnostic-object')).innerHTML = JSON.stringify(kryptnosticObject,null,2);
 };
 
 require([
@@ -43,7 +41,7 @@ require([
 
   // configure the client
   Config.set({
-    servicesUrl        : 'http://localhost:8081/v1',
+    servicesUrl : 'http://localhost:8081/v1',
   });
 
   // authenticate the user
@@ -84,7 +82,7 @@ require([
 
     // change permissions on a whole tree of objects recursively
     var storageRequest = new StorageRequest({ body : 'this message will be shared' });
-    var addVisitor      = new PermissionChangeVisitor(['demo','ryan']);
+    var addVisitor     = new PermissionChangeVisitor(['demo','ryan']);
     var removeVisitor  = new PermissionChangeVisitor(['demo']);
     storageClient.uploadObject(storageRequest)
     .then(function(objectId) {

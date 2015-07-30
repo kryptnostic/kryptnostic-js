@@ -15,7 +15,7 @@ define 'kryptnostic.chunking.strategy.default', [
   #
   class DefaultChunkingStrategy
 
-    @URI : 'kryptnostic.chunking.strategy.default'
+    @URI : 'com.kryptnostic.kodex.v1.serialization.crypto.DefaultChunkingStrategy'
 
     split : (data) ->
       return _.chain(data)

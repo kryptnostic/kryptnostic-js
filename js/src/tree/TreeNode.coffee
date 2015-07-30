@@ -13,8 +13,10 @@ define 'kryptnostic.tree-node', [
 
   validateId = (id) ->
     if _.isEmpty(id)
+      log.error('illegal id', { id })
       throw new Error 'no root id provided'
     if not _.isString(id)
+      log.error('illegal id', { id })
       throw new Error 'id is not a string'
 
   validateChildren = (children) ->
@@ -31,8 +33,6 @@ define 'kryptnostic.tree-node', [
   class TreeNode
 
     constructor: (@id, @children = []) ->
-      log.info('construct', { @id, @children })
-
       validateId(@id)
       validateChildren(@children)
 

@@ -9,11 +9,11 @@
     "type" : "git",
     "url"  : "https://github.com/kryptnostic/kryptnostic-js.git"
   },
-  "authors": [
+  "authors" : [
     "Ryan Buckheit <ryan@kryptnostic.com>",
     "Nick Hewitt <nick@kryptnostic.com>"
   ],
-  "ignore": [
+  "ignore" : [
     ".gitignore",
     ".travis.yml",
     "bower.json",
@@ -31,13 +31,13 @@
     "kryptnostic.sublime-project",
     "test.sh"
   ],
-  "moduleType": [
+  "moduleType" : [
     "amd",
     "globals"
   ],
-  "dependencies": {
+  "dependencies" : {
   },
-  "devDependencies": {
+  "devDependencies" : {
     "axios"        : "0.5.4",
     "bluebird"     : "2.9.32",
     "forge"        : "0.6.21",

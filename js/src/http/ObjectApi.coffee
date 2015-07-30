@@ -47,7 +47,6 @@ define 'kryptnostic.object-api', [
       })))
       .then (response) ->
         objectIds = response.data.data
-        log.info('objectIds', objectIds)
         return objectIds
 
     # load a kryptnosticObject in encrypted form

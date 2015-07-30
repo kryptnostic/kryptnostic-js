@@ -9,7 +9,7 @@
     paths                  : {
       'bluebird'    : '../../bower_components/bluebird/js/browser/bluebird',
       'forge'       : '../../bower_components/forge/js/forge.min',
-      'jquery'      : '../../bower_components/jquery/dist/jquery',
+      'axios'       : '../../bower_components/axios/dist/axios.amd.min',
       'lodash'      : '../../bower_components/lodash/lodash',
       'pako'        : '../../bower_components/pako/dist/pako',
       'require'     : '../../bower_components/requirejs/require',

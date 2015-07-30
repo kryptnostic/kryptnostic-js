@@ -1,6 +1,6 @@
 define 'kryptnostic.storage-client', [
   'require'
-  'jquery'
+  'bluebird'
   'kryptnostic.logger'
   'kryptnostic.object-api'
   'kryptnostic.kryptnostic-object'
@@ -9,7 +9,7 @@ define 'kryptnostic.storage-client', [
 ], (require) ->
   'use strict'
 
-  jquery               = require 'jquery'
+  Promise              = require 'bluebird'
   KryptnosticObject    = require 'kryptnostic.kryptnostic-object'
   PendingObjectRequest = require 'kryptnostic.pending-object-request'
   CryptoServiceLoader  = require 'kryptnostic.crypto-service-loader'
@@ -53,19 +53,18 @@ define 'kryptnostic.storage-client', [
       return @objectApi.getObjectMetadata(id)
 
     submitObjectBlocks : (kryptnosticObject) ->
-      unless kryptnosticObject.isEncrypted()
-        throw new Error('cannot submit blocks for an unencrypted object')
+      Promise.resolve()
+      .then =>
+        unless kryptnosticObject.isEncrypted()
+          throw new Error('cannot submit blocks for an unencrypted object')
 
-      objectId = kryptnosticObject.metadata.id
-      deferred = new jquery.Deferred()
-      promise  = deferred.promise()
+        objectId        = kryptnosticObject.metadata.id
+        encryptedBlocks = kryptnosticObject.body.data
 
-      kryptnosticObject.body.data.forEach (encryptableBlock) =>
-        promise = promise.then =>
-          @objectApi.updateObject(objectId, encryptableBlock)
-
-      deferred.resolve()
-      return promise
+        Promise.reduce(encryptedBlocks, (chain, nextEncryptableBlock) =>
+          return Promise.resolve(chain)
+            .then => @objectApi.updateObject(objectId, nextEncryptableBlock)
+        , Promise.resolve())
 
     deleteObject : (id) ->
       Promise.resolve()

@@ -1,6 +1,5 @@
 define 'kryptnostic.crypto-service-loader', [
   'require',
-  'jquery',
   'kryptnostic.logger'
   'kryptnostic.cypher',
   'kryptnostic.rsa-crypto-service',
@@ -11,7 +10,6 @@ define 'kryptnostic.crypto-service-loader', [
 ], (require) ->
   'use strict'
 
-  jquery                  = require 'jquery'
   RsaCryptoService        = require 'kryptnostic.rsa-crypto-service'
   AesCryptoService        = require 'kryptnostic.aes-crypto-service'
   Cypher                  = require 'kryptnostic.cypher'

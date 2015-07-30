@@ -6,15 +6,14 @@ define 'kryptnostic.security-utils', [
 
   CredentialLoader = require 'kryptnostic.credential-loader'
 
-  PRINCIPAL_COOKIE  = 'X-Kryptnostic-Principal'
-  CREDENTIAL_COOKIE = 'X-Kryptnostic-Credential'
+  PRINCIPAL_HEADER  = 'X-Kryptnostic-Principal'
+  CREDENTIAL_HEADER = 'X-Kryptnostic-Credential'
 
   wrapRequest = (request) ->
-    request.beforeSend = (xhr) ->
-      { principal, credential } = CredentialLoader.getCredentials()
-      xhr.setRequestHeader(PRINCIPAL_COOKIE, principal)
-      xhr.setRequestHeader(CREDENTIAL_COOKIE, credential)
-
+    { principal, credential } = CredentialLoader.getCredentials()
+    request.headers = _.extend({}, request.headers)
+    request.headers[PRINCIPAL_HEADER]  = principal
+    request.headers[CREDENTIAL_HEADER] = credential
     return request
 
   return {

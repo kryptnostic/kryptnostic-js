@@ -1,8 +1,12 @@
 # kryptnostic.js
 
-`master`: [![Build Status](https://travis-ci.org/kryptnostic/kryptnostic-js.svg?branch=master)](https://travis-ci.org/kryptnostic/kryptnostic-js)
+`master`:
 
-`develop`: [![Build Status](https://travis-ci.org/kryptnostic/kryptnostic-js.svg?branch=develop)](https://travis-ci.org/kryptnostic/kryptnostic-js)
+[![Build Status](https://travis-ci.org/kryptnostic/kryptnostic-js.svg?branch=master)](https://travis-ci.org/kryptnostic/kryptnostic-js)
+
+`develop`:
+
+[![Build Status](https://travis-ci.org/kryptnostic/kryptnostic-js.svg?branch=develop)](https://travis-ci.org/kryptnostic/kryptnostic-js)
 
 `kryptnostic.js` is a JavaScript client which allows users to build applications which store data securely. The client encrypts all data in the browser so that it is secured in flight and at rest. `kryptnostic.js` also supports searching on encrypted objects and sharing/access control to give users full control over how and when their data is shared.
 

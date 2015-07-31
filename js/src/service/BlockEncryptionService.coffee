@@ -52,7 +52,7 @@ define 'kryptnostic.block-encryption-service', [
         timeCreated = new Date().getTime()
 
         block = { block, name, verify, index, last, strategy, timeCreated }
-        logger.info('created block', block)
+        logger.info('created block')
         return new EncryptedBlock(block)
 
     # convert encrypted blocks into string data chunks

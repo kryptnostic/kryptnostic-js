@@ -66,16 +66,6 @@ To run the unit tests against a full suite of browsers, run:
 
 Tests named with the suffix `-test.coffee` will be picked up by the runner automatically.
 
-## common problems
-
-1. Circular require.js dependencies will cause `require` calls to fail.. You will see an error like:
-
-```
- Error: Module name "kryptnostic.my-module" has not been loaded yet for context: _
-```
-
-This can be fixed by tracing dependencies of `kryptnostic.my-module` and breaking the cycle.
-
 ## browser testing
 
 For an end-to-end demo, build using `build.sh` then open `demo/index.html` in the browser.

@@ -13,6 +13,9 @@ define 'kryptnostic.registration-api', [
 
   log = Logger.get('RegistrationApi')
 
+  #
+  # HTTP calls for registration.
+  #
   class RegistrationApi
 
     register: (realm, email, givenName) ->

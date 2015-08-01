@@ -1,4 +1,4 @@
-define 'kryptnostic.registration-service', [
+define 'kryptnostic.registration-client', [
   'require'
   'bluebird'
   'kryptnostic.logger'
@@ -23,4 +23,4 @@ define 'kryptnostic.registration-service', [
     register : (realm, email, givenName) ->
       return @registrationApi.register(realm, email, givenName)   
 
-    return RegistrationClient
+  return RegistrationClient

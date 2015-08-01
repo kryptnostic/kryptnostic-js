@@ -32,4 +32,4 @@ define 'kryptnostic.registration-api', [
       .then (response) ->
         return response
 
-    return RegistrationApi
+  return RegistrationApi

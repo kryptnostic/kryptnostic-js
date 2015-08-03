@@ -86,7 +86,6 @@ define 'kryptnostic.directory-api', [
           log.warn('getPrivateKey - no key available')
           return undefined
         else
-          log.debug('getPrivateKey', { ciphertext })
           return new BlockCiphertext(ciphertext)
 
     # uploads a password-encrypted private key.

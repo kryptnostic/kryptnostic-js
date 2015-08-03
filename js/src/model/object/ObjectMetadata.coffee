@@ -16,11 +16,13 @@ define 'kryptnostic.object-metadata', [
       version          : 0
       total            : 0
       childObjectCount : 0
-      strategy         : { '@class' : 'kryptnostic.chunking.strategy.default' }
       owners           : []
       readers          : []
       writers          : []
       name             : {}
+      strategy         : {
+        '@class' : 'com.kryptnostic.kodex.v1.serialization.crypto.DefaultChunkingStrategy'
+      }
     }
 
   #

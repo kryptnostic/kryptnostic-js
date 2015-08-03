@@ -21,7 +21,8 @@ find js -name *.coffee | xargs ./node_modules/coffeelint/bin/coffeelint;
 echo; echo "running commit hooks..."
 ./commit-hooks.rb;
 
-# unused import checking
+# unused imports
+# ==============
 echo; echo "checking for unused imports..."
 ./check-unused-imports.rb;
 

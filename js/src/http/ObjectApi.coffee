@@ -25,8 +25,10 @@ define 'kryptnostic.object-api', [
 
   validateId = (id) ->
     if !id
+      log.error('illegal id', id)
       throw new Error 'missing or empty id'
     if !_.isString(id)
+      log.error('illegal id', id)
       throw new Error 'id must be a string'
 
   validateType = (type) ->
@@ -82,7 +84,7 @@ define 'kryptnostic.object-api', [
         method : 'GET'
       })))
       .then (response) ->
-        objectIds = response.data
+        objectIds = response.data.data
         return objectIds
 
     # create a pending object for a new object and return an id

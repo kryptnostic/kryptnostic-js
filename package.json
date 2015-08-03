@@ -1,6 +1,6 @@
 {
   "name"        : "kryptnostic-js",
-  "version"     : "0.0.16",
+  "version"     : "0.0.17",
   "description" : "JavaScript client for Kryptnostic services.",
   "main"        : "kryptnostic-crypto.js",
   "homepage"    : "https://github.com/kryptnostic/kryptnostic-js",
@@ -12,7 +12,8 @@
   },
   "contributors": [
     "Nick Hewitt <nick@kryptnostic.com>",
-    "Ryan Buckheit <ryan@kryptnostic.com>"
+    "Ryan Buckheit <ryan@kryptnostic.com>",
+    "Stephanie A. Higa <stephanie@kryptnostic.com>"
   ],
   "scripts": {
     "build" : "./build.sh",

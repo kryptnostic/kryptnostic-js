@@ -1,10 +1,12 @@
 define 'kryptnostic.registration-api', [
   'require'
+  'axios'
   'bluebird'
   'kryptnostic.configuration'
   'kryptnostic.logger'
 ], (require) ->
 
+  axios         = require 'axios'
   Logger        = require 'kryptnostic.logger'
   Promise       = require 'bluebird'
   Configuration = require 'kryptnostic.configuration'
@@ -19,7 +21,7 @@ define 'kryptnostic.registration-api', [
   class RegistrationApi
 
     register: (realm, email, givenName) ->
-      Promise.resolve({
+      Promise.resolve(axios({
         method : 'POST'
         data :
           realm       : realm
@@ -28,7 +30,7 @@ define 'kryptnostic.registration-api', [
           email       : email
           givenName   : givenName
         url : registrationUrl()
-        })
+        }))
       .then (response) ->
         return response
 

@@ -11,7 +11,8 @@
   },
   "authors" : [
     "Ryan Buckheit <ryan@kryptnostic.com>",
-    "Nick Hewitt <nick@kryptnostic.com>"
+    "Nick Hewitt <nick@kryptnostic.com>",
+    "Stephanie A. Higa <stephanie@kryptnostic.com>"
   ],
   "ignore" : [
     ".gitignore",

@@ -12,7 +12,8 @@
   },
   "contributors": [
     "Nick Hewitt <nick@kryptnostic.com>",
-    "Ryan Buckheit <ryan@kryptnostic.com>"
+    "Ryan Buckheit <ryan@kryptnostic.com>",
+    "Stephanie A. Higa <stephanie@kryptnostic.com"
   ],
   "scripts": {
     "build" : "./build.sh",

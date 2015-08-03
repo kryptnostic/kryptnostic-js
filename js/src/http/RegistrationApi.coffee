@@ -3,7 +3,6 @@ define 'kryptnostic.registration-api', [
   'axios'
   'bluebird'
   'kryptnostic.configuration'
-  'kryptnostic.logger'
 ], (require) ->
 
   axios         = require 'axios'
@@ -11,22 +10,21 @@ define 'kryptnostic.registration-api', [
 
   registrationUrl = -> Configuration.get('heraclesUrl') + '/registration/developers'
 
-  log = Logger.get('RegistrationApi')
-
   #
   # HTTP calls for registration.
   #
   class RegistrationApi
 
-    register: (realm, email, givenName) ->
+    register: ({ realm, username, name }) ->
       Promise.resolve(axios({
         method : 'POST'
-        data :
-          realm       : realm
-          name        : email
+        data : {
+          realm       : realm,
+          name        : username,
+          email       : username,
+          givenName   : name,
           certificate : ''
-          email       : email
-          givenName   : givenName
+        }
         url : registrationUrl()
       }))
       .then (response) ->

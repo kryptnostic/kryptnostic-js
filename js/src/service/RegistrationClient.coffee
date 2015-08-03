@@ -21,6 +21,6 @@ define 'kryptnostic.registration-client', [
       @registrationApi = new RegistrationApi()
 
     register : (realm, email, givenName) ->
-      return @registrationApi.register(realm, email, givenName)   
-
+      return @registrationApi.register(realm, email, givenName)
+      
   return RegistrationClient

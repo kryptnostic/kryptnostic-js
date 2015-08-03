@@ -7,6 +7,7 @@ define [
 
   EXPECTED_DEFAULTS = {
     servicesUrl        : 'http://api.kryptnostic.com/v1'
+    heraclesUrl        : 'https://api.kryptnostic.com/heracles/v1'
     credentialProvider : 'kryptnostic.credential-provider.session-storage'
   }
 

@@ -6,8 +6,6 @@ define 'kryptnostic.registration-client', [
 ], (require) ->
   'use strict'
 
-  Promise         = require 'bluebird'
-  Logger          = require 'kryptnostic.logger'
   RegistrationApi = require 'kryptnostic.registration-api'
 
   log = Logger.get('RegistrationClient')
@@ -22,5 +20,5 @@ define 'kryptnostic.registration-client', [
 
     register : (realm, email, givenName) ->
       return @registrationApi.register(realm, email, givenName)
-      
+
   return RegistrationClient

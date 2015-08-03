@@ -7,8 +7,6 @@ define 'kryptnostic.registration-api', [
 ], (require) ->
 
   axios         = require 'axios'
-  Logger        = require 'kryptnostic.logger'
-  Promise       = require 'bluebird'
   Configuration = require 'kryptnostic.configuration'
 
   registrationUrl = -> Configuration.get('heraclesUrl') + '/registration/developers'

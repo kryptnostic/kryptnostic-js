@@ -28,7 +28,7 @@ define 'kryptnostic.registration-api', [
           email       : email
           givenName   : givenName
         url : registrationUrl()
-        }))
+      }))
       .then (response) ->
         return response
 

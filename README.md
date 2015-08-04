@@ -1,6 +1,6 @@
 # kryptnostic.js
 
-[![Build Status](https://img.shields.io/travis/kryptnostic/kryptnostic-js.svg?branch=develop)](https://travis-ci.org/kryptnostic/kryptnostic-js)
+[![Build Status](https://travis-ci.org/kryptnostic/kryptnostic-js.svg?branch=develop)](https://travis-ci.org/kryptnostic/kryptnostic-js)
 [![Bower Version](https://img.shields.io/bower/v/kryptnostic-js.svg)](http://bower.io/search/?q=kryptnostic-js)
 [![Release Version](https://img.shields.io/github/tag/kryptnostic/kryptnostic-js.svg)](https://github.com/kryptnostic/kryptnostic-js)
 

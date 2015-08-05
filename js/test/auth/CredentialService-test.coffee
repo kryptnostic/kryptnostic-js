@@ -12,7 +12,7 @@ define [
   # mock
   # ====
 
-  CREDS = { username: 'demo', password: 'demo', realm: 'krypt' }
+  CREDS = { uuid: '1000-1000-1000' , password: 'demo' }
 
   EXPECTED_KEYPAIR = {
     privateKey: {

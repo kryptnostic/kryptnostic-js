@@ -67,10 +67,10 @@ define 'kryptnostic.permission-change-visitor', [
         validateId(id)
         @storageClient.getObjectMetadata(id)
       .then (metadata) ->
-        usernames = _.chain([metadata.owners, metadata.readers, metadata.writers])
+        uuids = _.chain([metadata.owners, metadata.readers, metadata.writers])
           .flatten()
           .pluck('name')
           .unique()
           .value()
 
-        return usernames
+        return uuids

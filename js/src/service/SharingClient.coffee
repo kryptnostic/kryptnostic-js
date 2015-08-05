@@ -31,9 +31,9 @@ define 'kryptnostic.sharing-client', [
       throw new Error 'object id must be specified!'
 
   validateUsers = (uuids) ->
-    unless _.isArray(usernames)
+    unless _.isArray(uuids)
       log.error('illegal uuids', uuids)
-      throw new Error 'usernames must be a list'
+      throw new Error 'uuids must be a list'
 
   #
   # Client for granting and revoking shared access to Kryptnostic objects.

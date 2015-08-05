@@ -46,9 +46,8 @@ require([
 
   // authenticate the user
   AuthenticationService.authenticate({
-    username : 'demo',
-    password : 'demo',
-    realm    : 'krypt'
+    email    : 'demo@kryptnostic.com',
+    password : 'demo'
   }).then(function(){
 
     // encrypt an object, upload it, download it, and decrypt it.

@@ -28,32 +28,12 @@ define 'kryptnostic.user-directory-api', [
   #
   class UserDirectoryApi
 
-    resolve: (opts) ->
-      if opts.email?
-        return @resolveEmail(opts)
-      else if opts.realm? and opts.username?
-        return @resolveUser(opts)
-      else
-        log.error('unknown resolution opts', { opts })
-        throw new Error 'unknown resolution options'
-
-    resolveEmail: ({ email }) ->
+    resolve: ({ email }) ->
       Promise.resolve()
       .then ->
         validateEmail(email)
         axios({
           url    : getUsersUrl() + '/' + email
-          method : 'GET'
-        })
-      .then (response) ->
-        uuid = response.data
-        return uuid
-
-    resolveUser: ({ realm, username }) ->
-      Promise.resolve()
-      .then ->
-        axios({
-          url    : getUsersUrl() + '/' + realm + '/' + username
           method : 'GET'
         })
       .then (response) ->

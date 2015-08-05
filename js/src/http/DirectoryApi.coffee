@@ -138,7 +138,7 @@ define 'kryptnostic.directory-api', [
         ciphertext = response.data
         log.info('ciphertext', ciphertext)
         if _.isEmpty(ciphertext)
-          throw new Error 'incorrect username or password'
+          throw new Error 'incorrect credentials'
         else
           return new BlockCiphertext(ciphertext)
 

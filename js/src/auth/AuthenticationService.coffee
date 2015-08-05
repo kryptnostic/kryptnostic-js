@@ -38,7 +38,7 @@ define 'kryptnostic.authentication-service', [
         userDirectoryApi.resolve({ email })
       .then (uuid) ->
         principal = uuid
-        log.info('authenticating', { email, realm })
+        log.info('authenticating', email)
         credentialService.deriveCredential({ principal, password }, notifier)
       .then (_credential) ->
         credential = _credential

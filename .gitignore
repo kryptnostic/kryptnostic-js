@@ -5,3 +5,4 @@ bower_components/*
 kryptnostic.sublime-workspace
 npm-debug.log
 js/src/kryptnostic.coffee
+demo/demo.js

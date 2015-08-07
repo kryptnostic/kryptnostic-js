@@ -2,7 +2,8 @@
 
 #
 # Demo script which loads and stores kryptnostic objects as a smoke test of functionality.
-# All modules requried are loaded from the built kryptnostic.js.
+# All modules required are loaded from the built kryptnostic.js.
+#
 # Author: rbuckheit
 #
 

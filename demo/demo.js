@@ -42,11 +42,12 @@ require([
   // configure the client
   Config.set({
     servicesUrl : 'http://localhost:8081/v1',
+    heraclesUrl : 'http://localhost:8082/v1'
   });
 
   // authenticate the user
   AuthenticationService.authenticate({
-    email    : 'demo@kryptnostic.com',
+    email    : 'demo@krypt.com',
     password : 'demo'
   }).then(function(){
 
@@ -99,12 +100,12 @@ require([
     });
 
     // delete an object and all of its children recursively
-    storageClient.getObjectIds()
-    .then(function(ids) {
-      return treeLoader.load(_.last(ids));
-    })
-    .then (function(tree) {
-      tree.visit(new DeletionVisitor());
-    });
+    // storageClient.getObjectIds()
+    // .then(function(ids) {
+    //   return treeLoader.load(_.last(ids));
+    // })
+    // .then (function(tree) {
+    //   tree.visit(new DeletionVisitor());
+    // });
   });
 });

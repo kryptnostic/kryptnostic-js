@@ -15,6 +15,7 @@ echo "running with mode $mode";
 # ====
 echo; echo "linting files...";
 find js -name *.coffee | xargs ./node_modules/coffeelint/bin/coffeelint;
+find demo -name *.coffee | xargs ./node_modules/coffeelint/bin/coffeelint;
 
 # commit hooks
 # ============

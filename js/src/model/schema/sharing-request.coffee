@@ -9,7 +9,7 @@ define 'kryptnostic.schema.sharing-request', [], ->
         allowEmpty  : false
       },
       users : {
-        description : 'map of userKey to encrypted bytes containing RsaCompressingEncryptionService'
+        description : 'map of uuid to encrypted bytes containing RsaCompressingEncryptionService'
         type        : 'object'
         required    : false
         allowEmpty  : false

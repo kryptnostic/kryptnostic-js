@@ -11,6 +11,27 @@ SEMVER_SEPARATOR   = '.'
 BOWER_FILE         = 'bower.json'
 NPM_FILE           = 'package.json'
 
+BUMP_TYPES = [ :major, :minor, :hotfix ]
+
+def usage
+  $stderr.puts "usage: ./bump.rb [ bump_type ]"
+  $stderr.puts "  bump_type: one of 'major', 'minor', 'hotfix' "
+  exit()
+end
+
+def get_bump_type
+  proposed = "#{ARGV[0]}".to_sym
+
+  if BUMP_TYPES.include?(proposed)
+    return proposed
+  elsif proposed.to_s.empty?
+    return :hotfix
+  else
+    $stderr.puts "illegal bump type: #{proposed.inspect}"
+    usage()
+  end
+end
+
 def read_version(file)
   File.readlines(BOWER_FILE).each do |line|
     if line.include?(VERSION_IDENTIFIER)
@@ -19,10 +40,21 @@ def read_version(file)
   end
 end
 
-def bump_version(version)
-  major, minor, fix = version.split('.')
-  fix = (fix.to_i + 1)
-  return [major, minor, fix].join('.')
+def bump_version(version, bump_type)
+  major, minor, hotfix = version.split('.')
+
+  if (bump_type == :major)
+    major  = (major.to_i + 1)
+    minor  = 0
+    hotfix = 0
+  elsif (bump_type == :minor)
+    minor  = (minor.to_i + 1)
+    hotfix = 0
+  elsif (bump_type == :hotfix)
+    hotfix = (hotfix.to_i + 1)
+  end
+
+  return [ major, minor, hotfix ].join('.')
 end
 
 def rewrite_version(file, version)
@@ -43,13 +75,15 @@ def rewrite_version(file, version)
   f.close()
 end
 
-puts "reading version..."
+bump_type = get_bump_type()
+puts "bumping with version type: #{bump_type.inspect}"
+
 version = read_version(VERSION_IDENTIFIER)
 puts "current version is v#{version}"
-new_version = bump_version(version)
-puts "will release version v#{new_version} and push it. [y/n]"
+new_version = bump_version(version, bump_type)
 
-unless gets().start_with?('y')
+puts "will release version v#{new_version} and push it. [y/n]"
+unless $stdin.gets().start_with?('y')
   exit()
 end
 

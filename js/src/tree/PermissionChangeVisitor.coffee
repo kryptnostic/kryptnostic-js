@@ -24,7 +24,7 @@ define 'kryptnostic.permission-change-visitor', [
   #
   class PermissionChangeVisitor
 
-    constructor: (@users) ->
+    constructor: (@uuids) ->
       @storageClient = new StorageClient()
       @sharingClient = new SharingClient()
       @changed       = []
@@ -44,22 +44,22 @@ define 'kryptnostic.permission-change-visitor', [
         @failed.push(id)
 
     changePermissions: (id) ->
-      { usersAdd, usersRemove } = {}
+      { uuidsAdd, uuidsRemove } = {}
 
       Promise.resolve()
       .then =>
         validateId(id)
         @getParticipants(id)
       .then (current) =>
-        usersAdd    = _.difference(@users, current)
-        usersRemove = _.difference(current, @users)
-        log.info('changePermissions', { id, usersRemove, usersAdd })
+        uuidsAdd    = _.difference(@uuids, current)
+        uuidsRemove = _.difference(current, @uuids)
+        log.info('changePermissions', { id, uuidsRemove, uuidsAdd })
       .then =>
-        @sharingClient.revokeObject(id, usersRemove)
+        @sharingClient.revokeObject(id, uuidsRemove)
       .then =>
-        @sharingClient.shareObject(id, usersAdd)
+        @sharingClient.shareObject(id, uuidsAdd)
       .then =>
-        @changedUsers[id] = { added: usersAdd, removed: usersRemove }
+        @changedUsers[id] = { added: uuidsAdd, removed: uuidsRemove }
 
     getParticipants: (id) ->
       Promise.resolve()
@@ -67,10 +67,9 @@ define 'kryptnostic.permission-change-visitor', [
         validateId(id)
         @storageClient.getObjectMetadata(id)
       .then (metadata) ->
-        usernames = _.chain([metadata.owners, metadata.readers, metadata.writers])
+        uuids = _.chain([metadata.owners, metadata.readers, metadata.writers])
           .flatten()
-          .pluck('name')
           .unique()
           .value()
 
-        return usernames
+        return uuids

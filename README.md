@@ -1,6 +1,6 @@
 # kryptnostic.js
 
-[![Build Status](https://img.shields.io/travis/kryptnostic/kryptnostic-js.svg?branch=develop)](https://travis-ci.org/kryptnostic/kryptnostic-js)
+[![Build Status](https://travis-ci.org/kryptnostic/kryptnostic-js.svg?branch=develop)](https://travis-ci.org/kryptnostic/kryptnostic-js)
 [![Bower Version](https://img.shields.io/bower/v/kryptnostic-js.svg)](http://bower.io/search/?q=kryptnostic-js)
 [![Release Version](https://img.shields.io/github/tag/kryptnostic/kryptnostic-js.svg)](https://github.com/kryptnostic/kryptnostic-js)
 
@@ -45,7 +45,7 @@ Builds use the require.js optimizer.
 Building will produce `kryptnostic.js` in the `dist` directory.
 
 ```
-./build.sh
+npm run build
 ```
 
 ## unit testing
@@ -55,13 +55,7 @@ Karma and Jasmine are used for unit testing.
 To start the unit tests, run:
 
 ```
-./test.sh
-```
-
-To run the unit tests against a full suite of browsers, run:
-
-```
-./test.sh --full
+npm run test
 ```
 
 Tests named with the suffix `-test.coffee` will be picked up by the runner automatically.

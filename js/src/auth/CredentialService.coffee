@@ -37,7 +37,7 @@ define 'kryptnostic.credential-service', [
       @directoryApi    = new DirectoryApi()
       @rsaKeyGenerator = new RsaKeyGenerator()
 
-    deriveCredential : ({ username, password, realm }, authCallback = -> ) ->
+    deriveCredential : ({ principal, password }, authCallback = -> ) ->
       { iterations, keySize, passwordCrypto } = {}
 
       Promise.resolve()
@@ -46,7 +46,7 @@ define 'kryptnostic.credential-service', [
         iterations     = DEFAULT_ITERATIONS
         keySize        = DEFAULT_KEY_SIZE
         passwordCrypto = new PasswordCryptoService()
-        @directoryApi.getSalt({ username, realm })
+        @directoryApi.getSalt(principal)
       .then (encryptedSalt) ->
         salt           = passwordCrypto.decrypt(encryptedSalt, password)
         md             = Forge.sha1.create()

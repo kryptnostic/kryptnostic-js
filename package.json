@@ -18,14 +18,15 @@
     "build" : "./build.sh",
     "test"  : "./test.sh"
   },
-  "bugs": {
-    "url" : "https://github.com/kryptnostic/kryptnostic-js/issues"
+  "bugs" : {
+    "url": "https://github.com/kryptnostic/kryptnostic-js/issues"
   },
   "dependencies": {
     "revalidator" : "0.3.1",
     "node-forge"  : "0.6.30"
   },
-  "devDependencies": {
+  "devDependencies" : {
+    "coffee-script"             : "^1.9.3",
     "coffeelint"                : "^1.10.1",
     "jasmine-core"              : "^2.2.0",
     "karma"                     : "^0.12.37",

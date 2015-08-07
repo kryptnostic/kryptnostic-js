@@ -45,7 +45,7 @@ Builds use the require.js optimizer.
 Building will produce `kryptnostic.js` in the `dist` directory.
 
 ```
-./build.sh
+npm run build
 ```
 
 ## unit testing
@@ -55,13 +55,7 @@ Karma and Jasmine are used for unit testing.
 To start the unit tests, run:
 
 ```
-./test.sh
-```
-
-To run the unit tests against a full suite of browsers, run:
-
-```
-./test.sh --full
+npm run test
 ```
 
 Tests named with the suffix `-test.coffee` will be picked up by the runner automatically.

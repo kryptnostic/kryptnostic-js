@@ -8,32 +8,37 @@
 
 set -e;
 
-echo "compiling libraries...";
+# compile forge
+echo 'compiling libraries...';
 if [[ -e bower_components/forge/js/forge.min.js && $@ != **--release** ]]; then
-  echo "forge.min.js is already compiled, skipping ...";
+  echo 'forge.min.js is already compiled, skipping ...';
 else
-  echo "compiling forge.min.js...";
+  echo 'compiling forge.min.js...';
   cd bower_components/forge;
   npm install;
   npm run minify;
   cd ../../;
 fi
 
-echo "";
-echo "compiling r.js exports...";
+# generate kryptnostic.coffee export file
+echo; echo 'compiling r.js exports...';
 ./compile-exports.rb;
 
-echo "";
-echo "cleaning build artifacts...";
+# clean build directory
+echo; echo 'cleaning build artifacts...';
 rm -rfv dist/*;
 
-echo ""
 if [[ $@ != **--release** ]]; then
-  echo "running full build -> kryptnostic.js";
+  echo; echo 'running full build -> kryptnostic.js';
   ./node_modules/requirejs/bin/r.js -o build.js out=dist/kryptnostic.js optimize=none;
 else
-  echo "running full build -> kryptnostic.js";
+  echo; echo 'running full build -> kryptnostic.js';
   ./node_modules/requirejs/bin/r.js -o build.js out=dist/kryptnostic.js optimize=none;
-  echo "running uglified build -> kryptnostic.min.js";
+  echo; echo 'running uglified build -> kryptnostic.min.js';
   ./node_modules/requirejs/bin/r.js -o build.js out=dist/kryptnostic.min.js optimize=uglify;
 fi
+
+echo; echo 'compiling demo.coffee...';
+./node_modules/coffee-script/bin/coffee -c demo/demo.coffee;
+
+echo; echo 'DIST BUILD SUCCESSFUL';

@@ -117,9 +117,9 @@ define 'kryptnostic.directory-api', [
         log.debug('setPublicKey', { response })
 
     # gets the public key of a user in the same realm as the caller.
-    getPublicKey: (username) ->
+    getPublicKey: (uuid) ->
       Promise.resolve(axios(SecurityUtils.wrapRequest({
-        url    : publicKeyUrl() + '/' + username
+        url    : publicKeyUrl() + '/' + uuid
         method : 'GET'
       })))
       .then (response) ->
@@ -129,16 +129,16 @@ define 'kryptnostic.directory-api', [
 
     # gets the user's encrypted salt.
     # request is not wrapped because the user has not auth'ed yet.
-    getSalt: ({ username, realm }) ->
+    getSalt: (uuid) ->
       Promise.resolve(axios({
-        url    : saltUrl() + '/' + realm + '/' + username,
+        url    : saltUrl() + '/' + uuid
         method : 'GET'
       }))
       .then (response) ->
         ciphertext = response.data
         log.info('ciphertext', ciphertext)
         if _.isEmpty(ciphertext)
-          throw new Error 'incorrect username or password'
+          throw new Error 'incorrect credentials'
         else
           return new BlockCiphertext(ciphertext)
 

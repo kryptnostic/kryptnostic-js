@@ -5,8 +5,8 @@ define 'kryptnostic.authentication-service', [
   'kryptnostic.configuration'
   'kryptnostic.credential-provider-loader'
   'kryptnostic.credential-service'
-  'kryptnostic.user-utils'
   'kryptnostic.authentication-stage'
+  'kryptnostic.user-directory-api'
 ], (require) ->
 
   Promise                  = require 'bluebird'
@@ -14,8 +14,8 @@ define 'kryptnostic.authentication-service', [
   Config                   = require 'kryptnostic.configuration'
   CredentialProviderLoader = require 'kryptnostic.credential-provider-loader'
   CredentialService        = require 'kryptnostic.credential-service'
-  UserUtils                = require 'kryptnostic.user-utils'
   AuthenticationStage      = require 'kryptnostic.authentication-stage'
+  UserDirectoryApi         = require 'kryptnostic.user-directory-api'
 
   log = Logger.get('AuthenticationService')
 
@@ -25,26 +25,29 @@ define 'kryptnostic.authentication-service', [
   #
   class AuthenticationService
 
-    @authenticate: ( { username, password, realm }, authCallback = -> ) ->
+    @authenticate: ( { email, password }, notifier = -> ) ->
       { principal, credential, keypair } = {}
 
       credentialService  = new CredentialService()
+      userDirectoryApi   = new UserDirectoryApi()
       credentialProvider = CredentialProviderLoader.load(Config.get('credentialProvider'))
-      principal          = UserUtils.componentsToPrincipal({ realm, username })
 
       Promise.resolve()
       .then ->
-        log.info('authenticating', { username, realm })
-        credentialService.deriveCredential({ username, password, realm }, authCallback)
+        userDirectoryApi.resolve({ email })
+      .then (uuid) ->
+        principal = uuid
+        log.info('authenticating', email)
+        credentialService.deriveCredential({ principal, password }, notifier)
       .then (_credential) ->
         credential = _credential
         log.info('derived credential')
         credentialProvider.store { principal, credential }
-        credentialService.deriveKeypair({ password }, authCallback)
+        credentialService.deriveKeypair({ password }, notifier)
       .then (_keypair) ->
         keypair = _keypair
         credentialProvider.store { principal, credential, keypair }
-        authCallback(AuthenticationStage.COMPLETED)
+        notifier(AuthenticationStage.COMPLETED)
         log.info('authentication complete')
 
     @destroy: ->

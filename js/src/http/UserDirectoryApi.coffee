@@ -33,11 +33,15 @@ define 'kryptnostic.user-directory-api', [
       .then ->
         validateEmail(email)
         axios({
-          url    : getUsersUrl() + '/' + email
+          url    : getUsersUrl() + '/email/' + email
           method : 'GET'
         })
       .then (response) ->
+        log.info('response', response)
         uuid = response.data
-        return uuid
+        if uuid is 'null' or !uuid
+          return undefined
+        else
+          return uuid
 
   return UserDirectoryApi

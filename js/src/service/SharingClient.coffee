@@ -2,7 +2,6 @@ define 'kryptnostic.sharing-client', [
   'require'
   'bluebird'
   'kryptnostic.logger'
-  'kryptnostic.user-utils'
   'kryptnostic.sharing-api'
   'kryptnostic.directory-api'
   'kryptnostic.sharing-request'

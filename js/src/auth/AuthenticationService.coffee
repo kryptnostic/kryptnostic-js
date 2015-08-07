@@ -5,7 +5,6 @@ define 'kryptnostic.authentication-service', [
   'kryptnostic.configuration'
   'kryptnostic.credential-provider-loader'
   'kryptnostic.credential-service'
-  'kryptnostic.user-utils'
   'kryptnostic.authentication-stage'
   'kryptnostic.user-directory-api'
 ], (require) ->

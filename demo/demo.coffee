@@ -49,11 +49,30 @@ require [
     heraclesUrl : 'http://localhost:8082/v1'
   })
 
-  # authenticate the user
-  AuthenticationService.authenticate({
-    email    : 'demo@krypt.com',
-    password : 'demo'
-  })
+  USER1 = { email : 'demo@krypt.com', password: 'demo' }
+  USER2 = { email : 'test@krypt.com', password: 'demo' }
+
+  #
+  # setup function which makes sure that both accounts are initialzed.
+  # generates public keys for the users if needed.
+  #
+  setup = ->
+    return Promise.resolve()
+    .then ->
+      AuthenticationService.authenticate(USER1)
+    .then ->
+      AuthenticationService.destroy()
+    .then ->
+      AuthenticationService.authenticate(USER2)
+    .then ->
+      AuthenticationService.destroy()
+
+  #
+  # authenticate using a demo account
+  #
+  setup()
+  .then ->
+    AuthenticationService.authenticate(USER1)
   .then ->
 
     #
@@ -83,7 +102,7 @@ require [
     # =========
     # create an object and share it with another user
     #
-    userDirectoryApi.resolve({ email: 'ryan@krypt.com' })
+    userDirectoryApi.resolve({ email: 'test@krypt.com' })
     .then (uuid) ->
       storageRequest = new StorageRequest({ body : 'this message will be shared' })
       shareUsers = [ uuid ]

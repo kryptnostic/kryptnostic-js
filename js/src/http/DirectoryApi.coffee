@@ -126,6 +126,8 @@ define 'kryptnostic.directory-api', [
         envelope = response.data
         log.debug('getPublicKey', { envelope })
         return new PublicKeyEnvelope(envelope)
+      .catch (e) ->
+        return undefined
 
     # gets the user's encrypted salt.
     # request is not wrapped because the user has not auth'ed yet.

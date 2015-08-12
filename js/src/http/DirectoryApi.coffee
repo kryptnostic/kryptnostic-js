@@ -142,15 +142,16 @@ define 'kryptnostic.directory-api', [
         else
           return new BlockCiphertext(ciphertext)
 
-    # gets users in the specified realm
+    # gets users in the specified realm.
+    # does not include uninitialized users who have not set their primary key yet.
     getUsers: ({ realm }) ->
       Promise.resolve(axios(SecurityUtils.wrapRequest({
         url    : usersInRealmUrl() + '/' + realm
         method : 'GET'
       })))
-      .then (response) ->
-        users = response.data
-        log.info('getUsers', users)
-        return _.pluck(users, 'name')
+      .then (response) =>
+        uuids = response.data
+        log.info('getUsers', uuids)
+        return Promise.filter(uuids, (uuid) => @getPublicKey(uuid))
 
   return DirectoryApi

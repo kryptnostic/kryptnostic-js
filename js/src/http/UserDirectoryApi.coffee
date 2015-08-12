@@ -22,6 +22,11 @@ define 'kryptnostic.user-directory-api', [
       log.error('illegal email address', email)
       throw new Error 'illegal email address'
 
+  validateUuid = (uuid) ->
+    if _.isEmpty(uuid)
+      log.error('illegal uuid', uuid)
+      throw new Error 'illegal uuid'
+
   #
   # HTTP calls for the /directory endpoint of Heracles.
   # Author: rbuckheit
@@ -43,5 +48,21 @@ define 'kryptnostic.user-directory-api', [
           return undefined
         else
           return uuid
+
+    getUser: (uuid) ->
+      Promise.resolve()
+      .then ->
+        validateUuid(uuid)
+        axios({
+          url    : getUsersUrl() + '/' + uuid
+          method : 'GET'
+        })
+      .then (response) ->
+        user = response.data
+        log.info('getUser', user)
+        if user is 'null' or !user
+          return undefined
+        else
+          return user
 
   return UserDirectoryApi

@@ -19,6 +19,8 @@ define 'kryptnostic.authentication-service', [
 
   log = Logger.get('AuthenticationService')
 
+  LOGIN_FAILURE_MESSAGE = 'invalid credentials'
+
   #
   # Allows user to authenticate and derives their credential.
   # Author: rbuckheit
@@ -36,6 +38,8 @@ define 'kryptnostic.authentication-service', [
       .then ->
         userDirectoryApi.resolve({ email })
       .then (uuid) ->
+        if _.isEmpty(uuid)
+          throw new Error LOGIN_FAILURE_MESSAGE
         principal = uuid
         log.info('authenticating', email)
         credentialService.deriveCredential({ principal, password }, notifier)

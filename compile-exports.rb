@@ -12,7 +12,6 @@ JS_LIB_EXPORTS = [
   'lodash',
   'loglevel',
   'pako',
-  'require',
   'revalidator'
 ]
 

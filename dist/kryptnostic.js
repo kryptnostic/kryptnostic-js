@@ -25292,6 +25292,8 @@ define("revalidator", function(){});
             envelope: envelope
           });
           return new PublicKeyEnvelope(envelope);
+        })["catch"](function(e) {
+          return void 0;
         });
       };
 

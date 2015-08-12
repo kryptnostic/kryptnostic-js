@@ -18,12 +18,12 @@ define 'kryptnostic.user-directory-api', [
   DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
 
   validateEmail = (email) ->
-    if _.isEmpty(email) or not _.isString(email)
+    if _.isEmpty(email)
       log.error('illegal email address', email)
       throw new Error 'illegal email address'
 
   validateUuid = (uuid) ->
-    if _.isEmpty(uuid) or not _.isString(uuid)
+    if _.isEmpty(uuid)
       log.error('illegal uuid', uuid)
       throw new Error 'illegal uuid'
 

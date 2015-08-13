@@ -51,7 +51,8 @@ define 'kryptnostic.authentication-service', [
       .then (_keypair) ->
         keypair = _keypair
         credentialProvider.store { principal, credential, keypair }
-        notifier(AuthenticationStage.COMPLETED)
+        Promise.resolve(notifier(AuthenticationStage.COMPLETED))
+      .then ->
         log.info('authentication complete')
 
     @destroy: ->

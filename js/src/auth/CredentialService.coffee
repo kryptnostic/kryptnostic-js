@@ -41,7 +41,7 @@ define 'kryptnostic.credential-service', [
       { iterations, keySize, passwordCrypto } = {}
 
       Promise.resolve()
-      .then =>
+      .then ->
         Promise.resolve(notifier(AuthenticationStage.DERIVE_CREDENTIAL))
       .then =>
         iterations     = DEFAULT_ITERATIONS
@@ -59,7 +59,7 @@ define 'kryptnostic.credential-service', [
       { publicKey, privateKey, keypair } = {}
 
       Promise.resolve()
-      .then =>
+      .then ->
         Promise.resolve(notifier(AuthenticationStage.RSA_KEYGEN))
       .then =>
         keypair        = @rsaKeyGenerator.generateKeypair()
@@ -89,7 +89,7 @@ define 'kryptnostic.credential-service', [
 
     deriveKeypair : ({ password }, notifier = -> ) ->
       Promise.resolve()
-      .then =>
+      .then ->
         Promise.resolve(notifier(AuthenticationStage.DERIVE_KEYPAIR))
       .then =>
         @directoryApi.getPrivateKey()

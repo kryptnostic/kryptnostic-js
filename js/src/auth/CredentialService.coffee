@@ -37,12 +37,13 @@ define 'kryptnostic.credential-service', [
       @directoryApi    = new DirectoryApi()
       @rsaKeyGenerator = new RsaKeyGenerator()
 
-    deriveCredential : ({ principal, password }, authCallback = -> ) ->
+    deriveCredential : ({ principal, password }, notifier = -> ) ->
       { iterations, keySize, passwordCrypto } = {}
 
       Promise.resolve()
+      .then ->
+        Promise.resolve(notifier(AuthenticationStage.DERIVE_CREDENTIAL))
       .then =>
-        authCallback(AuthenticationStage.DERIVE_CREDENTIAL)
         iterations     = DEFAULT_ITERATIONS
         keySize        = DEFAULT_KEY_SIZE
         passwordCrypto = new PasswordCryptoService()
@@ -54,10 +55,12 @@ define 'kryptnostic.credential-service', [
         hexDerived     = Forge.util.bytesToHex(derived)
         return hexDerived
 
-    initializeKeypair : ({ password }, authCallback = -> ) ->
+    initializeKeypair : ({ password }, notifier = -> ) ->
       { publicKey, privateKey, keypair } = {}
 
       Promise.resolve()
+      .then ->
+        Promise.resolve(notifier(AuthenticationStage.RSA_KEYGEN))
       .then =>
         keypair        = @rsaKeyGenerator.generateKeypair()
         passwordCrypto = new PasswordCryptoService()
@@ -84,16 +87,18 @@ define 'kryptnostic.credential-service', [
         log.error(e)
         log.error('keypair generation failed!', e)
 
-    deriveKeypair : ({ password }, authCallback = -> ) ->
+    deriveKeypair : ({ password }, notifier = -> ) ->
       Promise.resolve()
+      .then ->
+        Promise.resolve(notifier(AuthenticationStage.DERIVE_KEYPAIR))
       .then =>
-        authCallback(AuthenticationStage.DERIVE_KEYPAIR)
         @directoryApi.getPrivateKey()
       .then (blockCiphertext) =>
         if _.isEmpty(blockCiphertext)
-          authCallback(AuthenticationStage.RSA_KEYGEN)
-          log.info('no keypair exists, generating on-the-fly')
-          return Promise.resolve(@initializeKeypair({ password }, authCallback))
+          return Promise.resolve()
+          .then =>
+            log.info('no keypair exists, generating on-the-fly')
+            Promise.resolve(@initializeKeypair({ password }, notifier))
         else
           log.info('using existing keypair')
           passwordCrypto   = new PasswordCryptoService()

@@ -24217,7 +24217,8 @@ define("revalidator", function(){});
             credential: credential,
             keypair: keypair
           });
-          notifier(AuthenticationStage.COMPLETED);
+          return Promise.resolve(notifier(AuthenticationStage.COMPLETED));
+        }).then(function() {
           return log.info('authentication complete');
         });
       };
@@ -24325,16 +24326,17 @@ define("revalidator", function(){});
         this.rsaKeyGenerator = new RsaKeyGenerator();
       }
 
-      CredentialService.prototype.deriveCredential = function(_arg, authCallback) {
+      CredentialService.prototype.deriveCredential = function(_arg, notifier) {
         var iterations, keySize, password, passwordCrypto, principal, _ref;
         principal = _arg.principal, password = _arg.password;
-        if (authCallback == null) {
-          authCallback = function() {};
+        if (notifier == null) {
+          notifier = function() {};
         }
         _ref = {}, iterations = _ref.iterations, keySize = _ref.keySize, passwordCrypto = _ref.passwordCrypto;
-        return Promise.resolve().then((function(_this) {
+        return Promise.resolve().then(function() {
+          return Promise.resolve(notifier(AuthenticationStage.DERIVE_CREDENTIAL));
+        }).then((function(_this) {
           return function() {
-            authCallback(AuthenticationStage.DERIVE_CREDENTIAL);
             iterations = DEFAULT_ITERATIONS;
             keySize = DEFAULT_KEY_SIZE;
             passwordCrypto = new PasswordCryptoService();
@@ -24350,14 +24352,16 @@ define("revalidator", function(){});
         });
       };
 
-      CredentialService.prototype.initializeKeypair = function(_arg, authCallback) {
+      CredentialService.prototype.initializeKeypair = function(_arg, notifier) {
         var keypair, password, privateKey, publicKey, _ref;
         password = _arg.password;
-        if (authCallback == null) {
-          authCallback = function() {};
+        if (notifier == null) {
+          notifier = function() {};
         }
         _ref = {}, publicKey = _ref.publicKey, privateKey = _ref.privateKey, keypair = _ref.keypair;
-        return Promise.resolve().then((function(_this) {
+        return Promise.resolve().then(function() {
+          return Promise.resolve(notifier(AuthenticationStage.RSA_KEYGEN));
+        }).then((function(_this) {
           return function() {
             var passwordCrypto, privateKeyAsn1, privateKeyBuffer, publicKeyAsn1, publicKeyBuffer, serializedPrivateKey, serializedPublicKey;
             keypair = _this.rsaKeyGenerator.generateKeypair();
@@ -24388,26 +24392,28 @@ define("revalidator", function(){});
         });
       };
 
-      CredentialService.prototype.deriveKeypair = function(_arg, authCallback) {
+      CredentialService.prototype.deriveKeypair = function(_arg, notifier) {
         var password;
         password = _arg.password;
-        if (authCallback == null) {
-          authCallback = function() {};
+        if (notifier == null) {
+          notifier = function() {};
         }
-        return Promise.resolve().then((function(_this) {
+        return Promise.resolve().then(function() {
+          return Promise.resolve(notifier(AuthenticationStage.DERIVE_KEYPAIR));
+        }).then((function(_this) {
           return function() {
-            authCallback(AuthenticationStage.DERIVE_KEYPAIR);
             return _this.directoryApi.getPrivateKey();
           };
         })(this)).then((function(_this) {
           return function(blockCiphertext) {
             var passwordCrypto, privateKey, privateKeyAsn1, privateKeyBuffer, privateKeyBytes, publicKey;
             if (_.isEmpty(blockCiphertext)) {
-              authCallback(AuthenticationStage.RSA_KEYGEN);
-              log.info('no keypair exists, generating on-the-fly');
-              return Promise.resolve(_this.initializeKeypair({
-                password: password
-              }, authCallback));
+              return Promise.resolve().then(function() {
+                log.info('no keypair exists, generating on-the-fly');
+                return Promise.resolve(_this.initializeKeypair({
+                  password: password
+                }, notifier));
+              });
             } else {
               log.info('using existing keypair');
               passwordCrypto = new PasswordCryptoService();

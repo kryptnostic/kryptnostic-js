@@ -49,8 +49,8 @@ require [
     heraclesUrl : 'http://localhost:8082/v1'
   })
 
-  USER1 = { email : 'demo@krypt.com', password: 'demo' }
-  USER2 = { email : 'test@krypt.com', password: 'demo' }
+  USER1 = { email : 'demo@kryptnostic.com', password: 'demo' }
+  USER2 = { email : 'test@kryptnostic.com', password: 'demo' }
 
   #
   # setup function which makes sure that both accounts are initialzed.
@@ -102,7 +102,7 @@ require [
     # =========
     # create an object and share it with another user
     #
-    userDirectoryApi.resolve({ email: 'test@krypt.com' })
+    userDirectoryApi.resolve({ email: 'test@kryptnostic.com' })
     .then (uuid) ->
       storageRequest = new StorageRequest({ body : 'this message will be shared' })
       shareUsers = [ uuid ]
@@ -117,8 +117,8 @@ require [
     # change permissions on a whole tree of objects recursively
     #
     Promise.props({
-      uuid      : userDirectoryApi.resolve({ email : 'demo@krypt.com' })
-      shareUuid : userDirectoryApi.resolve({ email : 'test@krypt.com' })
+      uuid      : userDirectoryApi.resolve({ email : 'demo@kryptnostic.com' })
+      shareUuid : userDirectoryApi.resolve({ email : 'test@kryptnostic.com' })
     })
     .then ({ uuid, shareUuid }) ->
       { tree } = {}

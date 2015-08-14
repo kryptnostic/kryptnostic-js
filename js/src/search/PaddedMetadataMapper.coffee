@@ -20,6 +20,8 @@ define 'kryptnostic.search.metadata-mapper', [
   # indexed locations, padding the locations of the token so that all
   # lists of metadata locations are balanced.
   #
+  # Author: rbuckheit
+  #
   class PaddedMetadataMapper
 
     constructor : ({ @fheEngine, @indexGenerator }) ->

@@ -50,6 +50,17 @@ define 'kryptnostic.kryptnostic-object', [
       body = { data: body }
       return new KryptnosticObject({ metadata, body })
 
+    setChunkingStrategy : (strategyUri) ->
+      @metadata.strategy['@class'] = strategyUri
+
+    validateEncrypted : ->
+      unless @isEncrypted()
+        throw new Error 'object must be in an encrypted state'
+
+    validateDecrypted : ->
+      unless @isDecrypted()
+        throw new Error 'object must be in a decrypted state'
+
     # true if data is in chunked/encrypted form, false otherwise.
     isEncrypted : ->
       return _.isArray(@body.data)

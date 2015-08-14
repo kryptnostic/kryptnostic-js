@@ -6,15 +6,17 @@ define 'kryptnostic.storage-client', [
   'kryptnostic.kryptnostic-object'
   'kryptnostic.crypto-service-loader'
   'kryptnostic.pending-object-request'
+  'kryptnostic.search-indexing-service'
 ], (require) ->
   'use strict'
 
-  Promise              = require 'bluebird'
-  KryptnosticObject    = require 'kryptnostic.kryptnostic-object'
-  PendingObjectRequest = require 'kryptnostic.pending-object-request'
-  CryptoServiceLoader  = require 'kryptnostic.crypto-service-loader'
-  ObjectApi            = require 'kryptnostic.object-api'
-  Logger               = require 'kryptnostic.logger'
+  Promise               = require 'bluebird'
+  KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
+  PendingObjectRequest  = require 'kryptnostic.pending-object-request'
+  CryptoServiceLoader   = require 'kryptnostic.crypto-service-loader'
+  ObjectApi             = require 'kryptnostic.object-api'
+  Logger                = require 'kryptnostic.logger'
+  SearchIndexingService = require 'kryptnostic.search-indexing-service'
 
   logger = Logger.get('StorageClient')
 
@@ -26,10 +28,6 @@ define 'kryptnostic.storage-client', [
     unless _.isString(body) and not _.isEmpty(body)
       throw new Error 'object body cannot be empty!'
 
-  validateDecrypted = (kryptnosticObject) ->
-    if kryptnosticObject.isEncrypted()
-      throw new Error 'expected object to be in decrypted state'
-
   #
   # Client for listing and loading Kryptnostic encrypted objects.
   # Author: rbuckheit
@@ -37,8 +35,9 @@ define 'kryptnostic.storage-client', [
   class StorageClient
 
     constructor : ->
-      @objectApi           = new ObjectApi()
-      @cryptoServiceLoader = new CryptoServiceLoader()
+      @objectApi             = new ObjectApi()
+      @cryptoServiceLoader   = new CryptoServiceLoader()
+      @searchIndexingService = new SearchIndexingService()
 
     getObjectIds : ->
       return @objectApi.getObjectIds()
@@ -52,25 +51,8 @@ define 'kryptnostic.storage-client', [
     getObjectMetadata : (id) ->
       return @objectApi.getObjectMetadata(id)
 
-    submitObjectBlocks : (kryptnosticObject) ->
-      Promise.resolve()
-      .then =>
-        unless kryptnosticObject.isEncrypted()
-          throw new Error('cannot submit blocks for an unencrypted object')
-
-        objectId        = kryptnosticObject.metadata.id
-        encryptedBlocks = kryptnosticObject.body.data
-
-        Promise.reduce(encryptedBlocks, (chain, nextEncryptableBlock) =>
-          return Promise.resolve(chain)
-            .then => @objectApi.updateObject(objectId, nextEncryptableBlock)
-        , Promise.resolve())
-
     deleteObject : (id) ->
-      Promise.resolve()
-      .then =>
-        validateId(id)
-        return @objectApi.deleteObject(id)
+      return @objectApi.deleteObject(id)
 
     appendObject : (id, body) ->
       Promise.resolve()
@@ -80,39 +62,58 @@ define 'kryptnostic.storage-client', [
       .then =>
         @objectApi.createPendingObjectFromExisting(id)
       .then =>
-        kryptnosticObject = KryptnosticObject.createFromDecrypted({ id, body })
-        validateDecrypted(kryptnosticObject)
-
-        @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss: false })
-        .then (cryptoService) =>
-          encrypted = kryptnosticObject.encrypt(cryptoService)
-          @submitObjectBlocks(encrypted)
-        .then ->
-          return id
+        @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss : false })
+      .then (cryptoService) =>
+        @encrypt({ id, body, cryptoService })
+      .then (encrypted) =>
+        @submitObjectBlocks(encrypted)
+      .then ->
+        return id
 
     uploadObject : (storageRequest) ->
-      storageRequest.validate()
+      { id, sharingKey } = {}
 
-      { body, objectId } = storageRequest
-      pendingPromise     = undefined
+      Promise.resolve()
+      .then ->
+        storageRequest.validate()
+      .then =>
+        @createPending(storageRequest)
+      .then (_id) =>
+        id = _id
+        @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss : true })
+      .then (cryptoService) =>
+        { body } = storageRequest
+        @encrypt({ id, body, cryptoService })
+      .then (encrypted) =>
+        @submitObjectBlocks(encrypted)
+      .then =>
+        @searchIndexingService.submit({ id, storageRequest })
+      .then ->
+        return id
 
-      if objectId?
-        pendingPromise = @objectApi.createPendingObjectFromExisting(objectId)
+    encrypt : ({ id, body, cryptoService }) ->
+      kryptnosticObject = KryptnosticObject.createFromDecrypted({ id, body })
+      return kryptnosticObject.encrypt(cryptoService)
+
+    createPending : (storageRequest = {}) ->
+      if storageRequest.objectId?
+        return @objectApi.createPendingObjectFromExisting(objectId)
       else
-        pendingOpts    = _.pick(storageRequest, 'type', 'parentObjectId')
-        pendingRequest = new PendingObjectRequest(pendingOpts)
-        pendingPromise = @objectApi.createPendingObject(pendingRequest)
+        { type, parentObjectId } = storageRequest
+        pendingRequest = new PendingObjectRequest { type, parentObjectId }
+        return @objectApi.createPendingObject(pendingRequest)
 
-      pendingPromise
-      .then (id) =>
-        kryptnosticObject = KryptnosticObject.createFromDecrypted({ id, body })
-        validateDecrypted(kryptnosticObject)
+    submitObjectBlocks : (kryptnosticObject) ->
+      Promise.resolve()
+      .then =>
+        kryptnosticObject.validateEncrypted()
 
-        @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss: true })
-        .then (cryptoService) =>
-          encrypted = kryptnosticObject.encrypt(cryptoService)
-          @submitObjectBlocks(encrypted)
-        .then ->
-          return id
+        objectId        = kryptnosticObject.metadata.id
+        encryptedBlocks = kryptnosticObject.body.data
+
+        Promise.reduce(encryptedBlocks, (chain, nextEncryptableBlock) =>
+          return Promise.resolve(chain)
+            .then => @objectApi.updateObject(objectId, nextEncryptableBlock)
+        , Promise.resolve())
 
   return StorageClient

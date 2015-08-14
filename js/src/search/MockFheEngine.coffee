@@ -3,7 +3,7 @@ define 'kryptnostic.mock.fhe-engine', [
 ], (require) ->
 
   #
-  # Substitute for the FHE engine which returns mocked values.
+  # Stand-in for the FHE engine which returns mocked values.
   # Author: rbuckheit
   #
   class MockFheEngine

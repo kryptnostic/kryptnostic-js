@@ -15,7 +15,7 @@ define 'kryptnostic.search.tokenizer', [
 
     TOKEN_REGEX = /([a-zA-Z0-9]+)/g
 
-    @analyze: (source) ->
+    analyze: (source) ->
       unless _.isString(source)
         throw new Error 'source must be a string'
 

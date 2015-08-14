@@ -7,6 +7,11 @@ define [
 
   describe 'ObjectTokenizer', ->
 
+    objectTokenizer = undefined
+
+    beforeEach ->
+      objectTokenizer = new ObjectTokenizer()
+
     describe '#analyze', ->
 
       it 'should produce an inverted index of words', ->
@@ -19,7 +24,7 @@ define [
           the       : [ 28 ]
           best      : [ 32 ]
         }
-        expect(ObjectTokenizer.analyze(source)).toEqual(expectedIndex)
+        expect(objectTokenizer.analyze(source)).toEqual(expectedIndex)
 
       it 'should not index punctuation or special characters', ->
         source = 'foo .#~ $%! bar @*()-=_+ []/<>;"| }{ ~`,.'
@@ -27,13 +32,13 @@ define [
           foo : [ 0 ]
           bar : [ 12 ]
         }
-        expect(ObjectTokenizer.analyze(source)).toEqual(expectedIndex)
+        expect(objectTokenizer.analyze(source)).toEqual(expectedIndex)
 
       it 'should produce empty index for empty string', ->
-        expect(ObjectTokenizer.analyze('')).toEqual({})
+        expect(objectTokenizer.analyze('')).toEqual({})
 
       it 'should throw for non-string sources', ->
         notStrings = [ undefined, null, {}, 0, /regex/ ]
         notStrings.forEach (source) ->
-          expect( -> ObjectTokenizer.analyze(source) ).toThrow()
+          expect( -> objectTokenizer.analyze(source) ).toThrow()
 

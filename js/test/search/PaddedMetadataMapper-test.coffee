@@ -22,9 +22,10 @@ define [
     beforeEach ->
       fheEngine      = new MockFheEngine()
       indexGenerator = new StaticIndexGenerator()
-      metadataMapper = new PaddedMetadataMapper({ fheEngine, indexGenerator })
+      metadataMapper = new PaddedMetadataMapper()
+      _.extend(metadataMapper, { fheEngine, indexGenerator })
 
-    describe '#mapTokensToKeys', ->
+    describe '#mapToKeys', ->
 
       it 'should map metadata to their indexed locations', ->
         id       = 'some-object-id'
@@ -33,7 +34,7 @@ define [
           { id, locations: [ 5 ], token: 'for' }
         ]
         sharingKey     = fheEngine.generateSharingKey({ id })
-        mappedMetadata = metadataMapper.mapTokensToKeys({ metadata, sharingKey })
+        mappedMetadata = metadataMapper.mapToKeys({ metadata, sharingKey })
         keys           = _.keys(mappedMetadata)
         expectedKeys   = [ 'mock-token-index-fish', 'mock-token-index-for' ]
         expect(keys).toEqual(expectedKeys)
@@ -46,7 +47,7 @@ define [
           { id, locations: [ 8 ], token: 'for' }
         ]
         sharingKey     = fheEngine.generateSharingKey({ id })
-        mappedMetadata = metadataMapper.mapTokensToKeys({ metadata, sharingKey })
+        mappedMetadata = metadataMapper.mapToKeys({ metadata, sharingKey })
         balancedMetadata = _.flatten(_.values(mappedMetadata))
 
         for metadata in balancedMetadata
@@ -60,7 +61,7 @@ define [
           { id, locations: [ 7 ], token: 'for' }
         ]
         sharingKey     = fheEngine.generateSharingKey({ id })
-        mappedMetadata = metadataMapper.mapTokensToKeys({ metadata, sharingKey })
+        mappedMetadata = metadataMapper.mapToKeys({ metadata, sharingKey })
         balancedMetadata = _.flatten(_.values(mappedMetadata))
 
         expect(balancedMetadata.length).toBe(2)
@@ -80,7 +81,7 @@ define [
           { id, locations: [ 7 ], token: 'for' }
         ]
         sharingKey     = fheEngine.generateSharingKey({ id })
-        mappedMetadata = metadataMapper.mapTokensToKeys({ metadata, sharingKey })
+        mappedMetadata = metadataMapper.mapToKeys({ metadata, sharingKey })
         expect(mappedMetadata).toEqual({
           'mock-token-index-fish' : [
             { id: 'some-object-id', token: 'fish', locations: [ 2, 11 ] }
@@ -97,7 +98,7 @@ define [
           { id, locations: [ 2, 11 ], token: 'fish' }
         ]
         sharingKey     = fheEngine.generateSharingKey({ id })
-        mappedMetadata = metadataMapper.mapTokensToKeys({ metadata, sharingKey })
+        mappedMetadata = metadataMapper.mapToKeys({ metadata, sharingKey })
         expect(mappedMetadata).toEqual({
           'mock-token-index-fish' : [
             { id: 'some-object-id', token: 'fish', locations: [ 0, 10 ] }

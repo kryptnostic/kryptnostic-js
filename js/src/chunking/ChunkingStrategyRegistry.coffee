@@ -1,14 +1,19 @@
 define 'kryptnostic.chunking.registry', [
   'require'
   'kryptnostic.chunking.strategy.default'
+  'kryptnostic.chunking.strategy.json'
   'kryptnostic.logger'
 ], (require) ->
 
   logger = require('kryptnostic.logger').get('ChunkingStrategyRegistry')
 
   DEFAULT_STRATEGY = 'kryptnostic.chunking.strategy.default'
+  JSON_STRATEGY    = 'kryptnostic.chunking.strategy.json'
 
-  STRATEGIES = [ DEFAULT_STRATEGY ]
+  STRATEGIES = [
+    DEFAULT_STRATEGY,
+    JSON_STRATEGY
+  ]
 
   #
   # Provides access to chunking strategies supported by the client.

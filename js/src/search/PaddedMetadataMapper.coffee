@@ -1,9 +1,11 @@
 define 'kryptnostic.search.metadata-mapper', [
   'require'
   'kryptnostic.search.random-index-generator'
+  'kryptnostic.mock.fhe-engine'
 ], (require) ->
 
   RandomIndexGenerator = require 'kryptnostic.search.random-index-generator'
+  MockFheEngine        = require 'kryptnostic.mock.fhe-engine'
 
   MINIMUM_TOKEN_LENGTH    = 1
 
@@ -24,10 +26,11 @@ define 'kryptnostic.search.metadata-mapper', [
   #
   class PaddedMetadataMapper
 
-    constructor : ({ @fheEngine, @indexGenerator }) ->
-      @indexGenerator ?= new RandomIndexGenerator()
+    constructor: ->
+      @fheEngine      = new MockFheEngine()
+      @indexGenerator = new RandomIndexGenerator()
 
-    mapTokensToKeys : ({ metadata, sharingKey }) ->
+    mapToKeys: ({ metadata, sharingKey }) ->
       metadataMap  = {}
       bucketLength = computeBucketSize(metadata)
 

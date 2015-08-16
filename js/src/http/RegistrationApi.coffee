@@ -8,7 +8,7 @@ define 'kryptnostic.registration-api', [
   axios         = require 'axios'
   Configuration = require 'kryptnostic.configuration'
 
-  registrationUrl = -> Configuration.get('heraclesUrl') + '/registration/developers'
+  registrationUrl = -> Configuration.get('heraclesUrl') + '/registration/user'
 
   #
   # HTTP calls for registration.

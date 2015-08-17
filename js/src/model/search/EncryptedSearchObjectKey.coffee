@@ -1,8 +1,11 @@
 define 'kryptnostic.encrypted-search-object-key', [
   'require'
+  'kryptnostic.validators'
 ], (require) ->
 
-  EncryptedSearchObjectKey = require 'kryptnostic.encrypted-search-object-key'
+  validators = require 'kryptnostic.validators'
+
+  { validateId, validateKey } = validators
 
   #
   # Request object containing a pair of object ID and search bridge key.
@@ -10,9 +13,11 @@ define 'kryptnostic.encrypted-search-object-key', [
   #
   class EncryptedSearchObjectKey
 
-    constructor: ({ id, key }) ->
+    constructor: ({ @id, @key }) ->
       @validate()
 
     validate : ->
-      validators.validateId(id)
-      validators.validateKey(key)
+      validateId(@id)
+      unless @key.constructor.name is 'EncryptedSearchBridgeKey'
+        throw new Error 'key must be a bridge key'
+      @key.validate()

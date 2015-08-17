@@ -1,8 +1,10 @@
 define 'kryptnostic.validators', [
   'require'
+  'lodash'
   'kryptnostic.logger'
 ], (require) ->
 
+  _      = require 'lodash'
   Logger = require 'kryptnostic.logger'
 
   log = Logger.get('validators')
@@ -12,25 +14,25 @@ define 'kryptnostic.validators', [
   # Author: rbuckheit
   #
 
-  validateNonEmptyString = (id) ->
-    if not _.isString(id)
-      log.error('non-string id', { id })
-      throw new Error 'id is not a string'
-    if _.isEmtpy(id)
-      log.error('empty id', { id })
-      throw new Error 'id is empty'
+  validateNonEmptyString = (value, desc = 'value') ->
+    if not _.isString(value)
+      log.error("#{desc} is not a string", value)
+      throw new Error "#{desc} is not a string"
+    if _.isEmpty(value)
+      log.error("#{desc} is empty", value)
+      throw new Error "#{desc} is empty"
 
   validateUuid = (uuid) ->
-    validateNonEmptyString(uuid)
+    validateNonEmptyString(uuid, 'uuid')
 
   validateId = (id) ->
-    validateNonEmptyString(id)
+    validateNonEmptyString(id, 'id')
 
   validateKey = (key) ->
-    validateNonEmptyString(key)
+    validateNonEmptyString(key, 'key')
 
   validateObjectType = (type) ->
-    validateNonEmptyString(type)
+    validateNonEmptyString(type, 'object type')
 
   validateUuids = (uuids) ->
     unless _.isArray(uuids)

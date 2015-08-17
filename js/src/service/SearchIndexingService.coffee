@@ -7,15 +7,20 @@ define 'kryptnostic.search-indexing-service', [
   'kryptnostic.mock.fhe-engine'
   'kryptnostic.search.indexer'
   'kryptnostic.search.metadata-mapper'
+  'kryptnostic.sharing-client'
+  'kryptnostic.encrypted-search-object-key'
+  'kryptnostic.encrypted-search-bridge-key'
 ], (require) ->
 
   Logger                   = require 'kryptnostic.logger'
   MetadataApi              = require 'kryptnostic.metadata-api'
+  SharingClient            = require 'kryptnostic.sharing-client'
   ObjectIndexer            = require 'kryptnostic.search.indexer'
   MockFheEngine            = require 'kryptnostic.mock.fhe-engine'
   MetadataRequest          = require 'kryptnostic.metadata-request'
   JsonChunkingStrategy     = require 'kryptnostic.chunking.strategy.json'
   PaddedMetadataMapper     = require 'kryptnostic.search.metadata-mapper'
+  EncryptedSearchBridgeKey = require 'kryptnostic.encrypted-search-bridge-key'
   EncryptedSearchObjectKey = require 'kryptnostic.encrypted-search-object-key'
 
   log = Logger.get('SearchIndexingService')
@@ -31,6 +36,7 @@ define 'kryptnostic.search-indexing-service', [
       @metadataMapper = new PaddedMetadataMapper()
       @metadataApi    = new MetadataApi()
       @objectIndexer  = new ObjectIndexer()
+      @sharingClient  = new SharingClient()
 
     # indexes and uploads the submitted object.
     submit: ({ id, storageRequest }) ->
@@ -82,6 +88,7 @@ define 'kryptnostic.search-indexing-service', [
 
     _submitBridgeKey : (id, sharingKey) ->
       bridgeKey = @fheEngine.getBridgeKey({ sharingKey })
+      key = EncryptedSearchBridgeKey.create(bridgeKey)
       encryptedSearchObjectKey = new EncryptedSearchObjectKey { id, key }
       @sharingClient.registerSearchKeys([ encryptedSearchObjectKey ])
 

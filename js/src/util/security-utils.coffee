@@ -10,12 +10,14 @@ define 'kryptnostic.security-utils', [
   CREDENTIAL_HEADER = 'X-Kryptnostic-Credential'
 
   wrapRequest = (request) ->
-    { principal, credential } = CredentialLoader.getCredentials()
-    request.headers = _.extend({}, request.headers)
+    return wrapExplicitCredentials(request, CredentialLoader.getCredentials())
+
+  wrapExplicitCredentials = (request, { principal, credential }) ->
     request.headers[PRINCIPAL_HEADER]  = principal
     request.headers[CREDENTIAL_HEADER] = credential
     return request
 
   return {
-    wrapRequest
+    wrapRequest,
+    wrapExplicitCredentials
   }

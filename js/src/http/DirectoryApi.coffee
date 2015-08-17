@@ -26,7 +26,7 @@ define 'kryptnostic.directory-api', [
   log             = Logger.get('DirectoryApi')
 
 
-  DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
+  DEFAULT_HEADERS = { 'Content-Type' : 'application/json' }
 
   validateId = (id) ->
     unless !!id
@@ -68,7 +68,7 @@ define 'kryptnostic.directory-api', [
           url     : cryptoServiceUrl() + '/' + objectId
           method  : 'POST'
           data    : JSON.stringify({ data: btoa(byteBufferStr) })
-          headers : _.clone(DEFAULT_HEADER)
+          headers : _.cloneDeep(DEFAULT_HEADERS)
         })))
       .then (response) ->
         log.info('setObjectCryptoService', { objectId })
@@ -97,7 +97,7 @@ define 'kryptnostic.directory-api', [
           url     : privateKeyUrl(),
           method  : 'PUT'
           data    : JSON.stringify(blockCiphertext)
-          headers : _.clone(DEFAULT_HEADER)
+          headers : _.cloneDeep(DEFAULT_HEADERS)
         })))
       .then (response) ->
         log.debug('setPrivateKey', { response })
@@ -111,7 +111,7 @@ define 'kryptnostic.directory-api', [
           url     : publicKeyUrl()
           method  : 'PUT'
           data    : JSON.stringify(publicKeyEnvelope)
-          headers : _.clone(DEFAULT_HEADER)
+          headers : _.cloneDeep(DEFAULT_HEADERS)
         })))
       .then (response) ->
         log.debug('setPublicKey', { response })
@@ -143,6 +143,24 @@ define 'kryptnostic.directory-api', [
           throw new Error 'incorrect credentials'
         else
           return new BlockCiphertext(ciphertext)
+
+    # sets the encrypted salt for a new user account.
+    # manually sets principal and credential headers since user has not auth'ed yet.
+    setSalt: ({ uuid, blockCiphertext, credential }) =>
+      Promise.resolve()
+      .then ->
+        blockCiphertext.validate()
+      .then ->
+        principal = uuid
+        request    = {
+          url     : saltUrl()
+          method  : 'PUT'
+          headers : _.cloneDeep(DEFAULT_HEADERS)
+          data    : JSON.stringify(blockCiphertext)
+        }
+        wrappedRequest = SecurityUtils.wrapExplicitCredentials(request, { principal, credential })
+        axios(wrappedRequest)
+
 
     # gets users in the specified realm.
     # does not include uninitialized users who have not set their primary key yet.

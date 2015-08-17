@@ -22,7 +22,7 @@ define 'kryptnostic.registration-client', [
       @registrationApi   = new RegistrationApi()
       @credentialService = new CredentialService()
 
-    register: ({email, name, password}) ->
+    register: ({ email, name, password }) ->
       { credential, encryptedSalt } = CredentialService.generateCredentialPair({ password })
       password = null
 

@@ -146,7 +146,7 @@ define 'kryptnostic.directory-api', [
 
     # sets the encrypted salt for a new user account.
     # manually sets principal and credential headers since user has not auth'ed yet.
-    setSalt: ({ uuid, blockCiphertext, credential }) =>
+    setSalt: ({ uuid, blockCiphertext, credential }) ->
       Promise.resolve()
       .then ->
         blockCiphertext.validate()

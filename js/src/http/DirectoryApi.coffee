@@ -7,6 +7,7 @@ define 'kryptnostic.directory-api', [
   'kryptnostic.public-key-envelope'
   'kryptnostic.security-utils'
   'kryptnostic.block-ciphertext'
+  'kryptnostic.validators'
 ], (require) ->
 
   axios             = require 'axios'
@@ -16,6 +17,9 @@ define 'kryptnostic.directory-api', [
   Configuration     = require 'kryptnostic.configuration'
   BlockCiphertext   = require 'kryptnostic.block-ciphertext'
   Promise           = require 'bluebird'
+  validators        = require 'kryptnostic.validators'
+
+  { validateId }    = validators
 
   cryptoServiceUrl   = -> Configuration.get('servicesUrl') + '/directory/object'
   privateKeyUrl      = -> Configuration.get('servicesUrl') + '/directory/private'
@@ -27,10 +31,6 @@ define 'kryptnostic.directory-api', [
 
 
   DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
-
-  validateId = (id) ->
-    unless !!id
-      throw new Error 'cannot request or upload crypto service without an id!'
 
   validateCrytpoServiceByteBuffer = (byteBufferStr) ->
     if not _.isString(byteBufferStr) or _.isEmpty(byteBufferStr)

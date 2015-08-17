@@ -49,7 +49,7 @@ define 'kryptnostic.sharing-api', [
         axios(SecurityUtils.wrapRequest({
           url     : sharingUrl() + OBJECT_PATH + SHARE_PATH
           method  : 'POST'
-          headers : _.clone(DEFAULT_HEADER)
+          headers : _.cloneDeep(DEFAULT_HEADER)
           data    : JSON.stringify(sharingRequest)
         }))
       .then (response) ->
@@ -62,7 +62,7 @@ define 'kryptnostic.sharing-api', [
       axios(SecurityUtils.wrapRequest({
         url     : sharingUrl() + OBJECT_PATH + REVOKE_PATH
         method  : 'POST'
-        headers : _.clone(DEFAULT_HEADER)
+        headers : _.cloneDeep(DEFAULT_HEADER)
         data    : JSON.stringify(revocationRequest)
       }))
       .then (response) ->
@@ -75,15 +75,25 @@ define 'kryptnostic.sharing-api', [
       axios(SecurityUtils.wrapRequest({
         url     : sharingUrl() + KEYS_PATH
         method  : 'POST'
-        headers : _.clone(DEFAULT_HEADER)
+        headers : _.cloneDeep(DEFAULT_HEADER)
         data    : JSON.stringify(keyRegistrationRequest)
       }))
       .then (response) ->
         logger.debug('registerKeys', response)
         return response.data
 
-    # register search keys
     registerSearchKeys: (encryptedSearchObjectKeys) ->
-      throw new Error 'unimplemented'
+      encryptedSearchObjectKeys.forEach (encryptedSearchObjectKey) ->
+        encryptedSearchObjectKey.validate()
+
+      axios(SecurityUtils.wrapRequest({
+        url     : sharingUrl() + KEYS_PATH
+        method  : 'PUT'
+        headers : _.cloneDeep(DEFAULT_HEADER)
+        data    : JSON.stringify(encryptedSearchObjectKeys)
+      }))
+      .then (response) ->
+        logger.debug('registerSearchKeys', response)
+        return response.data
 
   return SharingApi

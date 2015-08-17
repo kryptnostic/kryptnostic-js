@@ -1,5 +1,7 @@
 # development
 
+## tools
+
 This project uses:
 
 1. Bower and NPM for package management.
@@ -7,6 +9,7 @@ This project uses:
 3. r.js optimizer for builds.
 4. Karma and Jasmine for unit testing.
 
+## setup
 
 To set up, install node.js and npm, then run the following:
 
@@ -23,10 +26,13 @@ npm install
 3. AMD module definition names should be prefixed with `kryptnostic`, e.g. `kryptnostic.storage-client`
 4. When using require for module definitions, prefer explicit `require(name)` calls to destructuring.
 
+## sublime
+
+Please use the `kryptnostic.sublime-project` sublime file when editing. This will automatically standardize whitespace and eliminate common style problems.
+
 ## building
 
-Builds use the require.js optimizer.
-Building will produce `kryptnostic.js` in the `dist` directory.
+Builds use the require.js optimizer, and produces `kryptnostic.js` in the `dist` directory.
 
 ```
 npm run build

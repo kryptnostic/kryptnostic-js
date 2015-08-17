@@ -2,6 +2,7 @@ define 'kryptnostic.storage-client', [
   'require'
   'bluebird'
   'kryptnostic.logger'
+  'kryptnostic.validators'
   'kryptnostic.object-api'
   'kryptnostic.kryptnostic-object'
   'kryptnostic.crypto-service-loader'
@@ -11,6 +12,7 @@ define 'kryptnostic.storage-client', [
   'use strict'
 
   Promise               = require 'bluebird'
+  validators            = require 'kryptnostic.validators'
   KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
   PendingObjectRequest  = require 'kryptnostic.pending-object-request'
   CryptoServiceLoader   = require 'kryptnostic.crypto-service-loader'
@@ -20,13 +22,7 @@ define 'kryptnostic.storage-client', [
 
   logger = Logger.get('StorageClient')
 
-  validateId = (id) ->
-    unless _.isString(id) and not _.isEmpty(id)
-      throw new Error 'must specify a string id'
-
-  validateBody = (body) ->
-    unless _.isString(body) and not _.isEmpty(body)
-      throw new Error 'object body cannot be empty!'
+  { validateId, validateNonEmptyString } = validators
 
   #
   # Client for listing and loading Kryptnostic encrypted objects.
@@ -58,7 +54,7 @@ define 'kryptnostic.storage-client', [
       Promise.resolve()
       .then ->
         validateId(id)
-        validateBody(body)
+        validateNonEmptyString(body)
       .then =>
         @objectApi.createPendingObjectFromExisting(id)
       .then =>

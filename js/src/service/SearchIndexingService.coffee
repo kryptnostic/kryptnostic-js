@@ -1,21 +1,22 @@
 define 'kryptnostic.search-indexing-service', [
   'require'
-  'kryptnostic.search.indexer'
-  'kryptnostic.mock.fhe-engine'
-  'kryptnostic.search.metadata-mapper'
   'kryptnostic.chunking.strategy.json'
-  'kryptnostic.metadata-request'
-  'kryptnostic.metadata-api'
   'kryptnostic.logger'
+  'kryptnostic.metadata-api'
+  'kryptnostic.metadata-request'
+  'kryptnostic.mock.fhe-engine'
+  'kryptnostic.search.indexer'
+  'kryptnostic.search.metadata-mapper'
 ], (require) ->
 
-  ObjectIndexer        = require 'kryptnostic.search.indexer'
-  MockFheEngine        = require 'kryptnostic.mock.fhe-engine'
-  PaddedMetadataMapper = require 'kryptnostic.search.metadata-mapper'
-  JsonChunkingStrategy = require 'kryptnostic.chunking.strategy.json'
-  MetadataRequest      = require 'kryptnostic.metadata-request'
-  MetadataApi          = require 'kryptnostic.metadata-api'
-  Logger               = require 'kryptnostic.logger'
+  Logger                   = require 'kryptnostic.logger'
+  MetadataApi              = require 'kryptnostic.metadata-api'
+  ObjectIndexer            = require 'kryptnostic.search.indexer'
+  MockFheEngine            = require 'kryptnostic.mock.fhe-engine'
+  MetadataRequest          = require 'kryptnostic.metadata-request'
+  JsonChunkingStrategy     = require 'kryptnostic.chunking.strategy.json'
+  PaddedMetadataMapper     = require 'kryptnostic.search.metadata-mapper'
+  EncryptedSearchObjectKey = require 'kryptnostic.encrypted-search-object-key'
 
   log = Logger.get('SearchIndexingService')
 
@@ -80,4 +81,8 @@ define 'kryptnostic.search-indexing-service', [
         return new MetadataRequest { metadata : metadataIndex }
 
     _submitBridgeKey : (id, sharingKey) ->
-      throw new Error 'unimplemented'
+      bridgeKey = @fheEngine.getBridgeKey({ sharingKey })
+      encryptedSearchObjectKey = new EncryptedSearchObjectKey { id, key }
+      @sharingClient.registerSearchKeys([ encryptedSearchObjectKey ])
+
+  return SearchIndexingService

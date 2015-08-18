@@ -11,7 +11,7 @@ define [
   CREDENTIALS = { principal: '1111-2222-3333-4444', credential: 'password' }
 
   MOCK_REQUEST = {
-    url     : 'http://www.google.com',
+    url     : 'http://www.kryptnostic.com',
     method  : 'GET'
     headers : {}
   }

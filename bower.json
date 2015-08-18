@@ -21,15 +21,16 @@
     "bower_components",
     "build.js",
     "build.sh",
+    "bump.rb",
     "check-unused-imports.rb",
     "coffeelint.json",
     "commit-hooks.rb",
     "compile-exports.rb",
     "demo",
     "js",
+    "kryptnostic.sublime-project",
     "node_modules",
     "package.json",
-    "kryptnostic.sublime-project",
     "test.sh"
   ],
   "moduleType" : [

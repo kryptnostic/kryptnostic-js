@@ -7,6 +7,7 @@ define 'kryptnostic.credential-service', [
   'kryptnostic.rsa-key-generator'
   'kryptnostic.password-crypto-service'
   'kryptnostic.authentication-stage'
+  'kryptnostic.salt-generator'
 ], (require) ->
 
   Logger                = require 'kryptnostic.logger'
@@ -17,9 +18,11 @@ define 'kryptnostic.credential-service', [
   RsaKeyGenerator       = require 'kryptnostic.rsa-key-generator'
   PublicKeyEnvelope     = require 'kryptnostic.public-key-envelope'
   AuthenticationStage   = require 'kryptnostic.authentication-stage'
+  SaltGenerator         = require 'kryptnostic.salt-generator'
 
   DEFAULT_ITERATIONS = 1000
-  DEFAULT_KEY_SIZE   = 32
+  DEFAULT_KEY_SIZE   = 256
+  BITS_PER_BYTE      = 8
 
   log = Logger.get('CredentialService')
 
@@ -38,22 +41,41 @@ define 'kryptnostic.credential-service', [
       @rsaKeyGenerator = new RsaKeyGenerator()
 
     deriveCredential : ({ principal, password }, notifier = -> ) ->
-      { iterations, keySize, passwordCrypto } = {}
+      { passwordCrypto } = {}
 
       Promise.resolve()
       .then ->
         Promise.resolve(notifier(AuthenticationStage.DERIVE_CREDENTIAL))
       .then =>
-        iterations     = DEFAULT_ITERATIONS
-        keySize        = DEFAULT_KEY_SIZE
-        passwordCrypto = new PasswordCryptoService()
         @directoryApi.getSalt(principal)
       .then (encryptedSalt) ->
-        salt           = passwordCrypto.decrypt(encryptedSalt, password)
-        md             = Forge.sha1.create()
-        derived        = Forge.pkcs5.pbkdf2(password, salt, iterations, keySize, md)
-        hexDerived     = Forge.util.bytesToHex(derived)
-        return hexDerived
+        return CredentialService.derive({ encryptedSalt, password })
+
+    @derive : ({ encryptedSalt, password }) ->
+      passwordCrypto = new PasswordCryptoService()
+
+      iterations = DEFAULT_ITERATIONS
+      keySize    = DEFAULT_KEY_SIZE / BITS_PER_BYTE
+      salt       = passwordCrypto.decrypt(encryptedSalt, password)
+      md         = Forge.sha1.create()
+      derived    = Forge.pkcs5.pbkdf2(password, salt, iterations, keySize, md)
+      hexDerived = Forge.util.bytesToHex(derived)
+
+      return hexDerived
+
+    @generateCredentialPair : ({ password }) ->
+      log.info('generating a new credential pair')
+      salt           = SaltGenerator.generateSalt(DEFAULT_KEY_SIZE / BITS_PER_BYTE)
+      passwordCrypto = new PasswordCryptoService()
+      encryptedSalt  = passwordCrypto.encrypt(salt, password)
+      credential     = CredentialService.derive({ password, encryptedSalt })
+      return { credential, encryptedSalt }
+
+    initializeSalt : ({ uuid, encryptedSalt, credential }) ->
+      Promise.resolve()
+      .then =>
+        blockCiphertext = encryptedSalt
+        @directoryApi.setSalt({ uuid, blockCiphertext, credential })
 
     initializeKeypair : ({ password }, notifier = -> ) ->
       { publicKey, privateKey, keypair } = {}

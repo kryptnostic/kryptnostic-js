@@ -5,12 +5,12 @@ define 'kryptnostic.directory-api', [
   'kryptnostic.configuration'
   'kryptnostic.logger'
   'kryptnostic.public-key-envelope'
-  'kryptnostic.security-utils'
+  'kryptnostic.requests'
   'kryptnostic.block-ciphertext'
 ], (require) ->
 
   axios             = require 'axios'
-  SecurityUtils     = require 'kryptnostic.security-utils'
+  Requests          = require 'kryptnostic.requests'
   Logger            = require 'kryptnostic.logger'
   PublicKeyEnvelope = require 'kryptnostic.public-key-envelope'
   Configuration     = require 'kryptnostic.configuration'
@@ -26,7 +26,7 @@ define 'kryptnostic.directory-api', [
   log             = Logger.get('DirectoryApi')
 
 
-  DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
+  DEFAULT_HEADERS = { 'Content-Type' : 'application/json' }
 
   validateId = (id) ->
     unless !!id
@@ -48,7 +48,7 @@ define 'kryptnostic.directory-api', [
       .then ->
         validateId(objectId)
 
-        Promise.resolve(axios(SecurityUtils.wrapRequest({
+        Promise.resolve(axios(Requests.wrapCredentials({
           url    : cryptoServiceUrl() + '/' + objectId
           method : 'GET'
         })))
@@ -64,11 +64,11 @@ define 'kryptnostic.directory-api', [
         validateId(objectId)
         validateCrytpoServiceByteBuffer(byteBufferStr)
 
-        Promise.resolve(axios(SecurityUtils.wrapRequest({
+        Promise.resolve(axios(Requests.wrapCredentials({
           url     : cryptoServiceUrl() + '/' + objectId
           method  : 'POST'
           data    : JSON.stringify({ data: btoa(byteBufferStr) })
-          headers : _.clone(DEFAULT_HEADER)
+          headers : _.cloneDeep(DEFAULT_HEADERS)
         })))
       .then (response) ->
         log.info('setObjectCryptoService', { objectId })
@@ -76,7 +76,7 @@ define 'kryptnostic.directory-api', [
 
     # gets encrypted RSA private keys for the current user
     getPrivateKey: ->
-      Promise.resolve(axios(SecurityUtils.wrapRequest({
+      Promise.resolve(axios(Requests.wrapCredentials({
         url    : privateKeyUrl()
         method : 'GET'
       })))
@@ -93,11 +93,11 @@ define 'kryptnostic.directory-api', [
       Promise.resolve()
       .then ->
         blockCiphertext.validate()
-        Promise.resolve(axios(SecurityUtils.wrapRequest({
+        Promise.resolve(axios(Requests.wrapCredentials({
           url     : privateKeyUrl(),
           method  : 'PUT'
           data    : JSON.stringify(blockCiphertext)
-          headers : _.clone(DEFAULT_HEADER)
+          headers : _.cloneDeep(DEFAULT_HEADERS)
         })))
       .then (response) ->
         log.debug('setPrivateKey', { response })
@@ -107,18 +107,18 @@ define 'kryptnostic.directory-api', [
       Promise.resolve()
       .then ->
         publicKeyEnvelope.validate()
-        Promise.resolve(axios(SecurityUtils.wrapRequest({
+        Promise.resolve(axios(Requests.wrapCredentials({
           url     : publicKeyUrl()
           method  : 'PUT'
           data    : JSON.stringify(publicKeyEnvelope)
-          headers : _.clone(DEFAULT_HEADER)
+          headers : _.cloneDeep(DEFAULT_HEADERS)
         })))
       .then (response) ->
         log.debug('setPublicKey', { response })
 
     # gets the public key of a user in the same realm as the caller.
     getPublicKey: (uuid) ->
-      Promise.resolve(axios(SecurityUtils.wrapRequest({
+      Promise.resolve(axios(Requests.wrapCredentials({
         url    : publicKeyUrl() + '/' + uuid
         method : 'GET'
       })))
@@ -144,10 +144,28 @@ define 'kryptnostic.directory-api', [
         else
           return new BlockCiphertext(ciphertext)
 
+    # sets the encrypted salt for a new user account.
+    # manually sets principal and credential headers since user has not auth'ed yet.
+    setSalt: ({ uuid, blockCiphertext, credential }) ->
+      Promise.resolve()
+      .then ->
+        blockCiphertext.validate()
+      .then ->
+        principal = uuid
+        request    = {
+          url     : saltUrl()
+          method  : 'PUT'
+          headers : _.cloneDeep(DEFAULT_HEADERS)
+          data    : JSON.stringify(blockCiphertext)
+        }
+        wrappedRequest = Requests.wrapCredentials(request, { principal, credential })
+        axios(wrappedRequest)
+
+
     # gets users in the specified realm.
     # does not include uninitialized users who have not set their primary key yet.
     getUsers: ({ realm }) ->
-      Promise.resolve(axios(SecurityUtils.wrapRequest({
+      Promise.resolve(axios(Requests.wrapCredentials({
         url    : usersInRealmUrl() + '/' + realm
         method : 'GET'
       })))

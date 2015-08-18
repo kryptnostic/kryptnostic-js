@@ -5,13 +5,13 @@ define 'kryptnostic.object-api', [
   'kryptnostic.configuration'
   'kryptnostic.kryptnostic-object'
   'kryptnostic.logger'
-  'kryptnostic.security-utils'
+  'kryptnostic.requests'
   'kryptnostic.object-metadata'
   'kryptnostic.validators'
 ], (require) ->
 
   axios             = require 'axios'
-  SecurityUtils     = require 'kryptnostic.security-utils'
+  Requests          = require 'kryptnostic.requests'
   KryptnosticObject = require 'kryptnostic.kryptnostic-object'
   Logger            = require 'kryptnostic.logger'
   Config            = require 'kryptnostic.configuration'
@@ -35,7 +35,7 @@ define 'kryptnostic.object-api', [
 
     # get all object ids accessible to the user
     getObjectIds : ->
-      Promise.resolve(axios(SecurityUtils.wrapRequest({
+      Promise.resolve(axios(Requests.wrapCredentials({
         url    : objectUrl()
         method : 'GET'
       })))
@@ -47,7 +47,7 @@ define 'kryptnostic.object-api', [
     getObject : (id) ->
       validateId(id)
 
-      Promise.resolve(axios(SecurityUtils.wrapRequest({
+      Promise.resolve(axios(Requests.wrapCredentials({
         url    : objectUrl() + '/' + id
         method : 'GET'
       })))
@@ -59,7 +59,7 @@ define 'kryptnostic.object-api', [
     getObjectMetadata: (id) ->
       validateId(id)
 
-      Promise.resolve(axios(SecurityUtils.wrapRequest({
+      Promise.resolve(axios(Requests.wrapCredentials({
         url    : objectUrl() + '/' + id + '/metadata'
         method : 'GET'
       })))
@@ -71,7 +71,7 @@ define 'kryptnostic.object-api', [
     getObjectIdsByType: (type) ->
       validateType(type)
 
-      Promise.resolve(axios(SecurityUtils.wrapRequest({
+      Promise.resolve(axios(Requests.wrapCredentials({
         url    : objectUrl() + '/type/' + type
         method : 'GET'
       })))
@@ -83,7 +83,7 @@ define 'kryptnostic.object-api', [
     createPendingObject : (pendingRequest) ->
       pendingRequest.validate()
 
-      Promise.resolve(axios(SecurityUtils.wrapRequest({
+      Promise.resolve(axios(Requests.wrapCredentials({
         url         : objectUrl() + '/'
         method      : 'PUT'
         headers     : _.clone(DEFAULT_HEADER)
@@ -98,7 +98,7 @@ define 'kryptnostic.object-api', [
     createPendingObjectFromExisting : (id) ->
       validateId(id)
 
-      Promise.resolve(axios(SecurityUtils.wrapRequest({
+      Promise.resolve(axios(Requests.wrapCredentials({
         url    : objectUrl() + '/' + id
         method : 'PUT'
       })))
@@ -110,7 +110,7 @@ define 'kryptnostic.object-api', [
     updateObject : (id, encryptableBlock) ->
       validateId(id)
 
-      Promise.resolve(axios(SecurityUtils.wrapRequest({
+      Promise.resolve(axios(Requests.wrapCredentials({
         url         : objectUrl() + '/' + id
         method      : 'POST'
         headers     : _.clone(DEFAULT_HEADER)
@@ -123,7 +123,7 @@ define 'kryptnostic.object-api', [
     deleteObject : (id) ->
       validateId(id)
 
-      Promise.resolve(axios(SecurityUtils.wrapRequest({
+      Promise.resolve(axios(Requests.wrapCredentials({
         url         : objectUrl() + '/' + id
         method      : 'DELETE'
       })))

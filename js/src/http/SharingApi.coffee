@@ -3,27 +3,26 @@ define 'kryptnostic.sharing-api', [
   'axios'
   'bluebird'
   'kryptnostic.configuration'
-  'kryptnostic.security-utils'
+  'kryptnostic.requests'
   'kryptnostic.logger'
 ], (require) ->
 
-  axios         = require 'axios'
-  SecurityUtils = require 'kryptnostic.security-utils'
-  Logger        = require 'kryptnostic.logger'
-  Config        = require 'kryptnostic.configuration'
-  Promise       = require 'bluebird'
+  axios    = require 'axios'
+  Requests = require 'kryptnostic.requests'
+  Logger   = require 'kryptnostic.logger'
+  Config   = require 'kryptnostic.configuration'
+  Promise  = require 'bluebird'
 
-  sharingUrl        = -> Config.get('servicesUrl') + '/share'
-
-  TYPE_PATH         = '/type'
-  SHARE_PATH        = '/share'
-  REVOKE_PATH       = '/revoke'
-  OBJECT_PATH       = '/object'
-  KEYS_PATH         = '/keys'
-
-  logger            = Logger.get('SharingApi')
+  TYPE_PATH   = '/type'
+  SHARE_PATH  = '/share'
+  REVOKE_PATH = '/revoke'
+  OBJECT_PATH = '/object'
+  KEYS_PATH   = '/keys'
 
   DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
+
+  sharingUrl  = -> Config.get('servicesUrl') + '/share'
+  logger      = Logger.get('SharingApi')
 
   #
   # HTTP calls for interacting with the /share endpoint of Kryptnostic Services.
@@ -33,7 +32,7 @@ define 'kryptnostic.sharing-api', [
 
     # get all incoming shares
     getIncomingShares : ->
-      axios(SecurityUtils.wrapRequest({
+      axios(Requests.wrapCredentials({
         url    : sharingUrl() + OBJECT_PATH
         method : 'GET'
       }))
@@ -46,7 +45,7 @@ define 'kryptnostic.sharing-api', [
       .then ->
         sharingRequest.validate()
 
-        axios(SecurityUtils.wrapRequest({
+        axios(Requests.wrapCredentials({
           url     : sharingUrl() + OBJECT_PATH + SHARE_PATH
           method  : 'POST'
           headers : _.clone(DEFAULT_HEADER)
@@ -59,7 +58,7 @@ define 'kryptnostic.sharing-api', [
     revokeObject: (revocationRequest) ->
       revocationRequest.validate()
 
-      axios(SecurityUtils.wrapRequest({
+      axios(Requests.wrapCredentials({
         url     : sharingUrl() + OBJECT_PATH + REVOKE_PATH
         method  : 'POST'
         headers : _.clone(DEFAULT_HEADER)
@@ -72,7 +71,7 @@ define 'kryptnostic.sharing-api', [
     registerKeys: (keyRegistrationRequest) ->
       keyRegistrationRequest.validate()
 
-      axios(SecurityUtils.wrapRequest({
+      axios(Requests.wrapCredentials({
         url     : sharingUrl() + KEYS_PATH
         method  : 'POST'
         headers : _.clone(DEFAULT_HEADER)

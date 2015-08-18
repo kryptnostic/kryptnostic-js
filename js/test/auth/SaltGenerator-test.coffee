@@ -25,5 +25,3 @@ define [
 
         expect(countBytes(salt8)).toBe(8)
         expect(countBytes(salt32)).toBe(32)
-
-

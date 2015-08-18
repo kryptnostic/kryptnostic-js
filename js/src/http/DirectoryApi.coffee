@@ -5,12 +5,12 @@ define 'kryptnostic.directory-api', [
   'kryptnostic.configuration'
   'kryptnostic.logger'
   'kryptnostic.public-key-envelope'
-  'kryptnostic.security-utils'
+  'kryptnostic.requests'
   'kryptnostic.block-ciphertext'
 ], (require) ->
 
   axios             = require 'axios'
-  SecurityUtils     = require 'kryptnostic.security-utils'
+  Requests          = require 'kryptnostic.requests'
   Logger            = require 'kryptnostic.logger'
   PublicKeyEnvelope = require 'kryptnostic.public-key-envelope'
   Configuration     = require 'kryptnostic.configuration'
@@ -48,7 +48,7 @@ define 'kryptnostic.directory-api', [
       .then ->
         validateId(objectId)
 
-        Promise.resolve(axios(SecurityUtils.wrapRequest({
+        Promise.resolve(axios(Requests.wrapCredentials({
           url    : cryptoServiceUrl() + '/' + objectId
           method : 'GET'
         })))
@@ -64,7 +64,7 @@ define 'kryptnostic.directory-api', [
         validateId(objectId)
         validateCrytpoServiceByteBuffer(byteBufferStr)
 
-        Promise.resolve(axios(SecurityUtils.wrapRequest({
+        Promise.resolve(axios(Requests.wrapCredentials({
           url     : cryptoServiceUrl() + '/' + objectId
           method  : 'POST'
           data    : JSON.stringify({ data: btoa(byteBufferStr) })
@@ -76,7 +76,7 @@ define 'kryptnostic.directory-api', [
 
     # gets encrypted RSA private keys for the current user
     getPrivateKey: ->
-      Promise.resolve(axios(SecurityUtils.wrapRequest({
+      Promise.resolve(axios(Requests.wrapCredentials({
         url    : privateKeyUrl()
         method : 'GET'
       })))
@@ -93,7 +93,7 @@ define 'kryptnostic.directory-api', [
       Promise.resolve()
       .then ->
         blockCiphertext.validate()
-        Promise.resolve(axios(SecurityUtils.wrapRequest({
+        Promise.resolve(axios(Requests.wrapCredentials({
           url     : privateKeyUrl(),
           method  : 'PUT'
           data    : JSON.stringify(blockCiphertext)
@@ -107,7 +107,7 @@ define 'kryptnostic.directory-api', [
       Promise.resolve()
       .then ->
         publicKeyEnvelope.validate()
-        Promise.resolve(axios(SecurityUtils.wrapRequest({
+        Promise.resolve(axios(Requests.wrapCredentials({
           url     : publicKeyUrl()
           method  : 'PUT'
           data    : JSON.stringify(publicKeyEnvelope)
@@ -118,7 +118,7 @@ define 'kryptnostic.directory-api', [
 
     # gets the public key of a user in the same realm as the caller.
     getPublicKey: (uuid) ->
-      Promise.resolve(axios(SecurityUtils.wrapRequest({
+      Promise.resolve(axios(Requests.wrapCredentials({
         url    : publicKeyUrl() + '/' + uuid
         method : 'GET'
       })))
@@ -158,14 +158,14 @@ define 'kryptnostic.directory-api', [
           headers : _.cloneDeep(DEFAULT_HEADERS)
           data    : JSON.stringify(blockCiphertext)
         }
-        wrappedRequest = SecurityUtils.wrapExplicitCredentials(request, { principal, credential })
+        wrappedRequest = Requests.wrapCredentials(request, { principal, credential })
         axios(wrappedRequest)
 
 
     # gets users in the specified realm.
     # does not include uninitialized users who have not set their primary key yet.
     getUsers: ({ realm }) ->
-      Promise.resolve(axios(SecurityUtils.wrapRequest({
+      Promise.resolve(axios(Requests.wrapCredentials({
         url    : usersInRealmUrl() + '/' + realm
         method : 'GET'
       })))

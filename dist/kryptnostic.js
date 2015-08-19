@@ -25400,22 +25400,30 @@ define("revalidator", function(){});
         });
       };
 
+      DirectoryApi.prototype.getInitializedUsers = function(_arg) {
+        var realm;
+        realm = _arg.realm;
+        return Promise.resolve(axios(Requests.wrapCredentials({
+          url: usersInRealmUrl() + '/initialized/' + realm,
+          method: 'GET'
+        }))).then(function(response) {
+          var uuids;
+          uuids = response.data;
+          return uuids;
+        });
+      };
+
       DirectoryApi.prototype.getUsers = function(_arg) {
         var realm;
         realm = _arg.realm;
         return Promise.resolve(axios(Requests.wrapCredentials({
           url: usersInRealmUrl() + '/' + realm,
           method: 'GET'
-        }))).then((function(_this) {
-          return function(response) {
-            var uuids;
-            uuids = response.data;
-            log.info('getUsers', uuids);
-            return Promise.filter(uuids, function(uuid) {
-              return _this.getPublicKey(uuid);
-            });
-          };
-        })(this));
+        }))).then(function(response) {
+          var uuids;
+          uuids = response.data;
+          return uuids;
+        });
       };
 
       return DirectoryApi;

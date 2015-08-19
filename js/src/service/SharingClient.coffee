@@ -10,6 +10,7 @@ define 'kryptnostic.sharing-client', [
   'kryptnostic.credential-loader'
   'kryptnostic.crypto-service-loader'
   'kryptnostic.crypto-service-marshaller'
+  'kryptnostic.share-processing-service'
 ], (require) ->
   _                       = require 'lodash'
   Promise                 = require 'bluebird'
@@ -23,6 +24,7 @@ define 'kryptnostic.sharing-client', [
   RsaCryptoService        = require 'kryptnostic.rsa-crypto-service'
   CryptoServiceLoader     = require 'kryptnostic.crypto-service-loader'
   CryptoServiceMarshaller = require 'kryptnostic.crypto-service-marshaller'
+  ShareProcessingService  = require 'kryptnostic.share-processing-service'
 
   log     = Logger.get('SharingClient')
 
@@ -38,6 +40,8 @@ define 'kryptnostic.sharing-client', [
       @sharingApi              = new SharingApi()
       @directoryApi            = new DirectoryApi()
       @cryptoServiceMarshaller = new CryptoServiceMarshaller()
+      @cryptoServiceLoader     = new CryptoServiceLoader()
+      @shareProcessingService  = new ShareProcessingService()
 
     shareObject: (id, uuids) ->
       if _.isEmpty(uuids)
@@ -46,13 +50,12 @@ define 'kryptnostic.sharing-client', [
       validateId(id)
       validateUuids(uuids)
 
-      { principal }       = CredentialLoader.getCredentials()
-      cryptoServiceLoader = new CryptoServiceLoader()
-      sharingKey          = ''
+      { principal } = CredentialLoader.getCredentials()
+      sharingKey    = ''
 
       Promise.resolve()
-      .then ->
-        cryptoServiceLoader.getObjectCryptoService(id)
+      .then =>
+        @cryptoServiceLoader.getObjectCryptoService(id)
       .then (cryptoService) =>
         promiseMap = _.mapValues(_.object(uuids), (empty, uuid) =>
           return @directoryApi.getPublicKey(uuid)
@@ -91,10 +94,17 @@ define 'kryptnostic.sharing-client', [
       .then ->
         log.info('revoked access', { id, uuids })
 
-    registerSearchKeys : (encryptedSearchObjectKeys) ->
-      @sharingApi.registerSearchKeys(encryptedSearchObjectKeys)
+    processIncomingShares : ->
+      Promise.resolve()
+      .then =>
+        @sharingApi.getIncomingShares()
+      .then (shares) =>
+        @shareProcessingService.processShares(shares)
 
-    processIncomingShares: ->
-      throw new Error 'unimplemented'
+    registerSearchKeys : (encryptedSearchObjectKeys) ->
+      if _.isEmpty(encryptedSearchObjectKeys)
+        return Promise.resolve()
+      else
+        return @sharingApi.registerSearchKeys(encryptedSearchObjectKeys)
 
   return SharingClient

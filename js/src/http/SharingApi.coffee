@@ -85,7 +85,7 @@ define 'kryptnostic.sharing-api', [
       encryptedSearchObjectKeys.forEach (encryptedSearchObjectKey) ->
         encryptedSearchObjectKey.validate()
 
-      axios(SecurityUtils.wrapRequest({
+      axios(Requests.wrapCredentials({
         url     : sharingUrl() + KEYS_PATH
         method  : 'PUT'
         headers : _.cloneDeep(DEFAULT_HEADER)

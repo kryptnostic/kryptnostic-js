@@ -12,6 +12,7 @@ define 'kryptnostic.metadata-api', [
 
   #
   # HTTP calls for submitting indexed object metadata.
+  # Author: rbuckheit
   #
   class MetadataApi
 

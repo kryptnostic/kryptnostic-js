@@ -161,9 +161,17 @@ define 'kryptnostic.directory-api', [
         wrappedRequest = Requests.wrapCredentials(request, { principal, credential })
         axios(wrappedRequest)
 
+    # gets users in the specified realm (initialized users only)
+    getInitializedUsers: ({ realm }) ->
+      Promise.resolve(axios(Requests.wrapCredentials({
+        url    : usersInRealmUrl() + '/initialized/' + realm
+        method : 'GET'
+      })))
+      .then (response) =>
+        uuids = response.data
+        return uuids
 
-    # gets users in the specified realm.
-    # does not include uninitialized users who have not set their primary key yet.
+    # gets users in the specified realm (includes users who have not initialized salt/publicKey)
     getUsers: ({ realm }) ->
       Promise.resolve(axios(Requests.wrapCredentials({
         url    : usersInRealmUrl() + '/' + realm
@@ -171,7 +179,6 @@ define 'kryptnostic.directory-api', [
       })))
       .then (response) =>
         uuids = response.data
-        log.info('getUsers', uuids)
-        return Promise.filter(uuids, (uuid) => @getPublicKey(uuid))
+        return uuids
 
   return DirectoryApi

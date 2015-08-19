@@ -167,7 +167,7 @@ define 'kryptnostic.directory-api', [
         url    : usersInRealmUrl() + '/initialized/' + realm
         method : 'GET'
       })))
-      .then (response) =>
+      .then (response) ->
         uuids = response.data
         return uuids
 
@@ -177,7 +177,7 @@ define 'kryptnostic.directory-api', [
         url    : usersInRealmUrl() + '/' + realm
         method : 'GET'
       })))
-      .then (response) =>
+      .then (response) ->
         uuids = response.data
         return uuids
 

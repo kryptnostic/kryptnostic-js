@@ -48,6 +48,6 @@
     "require-cs"         : "0.5.0",
     "requirejs"          : "2.1.18",
     "sinon-1.15.4"       : "http://sinonjs.org/releases/sinon-1.15.4.js",
-    "kryptnostic-engine" : "https://raw.githubusercontent.com/kryptnostic/krypto/5ab1b4bec28773eb1fdd2cd62ff73a0f103aeb6e/krypto-lib/src/main/cpp/KryptnosticEngine.js?token=AAgk_Gn8amSaCjl7pAAtJClRZJhtksioks5V3jWewA%3D%3D"
+    "kryptnostic-engine" : "https://raw.githubusercontent.com/kryptnostic/krypto/feature-integration/krypto-lib/src/main/cpp/KryptnosticEngine.js?token=AAgk_OzH1MSPzVT8bFV7aI4kJX-ZMCfBks5V3j0ewA%3D%3D"
   }
 }

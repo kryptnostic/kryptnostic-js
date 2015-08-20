@@ -6,8 +6,8 @@ define [
 ], (require) ->
 
   UserClient = require 'kryptnostic.user-client'
-  sinon       = require 'sinon'
-  Promise     = require 'bluebird'
+  sinon      = require 'sinon'
+  Promise    = require 'bluebird'
 
   { userService, loadedUuids } = {}
 

@@ -10,6 +10,7 @@
       'bluebird'    : '../../bower_components/bluebird/js/browser/bluebird',
       'forge'       : '../../bower_components/forge/js/forge.min',
       'axios'       : '../../bower_components/axios/dist/axios.amd.min',
+      'jscache'     : '../../bower_components/jscache/index',
       'lodash'      : '../../bower_components/lodash/lodash',
       'pako'        : '../../bower_components/pako/dist/pako',
       'require'     : '../../bower_components/requirejs/require',

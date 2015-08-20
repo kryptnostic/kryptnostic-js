@@ -1,6 +1,6 @@
 {
   "name"       : "kryptnostic-js",
-  "version"    : "0.1.5",
+  "version"    : "0.1.6",
   "main"       : "dist/kryptnostic.js",
   "homepage"   : "https://github.com/kryptnostic/kryptnostic-js",
   "license"    : "Apache-2.0",
@@ -48,6 +48,7 @@
     "pako"         : "0.2.6",
     "require-cs"   : "0.5.0",
     "requirejs"    : "2.1.18",
-    "sinon-1.15.4" : "http://sinonjs.org/releases/sinon-1.15.4.js"
+    "sinon-1.15.4" : "http://sinonjs.org/releases/sinon-1.15.4.js",
+    "jscache"      : "https://raw.githubusercontent.com/monsur/jscache/ba01cdcf3e8a426782e0c297832b6c81286c9e8a/cache.js"
   }
 }

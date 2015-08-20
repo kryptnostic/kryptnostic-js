@@ -11,6 +11,7 @@
       'axios'              : '../../bower_components/axios/dist/axios.amd.min',
       'bluebird'           : '../../bower_components/bluebird/js/browser/bluebird',
       'forge'              : '../../bower_components/forge/js/forge.min',
+      'jscache'            : '../../bower_components/jscache/index',
       'kryptnostic-engine' : '../../bower_components/kryptnostic-engine/index',
       'lodash'             : '../../bower_components/lodash/lodash',
       'loglevel'           : '../../bower_components/loglevel/dist/loglevel',

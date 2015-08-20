@@ -1,6 +1,6 @@
 {
   "name"       : "kryptnostic-js",
-  "version"    : "0.1.3",
+  "version"    : "0.1.6",
   "main"       : "dist/kryptnostic.js",
   "homepage"   : "https://github.com/kryptnostic/kryptnostic-js",
   "license"    : "Apache-2.0",
@@ -21,15 +21,16 @@
     "bower_components",
     "build.js",
     "build.sh",
+    "bump.rb",
     "check-unused-imports.rb",
     "coffeelint.json",
     "commit-hooks.rb",
     "compile-exports.rb",
     "demo",
     "js",
+    "kryptnostic.sublime-project",
     "node_modules",
     "package.json",
-    "kryptnostic.sublime-project",
     "test.sh"
   ],
   "moduleType" : [
@@ -42,12 +43,13 @@
     "axios"              : "0.5.4",
     "bluebird"           : "2.9.32",
     "forge"              : "0.6.21",
+    "kryptnostic-engine" : "https://raw.githubusercontent.com/kryptnostic/krypto/feature-integration/krypto-lib/src/main/cpp/KryptnosticEngine.js?token=AAgk_PLwH8QvtOeJCas7_axsI5LoZwcxks5V3j-4wA%3D%3D",
     "lodash"             : "3.10.0",
     "loglevel"           : "1.3.1",
     "pako"               : "0.2.6",
     "require-cs"         : "0.5.0",
     "requirejs"          : "2.1.18",
     "sinon-1.15.4"       : "http://sinonjs.org/releases/sinon-1.15.4.js",
-    "kryptnostic-engine" : "https://raw.githubusercontent.com/kryptnostic/krypto/feature-integration/krypto-lib/src/main/cpp/KryptnosticEngine.js?token=AAgk_PLwH8QvtOeJCas7_axsI5LoZwcxks5V3j-4wA%3D%3D"
+    "jscache"            : "https://raw.githubusercontent.com/monsur/jscache/ba01cdcf3e8a426782e0c297832b6c81286c9e8a/cache.js"
   }
 }

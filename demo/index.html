@@ -1,11 +1,23 @@
+<!-- styles -->
 <link rel="stylesheet" type="text/css" href="demo.css">
+
+<!-- scripts -->
+<!--
+  Note that kryptnostic.js must be set up in a specific order:
+  1) Load your AMD module loader (require.js, almond, etc)
+  2) Load the kryptnostic engine
+  3) Load kryptnostic.js
+
+  After that, you can load your application scripts which use kryptnostic.js
+-->
 <script src="../bower_components/requirejs/require.js"></script>
+<script src="../bower_components/kryptnostic-engine/index.js"></script>
 <script src="../dist/kryptnostic.js"></script>
+
 <script src="demo.js"></script>
 <script src="demo-registration.js"></script>
 
 <body>
-  <!-- main.js -->
   <div class="kryptnostic-object">
     <!-- object will be rendered here -->
   </div>

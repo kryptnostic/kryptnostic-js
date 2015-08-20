@@ -1,7 +1,16 @@
 define 'kryptnostic.kryptnostic-engine-adapter', [
   'require'
-  'kryptnostic-engine'
+  # 'kryptnostic-engine'
 ], (require) ->
+
+  ENGINE_MISSING_ERROR = '''
+    The KryptnosticEngine is unavailable. This component must be included separately, as it is not
+    built as a part of the kryptnostic.js binary. Please see the krytpnostic.js documentation for
+    more information.
+  '''
+
+  unless Module? and Module.KryptnosticEngine?
+    throw new Error(ENGINE_MISSING_ERROR)
 
   #
   # Wrapper around the kryptnostic engine.

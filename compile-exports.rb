@@ -10,7 +10,6 @@ JS_LIB_EXPORTS = [
   'bluebird',
   'forge',
   'jscache',
-  'kryptnostic-engine',
   'lodash',
   'loglevel',
   'pako',

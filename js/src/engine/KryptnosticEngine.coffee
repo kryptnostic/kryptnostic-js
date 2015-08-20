@@ -1,6 +1,5 @@
 define 'kryptnostic.kryptnostic-engine-adapter', [
   'require'
-  # 'kryptnostic-engine'
 ], (require) ->
 
   ENGINE_MISSING_ERROR = '''
@@ -13,10 +12,10 @@ define 'kryptnostic.kryptnostic-engine-adapter', [
     throw new Error(ENGINE_MISSING_ERROR)
 
   #
-  # Wrapper around the kryptnostic engine.
+  # Wrapper around the kryptnostic engine module produced by emscripten.
   # Author: rbuckheit
   #
-  class KryptnosticEngineAdapter
+  class KryptnosticEngine
 
     constructor: ->
       @engine = new Module.KryptnosticEngine()
@@ -42,4 +41,4 @@ define 'kryptnostic.kryptnostic-engine-adapter', [
     setDocumentKey: (objectId, documentKey) ->
       return @engine.setDocumentKey(objectId, documentKey)
 
-  return KryptnosticEngineAdapter
+  return KryptnosticEngine

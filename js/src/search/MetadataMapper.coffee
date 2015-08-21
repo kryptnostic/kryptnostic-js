@@ -1,36 +1,38 @@
 define 'kryptnostic.search.metadata-mapper', [
   'require'
-  'kryptnostic.search.random-index-generator'
+  'kryptnostic.hash-function'
   'kryptnostic.mock.fhe-engine'
+  'kryptnostic.search.random-index-generator'
 ], (require) ->
 
-  RandomIndexGenerator = require 'kryptnostic.search.random-index-generator'
+  HashFunction         = require 'kryptnostic.hash-function'
   MockFheEngine        = require 'kryptnostic.mock.fhe-engine'
+  RandomIndexGenerator = require 'kryptnostic.search.random-index-generator'
 
-  MINIMUM_TOKEN_LENGTH    = 1
+  MINIMUM_TOKEN_LENGTH = 1
 
   #
   # compute size of largest metadata bucket for padding.
   #
   computeBucketSize = (metadata) ->
-    return _.reduce(metadata, (max, metadatum) ->
-      return Math.max(max, metadatum.locations.length)
+    return _.reduce(metadata, (max, { locations }) ->
+      return Math.max(max, locations.length)
     , 0)
 
   #
-  # Maps search token metadata { token, id, locations } to their
-  # indexed locations, padding the locations of the token so that all
-  # lists of metadata locations are balanced.
+  # Maps search token metadata { token, id, locations } to their indexed locations.
+  # Pads locations of the token so that all lists of locations are of equal length.
+  # Hashes and pads tokens using MurmurHash3-128 so that all tokens are 128 bits.
   #
   # Author: rbuckheit
   #
-  class PaddedMetadataMapper
+  class MetadataMapper
 
     constructor: ->
       @fheEngine      = new MockFheEngine()
       @indexGenerator = new RandomIndexGenerator()
 
-    mapToKeys: ({ metadata, sharingKey }) ->
+    mapToKeys: ({ metadata, documentKey }) ->
       metadataMap  = {}
       bucketLength = computeBucketSize(metadata)
 
@@ -40,7 +42,9 @@ define 'kryptnostic.search.metadata-mapper', [
         if token.length <= MINIMUM_TOKEN_LENGTH
           continue
 
-        indexForTerm    = @fheEngine.mapTokenToIndex({ token, sharingKey })
+        token = HashFunction.MURMUR3_128(token)
+
+        indexForTerm    = @fheEngine.getTokenAddress(token, documentKey)
         paddedLocations = @subListAndPad(locations, bucketLength)
 
         balancedMetadatum = { id, token, locations : paddedLocations }
@@ -61,5 +65,5 @@ define 'kryptnostic.search.metadata-mapper', [
 
       return locations.concat(falseIndices)
 
-  return PaddedMetadataMapper
+  return MetadataMapper
 

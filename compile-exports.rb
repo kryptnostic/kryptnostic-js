@@ -12,6 +12,7 @@ JS_LIB_EXPORTS = [
   'jscache',
   'lodash',
   'loglevel',
+  'murmurhash3',
   'pako',
   'revalidator'
 ]

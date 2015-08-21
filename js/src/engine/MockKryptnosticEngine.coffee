@@ -4,7 +4,7 @@ define 'kryptnostic.mock.fhe-engine', [
 
   # explode a string to a binary array.
   explode = (string) ->
-    return new Uint8Array(string.map((c) -> c.charCodeAt()))
+    return new Uint8Array(_.map(string, (c) -> c.charCodeAt()))
 
   # collapse a binary array into a string.
   implode = (uint8array) ->
@@ -18,73 +18,52 @@ define 'kryptnostic.mock.fhe-engine', [
   #
   class MockKryptnosticEngine
 
-    # fhe keys
-    # ========
-
-    getFhePublicKey: ->
-      return explode('fhe.pub')
+    # client keys
+    # ===========
 
     getFhePrivateKey: ->
       return explode('fhe.pvt')
 
-    # search keys
-    # ===========
-
     getFheSearchPublicKey: ->
-      return explode('search..pub')
+      return explode('search.pub')
 
     getFheSearchPrivateKey: ->
       return explode('search.pvt')
 
-    # client hash function
-    # ====================
+    getClientHashFunction: ->
+      return explode('client.hash')
 
-    getClientHashFunctionHashMatrix: ->
-      return explode('hf.hashmatrix')
-
-    getClientHashFunctionAugmented: ->
-      return explode('hf.augmented')
-
-    getClientHashConcealed: ->
-      return explode('hf.concealed')
-
-    # document search keys
-    # ====================
-
-    getDocumentSearchKey: (id) ->
-      return explode('d' + id)
-
-    # address functions
-    # =================
+    # indexing
+    # ========
 
     getDocumentAddressFunction: (id) ->
-      return explode('a' + id)
+      return explode('doc.address')
 
-    # ???: what does this actually take as arguments?
     getDocumentConversionMatrix: (id) ->
-      return explode('m' + id)
+      return explode('doc.conversion')
 
-    # token transformations
-    # =====================
+    getDocumentSearchKey: (id) ->
+      return explode('doc.search')
 
-    # hash a token with MurmurHash128 (for use when indexing).
-    # ???: what does this actually take as arguments?
-    getHashedToken: (token) ->
-      return explode('h' + token)
+    getDocumentIndexPair: (id) ->
+      return explode('doc.index')
+
+    # pair of { docSearchKey, docAddressFunction }
+    getDocumentSharingPair: (id) ->
+      return explode('doc.sharing')
+
+    # search
+    # ======
 
     # produce an encrypted search term, which can be submitted as a query.
-    # ???: what does this actually take as arguments?
     getEncryptedSearchTerm: (token) ->
-      return explode('s' + token)
+      return explode('search.token')
 
     # compute address on the server for a token
-    getTokenAddress: (token, addressFunction) ->
-      return explode(token + implode(addressFunction))
+    getTokenAddress: (token, documentKey) ->
+      return explode('search.address')
 
     # sharing
     # =======
-
-    # ???: what does this take as arguments?
-    getConversationMatrix: (addressFunction, someOtherThing) ->
 
   return MockKryptnosticEngine

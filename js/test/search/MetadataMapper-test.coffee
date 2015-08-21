@@ -5,9 +5,9 @@ define [
   'kryptnostic.search.metadata-mapper'
 ], (require) ->
 
-  _                    = require 'lodash'
-  MockFheEngine        = require 'kryptnostic.mock.fhe-engine'
-  PaddedMetadataMapper = require 'kryptnostic.search.metadata-mapper'
+  _                     = require 'lodash'
+  MockKryptnosticEngine = require 'kryptnostic.mock.fhe-engine'
+  MetadataMapper        = require 'kryptnostic.search.metadata-mapper'
 
   STATIC_INDEX = 10
 
@@ -15,17 +15,20 @@ define [
     generate: (count) ->
       return _.fill(Array(count), STATIC_INDEX)
 
-  describe 'PaddedMetadataMapper', ->
+  describe 'MetadataMapper', ->
 
-    { fheEngine, metadataMapper } = {}
+    { kryptnosticEngine, metadataMapper } = {}
 
     beforeEach ->
-      fheEngine      = new MockFheEngine()
-      indexGenerator = new StaticIndexGenerator()
-      metadataMapper = new PaddedMetadataMapper()
-      _.extend(metadataMapper, { fheEngine, indexGenerator })
+      kryptnosticEngine = new MockKryptnosticEngine()
+      indexGenerator    = new StaticIndexGenerator()
+      metadataMapper    = new MetadataMapper()
+      _.extend(metadataMapper, { kryptnosticEngine, indexGenerator })
 
     describe '#mapToKeys', ->
+
+      xit 'should pad all tokens with murmurhash3-128', ->
+        # FIXME
 
       it 'should map metadata to their indexed locations', ->
         id       = 'some-object-id'
@@ -33,8 +36,8 @@ define [
           { id, locations: [ 0, 9 ], token: 'fish' }
           { id, locations: [ 5 ], token: 'for' }
         ]
-        sharingKey     = fheEngine.generateSharingKey({ id })
-        mappedMetadata = metadataMapper.mapToKeys({ metadata, sharingKey })
+        documentKey    = kryptnosticEngine.getDocumentSearchKey(id)
+        mappedMetadata = metadataMapper.mapToKeys({ metadata, documentKey })
         keys           = _.keys(mappedMetadata)
         expectedKeys   = [ 'mock-token-index-fish', 'mock-token-index-for' ]
         expect(keys).toEqual(expectedKeys)
@@ -46,8 +49,8 @@ define [
           { id, locations: [ 3, 12, 17 ], token: 'fish' }
           { id, locations: [ 8 ], token: 'for' }
         ]
-        sharingKey     = fheEngine.generateSharingKey({ id })
-        mappedMetadata = metadataMapper.mapToKeys({ metadata, sharingKey })
+        documentKey      = kryptnosticEngine.getDocumentSearchKey(id)
+        mappedMetadata   = metadataMapper.mapToKeys({ metadata, documentKey })
         balancedMetadata = _.flatten(_.values(mappedMetadata))
 
         for metadata in balancedMetadata
@@ -60,8 +63,8 @@ define [
           { id, locations: [ 2, 11 ], token: 'fish' }
           { id, locations: [ 7 ], token: 'for' }
         ]
-        sharingKey     = fheEngine.generateSharingKey({ id })
-        mappedMetadata = metadataMapper.mapToKeys({ metadata, sharingKey })
+        documentKey      = kryptnosticEngine.getDocumentSearchKey(id)
+        mappedMetadata   = metadataMapper.mapToKeys({ metadata, documentKey })
         balancedMetadata = _.flatten(_.values(mappedMetadata))
 
         expect(balancedMetadata.length).toBe(2)
@@ -80,8 +83,8 @@ define [
           { id, locations: [ 2, 11 ], token: 'fish' }
           { id, locations: [ 7 ], token: 'for' }
         ]
-        sharingKey     = fheEngine.generateSharingKey({ id })
-        mappedMetadata = metadataMapper.mapToKeys({ metadata, sharingKey })
+        documentKey    = kryptnosticEngine.getDocumentSearchKey(id)
+        mappedMetadata = metadataMapper.mapToKeys({ metadata, documentKey })
         expect(mappedMetadata).toEqual({
           'mock-token-index-fish' : [
             { id: 'some-object-id', token: 'fish', locations: [ 2, 11 ] }
@@ -97,8 +100,8 @@ define [
           { id, locations: [ 0 ], token: 'fish' }
           { id, locations: [ 2, 11 ], token: 'fish' }
         ]
-        sharingKey     = fheEngine.generateSharingKey({ id })
-        mappedMetadata = metadataMapper.mapToKeys({ metadata, sharingKey })
+        documentKey     = kryptnosticEngine.getDocumentSearchKey(id)
+        mappedMetadata = metadataMapper.mapToKeys({ metadata, documentKey })
         expect(mappedMetadata).toEqual({
           'mock-token-index-fish' : [
             { id: 'some-object-id', token: 'fish', locations: [ 0, 10 ] }

@@ -7,13 +7,17 @@ var SOTERIA_REGEXP = /kryptnostic.js/;
 var SINON_REGEXP   = /sinon.js/;
 var MOCK_REGEXP    = /mock(.*)\.(js)/;
 
+var DEBUG          = false;
+
 var pathToModule = function(path) {
   return path.replace(/^\/base\//, '').replace(/\.js$/, '');
 };
 
 var log = {
   info: function(message) {
-    window.console && console.info(message);
+    if (DEBUG) {
+      window.console && console.info(message);
+    }
   }
 }
 
@@ -51,5 +55,10 @@ require.config({
   deps : allFilesOrdered,
 
   // we have to kickoff jasmine, as it is asynchronous
-  callback: window.__karma__.start
+  callback: function() {
+    // quiet noisy logger
+    require('kryptnostic.logger').setLevel('error');
+    window.__karma__.start();
+  }
 });
+

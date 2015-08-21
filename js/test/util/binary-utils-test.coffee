@@ -17,15 +17,21 @@ define [
     # hex
     # ===
 
-
     describe 'hexToUint', ->
 
       it 'should convert a known value', ->
-        window['cons' + 'ole'].info(JSON.stringify(BinaryUtils.hexToUint(STRING_HEX)))
         expect(BinaryUtils.hexToUint(STRING_HEX)).toEqual(UINT8_HEX)
 
       it 'should throw if not string', ->
         expect( -> BinaryUtils.hexToUint(123) ).toThrow()
+
+    describe 'stringToHex', ->
+
+      it 'should convert a known value', ->
+        expect(BinaryUtils.stringToHex('abcxyz')).toBe('61626378797a')
+
+      it 'should throw if not string', ->
+        expect( -> BinaryUtils.stringToHex(123) ).toThrow()
 
     # uint8
     # =====

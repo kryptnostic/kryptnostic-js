@@ -29,7 +29,6 @@ define 'kryptnostic.binary-utils', [
     bytes = []
     for index in [0...hex.length] by HEX_CHARS_PER_BYTE
       hexByte = hex.substr(index, HEX_CHARS_PER_BYTE)
-      log.error('hexByte', { index, hexByte })
       bytes.push(parseInt(hexByte, HEX_SIZE_PER_CHAR))
     return new Uint8Array(bytes)
 
@@ -37,7 +36,6 @@ define 'kryptnostic.binary-utils', [
   # =====
 
   uint8ToString = (arr) ->
-    log.error('arr', arr)
     unless arr instanceof Uint8Array
       log.error('illegal type', arr.constructor.name)
       throw new Error 'argument is not a uint8 array'
@@ -45,7 +43,6 @@ define 'kryptnostic.binary-utils', [
     chars = []
     [0...arr.length].forEach((index) ->
       val = arr[index]
-      log.error('charCodeAt', { index, val, str: String.fromCharCode(val) })
       chars.push(String.fromCharCode(arr[index]))
     )
     return chars.join(EMPTY_STRING)

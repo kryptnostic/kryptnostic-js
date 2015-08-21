@@ -13,7 +13,6 @@ define [
     STRING_123      = '123'
     UINT8_CODES_123 = new Uint8Array [49, 50, 51]
 
-
     # hex
     # ===
 

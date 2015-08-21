@@ -2,10 +2,11 @@ define 'kryptnostic.mock.fhe-engine', [
   'require'
 ], (require) ->
 
-  # explode a string to a binary array of bytes.
+  # explode a string to a binary array.
   explode = (string) ->
     return new Uint8Array(string.map((c) -> c.charCodeAt()))
 
+  # collapse a binary array into a string.
   implode = (uint8array) ->
     uint8array.map((byte) -> String.fromCharCode(byte)).join()
 

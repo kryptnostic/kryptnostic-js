@@ -18,5 +18,9 @@ js/src/kryptnostic.coffee
 *.sublime-workspace
 
 # misc
-# =====
+# ====
 TODO
+
+# temporary
+# =========
+js/lib/KryptnosticClient.js

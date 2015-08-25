@@ -43,7 +43,7 @@
     "axios"              : "0.5.4",
     "bluebird"           : "2.9.32",
     "forge"              : "0.6.21",
-    "kryptnostic-engine" : "https://raw.githubusercontent.com/kryptnostic/krypto/feature-integration/krypto-lib/src/main/js/KryptnosticEngineClient.js?token=AAgk_Dn_94HPqU7Yc-QNu2YqG8b11r_Eks5V4NuswA%3D%3D",
+    "kryptnostic-engine" : "./js/lib/KryptnosticClient.js",
     "lodash"             : "3.10.0",
     "loglevel"           : "1.3.1",
     "pako"               : "0.2.6",

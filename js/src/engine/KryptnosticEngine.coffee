@@ -1,4 +1,4 @@
-define 'kryptnostic.kryptnostic-engine-adapter', [
+define 'kryptnostic.kryptnostic-engine', [
   'require'
 ], (require) ->
 

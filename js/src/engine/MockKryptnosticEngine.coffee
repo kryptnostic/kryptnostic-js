@@ -1,4 +1,4 @@
-define 'kryptnostic.mock.fhe-engine', [
+define 'kryptnostic.mock.kryptnostic-engine', [
   'require'
   'kryptnostic.binary-utils'
 ], (require) ->
@@ -15,7 +15,7 @@ define 'kryptnostic.mock.fhe-engine', [
 
   #
   # Stand-in for the FHE engine which returns mocked values.
-  # This class intentionally does not provide any security.
+  # This class does not provide any security guarantees.
   #
   # Author: rbuckheit
   #

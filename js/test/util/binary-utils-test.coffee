@@ -53,3 +53,15 @@ define [
 
       it 'should convert a known value', ->
         expect(BinaryUtils.stringToUint8(STRING_123)).toEqual(UINT8_CODES_123)
+
+    describe 'uint8/string integration', ->
+
+      it 'should convert uint8 -> string -> uint8', ->
+        string = BinaryUtils.uint8ToString(UINT8_CODES_123)
+        uint8  = BinaryUtils.stringToUint8(string)
+        expect(uint8).toEqual(UINT8_CODES_123)
+
+      it 'should convert string -> uint8 -> string', ->
+        uint8  = BinaryUtils.stringToUint8(STRING_123)
+        string = BinaryUtils.uint8ToString(uint8)
+        expect(string).toEqual(STRING_123)

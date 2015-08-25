@@ -39,7 +39,7 @@ define [
       metadataMapper    = new MetadataMapper()
       _.extend(metadataMapper, { kryptnosticEngine, indexGenerator })
       id          = 'some-object-id'
-      documentKey = kryptnosticEngine.getDocumentSearchKey(id)
+      documentKey = kryptnosticEngine.getObjectSearchKey(id)
 
     describe '#mapToKeys', ->
 

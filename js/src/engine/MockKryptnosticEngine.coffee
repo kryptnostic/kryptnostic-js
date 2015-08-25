@@ -27,10 +27,7 @@ define 'kryptnostic.mock.fhe-engine', [
     getFhePrivateKey: ->
       return explode('fhe.pvt')
 
-    getFheSearchPublicKey: ->
-      return explode('search.pub')
-
-    getFheSearchPrivateKey: ->
+    getSearchPrivateKey: ->
       return explode('search.pvt')
 
     getClientHashFunction: ->
@@ -39,34 +36,29 @@ define 'kryptnostic.mock.fhe-engine', [
     # indexing
     # ========
 
-    getDocumentAddressFunction: (id) ->
-      return explode('doc.address')
-
-    getDocumentConversionMatrix: (id) ->
-      return explode('doc.conversion')
-
-    getDocumentSearchKey: (id) ->
+    getObjectSearchKey: (id) ->
       return explode('doc.search')
 
-    getDocumentIndexPair: (id) ->
+    getObjectAddressFunction: (id) ->
+      return explode('doc.address')
+
+    getObjectConversionMatrix: (id) ->
+      return explode('doc.conversion')
+
+    getObjectIndexPair: (id) ->
       return explode('doc.index')
 
-    # pair of { docSearchKey, docAddressFunction }
-    getDocumentSharingPair: (id) ->
+    # pair of docSearchKey, docAddressFunction
+    getObjectSharingPair: (id) ->
       return explode('doc.sharing')
 
     # search
     # ======
 
-    # produce an encrypted search term, which can be submitted as a query.
-    getEncryptedSearchTerm: (token) ->
+    getEncryptedSearchToken: (token) ->
       return explode('search.token.' + collapse(token))
 
-    # compute address on the server for a token
     getTokenAddress: (token, documentKey) ->
       return explode('search.address.' + collapse(token))
-
-    # sharing
-    # =======
 
   return MockKryptnosticEngine

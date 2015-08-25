@@ -3,12 +3,13 @@ define 'kryptnostic.kryptnostic-engine-adapter', [
 ], (require) ->
 
   ENGINE_MISSING_ERROR = '''
-    The KryptnosticEngine is unavailable. This component must be included separately, as it is not
-    built as a part of the kryptnostic.js binary. Please see the krytpnostic.js documentation for
-    more information.
+    The KryptnosticClient engine is unavailable. This component must be included separately.
+    It is not built as a part of the kryptnostic.js binary. Please see the krytpnostic.js
+    documentation for more information and/or file an issue on the kryptnostic-js github project:
+    https://github.com/kryptnostic/kryptnostic-js/issues
   '''
 
-  unless Module? and Module.KryptnosticEngine?
+  unless Module? and Module.KryptnosticClient?
     throw new Error(ENGINE_MISSING_ERROR)
 
   #
@@ -18,27 +19,45 @@ define 'kryptnostic.kryptnostic-engine-adapter', [
   class KryptnosticEngine
 
     constructor: ->
-      @engine = new Module.KryptnosticEngine()
+      @engine = new Module.KryptnosticClient()
 
-    getPublicKey: ->
-      return @engine.getPublicKey()
+    # client keys
+    # ===========
 
-    getPrivateKey: ->
+    getFhePrivateKey: ->
       return @engine.getPrivateKey()
 
-    getServerSearchFunction: ->
-      return @engine.getServerSearchFunction()
+    getSearchPrivateKey: ->
+      return @engine.getSearchPrivateKey()
 
-    getDocumentKey: (objectId) ->
-      return @engine.getDocKey(objectId)
+    getClientHashFunction: ->
+      return @engine.getClientHashFunction()
 
-    getHashedToken: (token, documentKey) ->
-      return @engine.getHashedToken(token, documentKey)
+    # indexing
+    # ========
 
-    getEncryptedSearchTerm: (objectId) ->
-      return @engine.getEncryptedSearchTerm(objectId)
+    getObjectSearchKey: (id) ->
+      return @engine.getObjectSearchKey(id)
 
-    setDocumentKey: (objectId, documentKey) ->
-      return @engine.setDocumentKey(objectId, documentKey)
+    getObjectAddressFunction: (id) ->
+      return @engine.getObjectAddressFunction(id)
+
+    getObjectConversionMatrix: (id) ->
+      return @engine.getObjectConversionMatrix(id)
+
+    getObjectIndexPair: (id) ->
+      return @engine.getObjectIndexPair(id)
+
+    getObjectSharingPair: (id) ->
+      return @engine.getObjectSharingPair(id)
+
+    # search
+    # ======
+
+    getEncryptedSearchToken: (token) ->
+      return @engine.getEncryptedSearchToken(token)
+
+    getTokenAddress: (token, documentKey) ->
+      throw new Error 'unimplemented'
 
   return KryptnosticEngine

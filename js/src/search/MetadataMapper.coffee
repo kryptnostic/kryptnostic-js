@@ -3,14 +3,14 @@ define 'kryptnostic.search.metadata-mapper', [
   'kryptnostic.logger'
   'kryptnostic.binary-utils'
   'kryptnostic.hash-function'
-  'kryptnostic.mock.fhe-engine'
+  'kryptnostic.mock.kryptnostic-engine'
   'kryptnostic.search.random-index-generator'
 ], (require) ->
 
   Logger               = require 'kryptnostic.logger'
   BinaryUtils          = require 'kryptnostic.binary-utils'
   HashFunction         = require 'kryptnostic.hash-function'
-  MockFheEngine        = require 'kryptnostic.mock.fhe-engine'
+  MockFheEngine        = require 'kryptnostic.mock.kryptnostic-engine'
   RandomIndexGenerator = require 'kryptnostic.search.random-index-generator'
 
   MINIMUM_TOKEN_LENGTH = 1

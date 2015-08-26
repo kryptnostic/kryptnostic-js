@@ -11,10 +11,31 @@ define 'kryptnostic.crypto-key-storage-api', [
   #
   class CryptoKeyStorageApi
 
+    # fhe key
+    # =======
+
     getFhePrivateKey: ->
       Promise.resolve()
 
-    setFhePrivateKey: ->
+    setFhePrivateKey: (ciphertext) ->
+      Promise.resolve()
+
+    # search key
+    # ==========
+
+    getSearchPrivateKey: ->
+      Promise.resolve()
+
+    setSearchPrivateKey: (ciphertext) ->
+      Promise.resolve()
+
+    # client hash
+    # ===========
+
+    getClientHashFunction: ->
+      Promise.resolve()
+
+    setClientHashFunction: (ciphertext) ->
       Promise.resolve()
 
   return CryptoKeyStorageApi

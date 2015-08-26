@@ -16,7 +16,7 @@ define [
   DEMO_CIPHERTEXT_BASE64 =
     'kUolqTlsUr0EwGmjRR099EANNkR6ZQdRTugBhcYu2jYjYfrJ7F0imAKcELKidw+VUZeb6vKJsO0rLFwly54Duw=='
   DEMO_CIPHERTEXT =
-    atob(DEMO_CIPHERTEXT_BASE64)
+    [ DEMO_CIPHERTEXT_BASE64 ]
 
   #
   # if you need to generate a new mock key, use:
@@ -53,30 +53,33 @@ define [
 
       # mocking
       sinon.stub(service.credentialLoader, 'getCredentials').returns({ keypair })
+      sinon.stub(service.searchKeySerializer.credentialLoader, 'getCredentials')
+        .returns({ keypair })
       _.extend(service, { engine })
 
     afterEach ->
       service.cryptoKeyStorageApi.getFhePrivateKey.restore()
       service.credentialLoader.getCredentials.restore()
+      service.searchKeySerializer.credentialLoader.getCredentials.restore()
 
     describe '#getFhePrivateKey', ->
 
       it 'should initialize and store a key if it does not exist', (done) ->
-        { storedCiphertext } = {}
+        { storedKey } = {}
 
         sinon.stub(service.cryptoKeyStorageApi, 'getFhePrivateKey').returns(undefined)
-        sinon.stub(service.cryptoKeyStorageApi, 'setFhePrivateKey', (ciphertext) ->
-          storedCiphertext = ciphertext
+        sinon.stub(service.cryptoKeyStorageApi, 'setFhePrivateKey', (key) ->
+          storedKey = key
           return Promise.resolve()
         )
         service.getFhePrivateKey()
         .then (keyString) ->
           expect(keyString).toBe('fhe.pvt')
-          expect(storedCiphertext).toBeDefined()
-          expect(storedCiphertext.constructor.name).toBe('String')
+          expect(storedKey).toBeDefined()
+          expect(storedKey.constructor.name).toBe('Array')
           done()
 
-      it 'should load a key if it exists', (done) ->
+      it 'should load and decrypt a key if it exists', (done) ->
         sinon.stub(service.cryptoKeyStorageApi, 'getFhePrivateKey').returns(DEMO_CIPHERTEXT)
         service.getFhePrivateKey()
         .then (keyString) ->

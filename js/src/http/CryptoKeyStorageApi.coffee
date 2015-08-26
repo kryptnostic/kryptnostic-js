@@ -17,7 +17,7 @@ define 'kryptnostic.crypto-key-storage-api', [
     getFhePrivateKey: ->
       Promise.resolve()
 
-    setFhePrivateKey: (ciphertext) ->
+    setFhePrivateKey: (key) ->
       Promise.resolve()
 
     # search key
@@ -26,7 +26,7 @@ define 'kryptnostic.crypto-key-storage-api', [
     getSearchPrivateKey: ->
       Promise.resolve()
 
-    setSearchPrivateKey: (ciphertext) ->
+    setSearchPrivateKey: (key) ->
       Promise.resolve()
 
     # client hash
@@ -35,7 +35,7 @@ define 'kryptnostic.crypto-key-storage-api', [
     getClientHashFunction: ->
       Promise.resolve()
 
-    setClientHashFunction: (ciphertext) ->
+    setClientHashFunction: (key) ->
       Promise.resolve()
 
   return CryptoKeyStorageApi

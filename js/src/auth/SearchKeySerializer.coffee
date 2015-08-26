@@ -35,12 +35,27 @@ define 'kryptnostic.search-key-serializer', [
 
     # encrypt and chunk an unencrypted key. return a list of string chunks.
     encrypt: (uint8) ->
-      log.info("key length is #{uint8.length} bytes")
       rsaCryptoService      = @getRsaCryptoService()
       stringKey             = BinaryUtils.uint8ToString(uint8)
       chunks                = @chunkingStrategy.split(stringKey, BLOCK_LENGTH_IN_BYTES)
-      encryptedChunks       = _.map(chunks, (chunk) -> rsaCryptoService.encrypt(chunk))
-      base64EncryptedChunks = _.map(chunks, (chunk) -> btoa(chunk))
-      log.info('generated new key', { chunks: base64EncryptedChunks.length })
+
+      base64EncryptedChunks = _.chain(chunks)
+        .map((chunk) -> rsaCryptoService.encrypt(chunk))
+        .map((chunk) -> btoa(chunk))
+        .value()
+
       return base64EncryptedChunks
 
+    # decrypt and join a chunked stored key. return a string of key bytes
+    decrypt: (base64EncryptedChunks) ->
+      log.error('decrypt', base64EncryptedChunks)
+      rsaCryptoService = @getRsaCryptoService()
+
+      chunks = _.chain(base64EncryptedChunks)
+        .map((chunk) -> atob(chunk))
+        .map((chunk) -> rsaCryptoService.decrypt(chunk))
+        .value()
+
+      stringKey = @chunkingStrategy.join(chunks)
+
+      return stringKey

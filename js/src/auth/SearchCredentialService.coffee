@@ -96,11 +96,11 @@ define 'kryptnostic.search-credential-service', [
       .then =>
         loadCredential = credentialType.getter(@cryptoKeyStorageApi)
         loadCredential()
-      .then (ciphertext) =>
-        if _.isEmpty(ciphertext)
+      .then (chunks) =>
+        if _.isEmpty(chunks)
           return @initializeCredential(credentialType)
         else
-          return @getRsaCryptoService().decrypt(ciphertext)
+          return @searchKeySerializer.decrypt(chunks)
 
     initializeCredential: (credentialType) ->
       { stringKey } = {}

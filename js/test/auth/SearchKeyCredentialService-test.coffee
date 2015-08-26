@@ -15,7 +15,8 @@ define [
   DEMO_PLAINTEXT = 'foo foo foo'
   DEMO_CIPHERTEXT_BASE64 =
     'kUolqTlsUr0EwGmjRR099EANNkR6ZQdRTugBhcYu2jYjYfrJ7F0imAKcELKidw+VUZeb6vKJsO0rLFwly54Duw=='
-  DEMO_CIPHERTEXT = atob(DEMO_CIPHERTEXT_BASE64)
+  DEMO_CIPHERTEXT =
+    atob(DEMO_CIPHERTEXT_BASE64)
 
   #
   # if you need to generate a new mock key, use:

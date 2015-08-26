@@ -63,7 +63,6 @@ define [
           { id, locations: [ 5 ], token: 'for' }
         ]
         mappedMetadata = metadataMapper.mapToKeys({ metadata, documentKey })
-        log.error('mapped', mappedMetadata)
         keys           = _.keys(mappedMetadata)
         expectedKeys   = [ 'search.address.fish', 'search.address.for' ]
         expect(keys).toEqual(expectedKeys)

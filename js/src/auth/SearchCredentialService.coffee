@@ -88,11 +88,11 @@ define 'kryptnostic.search-credential-service', [
       .then =>
         loadCredential = credentialType.getter(@cryptoKeyStorageApi)
         loadCredential()
-      .then (blockCiphertext) =>
-        if _.isEmpty(blockCiphertext)
+      .then (ciphertext) =>
+        if _.isEmpty(ciphertext)
           return @initializeCredential(credentialType)
         else
-          return @getRsaCryptoService().decrypt(blockCiphertext)
+          return @getRsaCryptoService().decrypt(ciphertext)
 
     initializeCredential: (credentialType) ->
       { stringKey } = {}
@@ -102,10 +102,10 @@ define 'kryptnostic.search-credential-service', [
         generateCredential = credentialType.generator(@engine)
         uintKey            = generateCredential()
         stringKey          = BinaryUtils.uint8ToString(uintKey)
-        blockCiphertext    = @getRsaCryptoService().encrypt(stringKey)
+        ciphertext         = @getRsaCryptoService().encrypt(stringKey)
 
         storeCredential = credentialType.setter(@cryptoKeyStorageApi)
-        storeCredential(blockCiphertext)
+        storeCredential(ciphertext)
       .then ->
         return stringKey
 

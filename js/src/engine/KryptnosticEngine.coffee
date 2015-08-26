@@ -21,51 +21,44 @@ define 'kryptnostic.kryptnostic-engine', [
   class KryptnosticEngine
 
     constructor: ->
-      if Module? and Module.KryptnosticClient?
-        @engine = new Module.KryptnosticClient()
-        log.info('instantiated engine', @engine)
-        log.info(@engine)
-      else
+      unless Module? and Module.KryptnosticClient?
         log.error(ENGINE_MISSING_ERROR)
-        @engine = undefined
 
     # client keys
     # ===========
 
     getFhePrivateKey: ->
-      log.info('use engine', @engine)
-      log.info(@engine)
-      return @engine.getPrivateKey()
+      return new Module.KryptnosticClient().getPrivateKey()
 
     getSearchPrivateKey: ->
-      return @engine.getSearchPrivateKey()
+      return new Module.KryptnosticClient().getSearchPrivateKey()
 
     getClientHashFunction: ->
-      return @engine.getClientHashFunction()
+      return new Module.KryptnosticClient().getClientHashFunction()
 
     # indexing
     # ========
 
     getObjectSearchKey: (id) ->
-      return @engine.getObjectSearchKey(id)
+      return new Module.KryptnosticClient().getObjectSearchKey(id)
 
     getObjectAddressFunction: (id) ->
-      return @engine.getObjectAddressFunction(id)
+      return new Module.KryptnosticClient().getObjectAddressFunction(id)
 
     getObjectConversionMatrix: (id) ->
-      return @engine.getObjectConversionMatrix(id)
+      return new Module.KryptnosticClient().getObjectConversionMatrix(id)
 
     getObjectIndexPair: (id) ->
-      return @engine.getObjectIndexPair(id)
+      return new Module.KryptnosticClient().getObjectIndexPair(id)
 
     getObjectSharingPair: (id) ->
-      return @engine.getObjectSharingPair(id)
+      return new Module.KryptnosticClient().getObjectSharingPair(id)
 
     # search
     # ======
 
     getEncryptedSearchToken: (token) ->
-      return @engine.getEncryptedSearchToken(token)
+      return new Module.KryptnosticClient().getEncryptedSearchToken(token)
 
     getTokenAddress: (token, documentKey) ->
       throw new Error 'unimplemented'

@@ -10,14 +10,14 @@ define 'kryptnostic.search-credential-service', [
   'kryptnostic.credential-loader'
 ], (require) ->
 
-  _                     = require 'lodash'
-  Promise               = require 'bluebird'
-  AuthenticationStage   = require 'kryptnostic.authentication-stage'
-  BinaryUtils           = require 'kryptnostic.binary-utils'
-  CredentialLoader      = require 'kryptnostic.credential-loader'
-  RsaCryptoService      = require 'kryptnostic.rsa-crypto-service'
-  CryptoKeyStorageApi   = require 'kryptnostic.crypto-key-storage-api'
-  MockKryptnosticEngine = require 'kryptnostic.mock.kryptnostic-engine'
+  _                   = require 'lodash'
+  Promise             = require 'bluebird'
+  AuthenticationStage = require 'kryptnostic.authentication-stage'
+  BinaryUtils         = require 'kryptnostic.binary-utils'
+  CredentialLoader    = require 'kryptnostic.credential-loader'
+  RsaCryptoService    = require 'kryptnostic.rsa-crypto-service'
+  CryptoKeyStorageApi = require 'kryptnostic.crypto-key-storage-api'
+  KryptnosticEngine   = require 'kryptnostic.kryptnostic-engine'
 
 
   #
@@ -63,7 +63,7 @@ define 'kryptnostic.search-credential-service', [
     constructor: ->
       @credentialLoader    = new CredentialLoader()
       @cryptoKeyStorageApi = new CryptoKeyStorageApi()
-      @engine              = new MockKryptnosticEngine()
+      @engine              = new KryptnosticEngine()
 
     getFhePrivateKey: ( notifier = -> ) ->
       return @getOrInitialize(CredentialType.FHE_PRIVATE_KEY, notifier)

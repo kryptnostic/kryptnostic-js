@@ -2,23 +2,28 @@ define 'kryptnostic.search-credential-service', [
   'require'
   'lodash'
   'bluebird'
+  'kryptnostic.logger'
   'kryptnostic.authentication-stage'
   'kryptnostic.binary-utils'
   'kryptnostic.kryptnostic-engine'
   'kryptnostic.rsa-crypto-service'
   'kryptnostic.crypto-key-storage-api'
   'kryptnostic.credential-loader'
+  'kryptnostic.search-key-serializer'
 ], (require) ->
 
   _                   = require 'lodash'
   Promise             = require 'bluebird'
+  Logger              = require 'kryptnostic.logger'
   AuthenticationStage = require 'kryptnostic.authentication-stage'
   BinaryUtils         = require 'kryptnostic.binary-utils'
   CredentialLoader    = require 'kryptnostic.credential-loader'
   RsaCryptoService    = require 'kryptnostic.rsa-crypto-service'
   CryptoKeyStorageApi = require 'kryptnostic.crypto-key-storage-api'
   KryptnosticEngine   = require 'kryptnostic.kryptnostic-engine'
+  SearchKeySerializer = require 'kryptnostic.search-key-serializer'
 
+  log = Logger.get('SearchCredentialService')
 
   #
   # Enumeration of credential types which the SearchCredentialService produces.
@@ -64,6 +69,7 @@ define 'kryptnostic.search-credential-service', [
       @credentialLoader    = new CredentialLoader()
       @cryptoKeyStorageApi = new CryptoKeyStorageApi()
       @engine              = new KryptnosticEngine()
+      @searchKeySerializer = new SearchKeySerializer()
 
     getFhePrivateKey: ( notifier = -> ) ->
       return @getOrInitialize(CredentialType.FHE_PRIVATE_KEY, notifier)
@@ -72,7 +78,9 @@ define 'kryptnostic.search-credential-service', [
       return @getOrInitialize(CredentialType.SEARCH_PRIVATE_KEY, notifier)
 
     getClientHashFunction: ( notifier = -> ) ->
-      return @getOrInitialize(CredentialType.CLIENT_HASH_FUNCTION, notifier)
+      # TO DO: client hash function generation is broken in krypto.
+      return ''
+      # return @getOrInitialize(CredentialType.CLIENT_HASH_FUNCTION, notifier)
 
     # private
     # =======
@@ -100,12 +108,11 @@ define 'kryptnostic.search-credential-service', [
       Promise.resolve()
       .then =>
         generateCredential = credentialType.generator(@engine)
-        uintKey            = generateCredential()
-        stringKey          = BinaryUtils.uint8ToString(uintKey)
-        ciphertext         = @getRsaCryptoService().encrypt(stringKey)
-
-        storeCredential = credentialType.setter(@cryptoKeyStorageApi)
-        storeCredential(ciphertext)
+        uint8Key           = generateCredential()
+        stringKey          = BinaryUtils.uint8ToString(uint8Key)
+        encryptedKeyChunks = @searchKeySerializer.encrypt(uint8Key)
+        storeCredential    = credentialType.setter(@cryptoKeyStorageApi)
+        storeCredential(encryptedKeyChunks)
       .then ->
         return stringKey
 

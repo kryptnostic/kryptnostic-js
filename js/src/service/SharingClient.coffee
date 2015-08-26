@@ -42,6 +42,7 @@ define 'kryptnostic.sharing-client', [
       @cryptoServiceMarshaller = new CryptoServiceMarshaller()
       @cryptoServiceLoader     = new CryptoServiceLoader()
       @shareProcessingService  = new ShareProcessingService()
+      @credentialLoader        = new CredentialLoader()
 
     shareObject: (id, uuids) ->
       if _.isEmpty(uuids)
@@ -50,7 +51,7 @@ define 'kryptnostic.sharing-client', [
       validateId(id)
       validateUuids(uuids)
 
-      { principal } = CredentialLoader.getCredentials()
+      { principal } = @credentialLoader.getCredentials()
       sharingKey    = ''
 
       Promise.resolve()

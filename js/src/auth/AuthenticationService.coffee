@@ -55,13 +55,14 @@ define 'kryptnostic.authentication-service', [
       .then (_keypair) ->
         keypair = _keypair
         credentialProvider.store { principal, credential, keypair }
-        Promise.resolve(notifier(AuthenticationStage.COMPLETED))
       .then ->
-        Promise.props({
-          fhePrivateKey    : searchCredentialService.getFhePrivateKey()
-          searchPrivateKey : searchCredentialService.getSearchPrivateKey()
-          hashFunction     : searchCredentialService.getClientHashFunction()
-        })
+        searchCredentialService.getFhePrivateKey(notifier)
+      .then ->
+        searchCredentialService.getSearchPrivateKey(notifier)
+      .then ->
+        searchCredentialService.getClientHashFunction(notifier)
+      .then ->
+        Promise.resolve(notifier(AuthenticationStage.COMPLETED))
       .then ->
         log.info('authentication complete')
 

@@ -12,9 +12,8 @@ define 'kryptnostic.credential-loader', [
 
   class CredentialLoader
 
-    # deprecated
     @getCredentials: ->
-      log.error('CredentialLoader.getCredentials is deprecated! use the non-static version')
+      log.warn('CredentialLoader.getCredentials is deprecated, use the non-static version')
       return new CredentialLoader().getCredentials()
 
     getCredentials: ->

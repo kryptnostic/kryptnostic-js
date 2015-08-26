@@ -83,8 +83,9 @@ define 'kryptnostic.search-credential-service', [
 
     getOrInitialize: (credentialType, notifier) ->
       Promise.resolve()
+      .then ->
+        Promise.resolve(notifier(credentialType.stage))
       .then =>
-        notifier(credentialType.stage)
         loadCredential = credentialType.getter(@cryptoKeyStorageApi)
         loadCredential()
       .then (blockCiphertext) =>

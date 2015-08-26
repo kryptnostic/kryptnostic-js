@@ -15,10 +15,8 @@ define 'kryptnostic.rsa-crypto-service', [
 
     # construct from forge public and private key objects
     constructor: ({ @privateKey, @publicKey }) ->
-      if _.isEmpty(@privateKey)
-        throw new Error 'empty private key'
-      if _.isEmpty(@publicKey)
-        throw new Error 'empty public key'
+      if _.isEmpty(@privateKey) and _.isEmpty(@publicKey)
+        throw new Error 'no public key or private key provided'
 
     encrypt: (plaintext) ->
       ciphertext = @publicKey.encrypt(plaintext, 'RSA-OAEP', {

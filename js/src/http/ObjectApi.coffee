@@ -69,7 +69,7 @@ define 'kryptnostic.object-api', [
 
     # get all object ids of a particular type
     getObjectIdsByType: (type) ->
-      validateType(type)
+      validateObjectType(type)
 
       Promise.resolve(axios(Requests.wrapCredentials({
         url    : objectUrl() + '/type/' + type

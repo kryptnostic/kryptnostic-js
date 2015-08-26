@@ -1,7 +1,8 @@
-define 'kryptnostic.search-key-credential-service', [
+define 'kryptnostic.search-credential-service', [
   'require'
   'lodash'
   'bluebird'
+  'kryptnostic.authentication-stage'
   'kryptnostic.binary-utils'
   'kryptnostic.mock.kryptnostic-engine'
   'kryptnostic.rsa-crypto-service'
@@ -11,6 +12,7 @@ define 'kryptnostic.search-key-credential-service', [
 
   _                     = require 'lodash'
   Promise               = require 'bluebird'
+  AuthenticationStage   = require 'kryptnostic.authentication-stage'
   BinaryUtils           = require 'kryptnostic.binary-utils'
   CredentialLoader      = require 'kryptnostic.credential-loader'
   RsaCryptoService      = require 'kryptnostic.rsa-crypto-service'
@@ -19,7 +21,7 @@ define 'kryptnostic.search-key-credential-service', [
 
 
   #
-  # Enumeration of credential types which the SearchKeyCredentialService produces.
+  # Enumeration of credential types which the SearchCredentialService produces.
   # Author: rbuckheit
   #
   CredentialType = {
@@ -27,23 +29,26 @@ define 'kryptnostic.search-key-credential-service', [
       generator : (engine) -> engine.getFhePrivateKey
       getter    : (api) -> api.getFhePrivateKey
       setter    : (api) -> api.setFhePrivateKey
+      stage     : AuthenticationStage.FHE_KEYGEN
     }
     SEARCH_PRIVATE_KEY : {
       generator : (engine) -> engine.getSearchPrivateKey
       getter    : (api) -> api.getSearchPrivateKey
       setter    : (api) -> api.setSearchPrivateKey
+      stage     : AuthenticationStage.SEARCH_KEYGEN
     }
     CLIENT_HASH_FUNCTION : {
       generator : (engine) -> engine.getClientHashFunction
       getter    : (api) -> api.getClientHashFunction
       setter    : (api) -> api.setClientHashFunction
+      stage     : AuthenticationStage.CLIENT_HASH_GEN
     }
   }
 
 
   #
   # Loads or generates credentials produced by the KryptnosticEngine.
-  # These include:
+  # These credentials include:
   #
   # 1) search private key
   # 2) fhe private key
@@ -53,21 +58,21 @@ define 'kryptnostic.search-key-credential-service', [
   #
   # Author: rbuckheit
   #
-  class SearchKeyCredentialService
+  class SearchCredentialService
 
     constructor: ->
       @credentialLoader    = new CredentialLoader()
       @cryptoKeyStorageApi = new CryptoKeyStorageApi()
       @engine              = new MockKryptnosticEngine()
 
-    getFhePrivateKey: ->
-      return @getOrInitialize(CredentialType.FHE_PRIVATE_KEY)
+    getFhePrivateKey: ( notifier = -> ) ->
+      return @getOrInitialize(CredentialType.FHE_PRIVATE_KEY, notifier)
 
-    getSearchPrivateKey: ->
-      return @getOrInitialize(CredentialType.SEARCH_PRIVATE_KEY)
+    getSearchPrivateKey: ( notifier = -> ) ->
+      return @getOrInitialize(CredentialType.SEARCH_PRIVATE_KEY, notifier)
 
-    getClientHashFunction: ->
-      return @getOrInitialize(CredentialType.CLIENT_HASH_FUNCTION)
+    getClientHashFunction: ( notifier = -> ) ->
+      return @getOrInitialize(CredentialType.CLIENT_HASH_FUNCTION, notifier)
 
     # private
     # =======
@@ -76,9 +81,10 @@ define 'kryptnostic.search-key-credential-service', [
       { keypair } = @credentialLoader.getCredentials()
       return new RsaCryptoService(keypair)
 
-    getOrInitialize: (credentialType) ->
+    getOrInitialize: (credentialType, notifier) ->
       Promise.resolve()
       .then =>
+        notifier(credentialType.stage)
         loadCredential = credentialType.getter(@cryptoKeyStorageApi)
         loadCredential()
       .then (blockCiphertext) =>
@@ -102,4 +108,4 @@ define 'kryptnostic.search-key-credential-service', [
       .then ->
         return stringKey
 
-  return SearchKeyCredentialService
+  return SearchCredentialService

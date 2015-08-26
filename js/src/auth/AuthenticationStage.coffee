@@ -11,6 +11,9 @@ define 'kryptnostic.authentication-stage', [
     DERIVE_CREDENTIAL : 'deriving credential'
     RSA_KEYGEN        : 'generating rsa keypair'
     DERIVE_KEYPAIR    : 'deriving rsa keypair'
+    FHE_KEYGEN        : 'initializing fhe key'
+    SEARCH_KEYGEN     : 'initializing search key'
+    CLIENT_HASH_GEN   : 'initializing hash function'
     COMPLETED         : 'authentication complete'
   }
 

@@ -1,13 +1,13 @@
 define [
   'require'
   'forge'
-  'kryptnostic.search-key-credential-service'
+  'kryptnostic.search-credential-service'
   'kryptnostic.mock.kryptnostic-engine'
 ], (require) ->
 
-  Forge                      = require 'forge'
-  SearchKeyCredentialService = require 'kryptnostic.search-key-credential-service'
-  MockKryptnosticEngine      = require 'kryptnostic.mock.kryptnostic-engine'
+  Forge                   = require 'forge'
+  SearchCredentialService = require 'kryptnostic.search-credential-service'
+  MockKryptnosticEngine   = require 'kryptnostic.mock.kryptnostic-engine'
 
   # mock data
   # =========
@@ -37,7 +37,7 @@ define [
   # tests
   # =====
 
-  describe 'SearchKeyCredentialService', ->
+  describe 'SearchCredentialService', ->
 
     { service }  = {}
 
@@ -49,7 +49,7 @@ define [
 
       # service instantiation
       kryptnosticEngine = new MockKryptnosticEngine()
-      service           = new SearchKeyCredentialService()
+      service           = new SearchCredentialService()
 
       # mocking
       sinon.stub(service.credentialLoader, 'getCredentials').returns({ keypair })

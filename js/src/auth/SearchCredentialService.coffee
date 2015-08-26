@@ -4,7 +4,7 @@ define 'kryptnostic.search-credential-service', [
   'bluebird'
   'kryptnostic.authentication-stage'
   'kryptnostic.binary-utils'
-  'kryptnostic.mock.kryptnostic-engine'
+  'kryptnostic.kryptnostic-engine'
   'kryptnostic.rsa-crypto-service'
   'kryptnostic.crypto-key-storage-api'
   'kryptnostic.credential-loader'

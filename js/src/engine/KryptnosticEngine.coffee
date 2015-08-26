@@ -1,6 +1,9 @@
 define 'kryptnostic.kryptnostic-engine', [
   'require'
+  'kryptnostic.logger'
 ], (require) ->
+
+  Logger = require 'kryptnostic.logger'
 
   ENGINE_MISSING_ERROR = '''
     The KryptnosticClient engine is unavailable. This component must be included separately.
@@ -9,8 +12,7 @@ define 'kryptnostic.kryptnostic-engine', [
     https://github.com/kryptnostic/kryptnostic-js/issues
   '''
 
-  unless Module? and Module.KryptnosticClient?
-    throw new Error(ENGINE_MISSING_ERROR)
+  log = Logger.get('KryptnosticEngine')
 
   #
   # Wrapper around the kryptnostic engine module produced by emscripten.
@@ -19,12 +21,20 @@ define 'kryptnostic.kryptnostic-engine', [
   class KryptnosticEngine
 
     constructor: ->
-      @engine = new Module.KryptnosticClient()
+      if Module? and Module.KryptnosticClient?
+        @engine = new Module.KryptnosticClient()
+        log.info('instantiated engine', @engine)
+        log.info(@engine)
+      else
+        log.error(ENGINE_MISSING_ERROR)
+        @engine = undefined
 
     # client keys
     # ===========
 
     getFhePrivateKey: ->
+      log.info('use engine', @engine)
+      log.info(@engine)
       return @engine.getPrivateKey()
 
     getSearchPrivateKey: ->

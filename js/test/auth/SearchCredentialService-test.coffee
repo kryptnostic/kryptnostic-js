@@ -48,12 +48,12 @@ define [
       keypair    = { privateKey, publicKey }
 
       # service instantiation
-      kryptnosticEngine = new MockKryptnosticEngine()
-      service           = new SearchCredentialService()
+      engine  = new MockKryptnosticEngine()
+      service = new SearchCredentialService()
 
       # mocking
       sinon.stub(service.credentialLoader, 'getCredentials').returns({ keypair })
-      _.extend(service, { kryptnosticEngine })
+      _.extend(service, { engine })
 
     afterEach ->
       service.cryptoKeyStorageApi.getFhePrivateKey.restore()

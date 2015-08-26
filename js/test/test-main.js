@@ -3,7 +3,7 @@ var allBuildFiles  = [];
 var allMockFiles   = [];
 
 var TEST_REGEXP    = /(.*)(spec|test)\.(js|coffee)$/i;
-var SOTERIA_REGEXP = /kryptnostic.js/;
+var DIST_REGEXP    = /kryptnostic.js|KryptnosticClient.js/;
 var SINON_REGEXP   = /sinon.js/;
 var MOCK_REGEXP    = /mock(.*)\.(js)/;
 
@@ -26,8 +26,8 @@ Object.keys(window.__karma__.files).forEach(function(file) {
     log.info('found TEST: ' + file);
     allTestFiles.push(pathToModule(file));
   }
-  if (SOTERIA_REGEXP.test(file)) {
-    log.info('found BUILD: ' + file);
+  if (DIST_REGEXP.test(file)) {
+    log.info('found DIST: ' + file);
     allBuildFiles.push(file);
   }
   if (SINON_REGEXP.test(file)) {

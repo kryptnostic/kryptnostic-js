@@ -14,5 +14,6 @@ cd -;
 
 # copy module
 # ===========
-cp ../krypto/krypto-lib/src/main/js/KryptnosticClient.js js/lib/KryptnosticClient.js
+mkdir -p js/lib;
+cp ../krypto/krypto-lib/src/main/js/KryptnosticClient.js js/lib/KryptnosticClient.js;
 

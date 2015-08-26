@@ -15,6 +15,9 @@ define 'kryptnostic.search-key-serializer', [
 
   log = Logger.get('SearchKeySerializer')
 
+  #
+  # Must be below max length for RSA-OAEP
+  #
   BLOCK_LENGTH_IN_BYTES = 384
 
   #

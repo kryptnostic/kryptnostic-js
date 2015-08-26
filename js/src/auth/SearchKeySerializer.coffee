@@ -35,9 +35,9 @@ define 'kryptnostic.search-key-serializer', [
 
     # encrypt and chunk an unencrypted key. return a list of string chunks.
     encrypt: (uint8) ->
-      rsaCryptoService      = @getRsaCryptoService()
-      stringKey             = BinaryUtils.uint8ToString(uint8)
-      chunks                = @chunkingStrategy.split(stringKey, BLOCK_LENGTH_IN_BYTES)
+      rsaCryptoService = @getRsaCryptoService()
+      stringKey        = BinaryUtils.uint8ToString(uint8)
+      chunks           = @chunkingStrategy.split(stringKey, BLOCK_LENGTH_IN_BYTES)
 
       base64EncryptedChunks = _.chain(chunks)
         .map((chunk) -> rsaCryptoService.encrypt(chunk))

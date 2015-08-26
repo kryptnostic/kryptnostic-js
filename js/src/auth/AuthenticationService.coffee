@@ -29,6 +29,7 @@ define 'kryptnostic.authentication-service', [
   #
   class AuthenticationService
 
+    # authenticates, and forces initialization of keys if needed.
     @authenticate: ( { email, password }, notifier = -> ) ->
       { principal, credential, keypair } = {}
 

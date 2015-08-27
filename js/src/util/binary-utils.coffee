@@ -69,6 +69,10 @@ define 'kryptnostic.binary-utils', [
   UINT8_REPRESENTABLE_SIZE  = Math.pow(2, 8)
   UINT16_REPRESENTABLE_SIZE = Math.pow(2, 16)
 
+  uint8ToNumeric = (arr) ->
+    validateUint8(arr)
+    return [0...arr.length].map((i) -> arr[i])
+
   uint8ToString = (arr) ->
     validateUint8(arr)
     return [0...arr.length].map((i) -> String.fromCharCode(arr[i])).join(EMPTY_STRING)
@@ -137,6 +141,7 @@ define 'kryptnostic.binary-utils', [
     uint16ToUint8
     uint8ToString
     uint8ToUint16
+    uint8ToNumeric
   }
 
 # coffeelint: enable=cyclomatic_complexity

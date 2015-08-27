@@ -5,14 +5,6 @@ define 'kryptnostic.mock.kryptnostic-engine', [
 
   BinaryUtils = require 'kryptnostic.binary-utils'
 
-  # explode a string to a binary array.
-  explode = (string) ->
-    return BinaryUtils.stringToUint8(string)
-
-  # collapse a binary array into a string.
-  collapse = (uint8) ->
-    return BinaryUtils.uint8ToString(uint8)
-
   #
   # Stand-in for the FHE engine which returns mocked values.
   # This class does not provide any security guarantees.
@@ -25,40 +17,40 @@ define 'kryptnostic.mock.kryptnostic-engine', [
     # ===========
 
     getFhePrivateKey: ->
-      return explode('fhe.pvt')
+      return BinaryUtils.stringToUint8('fhe.priv')
 
     getSearchPrivateKey: ->
-      return explode('search.pvt')
+      return BinaryUtils.stringToUint8('search.pvt')
 
     getClientHashFunction: ->
-      return explode('client.hash')
+      return BinaryUtils.stringToUint8('client.hashfun')
 
     # indexing
     # ========
 
     getObjectSearchKey: (id) ->
-      return explode('doc.search')
+      return BinaryUtils.stringToUint8('doc.search')
 
     getObjectAddressFunction: (id) ->
-      return explode('doc.address')
+      return BinaryUtils.stringToUint8('doc.address')
 
     getObjectConversionMatrix: (id) ->
-      return explode('doc.conversion')
+      return BinaryUtils.stringToUint8('doc.conversion')
 
     getObjectIndexPair: (id) ->
-      return explode('doc.index')
+      return BinaryUtils.stringToUint8('doc.index')
 
     # pair of docSearchKey, docAddressFunction
     getObjectSharingPair: (id) ->
-      return explode('doc.sharing')
+      return BinaryUtils.stringToUint8('doc.sharing')
 
     # search
     # ======
 
     getEncryptedSearchToken: (token) ->
-      return explode('search.token.' + collapse(token))
+      return BinaryUtils.stringToUint8('search.token.' + BinaryUtils.uint8ToString(token))
 
     getTokenAddress: (token, documentKey) ->
-      return explode('search.address.' + collapse(token))
+      return BinaryUtils.stringToUint8('search.address.' + BinaryUtils.uint8ToString(token))
 
   return MockKryptnosticEngine

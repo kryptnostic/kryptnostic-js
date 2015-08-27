@@ -4,7 +4,6 @@ define 'kryptnostic.search-credential-service', [
   'bluebird'
   'kryptnostic.logger'
   'kryptnostic.authentication-stage'
-  'kryptnostic.binary-utils'
   'kryptnostic.kryptnostic-engine'
   'kryptnostic.rsa-crypto-service'
   'kryptnostic.crypto-key-storage-api'
@@ -16,7 +15,6 @@ define 'kryptnostic.search-credential-service', [
   Promise             = require 'bluebird'
   Logger              = require 'kryptnostic.logger'
   AuthenticationStage = require 'kryptnostic.authentication-stage'
-  BinaryUtils         = require 'kryptnostic.binary-utils'
   CredentialLoader    = require 'kryptnostic.credential-loader'
   RsaCryptoService    = require 'kryptnostic.rsa-crypto-service'
   CryptoKeyStorageApi = require 'kryptnostic.crypto-key-storage-api'
@@ -78,9 +76,7 @@ define 'kryptnostic.search-credential-service', [
       return @getOrInitialize(CredentialType.SEARCH_PRIVATE_KEY, notifier)
 
     getClientHashFunction: ( notifier = -> ) ->
-      # TO DO: client hash function generation is broken in krypto.
-      return ''
-      # return @getOrInitialize(CredentialType.CLIENT_HASH_FUNCTION, notifier)
+      return @getOrInitialize(CredentialType.CLIENT_HASH_FUNCTION, notifier)
 
     # private
     # =======
@@ -90,30 +86,35 @@ define 'kryptnostic.search-credential-service', [
       return new RsaCryptoService(keypair)
 
     getOrInitialize: (credentialType, notifier) ->
+      log.warn('getOrInitialize')
+
       Promise.resolve()
       .then ->
         Promise.resolve(notifier(credentialType.stage))
       .then =>
         loadCredential = credentialType.getter(@cryptoKeyStorageApi)
         loadCredential()
-      .then (chunks) =>
-        if _.isEmpty(chunks)
+      .then (uint8) =>
+        if _.isEmpty(uint8)
+          log.info('using initialized credential')
           return @initializeCredential(credentialType)
         else
-          return @searchKeySerializer.decrypt(chunks)
+          log.warn('credential not initialized, creating')
+          return @searchKeySerializer.decrypt(uint8)
 
     initializeCredential: (credentialType) ->
-      { stringKey } = {}
+      log.warn('initializeCredential')
+
+      { uint8Key } = {}
 
       Promise.resolve()
       .then =>
         generateCredential = credentialType.generator(@engine)
         uint8Key           = generateCredential()
-        stringKey          = BinaryUtils.uint8ToString(uint8Key)
         encryptedKeyChunks = @searchKeySerializer.encrypt(uint8Key)
         storeCredential    = credentialType.setter(@cryptoKeyStorageApi)
         storeCredential(encryptedKeyChunks)
       .then ->
-        return stringKey
+        return uint8Key
 
   return SearchCredentialService

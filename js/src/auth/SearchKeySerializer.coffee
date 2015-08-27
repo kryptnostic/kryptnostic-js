@@ -45,7 +45,7 @@ define 'kryptnostic.search-key-serializer', [
   #
   # Chunks and encrypts search keys for storage on the server.
   # Keys must be chunked due to message length limitations in RSA-OAEP.
-  # Note that changing this class affects long-term serialized user private keys.
+  # Note that changing this class will likely break long-term serialized user private keys.
   #
   # Author: rbuckheit
   #

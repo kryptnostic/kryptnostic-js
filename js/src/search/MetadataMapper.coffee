@@ -7,11 +7,11 @@ define 'kryptnostic.search.metadata-mapper', [
   'kryptnostic.search.random-index-generator'
 ], (require) ->
 
-  Logger               = require 'kryptnostic.logger'
-  BinaryUtils          = require 'kryptnostic.binary-utils'
-  HashFunction         = require 'kryptnostic.hash-function'
-  MockFheEngine        = require 'kryptnostic.mock.kryptnostic-engine'
-  RandomIndexGenerator = require 'kryptnostic.search.random-index-generator'
+  Logger                = require 'kryptnostic.logger'
+  BinaryUtils           = require 'kryptnostic.binary-utils'
+  HashFunction          = require 'kryptnostic.hash-function'
+  MockKryptnosticEngine = require 'kryptnostic.mock.kryptnostic-engine'
+  RandomIndexGenerator  = require 'kryptnostic.search.random-index-generator'
 
   MINIMUM_TOKEN_LENGTH = 1
 
@@ -35,7 +35,7 @@ define 'kryptnostic.search.metadata-mapper', [
   class MetadataMapper
 
     constructor: ->
-      @fheEngine      = new MockFheEngine()
+      @fheEngine      = new MockKryptnosticEngine()
       @indexGenerator = new RandomIndexGenerator()
       @hashFunction   = HashFunction.MURMUR3_128
 

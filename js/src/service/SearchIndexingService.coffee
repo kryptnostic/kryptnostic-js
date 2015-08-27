@@ -16,7 +16,7 @@ define 'kryptnostic.search-indexing-service', [
   MetadataApi              = require 'kryptnostic.metadata-api'
   SharingClient            = require 'kryptnostic.sharing-client'
   ObjectIndexer            = require 'kryptnostic.search.indexer'
-  MockFheEngine            = require 'kryptnostic.mock.kryptnostic-engine'
+  MockKryptnosticEngine    = require 'kryptnostic.mock.kryptnostic-engine'
   MetadataRequest          = require 'kryptnostic.metadata-request'
   JsonChunkingStrategy     = require 'kryptnostic.chunking.strategy.json'
   MetadataMapper           = require 'kryptnostic.search.metadata-mapper'
@@ -32,7 +32,7 @@ define 'kryptnostic.search-indexing-service', [
   class SearchIndexingService
 
     constructor : ->
-      @fheEngine      = new MockFheEngine()
+      @fheEngine      = new MockKryptnosticEngine()
       @metadataMapper = new MetadataMapper()
       @metadataApi    = new MetadataApi()
       @objectIndexer  = new ObjectIndexer()

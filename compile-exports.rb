@@ -13,7 +13,8 @@ JS_LIB_EXPORTS = [
   'lodash',
   'loglevel',
   'pako',
-  'revalidator'
+  'revalidator',
+  'function-name'
 ]
 
 EXPORT_FILE_PATH = 'js/src/kryptnostic.coffee'

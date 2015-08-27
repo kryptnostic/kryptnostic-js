@@ -16,9 +16,31 @@ define 'kryptnostic.search-key-serializer', [
   log = Logger.get('SearchKeySerializer')
 
   #
-  # Must be below max length for RSA-OAEP
+  # Number of utf16 characters per unencrypted key chunk.
+  # Setting this too high will result in RSA-OAEP "message too long" errors.
   #
-  BLOCK_LENGTH_IN_BYTES = 384
+  UNENCRYPTED_BLOCK_LENGTH = 384
+
+  #
+  # Number of uint8 (bytes) per encrypted RSA-OAEP key chunk.
+  # This is a factor of RSA key size.
+  #
+  ENCRYPTED_PADDED_BLOCK_LENGTH = 1024
+
+  validateEncryptedChunks = (chunks) ->
+    chunks.forEach (chunk) ->
+      unless chunk.length is ENCRYPTED_PADDED_BLOCK_LENGTH
+        log.error('chunk failed validation', {
+          length   : chunk.length,
+          expected : ENCRYPTED_PADDED_BLOCK_LENGTH
+        })
+        throw new Error 'chunk validation error: wrong block size'
+
+  btoa_safe = (str) ->
+    return unescape(encodeURIComponent(str))
+
+  atob_safe = (str) ->
+    return decodeURIComponent(escape(str))
 
   #
   # Chunks and encrypts search keys for storage on the server.
@@ -32,33 +54,46 @@ define 'kryptnostic.search-key-serializer', [
       @chunkingStrategy = new DefaultChunkingStrategy()
       @credentialLoader = new CredentialLoader()
 
-    getRsaCryptoService : ->
+    createRsaCryptoService : ->
       { keypair } = @credentialLoader.getCredentials()
       return new RsaCryptoService(keypair)
 
-    # encrypt and chunk an unencrypted key. return a list of string chunks.
+    # encrypt and chunk an unencrypted key. returns a uint8 array.
+    # the array is chunked internally with fixed size of ENCRYPTED_PADDED_BLOCK_LENGTH.
     encrypt: (uint8) ->
-      rsaCryptoService = @getRsaCryptoService()
-      stringKey        = BinaryUtils.uint8ToString(uint8)
-      chunks           = @chunkingStrategy.split(stringKey, BLOCK_LENGTH_IN_BYTES)
+      rsaCryptoService = @createRsaCryptoService()
 
-      base64EncryptedChunks = _.chain(chunks)
-        .map((chunk) -> rsaCryptoService.encrypt(chunk))
-        .map((chunk) -> btoa(chunk))
+      encryptedUint = _.chain(uint8)
+        .thru((uint8) -> BinaryUtils.uint8ToUint16(uint8))
+        .thru((uint16) -> BinaryUtils.uint16ToString(uint16))
+        .thru((string) => @chunkingStrategy.split(string, UNENCRYPTED_BLOCK_LENGTH))
+        .map((chunk) -> rsaCryptoService.encrypt(btoa_safe(chunk)))
+        .tap((chunks) -> log.error('encrypt#encrypted', chunks))
+        .tap((chunks) -> log.error('encrypt#encrypted64', chunks.map((c) -> btoa_safe(c))))
+        # .tap((chunks) -> chunks.map((c) -> rsaCryptoService.decrypt(c)))
+        .map((chunk) -> BinaryUtils.stringToUint16(chunk))
+        .map((chunk) -> BinaryUtils.uint16ToUint8(chunk))
+        .tap((chunks) -> validateEncryptedChunks(chunks))
+        .thru((chunks) -> BinaryUtils.joinUint(chunks))
         .value()
 
-      return base64EncryptedChunks
+      return encryptedUint
 
-    # decrypt and join a chunked stored key. return a string of key bytes
-    decrypt: (base64EncryptedChunks) ->
-      log.error('decrypt', base64EncryptedChunks)
-      rsaCryptoService = @getRsaCryptoService()
+    # decrypt and join a chunked stored key. returns a uint8 array of decrypted key.
+    decrypt: (uint8) ->
+      rsaCryptoService = @createRsaCryptoService()
 
-      chunks = _.chain(base64EncryptedChunks)
-        .map((chunk) -> atob(chunk))
-        .map((chunk) -> rsaCryptoService.decrypt(chunk))
+      decryptedUint = _.chain(uint8)
+        .thru((uint8) -> BinaryUtils.chunkUint(uint8, ENCRYPTED_PADDED_BLOCK_LENGTH))
+        .tap((chunks) -> validateEncryptedChunks(chunks))
+        .map((chunk) -> BinaryUtils.uint8ToUint16(chunk))
+        .map((chunk) -> BinaryUtils.uint16ToString(chunk))
+        .tap((chunks) -> log.error('decrypt#encrypted', chunks))
+        .tap((chunks) -> log.error('decrypt#encrypted64', chunks.map((c) -> btoa_safe(c))))
+        .map((chunk) -> atob_safe(rsaCryptoService.decrypt(chunk)))
+        .thru((chunks) => @chunkingStrategy.join(chunks))
+        .thru((string) -> BinaryUtils.stringToUint16(string))
+        .thru((uint16) -> BinaryUtils.uint16ToUint8(uint16))
         .value()
 
-      stringKey = @chunkingStrategy.join(chunks)
-
-      return stringKey
+      return decryptedUint

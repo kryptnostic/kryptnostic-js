@@ -32,8 +32,8 @@ define [
       it 'should throw if not string', ->
         expect( -> BinaryUtils.stringToHex(123) ).toThrow()
 
-    # uint8
-    # =====
+    # uint
+    # ====
 
     describe 'uint8ToString', ->
 
@@ -41,7 +41,7 @@ define [
         expect(BinaryUtils.uint8ToString(UINT8_CODES_123)).toBe(STRING_123)
 
       it 'should throw if not a uint8 array', ->
-        expect( -> BinaryUtils.uint8ToString(new Uint16Array()) ).toThrow()
+        expect( -> BinaryUtils.uint8ToString('') ).toThrow()
 
     describe 'stringToUint8', ->
 
@@ -54,6 +54,17 @@ define [
       it 'should convert a known value', ->
         expect(BinaryUtils.stringToUint8(STRING_123)).toEqual(UINT8_CODES_123)
 
+    describe 'stringToUint16', ->
+      it 'should convert string to uint16', ->
+        str = 'Ag©h'
+        expect(BinaryUtils.stringToUint16(str)).toEqual(new Uint16Array([65, 103, 169, 104]))
+
+    describe 'uint16ToString', ->
+      it 'should convert uint16 to string', ->
+        uint = new Uint16Array([65, 103, 169, 104])
+        str = 'Ag©h'
+        expect(BinaryUtils.uint16ToString(uint)).toEqual(str)
+
     describe 'uint8/string integration', ->
 
       it 'should convert uint8 -> string -> uint8', ->
@@ -65,3 +76,30 @@ define [
         uint8  = BinaryUtils.stringToUint8(STRING_123)
         string = BinaryUtils.uint8ToString(uint8)
         expect(string).toEqual(STRING_123)
+
+    uint1  = new Uint8Array([1, 2, 3])
+    uint2  = new Uint8Array([4, 5, 6])
+    uint3  = new Uint8Array([7, 8, 9])
+    flat   = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+    describe 'joinUint', ->
+
+      it 'should flatten uint arrays', ->
+        nested = [ uint1, uint2, uint3 ]
+        expect(BinaryUtils.joinUint(nested)).toEqual(flat)
+
+    describe 'chunkUint', ->
+
+      it 'should split uint array into chunks', ->
+        chunkSize = 3
+        expect(BinaryUtils.chunkUint(flat, chunkSize)).toEqual([ uint1, uint2, uint3 ])
+
+    describe 'uint8ToUint16', ->
+
+      it 'should copy binary data', ->
+        # FIX ME
+
+    describe 'uint16ToUint8', ->
+
+      it 'should copy binary data', ->
+        # FIX ME

@@ -1,16 +1,47 @@
+# coffeelint: disable=cyclomatic_complexity
+
 define 'kryptnostic.binary-utils', [
   'require'
   'lodash'
+  'forge'
+  'kryptnostic.logger'
 ], (require) ->
 
   _      = require 'lodash'
+  Logger = require 'kryptnostic.logger'
+  Forge  = require 'forge'
 
-  EMPTY_STRING = ''
+  log = Logger.get('BinaryUtils')
 
   #
   # Utility functions for working with binary data.
   # Author: rbuckheit
   #
+
+  # private
+  # =======
+
+  EMPTY_STRING = ''
+
+  validateString = (arg) ->
+    unless _.isString(arg)
+      throw new Error 'argument is not a string'
+
+  validateUint8 = (arg) ->
+    unless arg? and arg.buffer? and arg.length? and arg.byteLength?
+      throw new Error 'argument is not a uint8 array'
+
+  validateUint16 = (arg) ->
+    unless arg? and arg.buffer? and arg.length? and arg.byteLength?
+      throw new Error 'argument is not a uint16 array'
+
+  getCharCode = (c, maxSize) ->
+    code = c.charCodeAt()
+    if code >= maxSize
+      throw new Error 'code outside of range!'
+    else
+      # log.error('getCharCode', { c, code, str: String.fromCharCode(code) })
+      return code
 
   # hex
   # ===
@@ -19,8 +50,7 @@ define 'kryptnostic.binary-utils', [
   HEX_SIZE_PER_CHAR  = 16
 
   hexToUint = (hex) ->
-    unless _.isString(hex)
-      throw new Error 'argument is not a string'
+    validateString(hex)
 
     bytes = []
     for index in [0...hex.length] by HEX_CHARS_PER_BYTE
@@ -36,35 +66,105 @@ define 'kryptnostic.binary-utils', [
       .map((c) -> c.charCodeAt().toString(16))
       .join(EMPTY_STRING)
 
-  # uint8
-  # =====
+  # uint
+  # ====
+
+  UINT8_REPRESENTABLE_SIZE  = Math.pow(2, 8)
+  UINT16_REPRESENTABLE_SIZE = Math.pow(2, 16)
 
   uint8ToString = (arr) ->
-    unless arr instanceof Uint8Array
-      throw new Error 'argument is not a uint8 array'
+    validateUint8(arr)
+    return _.chain([0...arr.length])
+      .map((i) -> arr[i])
+      .tap((arr) -> log.error('zz', arr))
+      .map((uint16) -> String.fromCharCode(uint16))
+      .value()
+      .join(EMPTY_STRING)
 
+    # return [0...arr.length].map((i) -> String.fromCharCode(arr[i])).join(EMPTY_STRING)
+
+  uint16ToString = (arr) ->
+    validateUint16(arr)
+    # buffer = Forge.util.createBuffer(arr)
+    # return buffer.toString('binary')
+    # return _.chain([0...arr.length])
+    #   .map((i) -> arr[i])
+    #   .tap((arr) -> log.error('zz', arr))
+    #   .map((uint16) -> String.fromCharCode(uint16))
+    #   .value()
+    #   .join(EMPTY_STRING)
     return [0...arr.length].map((i) -> String.fromCharCode(arr[i])).join(EMPTY_STRING)
 
-
-  UINT8_REPRESENTABLE_SIZE = 256
-
-  getCharCodeUint8 = (c) ->
-    code = c.charCodeAt()
-
-    if code >= UINT8_REPRESENTABLE_SIZE
-      throw new Error 'code outside of range!'
-    else
-      return code
-
   stringToUint8 = (string) ->
-    unless _.isString(string)
-      throw new Error 'argument is not a string'
-    return new Uint8Array(_.map(string, getCharCodeUint8))
+    validateString(string)
+    return new Uint8Array(_.map(string, (c) -> getCharCode(c, UINT8_REPRESENTABLE_SIZE)))
+
+  stringToUint16 = (string) ->
+    validateString(string)
+    return new Uint16Array(_.map(string, (c) -> getCharCode(c, UINT16_REPRESENTABLE_SIZE)))
+
+  uint16ToUint8 = (arr) ->
+    validateUint16(arr)
+    return new Uint8Array(arr.buffer)
+    # buffer = new Uint18Array(arr.length)
+    # [0...arr.length].forEach (i) ->
+    #   if arr[i] >= UINT8_REPRESENTABLE_SIZE
+    #     throw new Error 'loss of precision'
+    #   buffer[i] = arr[i]
+    # return buffer
+
+  uint8ToUint16 = (arr) ->
+    validateUint8(arr)
+    return new Uint16Array(arr.buffer)
+    # buffer = new Uint16Array(arr.length)
+    # [0...arr.length].forEach (i) ->
+    #   buffer[i] = arr[i]
+    # return buffer
+
+  joinUint = (arrays) ->
+    targetLength = _.reduce(arrays, ((length, arr) -> length + arr.length), 0)
+    buffer       = new Uint8Array(targetLength)
+    i = 0
+    arrays.forEach (arr) ->
+      for j in [0...arr.length]
+        buffer[i] = arr[j]
+        i += 1
+
+    return buffer
+
+  chunkUint = (array, chunkSize) ->
+    arrays = []
+    buffer = new Uint8Array(chunkSize)
+    copyIndex = 0
+
+    [0...array.length].forEach (i) ->
+      # copy element
+      buffer[copyIndex] = array[i]
+      copyIndex += 1
+
+      # flush if needed
+      chunkFull   = copyIndex is chunkSize
+      lastElement = i is array.length - 1
+
+      if chunkFull or lastElement
+        arrays.push(buffer)
+        buffer  = new Uint8Array(chunkSize)
+        copyIndex = 0
+
+
+    return arrays
 
   return {
+    chunkUint
     hexToUint
+    joinUint
     stringToHex
-    uint8ToString
+    stringToUint16
     stringToUint8
+    uint16ToString
+    uint16ToUint8
+    uint8ToString
+    uint8ToUint16
   }
 
+# coffeelint: enable=cyclomatic_complexity

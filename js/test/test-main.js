@@ -2,7 +2,8 @@ var allTestFiles   = [];
 var allBuildFiles  = [];
 var allMockFiles   = [];
 
-var TEST_REGEXP    = /(.*)(spec|test)\.(js|coffee)$/i;
+// var TEST_REGEXP = /(.*)(spec|test)\.(js|coffee)$/i;
+var TEST_REGEXP    = /binary-utils-test(.*)|SearchKeySerializer-test(.*)/;
 var DIST_REGEXP    = /kryptnostic.js|KryptnosticClient.js/;
 var SINON_REGEXP   = /sinon.js/;
 var MOCK_REGEXP    = /mock(.*)\.(js)/;

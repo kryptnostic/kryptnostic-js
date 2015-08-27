@@ -15,7 +15,8 @@
       'pako'        : '../../bower_components/pako/dist/pako',
       'require'     : '../../bower_components/requirejs/require',
       'loglevel'    : '../../bower_components/loglevel/dist/loglevel',
-      'revalidator' : '../../node_modules/revalidator/lib/revalidator'
+      'revalidator' : '../../node_modules/revalidator/lib/revalidator',
+      'function-name': '../../bower_components/function-name/index'
     },
     // these dependencies are used in the build process but not in the dist.
     exclude  : [ 'cs', 'coffee-script' ],

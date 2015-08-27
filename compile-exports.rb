@@ -14,7 +14,8 @@ JS_LIB_EXPORTS = [
   'loglevel',
   'murmurhash3',
   'pako',
-  'revalidator'
+  'revalidator',
+  'function-name'
 ]
 
 EXPORT_FILE_PATH = 'js/src/kryptnostic.coffee'

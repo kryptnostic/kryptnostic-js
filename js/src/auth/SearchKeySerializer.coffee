@@ -45,6 +45,7 @@ define 'kryptnostic.search-key-serializer', [
   #
   # Chunks and encrypts search keys for storage on the server.
   # Keys must be chunked due to message length limitations in RSA-OAEP.
+  # Note that changing this class affects long-term serialized user private keys.
   #
   # Author: rbuckheit
   #
@@ -68,9 +69,6 @@ define 'kryptnostic.search-key-serializer', [
         .thru((uint16) -> BinaryUtils.uint16ToString(uint16))
         .thru((string) => @chunkingStrategy.split(string, UNENCRYPTED_BLOCK_LENGTH))
         .map((chunk) -> rsaCryptoService.encrypt(btoa_safe(chunk)))
-        .tap((chunks) -> log.error('encrypt#encrypted', chunks))
-        .tap((chunks) -> log.error('encrypt#encrypted64', chunks.map((c) -> btoa_safe(c))))
-        # .tap((chunks) -> chunks.map((c) -> rsaCryptoService.decrypt(c)))
         .map((chunk) -> BinaryUtils.stringToUint16(chunk))
         .map((chunk) -> BinaryUtils.uint16ToUint8(chunk))
         .tap((chunks) -> validateEncryptedChunks(chunks))
@@ -88,8 +86,6 @@ define 'kryptnostic.search-key-serializer', [
         .tap((chunks) -> validateEncryptedChunks(chunks))
         .map((chunk) -> BinaryUtils.uint8ToUint16(chunk))
         .map((chunk) -> BinaryUtils.uint16ToString(chunk))
-        .tap((chunks) -> log.error('decrypt#encrypted', chunks))
-        .tap((chunks) -> log.error('decrypt#encrypted64', chunks.map((c) -> btoa_safe(c))))
         .map((chunk) -> atob_safe(rsaCryptoService.decrypt(chunk)))
         .thru((chunks) => @chunkingStrategy.join(chunks))
         .thru((string) -> BinaryUtils.stringToUint16(string))

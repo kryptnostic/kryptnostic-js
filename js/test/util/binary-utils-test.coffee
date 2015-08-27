@@ -97,9 +97,11 @@ define [
     describe 'uint8ToUint16', ->
 
       it 'should copy binary data', ->
-        # FIX ME
+        expect(BinaryUtils.uint8ToUint16(new Uint8Array([255, 255])))
+          .toEqual(new Uint16Array([65535]))
 
     describe 'uint16ToUint8', ->
 
       it 'should copy binary data', ->
-        # FIX ME
+        expect(BinaryUtils.uint16ToUint8(new Uint16Array([65535])))
+          .toEqual(new Uint8Array([255, 255]))

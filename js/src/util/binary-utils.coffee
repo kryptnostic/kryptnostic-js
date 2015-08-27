@@ -3,13 +3,11 @@
 define 'kryptnostic.binary-utils', [
   'require'
   'lodash'
-  'forge'
   'kryptnostic.logger'
 ], (require) ->
 
   _      = require 'lodash'
   Logger = require 'kryptnostic.logger'
-  Forge  = require 'forge'
 
   log = Logger.get('BinaryUtils')
 
@@ -40,7 +38,6 @@ define 'kryptnostic.binary-utils', [
     if code >= maxSize
       throw new Error 'code outside of range!'
     else
-      # log.error('getCharCode', { c, code, str: String.fromCharCode(code) })
       return code
 
   # hex
@@ -74,25 +71,10 @@ define 'kryptnostic.binary-utils', [
 
   uint8ToString = (arr) ->
     validateUint8(arr)
-    return _.chain([0...arr.length])
-      .map((i) -> arr[i])
-      .tap((arr) -> log.error('zz', arr))
-      .map((uint16) -> String.fromCharCode(uint16))
-      .value()
-      .join(EMPTY_STRING)
-
-    # return [0...arr.length].map((i) -> String.fromCharCode(arr[i])).join(EMPTY_STRING)
+    return [0...arr.length].map((i) -> String.fromCharCode(arr[i])).join(EMPTY_STRING)
 
   uint16ToString = (arr) ->
     validateUint16(arr)
-    # buffer = Forge.util.createBuffer(arr)
-    # return buffer.toString('binary')
-    # return _.chain([0...arr.length])
-    #   .map((i) -> arr[i])
-    #   .tap((arr) -> log.error('zz', arr))
-    #   .map((uint16) -> String.fromCharCode(uint16))
-    #   .value()
-    #   .join(EMPTY_STRING)
     return [0...arr.length].map((i) -> String.fromCharCode(arr[i])).join(EMPTY_STRING)
 
   stringToUint8 = (string) ->
@@ -106,20 +88,10 @@ define 'kryptnostic.binary-utils', [
   uint16ToUint8 = (arr) ->
     validateUint16(arr)
     return new Uint8Array(arr.buffer)
-    # buffer = new Uint18Array(arr.length)
-    # [0...arr.length].forEach (i) ->
-    #   if arr[i] >= UINT8_REPRESENTABLE_SIZE
-    #     throw new Error 'loss of precision'
-    #   buffer[i] = arr[i]
-    # return buffer
 
   uint8ToUint16 = (arr) ->
     validateUint8(arr)
     return new Uint16Array(arr.buffer)
-    # buffer = new Uint16Array(arr.length)
-    # [0...arr.length].forEach (i) ->
-    #   buffer[i] = arr[i]
-    # return buffer
 
   joinUint = (arrays) ->
     targetLength = _.reduce(arrays, ((length, arr) -> length + arr.length), 0)

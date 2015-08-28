@@ -4,22 +4,22 @@ define 'kryptnostic.search-credential-service', [
   'bluebird'
   'kryptnostic.logger'
   'kryptnostic.authentication-stage'
-  'kryptnostic.kryptnostic-engine'
+  'kryptnostic.mock.kryptnostic-engine'
   'kryptnostic.rsa-crypto-service'
   'kryptnostic.crypto-key-storage-api'
   'kryptnostic.credential-loader'
   'kryptnostic.search-key-serializer'
 ], (require) ->
 
-  _                   = require 'lodash'
-  Promise             = require 'bluebird'
-  Logger              = require 'kryptnostic.logger'
-  AuthenticationStage = require 'kryptnostic.authentication-stage'
-  CredentialLoader    = require 'kryptnostic.credential-loader'
-  RsaCryptoService    = require 'kryptnostic.rsa-crypto-service'
-  CryptoKeyStorageApi = require 'kryptnostic.crypto-key-storage-api'
-  KryptnosticEngine   = require 'kryptnostic.kryptnostic-engine'
-  SearchKeySerializer = require 'kryptnostic.search-key-serializer'
+  _                     = require 'lodash'
+  Promise               = require 'bluebird'
+  Logger                = require 'kryptnostic.logger'
+  AuthenticationStage   = require 'kryptnostic.authentication-stage'
+  CredentialLoader      = require 'kryptnostic.credential-loader'
+  RsaCryptoService      = require 'kryptnostic.rsa-crypto-service'
+  CryptoKeyStorageApi   = require 'kryptnostic.crypto-key-storage-api'
+  MockKryptnosticEngine = require 'kryptnostic.mock.kryptnostic-engine'
+  SearchKeySerializer   = require 'kryptnostic.search-key-serializer'
 
   log = Logger.get('SearchCredentialService')
 
@@ -66,7 +66,7 @@ define 'kryptnostic.search-credential-service', [
     constructor: ->
       @credentialLoader    = new CredentialLoader()
       @cryptoKeyStorageApi = new CryptoKeyStorageApi()
-      @engine              = new KryptnosticEngine()
+      @engine              = new MockKryptnosticEngine()
       @searchKeySerializer = new SearchKeySerializer()
 
     getFhePrivateKey: ( notifier = -> ) ->

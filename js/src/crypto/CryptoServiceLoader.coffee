@@ -34,8 +34,8 @@ define 'kryptnostic.crypto-service-loader', [
   class CryptoServiceLoader
 
     constructor: ->
-      @directoryApi = new DirectoryApi()
-      @marshaller   = new CryptoServiceMarshaller()
+      @directoryApi     = new DirectoryApi()
+      @marshaller       = new CryptoServiceMarshaller()
       @credentialLoader = new CredentialLoader()
 
     getRsaCryptoService: ->

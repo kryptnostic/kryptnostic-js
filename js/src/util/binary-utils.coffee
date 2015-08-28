@@ -26,11 +26,11 @@ define 'kryptnostic.binary-utils', [
       throw new Error 'argument is not a string'
 
   validateUint8 = (arg) ->
-    unless arg? and arg.buffer? and arg.length? and arg.byteLength?
+    unless arg.buffer?
       throw new Error 'argument is not a uint8 array'
 
   validateUint16 = (arg) ->
-    unless arg? and arg.buffer? and arg.length? and arg.byteLength?
+    unless arg.buffer?
       throw new Error 'argument is not a uint16 array'
 
   getCharCode = (c, maxSize) ->
@@ -100,32 +100,26 @@ define 'kryptnostic.binary-utils', [
   joinUint = (arrays) ->
     targetLength = _.reduce(arrays, ((length, arr) -> length + arr.length), 0)
     buffer       = new Uint8Array(targetLength)
-    i = 0
+    copyIndex    = 0
+
     arrays.forEach (arr) ->
-      for j in [0...arr.length]
-        buffer[i] = arr[j]
-        i += 1
+      for sublistIndex in [0...arr.length]
+        buffer[copyIndex] = arr[sublistIndex]
+        copyIndex += 1
 
     return buffer
 
   chunkUint = (array, chunkSize) ->
-    arrays = []
-    buffer = new Uint8Array(chunkSize)
+    validateUint8(array)
+
+    arrays    = []
     copyIndex = 0
+    buffer    = new Uint8Array(chunkSize)
 
-    [0...array.length].forEach (i) ->
-      # copy element
-      buffer[copyIndex] = array[i]
-      copyIndex += 1
-
-      # flush if needed
-      chunkFull   = copyIndex is chunkSize
-      lastElement = i is array.length - 1
-
-      if chunkFull or lastElement
-        arrays.push(buffer)
-        buffer  = new Uint8Array(chunkSize)
-        copyIndex = 0
+    while copyIndex < array.length
+      subarr = array.subarray(copyIndex, copyIndex + chunkSize)
+      arrays.push(new Uint8Array(subarr))
+      copyIndex += chunkSize
 
     return arrays
 

@@ -86,8 +86,6 @@ define 'kryptnostic.search-credential-service', [
       return new RsaCryptoService(keypair)
 
     getOrInitialize: (credentialType, notifier) ->
-      log.warn('getOrInitialize')
-
       Promise.resolve()
       .then ->
         Promise.resolve(notifier(credentialType.stage))
@@ -103,8 +101,6 @@ define 'kryptnostic.search-credential-service', [
           return @searchKeySerializer.decrypt(uint8)
 
     initializeCredential: (credentialType) ->
-      log.warn('initializeCredential')
-
       { uint8Key } = {}
 
       Promise.resolve()

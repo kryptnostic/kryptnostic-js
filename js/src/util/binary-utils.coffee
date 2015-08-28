@@ -127,7 +127,6 @@ define 'kryptnostic.binary-utils', [
         buffer  = new Uint8Array(chunkSize)
         copyIndex = 0
 
-
     return arrays
 
   return {

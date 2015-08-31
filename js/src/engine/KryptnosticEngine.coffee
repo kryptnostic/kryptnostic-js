@@ -60,7 +60,7 @@ define 'kryptnostic.kryptnostic-engine', [
     getEncryptedSearchToken: (token) ->
       return new Module.KryptnosticClient().getEncryptedSearchToken(token)
 
-    getTokenAddress: (token, documentKey) ->
+    getTokenAddress: (token, objectAddressFunction, objectSearchKey) ->
       throw new Error 'unimplemented'
 
   return KryptnosticEngine

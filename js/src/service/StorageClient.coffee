@@ -7,6 +7,7 @@ define 'kryptnostic.storage-client', [
   'kryptnostic.kryptnostic-object'
   'kryptnostic.crypto-service-loader'
   'kryptnostic.pending-object-request'
+  'kryptnostic.search-indexing-service'
 ], (require) ->
   'use strict'
 
@@ -17,6 +18,7 @@ define 'kryptnostic.storage-client', [
   CryptoServiceLoader   = require 'kryptnostic.crypto-service-loader'
   ObjectApi             = require 'kryptnostic.object-api'
   Logger                = require 'kryptnostic.logger'
+  SearchIndexingService = require 'kryptnostic.search-indexing-service'
 
   logger = Logger.get('StorageClient')
 
@@ -31,6 +33,7 @@ define 'kryptnostic.storage-client', [
     constructor : ->
       @objectApi             = new ObjectApi()
       @cryptoServiceLoader   = new CryptoServiceLoader()
+      @searchIndexingService = new SearchIndexingService()
 
     getObjectIds : ->
       return @objectApi.getObjectIds()
@@ -79,6 +82,8 @@ define 'kryptnostic.storage-client', [
         @encrypt({ id, body, cryptoService })
       .then (encrypted) =>
         @submitObjectBlocks(encrypted)
+      .then =>
+        @searchIndexingService.submit({ id, storageRequest })
       .then ->
         return id
 

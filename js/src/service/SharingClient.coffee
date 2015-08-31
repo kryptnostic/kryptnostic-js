@@ -24,7 +24,7 @@ define 'kryptnostic.sharing-client', [
   CryptoServiceLoader     = require 'kryptnostic.crypto-service-loader'
   CryptoServiceMarshaller = require 'kryptnostic.crypto-service-marshaller'
 
-  log     = Logger.get('SharingClient')
+  log = Logger.get('SharingClient')
 
   { validateId, validateUuids } = validators
 

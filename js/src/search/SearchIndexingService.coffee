@@ -79,7 +79,9 @@ define 'kryptnostic.search-indexing-service', [
       .then =>
         @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss : false })
       .then (cryptoService) =>
-        keyedMetadata = @metadataMapper.mapToKeys({ metadata, objectAddressFunction, objectSearchKey })
+        keyedMetadata = @metadataMapper.mapToKeys({
+          metadata, objectAddressFunction, objectSearchKey
+        })
 
         metadataIndex = []
         for key, metadata of keyedMetadata

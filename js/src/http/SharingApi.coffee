@@ -81,18 +81,4 @@ define 'kryptnostic.sharing-api', [
         logger.debug('registerKeys', response)
         return response.data
 
-    registerSearchKeys: (encryptedSearchObjectKeys) ->
-      encryptedSearchObjectKeys.forEach (encryptedSearchObjectKey) ->
-        encryptedSearchObjectKey.validate()
-
-      axios(Requests.wrapCredentials({
-        url     : sharingUrl() + KEYS_PATH
-        method  : 'PUT'
-        headers : _.cloneDeep(DEFAULT_HEADER)
-        data    : JSON.stringify(encryptedSearchObjectKeys)
-      }))
-      .then (response) ->
-        logger.debug('registerSearchKeys', response)
-        return response.data
-
   return SharingApi

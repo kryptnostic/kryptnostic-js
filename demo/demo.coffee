@@ -105,7 +105,8 @@ require [
     userDirectoryApi.resolve({ email: 'test@kryptnostic.com' })
     .then (uuid) ->
       storageRequest = new StorageRequest({
-        body : 'this message will be shared'
+        body         : 'this message will be shared'
+        isSearchable : true
       })
       shareUsers = [ uuid ]
 

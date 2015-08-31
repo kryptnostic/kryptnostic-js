@@ -11,7 +11,7 @@ This project uses:
 
 ## setup
 
-To set up, install node.js and npm, then run the following:
+To set up, install node.js and npm, then run the following from the main directory of `kryptnostic-js`:
 
 ```
 sudo npm install -g bower

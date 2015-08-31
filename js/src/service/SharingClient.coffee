@@ -10,7 +10,6 @@ define 'kryptnostic.sharing-client', [
   'kryptnostic.credential-loader'
   'kryptnostic.crypto-service-loader'
   'kryptnostic.crypto-service-marshaller'
-  'kryptnostic.share-processing-service'
 ], (require) ->
   _                       = require 'lodash'
   Promise                 = require 'bluebird'
@@ -24,7 +23,6 @@ define 'kryptnostic.sharing-client', [
   RsaCryptoService        = require 'kryptnostic.rsa-crypto-service'
   CryptoServiceLoader     = require 'kryptnostic.crypto-service-loader'
   CryptoServiceMarshaller = require 'kryptnostic.crypto-service-marshaller'
-  ShareProcessingService  = require 'kryptnostic.share-processing-service'
 
   log     = Logger.get('SharingClient')
 
@@ -41,7 +39,6 @@ define 'kryptnostic.sharing-client', [
       @directoryApi            = new DirectoryApi()
       @cryptoServiceMarshaller = new CryptoServiceMarshaller()
       @cryptoServiceLoader     = new CryptoServiceLoader()
-      @shareProcessingService  = new ShareProcessingService()
       @credentialLoader        = new CredentialLoader()
 
     shareObject: (id, uuids) ->
@@ -96,16 +93,6 @@ define 'kryptnostic.sharing-client', [
         log.info('revoked access', { id, uuids })
 
     processIncomingShares : ->
-      Promise.resolve()
-      .then =>
-        @sharingApi.getIncomingShares()
-      .then (shares) =>
-        @shareProcessingService.processShares(shares)
-
-    registerSearchKeys : (encryptedSearchObjectKeys) ->
-      if _.isEmpty(encryptedSearchObjectKeys)
-        return Promise.resolve()
-      else
-        return @sharingApi.registerSearchKeys(encryptedSearchObjectKeys)
+      throw new Error 'unimplemented'
 
   return SharingClient

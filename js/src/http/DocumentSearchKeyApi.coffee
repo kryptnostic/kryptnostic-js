@@ -8,7 +8,7 @@ define 'kryptnostic.document-search-key-api', [
   Logger  = require 'kryptnostic.logger'
   Promise = require 'bluebird'
 
-  log = Logger.get('DocumentSearchKeyApi`')
+  log = Logger.get('DocumentSearchKeyApi')
 
   #
   # HTTP calls for submitting document address functions, search keys, and conversion matrices.

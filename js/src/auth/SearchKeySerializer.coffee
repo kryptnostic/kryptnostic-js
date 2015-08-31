@@ -36,11 +36,9 @@ define 'kryptnostic.search-key-serializer', [
         })
         throw new Error 'chunk validation error: wrong block size'
 
-  # FIX ME
   btoa_safe = (str) ->
     return unescape(encodeURIComponent(str))
 
-  # FIX ME
   atob_safe = (str) ->
     return decodeURIComponent(escape(str))
 

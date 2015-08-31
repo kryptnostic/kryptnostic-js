@@ -5,9 +5,18 @@ define 'kryptnostic.mock.kryptnostic-engine', [
 
   BinaryUtils = require 'kryptnostic.binary-utils'
 
+  SPACE = ' '
+
+  pad = (string) ->
+    if string.length % 2 is 0
+      return string
+    else
+      return string + SPACE
+
   #
   # Stand-in for the FHE engine which returns mocked values.
   # This class does not provide any security guarantees.
+  # Some of the static data is padded with whitespace to ensure divisibility by 2.
   #
   # Author: rbuckheit
   #
@@ -17,32 +26,32 @@ define 'kryptnostic.mock.kryptnostic-engine', [
     # ===========
 
     getFhePrivateKey: ->
-      return BinaryUtils.stringToUint8('fhe.priv')
+      return BinaryUtils.stringToUint8(pad('fhe.priv'))
 
     getSearchPrivateKey: ->
-      return BinaryUtils.stringToUint8('search.pvt')
+      return BinaryUtils.stringToUint8(pad('search.pvt'))
 
     getClientHashFunction: ->
-      return BinaryUtils.stringToUint8('client.hashfun')
+      return BinaryUtils.stringToUint8(pad('client.hashfn'))
 
     # indexing
     # ========
 
     getObjectSearchKey: (id) ->
-      return BinaryUtils.stringToUint8('doc.search')
+      return BinaryUtils.stringToUint8(pad('doc.search'))
 
     getObjectAddressFunction: (id) ->
-      return BinaryUtils.stringToUint8('doc.addressfun')
+      return BinaryUtils.stringToUint8(pad('doc.addressfn'))
 
     getObjectConversionMatrix: (id) ->
-      return BinaryUtils.stringToUint8('doc.conversion')
+      return BinaryUtils.stringToUint8(pad('doc.conversion'))
 
     getObjectIndexPair: (id) ->
-      return BinaryUtils.stringToUint8('doc.index')
+      return BinaryUtils.stringToUint8(pad('doc.index'))
 
     # pair of docSearchKey, docAddressFunction
     getObjectSharingPair: (id) ->
-      return BinaryUtils.stringToUint8('doc.sharing')
+      return BinaryUtils.stringToUint8(pad('doc.sharing'))
 
     # search
     # ======

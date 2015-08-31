@@ -41,12 +41,13 @@ define 'kryptnostic.kryptnostic-object', [
 
     # create using a raw json object from the api
     @createFromEncrypted : (raw) ->
-      return new KryptnosticObject(raw)
+      kryptnosticObject = new KryptnosticObject(raw)
+      _.defaults(kryptnosticObject, { metadata : {} })
+      return kryptnosticObject
 
     # create using a pending object id and unencrypted body
     @createFromDecrypted : ({ id, body }) ->
       metadata = new ObjectMetadata({ id })
-      log.info('metadata', metadata)
       body = { data: body }
       return new KryptnosticObject({ metadata, body })
 
@@ -63,7 +64,9 @@ define 'kryptnostic.kryptnostic-object', [
 
     # true if data is in chunked/encrypted form, false otherwise.
     isEncrypted : ->
-      return _.isArray(@body.data)
+      isArray          = _.isArray(@body.data)
+      isEncryptedBlock = _.first(@body.data).constructor.name is 'EncryptedBlock'
+      return isArray and isEncryptedBlock
 
     # true if data is in joined/decrypted form, false otherwise.
     isDecrypted : ->

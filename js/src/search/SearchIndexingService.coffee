@@ -33,7 +33,7 @@ define 'kryptnostic.search-indexing-service', [
   class SearchIndexingService
 
     constructor : ->
-      @fheEngine            = new MockKryptnosticEngine()
+      @kryptnosticEngine    = new MockKryptnosticEngine()
       @metadataMapper       = new MetadataMapper()
       @metadataApi          = new MetadataApi()
       @objectIndexer        = new ObjectIndexer()
@@ -53,9 +53,9 @@ define 'kryptnostic.search-indexing-service', [
       uintId = BinaryUtils.stringToUint8(id)
 
       Promise.props({
-        _objectAddressFunction  : @fheEngine.getObjectAddressFunction(uintId)
-        _objectSearchKey        : @fheEngine.getObjectSearchKey(uintId)
-        _objectConversionMatrix : @fheEngine.getObjectConversionMatrix(uintId)
+        _objectAddressFunction  : @kryptnosticEngine.getObjectAddressFunction(uintId)
+        _objectSearchKey        : @kryptnosticEngine.getObjectSearchKey(uintId)
+        _objectConversionMatrix : @kryptnosticEngine.getObjectConversionMatrix(uintId)
       })
       .then ({ _objectAddressFunction, _objectSearchKey, _objectConversionMatrix }) ->
         objectAddressFunction  = _objectAddressFunction

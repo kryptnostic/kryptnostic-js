@@ -1,6 +1,10 @@
 define 'kryptnostic.search-indexing-service', [
   'require'
+  'bluebird'
   'kryptnostic.chunking.strategy.json'
+  'kryptnostic.crypto-service-loader'
+  'kryptnostic.document-search-key-api'
+  'kryptnostic.kryptnostic-object'
   'kryptnostic.logger'
   'kryptnostic.metadata-api'
   'kryptnostic.metadata-request'
@@ -9,20 +13,25 @@ define 'kryptnostic.search-indexing-service', [
   'kryptnostic.search.indexer'
   'kryptnostic.search.metadata-mapper'
   'kryptnostic.sharing-client'
-  'kryptnostic.document-search-key-api'
+  'kryptnostic.indexed-metadata'
 ], (require) ->
 
-  Logger                = require 'kryptnostic.logger'
+  Promise               = require 'bluebird'
+
   BinaryUtils           = require 'kryptnostic.binary-utils'
-  MetadataApi           = require 'kryptnostic.metadata-api'
-  SharingClient         = require 'kryptnostic.sharing-client'
-  ObjectIndexer         = require 'kryptnostic.search.indexer'
-  MockKryptnosticEngine = require 'kryptnostic.mock.kryptnostic-engine'
-  MetadataRequest       = require 'kryptnostic.metadata-request'
-  JsonChunkingStrategy  = require 'kryptnostic.chunking.strategy.json'
-  MetadataMapper        = require 'kryptnostic.search.metadata-mapper'
-  SearchKeySerializer   = require 'kryptnostic.search-key-serializer'
+  CryptoServiceLoader   = require 'kryptnostic.crypto-service-loader'
   DocumentSearchKeyApi  = require 'kryptnostic.document-search-key-api'
+  IndexedMetadata       = require 'kryptnostic.indexed-metadata'
+  JsonChunkingStrategy  = require 'kryptnostic.chunking.strategy.json'
+  KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
+  Logger                = require 'kryptnostic.logger'
+  MetadataApi           = require 'kryptnostic.metadata-api'
+  MetadataMapper        = require 'kryptnostic.search.metadata-mapper'
+  MetadataRequest       = require 'kryptnostic.metadata-request'
+  MockKryptnosticEngine = require 'kryptnostic.mock.kryptnostic-engine'
+  ObjectIndexer         = require 'kryptnostic.search.indexer'
+  SearchKeySerializer   = require 'kryptnostic.search-key-serializer'
+  SharingClient         = require 'kryptnostic.sharing-client'
 
   log = Logger.get('SearchIndexingService')
 
@@ -33,13 +42,14 @@ define 'kryptnostic.search-indexing-service', [
   class SearchIndexingService
 
     constructor : ->
-      @kryptnosticEngine    = new MockKryptnosticEngine()
-      @metadataMapper       = new MetadataMapper()
-      @metadataApi          = new MetadataApi()
-      @objectIndexer        = new ObjectIndexer()
-      @sharingClient        = new SharingClient()
-      @searchKeySerializer  = new SearchKeySerializer()
+      @cryptoServiceLoader  = new CryptoServiceLoader()
       @documentSearchKeyApi = new DocumentSearchKeyApi()
+      @kryptnosticEngine    = new MockKryptnosticEngine()
+      @metadataApi          = new MetadataApi()
+      @metadataMapper       = new MetadataMapper()
+      @objectIndexer        = new ObjectIndexer()
+      @searchKeySerializer  = new SearchKeySerializer()
+      @sharingClient        = new SharingClient()
 
     # indexes and uploads the submitted object.
     submit: ({ id, storageRequest }) ->
@@ -57,11 +67,11 @@ define 'kryptnostic.search-indexing-service', [
         _objectSearchKey        : @kryptnosticEngine.getObjectSearchKey(uintId)
         _objectConversionMatrix : @kryptnosticEngine.getObjectConversionMatrix(uintId)
       })
-      .then ({ _objectAddressFunction, _objectSearchKey, _objectConversionMatrix }) ->
+      .then ({ _objectAddressFunction, _objectSearchKey, _objectConversionMatrix }) =>
         objectAddressFunction  = _objectAddressFunction
         objectSearchKey        = _objectSearchKey
         objectConversionMatrix = _objectConversionMatrix
-      .then =>
+
         encryptedAddressFunction = @searchKeySerializer.encrypt(objectAddressFunction)
         @documentSearchKeyApi.uploadAddressFunction(id, encryptedAddressFunction)
       .then =>

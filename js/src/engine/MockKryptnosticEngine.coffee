@@ -32,7 +32,7 @@ define 'kryptnostic.mock.kryptnostic-engine', [
       return BinaryUtils.stringToUint8('doc.search')
 
     getObjectAddressFunction: (id) ->
-      return BinaryUtils.stringToUint8('doc.address')
+      return BinaryUtils.stringToUint8('doc.addressfun')
 
     getObjectConversionMatrix: (id) ->
       return BinaryUtils.stringToUint8('doc.conversion')

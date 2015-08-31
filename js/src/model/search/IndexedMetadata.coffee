@@ -1,4 +1,4 @@
-define 'kryptnostic.search.indexed-metadata', [
+define 'kryptnostic.indexed-metadata', [
   'require'
   'lodash'
   'kryptnostic.schema.indexed-metadata'

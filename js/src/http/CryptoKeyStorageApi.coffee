@@ -1,9 +1,13 @@
 define 'kryptnostic.crypto-key-storage-api', [
   'require'
   'bluebird'
+  'kryptnostic.logger'
 ], (require) ->
 
   Promise = require 'bluebird'
+  Logger  = require 'kryptnostic.logger'
+
+  log = Logger.get('CryptoKeyStorageApi')
 
   #
   # HTTP calls for saving and retrieving user encryption keys.
@@ -15,27 +19,33 @@ define 'kryptnostic.crypto-key-storage-api', [
     # =======
 
     getFhePrivateKey: ->
-      Promise.resolve()
+      log.warn('CryptoKeyStorageApi not implemented!')
+      return Promise.resolve()
 
     setFhePrivateKey: (key) ->
-      Promise.resolve()
+      log.warn('CryptoKeyStorageApi not implemented!')
+      return Promise.resolve()
 
     # search key
     # ==========
 
     getSearchPrivateKey: ->
-      Promise.resolve()
+      log.warn('CryptoKeyStorageApi not implemented!')
+      return Promise.resolve()
 
     setSearchPrivateKey: (key) ->
-      Promise.resolve()
+      log.warn('CryptoKeyStorageApi not implemented!')
+      return Promise.resolve()
 
     # client hash
     # ===========
 
     getClientHashFunction: ->
-      Promise.resolve()
+      log.warn('CryptoKeyStorageApi not implemented!')
+      return Promise.resolve()
 
     setClientHashFunction: (key) ->
-      Promise.resolve()
+      log.warn('CryptoKeyStorageApi not implemented!')
+      return Promise.resolve()
 
   return CryptoKeyStorageApi

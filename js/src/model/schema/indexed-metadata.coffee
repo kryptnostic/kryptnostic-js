@@ -1,9 +1,9 @@
 define 'kryptnostic.schema.indexed-metadata', [
   'require'
   'kryptnostic.schema.encryptable'
-], ->
+], (require) ->
 
-  ENCRYPTABLE_SCHEMA      = require 'kryptnostic.schema.encryptable'
+  ENCRYPTABLE_SCHEMA = require 'kryptnostic.schema.encryptable'
 
   SCHEMA = {
     properties : {

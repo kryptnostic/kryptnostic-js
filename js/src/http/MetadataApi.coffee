@@ -16,8 +16,8 @@ define 'kryptnostic.metadata-api', [
   #
   class MetadataApi
 
-    register: ({ metadataRequest }) ->
-      log.warn('metadata api not implemented')
+    uploadMetadata: (metadataRequest) ->
+      log.warn('metadata api not implemented!', { metadataRequest })
       return Promise.resolve()
 
   return MetadataApi

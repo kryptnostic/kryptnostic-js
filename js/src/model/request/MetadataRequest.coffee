@@ -14,10 +14,10 @@ define 'kryptnostic.metadata-request', [
   #
   class MetadataRequest
 
-    constructor: ({ metadata }) ->
+    constructor: ({ @metadata }) ->
       @validate()
 
     validate : ->
-      validateMetadata(metadata)
+      validateMetadata(@metadata)
 
   return MetadataRequest

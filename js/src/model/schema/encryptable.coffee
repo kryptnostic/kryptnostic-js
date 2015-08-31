@@ -2,9 +2,9 @@ define 'kryptnostic.schema.encryptable', [
   'require'
   'kryptnostic.schema.encrypted-block'
   'kryptnostic.schema.block-ciphertext'
-], ->
+], (require) ->
 
-  ENCRYPTED_BLOCK_SCHEMA  = require 'kryptnostic.schema.encryptable'
+  ENCRYPTED_BLOCK_SCHEMA  = require 'kryptnostic.schema.encrypted-block'
   BLOCK_CIPHERTEXT_SCHEMA = require 'kryptnostic.schema.block-ciphertext'
 
   return {
@@ -28,6 +28,5 @@ define 'kryptnostic.schema.encryptable', [
         required : true
       }
       name : _.extend({}, BLOCK_CIPHERTEXT_SCHEMA, description: 'encrypted class name')
-
     }
   }

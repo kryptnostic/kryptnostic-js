@@ -16,7 +16,7 @@ define 'kryptnostic.requests', [
 
   wrapCredentials = (request, credentials = {}) ->
     if _.isEmpty(credentials)
-      credentials = CredentialLoader.getCredentials()
+      credentials = new CredentialLoader().getCredentials()
 
     _.defaults(request, { headers: {} })
     request.headers[PRINCIPAL_HEADER]  = credentials.principal

@@ -4,8 +4,8 @@ define 'kryptnostic.logger', [
   'loglevel'
 ], (require) ->
 
-  log     = require 'loglevel'
-  _       = require 'lodash'
+  log = require 'loglevel'
+  _   = require 'lodash'
 
   # log configuration
   # =================
@@ -33,6 +33,10 @@ define 'kryptnostic.logger', [
       return new Logger(moduleName)
 
     constructor : (@moduleName) ->
+
+    @setLevel: (level) ->
+      log.info('log level changing to', level)
+      log.setLevel(level, PERSIST)
 
     trace : (message, args...) ->
       log.trace("[#{@moduleName}] #{format(message, args)}")

@@ -57,7 +57,7 @@ require [
   # generates public keys for the users if needed.
   #
   setup = ->
-    return Promise.resolve()
+    Promise.resolve()
     .then ->
       AuthenticationService.authenticate(USER1)
     .then ->
@@ -104,7 +104,9 @@ require [
     #
     userDirectoryApi.resolve({ email: 'test@kryptnostic.com' })
     .then (uuid) ->
-      storageRequest = new StorageRequest({ body : 'this message will be shared' })
+      storageRequest = new StorageRequest({
+        body : 'this message will be shared'
+      })
       shareUsers = [ uuid ]
 
       storageClient.uploadObject(storageRequest)

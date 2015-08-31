@@ -26,6 +26,11 @@ define 'kryptnostic.schema.storage-request', [], ->
         required    : true
         allowEmpty  : false
       }
+      isSearchable : {
+        description : 'indicates whether the object should be indexed'
+        type        : 'boolean'
+        required    : false
+      }
     }
   }
 

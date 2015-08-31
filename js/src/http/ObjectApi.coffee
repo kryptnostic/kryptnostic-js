@@ -7,6 +7,7 @@ define 'kryptnostic.object-api', [
   'kryptnostic.logger'
   'kryptnostic.requests'
   'kryptnostic.object-metadata'
+  'kryptnostic.validators'
 ], (require) ->
 
   axios             = require 'axios'
@@ -16,24 +17,15 @@ define 'kryptnostic.object-api', [
   Config            = require 'kryptnostic.configuration'
   Promise           = require 'bluebird'
   ObjectMetadata    = require 'kryptnostic.object-metadata'
+  validators        = require 'kryptnostic.validators'
+
+  { validateId, validateObjectType } = validators
 
   objectUrl         = -> Config.get('servicesUrl') + '/object'
 
   log            = Logger.get('ObjectApi')
 
   DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
-
-  validateId = (id) ->
-    if !id
-      log.error('illegal id', id)
-      throw new Error 'missing or empty id'
-    if !_.isString(id)
-      log.error('illegal id', id)
-      throw new Error 'id must be a string'
-
-  validateType = (type) ->
-    if !type
-      throw new Error 'missing or empty object type'
 
   #
   # HTTP calls for interacting with the /object endpoint of Kryptnostic Services.
@@ -77,7 +69,7 @@ define 'kryptnostic.object-api', [
 
     # get all object ids of a particular type
     getObjectIdsByType: (type) ->
-      validateType(type)
+      validateObjectType(type)
 
       Promise.resolve(axios(Requests.wrapCredentials({
         url    : objectUrl() + '/type/' + type

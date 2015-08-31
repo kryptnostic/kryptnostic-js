@@ -17,9 +17,9 @@ define 'kryptnostic.chunking.strategy.default', [
 
     @URI : 'com.kryptnostic.kodex.v1.serialization.crypto.DefaultChunkingStrategy'
 
-    split : (data) ->
+    split : (data, blockBytes = BLOCK_LENGTH_IN_BYTES) ->
       return _.chain(data)
-        .chunk(BLOCK_LENGTH_IN_BYTES)
+        .chunk(blockBytes)
         .map((chunkArr) -> chunkArr.join(EMPTY_STRING))
         .value()
 

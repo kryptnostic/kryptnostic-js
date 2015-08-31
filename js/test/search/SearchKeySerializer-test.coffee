@@ -1,11 +1,16 @@
 define [
-  'require',
-  'forge',
-  'kryptnostic.rsa-crypto-service',
+  'require'
+  'forge'
+  'sinon'
+  'kryptnostic.search-key-serializer'
 ], (require) ->
 
-  RsaCryptoService = require 'kryptnostic.rsa-crypto-service'
-  Forge            = require 'forge'
+  sinon               = require 'sinon'
+  Forge               = require 'forge'
+  SearchKeySerializer = require 'kryptnostic.search-key-serializer'
+
+  # mock data
+  # =========
 
   MOCK_PEM_RSA_PRIVATE_KEY = '-----BEGIN RSA PRIVATE KEY-----\
     MIIJKwIBAAKCAgEAzpyv1zURE1mRL503+xBcsV6IBd7lJ1So2cE9bLHg41loWnNb\
@@ -59,34 +64,35 @@ define [
     nMBwEtrAEooqiqMNW4+x9w0gVljne4yWYUNR8iMkdknL3LXpMN87WtsK8NzkiiQ=\
     -----END RSA PRIVATE KEY-----'
 
-  CIPHERTEXT_BASE_64 = 'Xz7+Dl864pUmMKDcIDC2gaE3PWpTOqnNv/LNgxAEjpgonHfW8sEyjQ\
-  GzTDVoxuq4GJH+TBRyT58BHvZeboFUsBiLKFarD1el4zEcRHaRoql0ysmv7Xxx7PyGkRzLH+UqyV\
-  /6Gs5PSixIyN5GYBi8uKqv3WC8mLXHf14lyh3QZlRoBswNYBmchMO10RXLvGiKZWLdb+/nLZDgMv\
-  n5x/toogrYDncnzI5qoTGw30fTf3JPSYzL4LNP3XzpN5QNwUUbKvzuyfQNrH/k8l6eTCZURnyS5F\
-  UkvkIFpYc9DYmeB40nVxlMQfm+HryQWG1MgWAuhLota3kUDNkpMXUnk5CAHeoVjsG1xGF5blnjxq\
-  tN3jcJ8MNRcZUzdJaSG0XnVKs42xP7Q9O9FS4gw/uS/Z+PmYd2Zz7Jl2JNVZJWGZIiiL/e+mrzD/\
-  jTRX34HU4u+Zkmqq7JMWaDvYKDVbEVJLhPaT6Vhr60SBrlB776EaDYgYUdtAfWdhh9chr7gv8zW9\
-  v52HG8POAHqwtmpHAT3rth62Jsk9h9iwvuBbo9SFJzTOreFNCfKcNbLUF60us14BRdiUtX+STpu6\
-  WmC8XUCYTD64wZ9VZM8WeLyzEDlcKcKbSTJyE9RwzpABknrxnZNFzTKywsxfcGp+rn0Lx5MBFAwG\
-  pZF6JhujGMeFyfLaTL14o='
+  MOCK_SEARCH_KEY = new Uint8Array([12, 36, 54, 253, 123, 43, 57, 34])
 
-  PLAINTEXT_BASE_64 = 'AAAAcHjaq1ZKrizISC1SsqpWSsxJzy/KLMnIVbJScnQNVtJRys1PSQV\
-  ynEOCgJyCxJSUzLx0IN8vPwDK1lHKTq0MzqwCqjI0sqgFc4EKorQ9KgNyIqPSQ1PMQyMLwsvNkiO\
-  9A21tlWoB454jcQ=='
+  { serializer } = {}
 
-  describe 'RsaCryptoService', ->
+  beforeEach ->
+    # rsa key init
+    privateKey = Forge.pki.privateKeyFromPem(MOCK_PEM_RSA_PRIVATE_KEY)
+    publicKey  = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e)
+    keypair    = { privateKey, publicKey }
 
-    it 'should correctly decrypt a known-good ciphertext', ->
-      privateKey    = Forge.pki.privateKeyFromPem(MOCK_PEM_RSA_PRIVATE_KEY)
-      publicKey     = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e)
-      cryptoService = new RsaCryptoService({ privateKey, publicKey })
-      ciphertext    = atob(CIPHERTEXT_BASE_64)
-      plaintext     = cryptoService.decrypt(ciphertext)
-      expect(atob(PLAINTEXT_BASE_64)).toBe(plaintext)
+    serializer = new SearchKeySerializer()
 
-    it 'should decrypt what it encrypts', ->
-      keypair       = Forge.rsa.generateKeyPair({ bits: 1024, e: 0x10001 })
-      cryptoService = new RsaCryptoService(keypair)
-      plaintext     = 'my heart is a blue ridge mountain'
-      recovered     = cryptoService.decrypt(cryptoService.encrypt(plaintext))
-      expect(recovered).toBe(plaintext)
+    # mocking
+    sinon.stub(serializer.credentialLoader, 'getCredentials').returns({ keypair })
+
+  afterEach ->
+    serializer.credentialLoader.getCredentials.restore()
+
+  # tests
+  # =====
+
+  describe 'SearchKeySerializer', ->
+
+    describe 'end-to-end encrypted serialization', ->
+
+      it 'should encrypt a value and deserialize to the same value', ->
+
+        encrypted = serializer.encrypt(MOCK_SEARCH_KEY)
+        decrypted = serializer.decrypt(encrypted)
+
+        expect(decrypted).toEqual(MOCK_SEARCH_KEY)
+        expect(encrypted).not.toEqual(decrypted)

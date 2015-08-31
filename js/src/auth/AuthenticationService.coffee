@@ -5,6 +5,7 @@ define 'kryptnostic.authentication-service', [
   'kryptnostic.configuration'
   'kryptnostic.credential-provider-loader'
   'kryptnostic.credential-service'
+  'kryptnostic.search-credential-service'
   'kryptnostic.authentication-stage'
   'kryptnostic.user-directory-api'
 ], (require) ->
@@ -14,6 +15,7 @@ define 'kryptnostic.authentication-service', [
   Config                   = require 'kryptnostic.configuration'
   CredentialProviderLoader = require 'kryptnostic.credential-provider-loader'
   CredentialService        = require 'kryptnostic.credential-service'
+  SearchCredentialService  = require 'kryptnostic.search-credential-service'
   AuthenticationStage      = require 'kryptnostic.authentication-stage'
   UserDirectoryApi         = require 'kryptnostic.user-directory-api'
 
@@ -27,11 +29,14 @@ define 'kryptnostic.authentication-service', [
   #
   class AuthenticationService
 
+    # authenticates, and forces initialization of keys if needed.
     @authenticate: ( { email, password }, notifier = -> ) ->
       { principal, credential, keypair } = {}
 
-      credentialService  = new CredentialService()
-      userDirectoryApi   = new UserDirectoryApi()
+      credentialService       = new CredentialService()
+      userDirectoryApi        = new UserDirectoryApi()
+      searchCredentialService = new SearchCredentialService()
+
       credentialProvider = CredentialProviderLoader.load(Config.get('credentialProvider'))
 
       Promise.resolve()
@@ -51,6 +56,13 @@ define 'kryptnostic.authentication-service', [
       .then (_keypair) ->
         keypair = _keypair
         credentialProvider.store { principal, credential, keypair }
+      .then ->
+        searchCredentialService.getFhePrivateKey(notifier)
+      .then ->
+        searchCredentialService.getSearchPrivateKey(notifier)
+      .then ->
+        searchCredentialService.getClientHashFunction(notifier)
+      .then ->
         Promise.resolve(notifier(AuthenticationStage.COMPLETED))
       .then ->
         log.info('authentication complete')

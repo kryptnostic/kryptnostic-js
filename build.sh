@@ -38,6 +38,9 @@ else
   ./node_modules/requirejs/bin/r.js -o build.js out=dist/kryptnostic.min.js optimize=uglify;
 fi
 
+echo; echo "copying kryptnostic client";
+cp bower_components/kryptnostic-client/index.js dist/KryptnosticClient.js;
+
 echo; echo 'compiling demo.coffee...';
 ./node_modules/coffee-script/bin/coffee -c demo/demo.coffee;
 

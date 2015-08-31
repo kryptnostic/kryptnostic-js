@@ -1,5 +1,6 @@
 define 'kryptnostic.crypto-service-loader', [
   'require',
+  'bluebird',
   'kryptnostic.logger'
   'kryptnostic.cypher',
   'kryptnostic.rsa-crypto-service',
@@ -10,6 +11,7 @@ define 'kryptnostic.crypto-service-loader', [
 ], (require) ->
   'use strict'
 
+  Promise                 = require 'bluebird'
   RsaCryptoService        = require 'kryptnostic.rsa-crypto-service'
   AesCryptoService        = require 'kryptnostic.aes-crypto-service'
   Cypher                  = require 'kryptnostic.cypher'
@@ -34,18 +36,21 @@ define 'kryptnostic.crypto-service-loader', [
     constructor: ->
       @directoryApi     = new DirectoryApi()
       @marshaller       = new CryptoServiceMarshaller()
+      @credentialLoader = new CredentialLoader()
 
     getRsaCryptoService: ->
-      { keypair } = CredentialLoader.getCredentials()
+      { keypair } = @credentialLoader.getCredentials()
       return new RsaCryptoService(keypair)
 
     getObjectCryptoService: (id, options) ->
-      options          = _.defaults({}, options, DEFAULT_OPTS)
-      { expectMiss }   = options
-      rsaCryptoService = @getRsaCryptoService()
+      options        = _.defaults({}, options, DEFAULT_OPTS)
+      { expectMiss } = options
 
-      return  @directoryApi.getObjectCryptoService(id)
-      .then (serializedCryptoService) =>
+      Promise.props({
+        rsaCryptoService        : @getRsaCryptoService()
+        serializedCryptoService : @directoryApi.getObjectCryptoService(id)
+      })
+      .then ({ serializedCryptoService, rsaCryptoService }) =>
         if !serializedCryptoService && expectMiss
           logger.info('no cryptoService exists for this object. creating one on-the-fly', { id })
           cryptoService = new AesCryptoService( Cypher.AES_CTR_128 )

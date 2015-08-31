@@ -1,11 +1,13 @@
-var allTestFiles   = [];
-var allBuildFiles  = [];
-var allMockFiles   = [];
+var allTestFiles  = [];
+var allBuildFiles = [];
+var allMockFiles  = [];
 
-var TEST_REGEXP    = /(.*)(spec|test)\.(js|coffee)$/i;
-var SOTERIA_REGEXP = /kryptnostic.js/;
-var SINON_REGEXP   = /sinon.js/;
-var MOCK_REGEXP    = /mock(.*)\.(js)/;
+var TEST_REGEXP   = /(.*)(spec|test)\.(js|coffee)$/i;
+var DIST_REGEXP   = /kryptnostic.js|KryptnosticClient.js/;
+var SINON_REGEXP  = /sinon.js/;
+var MOCK_REGEXP   = /mock(.*)\.(js)/;
+
+var DEBUG         = false;
 
 var pathToModule = function(path) {
   return path.replace(/^\/base\//, '').replace(/\.js$/, '');
@@ -13,7 +15,9 @@ var pathToModule = function(path) {
 
 var log = {
   info: function(message) {
-    window.console && console.info(message);
+    if (DEBUG) {
+      window.console && console.info(message);
+    }
   }
 }
 
@@ -22,8 +26,8 @@ Object.keys(window.__karma__.files).forEach(function(file) {
     log.info('found TEST: ' + file);
     allTestFiles.push(pathToModule(file));
   }
-  if (SOTERIA_REGEXP.test(file)) {
-    log.info('found BUILD: ' + file);
+  if (DIST_REGEXP.test(file)) {
+    log.info('found DIST: ' + file);
     allBuildFiles.push(file);
   }
   if (SINON_REGEXP.test(file)) {
@@ -51,5 +55,11 @@ require.config({
   deps : allFilesOrdered,
 
   // we have to kickoff jasmine, as it is asynchronous
-  callback: window.__karma__.start
+  callback: function() {
+    // quiet noisy logger
+    require('kryptnostic.logger').setLevel('warn');
+    require('bluebird').longStackTraces();
+    window.__karma__.start();
+  }
 });
+

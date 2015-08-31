@@ -2,6 +2,7 @@ define 'kryptnostic.sharing-client', [
   'require'
   'bluebird'
   'kryptnostic.logger'
+  'kryptnostic.validators'
   'kryptnostic.sharing-api'
   'kryptnostic.directory-api'
   'kryptnostic.sharing-request'
@@ -13,6 +14,7 @@ define 'kryptnostic.sharing-client', [
   _                       = require 'lodash'
   Promise                 = require 'bluebird'
   Logger                  = require 'kryptnostic.logger'
+  validators              = require 'kryptnostic.validators'
   SharingApi              = require 'kryptnostic.sharing-api'
   DirectoryApi            = require 'kryptnostic.directory-api'
   SharingRequest          = require 'kryptnostic.sharing-request'
@@ -22,17 +24,9 @@ define 'kryptnostic.sharing-client', [
   CryptoServiceLoader     = require 'kryptnostic.crypto-service-loader'
   CryptoServiceMarshaller = require 'kryptnostic.crypto-service-marshaller'
 
-  log     = Logger.get('SharingClient')
+  log = Logger.get('SharingClient')
 
-  validateId = (id) ->
-    if !id
-      log.error('illegal id', id)
-      throw new Error 'object id must be specified!'
-
-  validateUsers = (uuids) ->
-    unless _.isArray(uuids)
-      log.error('illegal uuids', uuids)
-      throw new Error 'uuids must be a list'
+  { validateId, validateUuids } = validators
 
   #
   # Client for granting and revoking shared access to Kryptnostic objects.
@@ -44,21 +38,22 @@ define 'kryptnostic.sharing-client', [
       @sharingApi              = new SharingApi()
       @directoryApi            = new DirectoryApi()
       @cryptoServiceMarshaller = new CryptoServiceMarshaller()
+      @cryptoServiceLoader     = new CryptoServiceLoader()
+      @credentialLoader        = new CredentialLoader()
 
     shareObject: (id, uuids) ->
       if _.isEmpty(uuids)
         return Promise.resolve()
 
       validateId(id)
-      validateUsers(uuids)
+      validateUuids(uuids)
 
-      { principal }       = CredentialLoader.getCredentials()
-      cryptoServiceLoader = new CryptoServiceLoader()
-      sharingKey          = ''
+      { principal } = @credentialLoader.getCredentials()
+      sharingKey    = ''
 
       Promise.resolve()
-      .then ->
-        cryptoServiceLoader.getObjectCryptoService(id)
+      .then =>
+        @cryptoServiceLoader.getObjectCryptoService(id)
       .then (cryptoService) =>
         promiseMap = _.mapValues(_.object(uuids), (empty, uuid) =>
           return @directoryApi.getPublicKey(uuid)
@@ -91,13 +86,13 @@ define 'kryptnostic.sharing-client', [
       Promise.resolve()
       .then =>
         validateId(id)
-        validateUsers(uuids)
+        validateUuids(uuids)
         revocationRequest = new RevocationRequest { id, users: uuids }
         @sharingApi.revokeObject(revocationRequest)
       .then ->
         log.info('revoked access', { id, uuids })
 
-    processIncomingShares: ->
+    processIncomingShares : ->
       throw new Error 'unimplemented'
 
   return SharingClient

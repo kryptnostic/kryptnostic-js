@@ -50,7 +50,7 @@ define 'kryptnostic.mock.kryptnostic-engine', [
     getEncryptedSearchToken: (token) ->
       return BinaryUtils.stringToUint8('search.token.' + BinaryUtils.uint8ToString(token))
 
-    getTokenAddress: (token, documentKey) ->
+    getTokenAddress: (token, objectAddressFunction, objectSearchKey) ->
       return BinaryUtils.stringToUint8('search.address.' + BinaryUtils.uint8ToString(token))
 
   return MockKryptnosticEngine

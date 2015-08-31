@@ -26,7 +26,7 @@ define 'kryptnostic.sharing-client', [
   CryptoServiceMarshaller = require 'kryptnostic.crypto-service-marshaller'
   ShareProcessingService  = require 'kryptnostic.share-processing-service'
 
-  log = Logger.get('SharingClient')
+  log     = Logger.get('SharingClient')
 
   { validateId, validateUuids } = validators
 
@@ -41,6 +41,7 @@ define 'kryptnostic.sharing-client', [
       @directoryApi            = new DirectoryApi()
       @cryptoServiceMarshaller = new CryptoServiceMarshaller()
       @cryptoServiceLoader     = new CryptoServiceLoader()
+      @shareProcessingService  = new ShareProcessingService()
       @credentialLoader        = new CredentialLoader()
 
     shareObject: (id, uuids) ->
@@ -95,6 +96,16 @@ define 'kryptnostic.sharing-client', [
         log.info('revoked access', { id, uuids })
 
     processIncomingShares : ->
-      throw new Error 'unimplemented'
+      Promise.resolve()
+      .then =>
+        @sharingApi.getIncomingShares()
+      .then (shares) =>
+        @shareProcessingService.processShares(shares)
+
+    registerSearchKeys : (encryptedSearchObjectKeys) ->
+      if _.isEmpty(encryptedSearchObjectKeys)
+        return Promise.resolve()
+      else
+        return @sharingApi.registerSearchKeys(encryptedSearchObjectKeys)
 
   return SharingClient

@@ -14,7 +14,7 @@ define 'kryptnostic.share-processing-service', [
   log = Logger.get('ShareProcessingService')
 
   #
-  # Processes incoming shares.
+  # Service to process incoming shares.
   # Author: rbuckheit
   #
 

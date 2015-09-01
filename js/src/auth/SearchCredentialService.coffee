@@ -5,6 +5,7 @@ define 'kryptnostic.search-credential-service', [
   'kryptnostic.logger'
   'kryptnostic.authentication-stage'
   'kryptnostic.search-key-generator'
+  'kryptnostic.mock.search-key-generator'
   'kryptnostic.crypto-key-storage-api'
   'kryptnostic.credential-loader'
   'kryptnostic.search-key-serializer'
@@ -17,7 +18,8 @@ define 'kryptnostic.search-credential-service', [
   CredentialLoader    = require 'kryptnostic.credential-loader'
   CryptoKeyStorageApi = require 'kryptnostic.crypto-key-storage-api'
   SearchKeySerializer = require 'kryptnostic.search-key-serializer'
-  SearchKeyGenerator  = require 'kryptnostic.search-key-generator'
+  # SearchKeyGenerator  = require 'kryptnostic.search-key-generator'
+  MockSearchKeyGenerator = require 'kryptnostic.mock.search-key-generator'
 
   log = Logger.get('SearchCredentialService')
 
@@ -64,7 +66,7 @@ define 'kryptnostic.search-credential-service', [
     constructor: ->
       @credentialLoader    = new CredentialLoader()
       @cryptoKeyStorageApi = new CryptoKeyStorageApi()
-      @searchKeyGenerator  = new SearchKeyGenerator()
+      @searchKeyGenerator  = new MockSearchKeyGenerator()
       @searchKeySerializer = new SearchKeySerializer()
 
     # initializes keys if needed.
@@ -126,6 +128,7 @@ define 'kryptnostic.search-credential-service', [
 
       Promise.resolve()
       .then =>
+        log.info('generating search credentials')
         clientKeys = @searchKeyGenerator.generateClientKeys()
       .then =>
         @initializeCredential(CredentialType.FHE_PRIVATE_KEY, clientKeys, notifier)
@@ -139,6 +142,7 @@ define 'kryptnostic.search-credential-service', [
 
       Promise.resolve()
       .then ->
+        log.info('initializeCredential', credentialType.stage)
         Promise.resolve(notifier(credentialType.stage))
       .then =>
         uint8Key           = credentialType.generator(clientKeys)

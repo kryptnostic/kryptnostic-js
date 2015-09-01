@@ -24,7 +24,7 @@ define 'kryptnostic.mock.kryptnostic-engine', [
     getObjectAddressMatrix: ->
       return BinaryUtils.stringToUint8(pad('doc.addressfun'))
 
-    getObjectIndexPair: (objectSearchKey, objectAddressFunction) ->
+    getObjectIndexPair: (objectSearchKey, objectAddressMatrix) ->
       return BinaryUtils.stringToUint8(pad('doc.index'))
 
     getMetadatumAddress: (objectAddressFunction, token, objectSearchKey) ->

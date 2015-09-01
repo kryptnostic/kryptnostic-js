@@ -31,8 +31,8 @@ define 'kryptnostic.kryptnostic-engine', [
     getObjectAddressMatrix: ->
       return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getObjectAddressMatrix()
 
-    getObjectIndexPair: (objectSearchKey, objectAddressFunction) ->
-      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getObjectIndexPair(objectSearchKey, objectAddressFunction)
+    getObjectIndexPair: (objectSearchKey, objectAddressMatrix) ->
+      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getObjectIndexPair(objectSearchKey, objectAddressMatrix)
 
     getMetadatumAddress: (objectAddressFunction, token, objectSearchKey) ->
       return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getMetadatumAddress(objectAddressFunction, token, objectSearchKey)

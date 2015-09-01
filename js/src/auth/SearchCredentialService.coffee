@@ -131,7 +131,6 @@ define 'kryptnostic.search-credential-service', [
         else
           log.error('user account is in a partially initialized state')
           log.error("expected #{expectedLength} credentials but got #{credentials.length}")
-          log.error('loaded credentials were', credentials)
           throw new Error 'credentials are in a partially initialized state'
 
     initializeCredentials: ->

@@ -21,6 +21,8 @@ define 'kryptnostic.kryptnostic-engine', [
   class KryptnosticEngine
 
     constructor: ({ @fhePrivateKey, @searchPrivateKey }) ->
+      unless Module? and Module.KryptnosticClient?
+        log.error(ENGINE_MISSING_ERROR)
 
     createClient: ->
       return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey)

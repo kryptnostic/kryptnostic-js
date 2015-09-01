@@ -31,15 +31,15 @@ define [
 
   describe 'MetadataMapper', ->
 
-    { kryptnosticEngine, metadataMapper, id, documentKey } = {}
+    { engine, metadataMapper, id, documentKey } = {}
 
     beforeEach ->
-      kryptnosticEngine = new MockKryptnosticEngine()
-      indexGenerator    = new StaticIndexGenerator()
-      metadataMapper    = new MetadataMapper()
-      _.extend(metadataMapper, { kryptnosticEngine, indexGenerator })
+      engine         = new MockKryptnosticEngine()
+      indexGenerator = new StaticIndexGenerator()
+      metadataMapper = new MetadataMapper()
+      _.extend(metadataMapper, { engine, indexGenerator })
       id          = 'some-object-id'
-      documentKey = kryptnosticEngine.getObjectSearchKey(id)
+      documentKey = engine.getObjectSearchKey(id)
 
     describe '#mapToKeys', ->
 

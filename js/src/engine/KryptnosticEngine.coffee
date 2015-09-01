@@ -20,47 +20,42 @@ define 'kryptnostic.kryptnostic-engine', [
   #
   class KryptnosticEngine
 
-    constructor: ->
-      unless Module? and Module.KryptnosticClient?
-        log.error(ENGINE_MISSING_ERROR)
+    constructor: (@fhePrivateKey, @searchPrivateKey) ->
 
-    # client keys
-    # ===========
-
-    getFhePrivateKey: ->
-      return new Module.KryptnosticClient().getPrivateKey()
-
-    getSearchPrivateKey: ->
-      return new Module.KryptnosticClient().getSearchPrivateKey()
-
+    # client hash function
+    # generated from the given keys
+    # =============================
     getClientHashFunction: ->
-      return new Module.KryptnosticClient().getClientHashFunction()
+      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getClientHashFunction()
 
     # indexing
     # ========
 
-    getObjectSearchKey: (id) ->
-      return new Module.KryptnosticClient().getObjectSearchKey(id)
+    getObjectSearchKey: ->
+      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getObjectSearchKey()
 
-    getObjectAddressFunction: (id) ->
-      return new Module.KryptnosticClient().getObjectAddressFunction(id)
+    getObjectAddressFunction: ->
+      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getObjectAddressFunction()
 
-    getObjectConversionMatrix: (id) ->
-      return new Module.KryptnosticClient().getObjectConversionMatrix(id)
+    getObjectIndexPair: (objectSearchKey, objectAddressFunction) ->
+      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getObjectIndexPair(objectSearchKey, objectAddressFunction)
 
-    getObjectIndexPair: (id) ->
-      return new Module.KryptnosticClient().getObjectIndexPair(id)
-
-    getObjectSharingPair: (id) ->
-      return new Module.KryptnosticClient().getObjectSharingPair(id)
+    getMetadatumAddress: (objectAddressFunction, token, objectSearchKey) ->
+      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getMetadatumAddress(objectAddressFunction, token, objectSearchKey)
 
     # search
     # ======
 
     getEncryptedSearchToken: (token) ->
-      return new Module.KryptnosticClient().getEncryptedSearchToken(token)
+      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getEncryptedSearchToken(token)
 
-    getTokenAddress: (token, documentKey) ->
-      throw new Error 'unimplemented'
+    # share
+    # =====
+
+    getObjectSharingPair: (objectIndexPair) ->
+      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getObjectSharingPair(objectIndexPair)
+
+    getObjectUploadPair: (objectSharingPair) ->
+      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getObjectUploadPair(objectSharingPair)
 
   return KryptnosticEngine

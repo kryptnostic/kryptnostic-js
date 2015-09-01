@@ -35,11 +35,11 @@ define 'kryptnostic.search.metadata-mapper', [
   class MetadataMapper
 
     constructor: ->
-      @fheEngine      = new MockKryptnosticEngine()
+      @engine         = new MockKryptnosticEngine()
       @indexGenerator = new RandomIndexGenerator()
       @hashFunction   = HashFunction.MURMUR3_128
 
-    mapToKeys: ({ metadata, objectAddressFunction, objectSearchKey }) ->
+    mapToKeys: ({ metadata, objectAddressMatrix, objectSearchKey }) ->
       metadataMap  = {}
       bucketLength = computeBucketSize(metadata)
 
@@ -54,7 +54,11 @@ define 'kryptnostic.search.metadata-mapper', [
         tokenUint = BinaryUtils.hexToUint(tokenHex)
 
         # compute address of token
-        indexUint   = @fheEngine.getTokenAddress(tokenUint, objectAddressFunction, objectSearchKey)
+        indexUint   = @engine.getMetadatumAddress({
+          token : tokenUint,
+          objectAddressMatrix,
+          objectSearchKey
+        })
         indexString = BinaryUtils.uint8ToString(indexUint)
 
         # pad occurence locations

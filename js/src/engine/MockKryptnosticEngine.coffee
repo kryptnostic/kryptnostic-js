@@ -8,7 +8,7 @@ define 'kryptnostic.mock.kryptnostic-engine', [
   SPACE = ' '
 
   pad = (string) ->
-    if string.length % 2 is 0 then string else string + space
+    if string.length % 2 is 0 then string else string + SPACE
 
   #
   # Stand-in for the FHE engine which returns mocked values.
@@ -19,7 +19,7 @@ define 'kryptnostic.mock.kryptnostic-engine', [
   #
   class MockKryptnosticEngine
 
-    constructor: ({ @fhePrivateKey, @searchPrivateKey }) ->
+    constructor: ({ @fhePrivateKey, @searchPrivateKey } = {}) ->
 
     # indexing
     # ========
@@ -33,7 +33,7 @@ define 'kryptnostic.mock.kryptnostic-engine', [
     getObjectIndexPair: ({ objectSearchKey, objectAddressMatrix }) ->
       return BinaryUtils.stringToUint8(pad('doc.index'))
 
-    getMetadatumAddress: ({ objectAddressFunction, objectSearchKey, token }) ->
+    getMetadatumAddress: ({ objectAddressMatrix, objectSearchKey, token }) ->
       return BinaryUtils.stringToUint8('search.address.' + BinaryUtils.uint8ToString(token))
 
     # search

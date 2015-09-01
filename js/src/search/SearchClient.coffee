@@ -1,9 +1,12 @@
 define 'kryptnostic.search-client', [
   'require'
+  'kryptnostic.binary-utils'
+  'kryptnostic.crypto-service-loader'
   'kryptnostic.mock.kryptnostic-engine'
   'kryptnostic.search-api'
 ], (require) ->
 
+  BinaryUtils           = require 'kryptnostic.binary-utils'
   CryptoServiceLoader   = require 'kryptnostic.crypto-service-loader'
   KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
   MockKryptnosticEngine = require 'kryptnostic.mock.kryptnostic-engine'
@@ -18,14 +21,15 @@ define 'kryptnostic.search-client', [
   class SearchClient
 
     constructor: ->
-      @kryptnosticEngine   = new MockKryptnosticEngine()
+      @engine              = new MockKryptnosticEngine()
       @cryptoServiceLoader = new CryptoServiceLoader()
       @searchApi           = new SearchApi()
 
     search: (token) ->
       Promise.resolve()
       .then =>
-        encryptedToken = @kryptnosticEngine.getEncryptedSearchToken(token)
+        token = BinaryUtils.stringToUint8(token)
+        encryptedToken = @engine.getEncryptedSearchToken({ token })
         @searchApi.search(encryptedToken)
       .then (encryptedMetadata) ->
         Promise.all(_.map(encryptedMetadata, (encryptedMetadatum) =>

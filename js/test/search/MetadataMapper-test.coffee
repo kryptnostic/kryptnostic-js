@@ -31,22 +31,22 @@ define [
 
   describe 'MetadataMapper', ->
 
-    { kryptnosticEngine, metadataMapper, id, documentKey } = {}
+    { engine, metadataMapper, id, documentKey } = {}
 
     beforeEach ->
-      kryptnosticEngine = new MockKryptnosticEngine()
-      indexGenerator    = new StaticIndexGenerator()
-      metadataMapper    = new MetadataMapper()
-      _.extend(metadataMapper, { kryptnosticEngine, indexGenerator })
+      engine         = new MockKryptnosticEngine()
+      indexGenerator = new StaticIndexGenerator()
+      metadataMapper = new MetadataMapper()
+      _.extend(metadataMapper, { engine, indexGenerator })
       id          = 'some-object-id'
-      documentKey = kryptnosticEngine.getObjectSearchKey(id)
+      documentKey = engine.getObjectSearchKey(id)
 
     describe '#mapToKeys', ->
 
       it 'should pad all tokens to 128 bits with murmurhash3-128 before addressing', ->
         called   = false
         metadata = [ { id, locations: [0, 9], token: 'fish' }]
-        sinon.stub(metadataMapper.fheEngine, 'getTokenAddress', (token, documentKey) ->
+        sinon.stub(metadataMapper.engine, 'getMetadatumAddress', ({ token }) ->
           expect(token.length).toBe(PADDED_128_BIT_UINT8_ARRAY_LENGTH)
           expect(token instanceof Uint8Array).toBe(true)
           called = true
@@ -54,7 +54,7 @@ define [
         )
         metadataMapper.mapToKeys { metadata, documentKey }
         expect(called).toBe(true)
-        metadataMapper.fheEngine.getTokenAddress.restore()
+        metadataMapper.engine.getMetadatumAddress.restore()
 
       it 'should map metadata to their indexed locations', ->
         overwriteHashFunction(metadataMapper)

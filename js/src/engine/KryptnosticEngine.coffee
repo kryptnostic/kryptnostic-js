@@ -6,7 +6,7 @@ define 'kryptnostic.kryptnostic-engine', [
   Logger = require 'kryptnostic.logger'
 
   ENGINE_MISSING_ERROR = '''
-    The KryptnosticClient engine is unavailable. This component must be included separately.
+    KryptnosticClient is unavailable. This component must be included separately.
     It is not built as a part of the kryptnostic.js binary. Please see the krytpnostic.js
     documentation for more information and/or file an issue on the kryptnostic-js github project:
     https://github.com/kryptnostic/kryptnostic-js/issues
@@ -15,52 +15,46 @@ define 'kryptnostic.kryptnostic-engine', [
   log = Logger.get('KryptnosticEngine')
 
   #
-  # Wrapper around the kryptnostic engine module produced by emscripten.
+  # Wrapper around the kryptnostic client module produced by emscripten.
   # Author: rbuckheit
   #
   class KryptnosticEngine
 
-    constructor: ->
+    constructor: ({ @fhePrivateKey, @searchPrivateKey }) ->
       unless Module? and Module.KryptnosticClient?
         log.error(ENGINE_MISSING_ERROR)
 
-    # client keys
-    # ===========
-
-    getFhePrivateKey: ->
-      return new Module.KryptnosticClient().getPrivateKey()
-
-    getSearchPrivateKey: ->
-      return new Module.KryptnosticClient().getSearchPrivateKey()
-
-    getClientHashFunction: ->
-      return new Module.KryptnosticClient().getClientHashFunction()
+    createClient: ->
+      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey)
 
     # indexing
     # ========
 
-    getObjectSearchKey: (id) ->
-      return new Module.KryptnosticClient().getObjectSearchKey(id)
+    getObjectSearchKey: ->
+      return @createClient().getObjectSearchKey()
 
-    getObjectAddressFunction: (id) ->
-      return new Module.KryptnosticClient().getObjectAddressFunction(id)
+    getObjectAddressMatrix: ->
+      return @createClient().getObjectAddressMatrix()
 
-    getObjectConversionMatrix: (id) ->
-      return new Module.KryptnosticClient().getObjectConversionMatrix(id)
+    getObjectIndexPair: ({ objectSearchKey, objectAddressMatrix }) ->
+      return @createClient().getObjectIndexPair(objectSearchKey, objectAddressMatrix)
 
-    getObjectIndexPair: (id) ->
-      return new Module.KryptnosticClient().getObjectIndexPair(id)
-
-    getObjectSharingPair: (id) ->
-      return new Module.KryptnosticClient().getObjectSharingPair(id)
+    getMetadatumAddress: ({ objectAddressFunction, token, objectSearchKey }) ->
+      return @createClient().getMetadatumAddress(objectAddressFunction, objectSearchKey, token)
 
     # search
     # ======
 
-    getEncryptedSearchToken: (token) ->
-      return new Module.KryptnosticClient().getEncryptedSearchToken(token)
+    getEncryptedSearchToken: ({ token }) ->
+      return @createClient().getEncryptedSearchToken(token)
 
-    getTokenAddress: (token, objectAddressFunction, objectSearchKey) ->
-      throw new Error 'unimplemented'
+    # sharing
+    # =======
+
+    getObjectSharingPair: ({ objectIndexPair }) ->
+      return @createClient().getObjectSharingPair(objectIndexPair)
+
+    getObjectIndexPairFromSharing: ({ objectSharingPair }) ->
+      return @createClient().getObjectUploadPair(objectSharingPair)
 
   return KryptnosticEngine

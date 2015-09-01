@@ -57,11 +57,7 @@ define 'kryptnostic.authentication-service', [
         keypair = _keypair
         credentialProvider.store { principal, credential, keypair }
       .then ->
-        searchCredentialService.getFhePrivateKey(notifier)
-      .then ->
-        searchCredentialService.getSearchPrivateKey(notifier)
-      .then ->
-        searchCredentialService.getClientHashFunction(notifier)
+        searchCredentialService.ensureCredentialsInitialized(notifier)
       .then ->
         Promise.resolve(notifier(AuthenticationStage.COMPLETED))
       .then ->

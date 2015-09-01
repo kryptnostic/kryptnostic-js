@@ -1,22 +1,18 @@
 define 'kryptnostic.search-key-generator', [
   'require'
-  'kryptnostic.logger'
 ], (require) ->
 
-  Logger = require 'kryptnostic.logger'
-
-  log = Logger.get('SearchKeyGenerator')
-
+  #
+  # Generates client keys needed for search.
+  #
   class SearchKeyGenerator
 
-    # client keys
-    # ===========
-    getAllClientKeys: ->
+    generateClientKeys: ->
       engine = new Module.KryptnosticClient()
       return {
-        fhePrivateKey: engine.getPrivateKey()
-        searchPrivateKey: engine.getSearchPrivateKey()
-        clientHashFunction: engine.getClientHashFunction()
+        fhePrivateKey      : engine.getPrivateKey()
+        searchPrivateKey   : engine.getSearchPrivateKey()
+        clientHashFunction : engine.getClientHashFunction()
       }
 
   return SearchKeyGenerator

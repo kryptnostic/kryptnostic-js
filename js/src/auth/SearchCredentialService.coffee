@@ -4,22 +4,20 @@ define 'kryptnostic.search-credential-service', [
   'bluebird'
   'kryptnostic.logger'
   'kryptnostic.authentication-stage'
-  'kryptnostic.kryptnostic-engine'
-  'kryptnostic.rsa-crypto-service'
+  'kryptnostic.search-key-generator'
   'kryptnostic.crypto-key-storage-api'
   'kryptnostic.credential-loader'
   'kryptnostic.search-key-serializer'
 ], (require) ->
 
-  _                     = require 'lodash'
-  Promise               = require 'bluebird'
-  Logger                = require 'kryptnostic.logger'
-  AuthenticationStage   = require 'kryptnostic.authentication-stage'
-  CredentialLoader      = require 'kryptnostic.credential-loader'
-  RsaCryptoService      = require 'kryptnostic.rsa-crypto-service'
-  CryptoKeyStorageApi   = require 'kryptnostic.crypto-key-storage-api'
-  MockKryptnosticEngine = require 'kryptnostic.kryptnostic-engine'
-  SearchKeySerializer   = require 'kryptnostic.search-key-serializer'
+  _                   = require 'lodash'
+  Promise             = require 'bluebird'
+  Logger              = require 'kryptnostic.logger'
+  AuthenticationStage = require 'kryptnostic.authentication-stage'
+  CredentialLoader    = require 'kryptnostic.credential-loader'
+  CryptoKeyStorageApi = require 'kryptnostic.crypto-key-storage-api'
+  SearchKeySerializer = require 'kryptnostic.search-key-serializer'
+  SearchKeyGenerator  = require 'kryptnostic.search-key-generator'
 
   log = Logger.get('SearchCredentialService')
 
@@ -29,19 +27,19 @@ define 'kryptnostic.search-credential-service', [
   #
   CredentialType = {
     FHE_PRIVATE_KEY : {
-      generator : (engine) -> engine.getFhePrivateKey
+      generator : (clientKeys) -> clientKeys.fhePrivateKey
       getter    : (api) -> api.getFhePrivateKey
       setter    : (api) -> api.setFhePrivateKey
       stage     : AuthenticationStage.FHE_KEYGEN
     }
     SEARCH_PRIVATE_KEY : {
-      generator : (engine) -> engine.getSearchPrivateKey
+      generator : (clientKeys) -> clientKeys.searchPrivateKey
       getter    : (api) -> api.getSearchPrivateKey
       setter    : (api) -> api.setSearchPrivateKey
       stage     : AuthenticationStage.SEARCH_KEYGEN
     }
     CLIENT_HASH_FUNCTION : {
-      generator : (engine) -> engine.getClientHashFunction
+      generator : (clientKeys) -> clientKeys.clientHashFunction
       getter    : (api) -> api.getClientHashFunction
       setter    : (api) -> api.setClientHashFunction
       stage     : AuthenticationStage.CLIENT_HASH_GEN
@@ -66,47 +64,88 @@ define 'kryptnostic.search-credential-service', [
     constructor: ->
       @credentialLoader    = new CredentialLoader()
       @cryptoKeyStorageApi = new CryptoKeyStorageApi()
-      @engine              = new MockKryptnosticEngine()
+      @searchKeyGenerator  = new SearchKeyGenerator()
       @searchKeySerializer = new SearchKeySerializer()
 
-    getFhePrivateKey: ( notifier = -> ) ->
-      return @getOrInitialize(CredentialType.FHE_PRIVATE_KEY, notifier)
+    getFhePrivateKey: ->
+      return @getCredential('FHE_PRIVATE_KEY')
 
-    getSearchPrivateKey: ( notifier = -> ) ->
-      return @getOrInitialize(CredentialType.SEARCH_PRIVATE_KEY, notifier)
+    getSearchPrivateKey: ->
+      return @getCredential('SEARCH_PRIVATE_KEY')
 
-    getClientHashFunction: ( notifier = -> ) ->
-      return @getOrInitialize(CredentialType.CLIENT_HASH_FUNCTION, notifier)
+    getClientHashFunction: ->
+      return @getCredential('CLIENT_HASH_FUNCTION')
 
     # private
     # =======
 
-    getRsaCryptoService : ->
-      { keypair } = @credentialLoader.getCredentials()
-      return new RsaCryptoService(keypair)
-
-    getOrInitialize: (credentialType, notifier) ->
+    getCredential: (key) ->
       Promise.resolve()
-      .then ->
-        Promise.resolve(notifier(credentialType.stage))
       .then =>
-        loadCredential = credentialType.getter(@cryptoKeyStorageApi)
-        loadCredential()
-      .then (uint8) =>
-        if _.isEmpty(uint8)
-          log.info('using initialized credential')
-          return @initializeCredential(credentialType)
-        else
-          log.warn('credential not initialized, creating')
-          return @searchKeySerializer.decrypt(uint8)
+        @ensureCredentialsInitialized()
+      .then =>
+        @getAllCredentials()
+      .then (allCredentials) ->
+        log.info('allCredentials', allCredentials)
+        return allCredentials[key]
 
-    initializeCredential: (credentialType) ->
+    # initializes keys if needed.
+    ensureCredentialsInitialized: ->
+      Promise.resolve()
+      .then =>
+        @hasInitialized()
+      .then (initialized) =>
+        if !initialized
+          return @initializeCredentials()
+        else
+          return Promise.resolve()
+
+    getAllCredentials: ->
+      Promise.resolve()
+      .then =>
+        credentialPromises = _.mapValues(CredentialType, (credentialType) =>
+          loadCredential = credentialType.getter(@cryptoKeyStorageApi)
+          return loadCredential()
+        )
+        Promise.props(credentialPromises)
+      .then (credentialsByType) =>
+        return _.mapValues(credentialsByType, (credential) =>
+          return @searchKeySerializer.decrypt(credential)
+        )
+
+    hasInitialized: ->
+      Promise.resolve()
+      .then =>
+        @getAllCredentials()
+      .then (credentials) ->
+        credentials    = _.compact(_.values(credentials))
+        expectedLength = _.size(_.values(CredentialType))
+
+        if _.isEmpty(credentials)
+          return false
+        else if credentials.length is expectedLength
+          return true
+        else
+          log.error('user account is in a partially initialized state')
+          log.error("expected #{expectedLength} credentials but got #{credentials.length}")
+          log.error('loaded credentials were', credentials)
+          throw new Error 'credentials are in a partially initialized state'
+
+    initializeCredentials: ->
+      Promise.resolve()
+      .then =>
+        clientKeys = @searchKeyGenerator.generateClientKeys()
+        storePromises = _.mapValues(CredentialType, (credentialType) =>
+          @initializeCredential(credentialType, clientKeys)
+        )
+        Promise.props(storePromises)
+
+    initializeCredential: (credentialType, clientKeys) ->
       { uint8Key } = {}
 
       Promise.resolve()
       .then =>
-        generateCredential = credentialType.generator(@engine)
-        uint8Key           = generateCredential()
+        uint8Key           = credentialType.generator(clientKeys)
         encryptedKeyChunks = @searchKeySerializer.encrypt(uint8Key)
         storeCredential    = credentialType.setter(@cryptoKeyStorageApi)
         storeCredential(encryptedKeyChunks)

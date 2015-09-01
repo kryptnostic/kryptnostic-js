@@ -4,14 +4,14 @@ define [
   'kryptnostic.logger'
   'kryptnostic.binary-utils'
   'kryptnostic.search-credential-service'
-  'kryptnostic.mock.kryptnostic-engine'
+  'kryptnostic.mock.search-key-generator'
 ], (require) ->
 
   Logger                  = require 'kryptnostic.logger'
   Forge                   = require 'forge'
   BinaryUtils             = require 'kryptnostic.binary-utils'
   SearchCredentialService = require 'kryptnostic.search-credential-service'
-  MockKryptnosticEngine   = require 'kryptnostic.mock.kryptnostic-engine'
+  MockSearchKeyGenerator  = require 'kryptnostic.mock.search-key-generator'
 
   log = Logger.get('SearchCredentialService-test')
 
@@ -102,13 +102,14 @@ define [
       publicKey  = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e)
       keypair    = { privateKey, publicKey }
 
-      engine  = new MockKryptnosticEngine()
-      service = new SearchCredentialService()
+      searchKeyGenerator = new MockSearchKeyGenerator()
+      service            = new SearchCredentialService()
+
       { searchKeySerializer } = service
 
       sinon.stub(service.credentialLoader, 'getCredentials').returns({ keypair })
       sinon.stub(searchKeySerializer.credentialLoader, 'getCredentials').returns({ keypair })
-      _.extend(service, { engine })
+      _.extend(service, { searchKeyGenerator })
 
     afterEach ->
       service.cryptoKeyStorageApi.getFhePrivateKey.restore()
@@ -123,17 +124,38 @@ define [
         sinon.stub(service.cryptoKeyStorageApi, 'getFhePrivateKey').returns(undefined)
         sinon.stub(service.cryptoKeyStorageApi, 'setFhePrivateKey', (key) ->
           storedKey = key
+
+          service.cryptoKeyStorageApi.getFhePrivateKey.restore()
+          sinon.stub(service.cryptoKeyStorageApi, 'getFhePrivateKey').returns(storedKey)
+
           return Promise.resolve()
         )
         service.getFhePrivateKey()
         .then (uint8Key) ->
+          log.error('uint8key', uint8Key)
+          log.error('storedKey', storedKey)
           expect(storedKey).toBeDefined()
           expect(storedKey.length).toBe(1024)
           expect(uint8Key).toEqual(BinaryUtils.stringToUint8('fhe.priv'))
           done()
 
-      it 'should load and decrypt a key if it exists', (done) ->
+      it 'should throw if keys are partially initalized', (done) ->
         sinon.stub(service.cryptoKeyStorageApi, 'getFhePrivateKey')
+          .returns(ENCRYPTED_STORED_UINT8_KEY)
+
+        service.getFhePrivateKey()
+        .then (uint8key) ->
+          throw new Error 'the preceeding call should have failed, but did not'
+          done()
+        .catch (e) ->
+          done()
+
+      it 'should load and decrypt a key if all keys exist', (done) ->
+        sinon.stub(service.cryptoKeyStorageApi, 'getFhePrivateKey')
+          .returns(ENCRYPTED_STORED_UINT8_KEY)
+        sinon.stub(service.cryptoKeyStorageApi, 'getSearchPrivateKey')
+          .returns(ENCRYPTED_STORED_UINT8_KEY)
+        sinon.stub(service.cryptoKeyStorageApi, 'getClientHashFunction')
           .returns(ENCRYPTED_STORED_UINT8_KEY)
 
         service.getFhePrivateKey()

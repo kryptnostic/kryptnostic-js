@@ -4,7 +4,7 @@ define 'kryptnostic.search-credential-service', [
   'bluebird'
   'kryptnostic.logger'
   'kryptnostic.authentication-stage'
-  'kryptnostic.mock.kryptnostic-engine'
+  'kryptnostic.kryptnostic-engine'
   'kryptnostic.rsa-crypto-service'
   'kryptnostic.crypto-key-storage-api'
   'kryptnostic.credential-loader'
@@ -18,7 +18,7 @@ define 'kryptnostic.search-credential-service', [
   CredentialLoader      = require 'kryptnostic.credential-loader'
   RsaCryptoService      = require 'kryptnostic.rsa-crypto-service'
   CryptoKeyStorageApi   = require 'kryptnostic.crypto-key-storage-api'
-  MockKryptnosticEngine = require 'kryptnostic.mock.kryptnostic-engine'
+  MockKryptnosticEngine = require 'kryptnostic.kryptnostic-engine'
   SearchKeySerializer   = require 'kryptnostic.search-key-serializer'
 
   log = Logger.get('SearchCredentialService')

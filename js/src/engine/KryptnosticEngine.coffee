@@ -22,34 +22,37 @@ define 'kryptnostic.kryptnostic-engine', [
 
     constructor: ({ @fhePrivateKey, @searchPrivateKey }) ->
 
+    createClient: ->
+      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey)
+
     # indexing
     # ========
 
     getObjectSearchKey: ->
-      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getObjectSearchKey()
+      return @createClient().getObjectSearchKey()
 
     getObjectAddressMatrix: ->
-      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getObjectAddressMatrix()
+      return @createClient().getObjectAddressMatrix()
 
     getObjectIndexPair: ({ objectSearchKey, objectAddressMatrix }) ->
-      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getObjectIndexPair(objectSearchKey, objectAddressMatrix)
+      return @createClient().getObjectIndexPair(objectSearchKey, objectAddressMatrix)
 
     getMetadatumAddress: ({ objectAddressFunction, token, objectSearchKey }) ->
-      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getMetadatumAddress(objectAddressFunction, objectSearchKey, token)
+      return @createClient().getMetadatumAddress(objectAddressFunction, objectSearchKey, token)
 
     # search
     # ======
 
     getEncryptedSearchToken: ({ token }) ->
-      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getEncryptedSearchToken(token)
+      return @createClient().getEncryptedSearchToken(token)
 
-    # share
-    # =====
+    # sharing
+    # =======
 
     getObjectSharingPair: ({ objectIndexPair }) ->
-      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getObjectSharingPair(objectIndexPair)
+      return @createClient().getObjectSharingPair(objectIndexPair)
 
     getObjectIndexPairFromSharing: ({ objectSharingPair }) ->
-      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getObjectUploadPair(objectSharingPair)
+      return @createClient().getObjectUploadPair(objectSharingPair)
 
   return KryptnosticEngine

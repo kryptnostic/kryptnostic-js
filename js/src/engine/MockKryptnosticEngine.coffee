@@ -8,10 +8,7 @@ define 'kryptnostic.mock.kryptnostic-engine', [
   SPACE = ' '
 
   pad = (string) ->
-    if string.length % 2 is 0
-      return string
-    else
-      return string + SPACE
+    if string.length % 2 is 0 then string else string + space
 
   #
   # Stand-in for the FHE engine which returns mocked values.
@@ -37,7 +34,7 @@ define 'kryptnostic.mock.kryptnostic-engine', [
       return BinaryUtils.stringToUint8(pad('doc.index'))
 
     getMetadatumAddress: ({ objectAddressFunction, objectSearchKey, token }) ->
-      return BinaryUtils.stringToUint8(pad('metadatum.address'))
+      return BinaryUtils.stringToUint8('search.address.' + BinaryUtils.uint8ToString(token))
 
     # search
     # ======
@@ -45,13 +42,13 @@ define 'kryptnostic.mock.kryptnostic-engine', [
     getEncryptedSearchToken: ({ token }) ->
       return BinaryUtils.stringToUint8(pad('search.token.' + BinaryUtils.uint8ToString(token)))
 
-    # share
-    # =====
+    # sharing
+    # =======
 
     getObjectSharingPair: ({ objectIndexPair }) ->
-      return BinaryUtils.stringToUint8(pad('doc.sharing.' + BinaryUtils.uint8ToString(objectIndexPair)))
+      return BinaryUtils.stringToUint8('doc.sharing.' + BinaryUtils.uint8ToString(objectIndexPair))
 
     getObjectIndexPairFromSharing: ({ objectSharingPair }) ->
-      return BinaryUtils.stringToUint8(pad('doc.upload.' + BinaryUtils.uint8ToString(objectUploadPair)))
+      return BinaryUtils.stringToUint8('doc.upload.' + BinaryUtils.uint8ToString(objectUploadPair))
 
   return MockKryptnosticEngine

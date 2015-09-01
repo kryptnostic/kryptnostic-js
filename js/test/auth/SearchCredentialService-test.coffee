@@ -124,10 +124,8 @@ define [
         sinon.stub(service.cryptoKeyStorageApi, 'getFhePrivateKey').returns(undefined)
         sinon.stub(service.cryptoKeyStorageApi, 'setFhePrivateKey', (key) ->
           storedKey = key
-
           service.cryptoKeyStorageApi.getFhePrivateKey.restore()
           sinon.stub(service.cryptoKeyStorageApi, 'getFhePrivateKey').returns(storedKey)
-
           return Promise.resolve()
         )
         service.getFhePrivateKey()

@@ -110,7 +110,10 @@ define 'kryptnostic.search-credential-service', [
         Promise.props(credentialPromises)
       .then (credentialsByType) =>
         return _.mapValues(credentialsByType, (credential) =>
-          return @searchKeySerializer.decrypt(credential)
+          if _.isEmpty(credential)
+            return credential
+          else
+            return @searchKeySerializer.decrypt(credential)
         )
 
     hasInitialized: ->

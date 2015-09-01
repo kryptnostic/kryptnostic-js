@@ -57,7 +57,10 @@ For an end-to-end demo, build using `build.sh` then open `demo/index.html` in th
 ## CORS
 
 We're working to set up a javascript build tool which will proxy requests to the backend from a single endpoint.
-In the short-term, you'll get CORS errors when running from the local file `index.html` as the demo scripts attempt to access the multiple backend servers. You can temporarily allow CORS in Chrome with the following command:
+In the short-term, you'll get CORS errors when running from the local file `index.html` in development mode.
+This is because the demo scripts attempt to access the multiple backend servers.
+
+You can temporarily allow CORS in Chrome with the following command:
 
 ```
 cd /Applications/ && open -a Google\ Chrome --args --disable-web-security

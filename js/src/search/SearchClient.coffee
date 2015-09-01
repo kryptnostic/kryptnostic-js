@@ -40,8 +40,8 @@ define 'kryptnostic.search-client', [
         id = encryptedMetadatum.key
         @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss: false })
       .then (cryptoService) ->
-        data = encryptedMetadatum
-        kryptnosticObject = KryptnosticObject.createFromEncrypted({ data })
+        body = encryptedMetadatum
+        kryptnosticObject = KryptnosticObject.createFromEncrypted({ body })
         kryptnosticObject.setChunkingStrategy(JsonChunkingStrategy.URI)
         decrypted = kryptnosticObject.decrypt(cryptoService)
         return decrypted.body

@@ -42,7 +42,7 @@ define 'kryptnostic.kryptnostic-object', [
     # create using a raw json object from the api
     @createFromEncrypted : (raw) ->
       kryptnosticObject = new KryptnosticObject(raw)
-      _.defaults(kryptnosticObject, { metadata : {} })
+      _.defaults(kryptnosticObject, { metadata : { strategy: {} } })
       return kryptnosticObject
 
     # create using a pending object id and unencrypted body

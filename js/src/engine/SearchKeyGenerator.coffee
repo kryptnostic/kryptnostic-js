@@ -16,6 +16,7 @@ define 'kryptnostic.search-key-generator', [
       return {
         fhePrivateKey: engine.getPrivateKey()
         searchPrivateKey: engine.getSearchPrivateKey()
+        clientHashFunction: engine.getClientHashFunction()
       }
 
   return SearchKeyGenerator

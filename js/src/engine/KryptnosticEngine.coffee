@@ -22,12 +22,6 @@ define 'kryptnostic.kryptnostic-engine', [
 
     constructor: (@fhePrivateKey, @searchPrivateKey) ->
 
-    # client hash function
-    # generated from the given keys
-    # =============================
-    getClientHashFunction: ->
-      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getClientHashFunction()
-
     # indexing
     # ========
 

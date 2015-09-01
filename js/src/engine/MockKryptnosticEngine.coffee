@@ -13,44 +13,36 @@ define 'kryptnostic.mock.kryptnostic-engine', [
   #
   class MockKryptnosticEngine
 
-    # client keys
-    # ===========
-
-    getFhePrivateKey: ->
-      return BinaryUtils.stringToUint8('fhe.priv')
-
-    getSearchPrivateKey: ->
-      return BinaryUtils.stringToUint8('search.pvt')
-
-    getClientHashFunction: ->
-      return BinaryUtils.stringToUint8('client.hashfun')
+    constructor: (@fhePrivateKey, @searchPrivateKey) ->
 
     # indexing
     # ========
 
-    getObjectSearchKey: (id) ->
-      return BinaryUtils.stringToUint8('doc.search')
+    getObjectSearchKey: ->
+      return BinaryUtils.stringToUint8(pad('doc.search'))
 
-    getObjectAddressFunction: (id) ->
-      return BinaryUtils.stringToUint8('doc.address')
+    getObjectAddressFunction: ->
+      return BinaryUtils.stringToUint8(pad('doc.addressfun'))
 
-    getObjectConversionMatrix: (id) ->
-      return BinaryUtils.stringToUint8('doc.conversion')
+    getObjectIndexPair: (objectSearchKey, objectAddressFunction) ->
+      return BinaryUtils.stringToUint8(pad('doc.index'))
 
-    getObjectIndexPair: (id) ->
-      return BinaryUtils.stringToUint8('doc.index')
-
-    # pair of docSearchKey, docAddressFunction
-    getObjectSharingPair: (id) ->
-      return BinaryUtils.stringToUint8('doc.sharing')
+    getMetadatumAddress: (objectAddressFunction, token, objectSearchKey) ->
+      return BinaryUtils.stringToUint8(pad('metadatum.address'))
 
     # search
     # ======
 
     getEncryptedSearchToken: (token) ->
-      return BinaryUtils.stringToUint8('search.token.' + BinaryUtils.uint8ToString(token))
+      return BinaryUtils.stringToUint8(pad('search.token.' + BinaryUtils.uint8ToString(token)))
 
-    getTokenAddress: (token, documentKey) ->
-      return BinaryUtils.stringToUint8('search.address.' + BinaryUtils.uint8ToString(token))
+    # share
+    # =====
+
+    getObjectSharingPair: (objectIndexPair) ->
+      return BinaryUtils.stringToUint8(pad('doc.sharing.' + BinaryUtils.uint8ToString(objectIndexPair)))
+
+    getObjectUploadPair: (objectSharingPair) ->
+      return BinaryUtils.stringToUint8(pad('doc.upload.' + BinaryUtils.uint8ToString(objectUploadPair)))
 
   return MockKryptnosticEngine

@@ -76,6 +76,8 @@ define 'kryptnostic.search-credential-service', [
     getClientHashFunction: ->
       return @getCredential('CLIENT_HASH_FUNCTION')
 
+    # TODO fix notifier
+
     # private
     # =======
 

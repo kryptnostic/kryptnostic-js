@@ -28,8 +28,8 @@ define 'kryptnostic.kryptnostic-engine', [
     getObjectSearchKey: ->
       return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getObjectSearchKey()
 
-    getObjectAddressFunction: ->
-      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getObjectAddressFunction()
+    getObjectAddressMatrix: ->
+      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getObjectAddressMatrix()
 
     getObjectIndexPair: (objectSearchKey, objectAddressFunction) ->
       return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey).getObjectIndexPair(objectSearchKey, objectAddressFunction)

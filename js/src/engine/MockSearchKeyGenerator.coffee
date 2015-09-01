@@ -13,7 +13,7 @@ define 'kryptnostic.mock.search-key-generator', [
       return {
         fhePrivateKey: BinaryUtils.stringToUint8(pad('fhe.priv'))
         searchPrivateKey: BinaryUtils.stringToUint8(pad('search.pvt'))
-clientHashFunction: BinaryUtils.stringToUint8(pad('hash.fun'))
+        clientHashFunction: BinaryUtils.stringToUint8(pad('hash.fun'))
       }
 
   return SearchKeyGenerator

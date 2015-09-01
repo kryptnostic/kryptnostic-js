@@ -11,15 +11,14 @@ define 'kryptnostic.search-credential-service', [
   'kryptnostic.search-key-serializer'
 ], (require) ->
 
-  _                   = require 'lodash'
-  Promise             = require 'bluebird'
-  Logger              = require 'kryptnostic.logger'
-  AuthenticationStage = require 'kryptnostic.authentication-stage'
-  CredentialLoader    = require 'kryptnostic.credential-loader'
-  CryptoKeyStorageApi = require 'kryptnostic.crypto-key-storage-api'
-  SearchKeySerializer = require 'kryptnostic.search-key-serializer'
-  # SearchKeyGenerator  = require 'kryptnostic.search-key-generator'
-  MockSearchKeyGenerator = require 'kryptnostic.mock.search-key-generator'
+  _                      = require 'lodash'
+  Promise                = require 'bluebird'
+  Logger                 = require 'kryptnostic.logger'
+  AuthenticationStage    = require 'kryptnostic.authentication-stage'
+  CredentialLoader       = require 'kryptnostic.credential-loader'
+  CryptoKeyStorageApi    = require 'kryptnostic.crypto-key-storage-api'
+  SearchKeySerializer    = require 'kryptnostic.search-key-serializer'
+  SearchKeyGenerator     = require 'kryptnostic.search-key-generator'
 
   log = Logger.get('SearchCredentialService')
 
@@ -66,7 +65,7 @@ define 'kryptnostic.search-credential-service', [
     constructor: ->
       @credentialLoader    = new CredentialLoader()
       @cryptoKeyStorageApi = new CryptoKeyStorageApi()
-      @searchKeyGenerator  = new MockSearchKeyGenerator()
+      @searchKeyGenerator  = new SearchKeyGenerator()
       @searchKeySerializer = new SearchKeySerializer()
 
     # initializes keys if needed.

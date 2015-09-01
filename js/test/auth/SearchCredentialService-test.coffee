@@ -112,51 +112,92 @@ define [
       _.extend(service, { searchKeyGenerator })
 
     afterEach ->
-      service.cryptoKeyStorageApi.getFhePrivateKey.restore()
       service.credentialLoader.getCredentials.restore()
       service.searchKeySerializer.credentialLoader.getCredentials.restore()
+      unmockServerKeys()
 
-    describe '#getFhePrivateKey', ->
+    mockServerKeys = ({ fhePrivateKey, searchPrivateKey, clientHashFunction }) ->
+      sinon.stub(service.cryptoKeyStorageApi, 'getFhePrivateKey').returns(fhePrivateKey)
+      sinon.stub(service.cryptoKeyStorageApi, 'getSearchPrivateKey').returns(searchPrivateKey)
+      sinon.stub(service.cryptoKeyStorageApi, 'getClientHashFunction').returns(clientHashFunction)
 
-      it 'should initialize and store a key if it does not exist', (done) ->
-        { storedKey } = {}
+    unmockServerKeys = ->
+      if service.cryptoKeyStorageApi.getFhePrivateKey.restore?
+        service.cryptoKeyStorageApi.getFhePrivateKey.restore()
+      if service.cryptoKeyStorageApi.getSearchPrivateKey.restore?
+        service.cryptoKeyStorageApi.getSearchPrivateKey.restore()
+      if service.cryptoKeyStorageApi.getClientHashFunction.restore?
+        service.cryptoKeyStorageApi.getClientHashFunction.restore()
 
-        sinon.stub(service.cryptoKeyStorageApi, 'getFhePrivateKey').returns(undefined)
+    describe '#getAllCredentials', ->
+
+      it 'should initialize and store all keys to server if they do not exist', (done) ->
+        { storedFhe, storedSearch, storedClientHash } = {}
+
+        mockServerKeys({
+          fhePrivateKey      : undefined,
+          searchPrivateKey   : undefined,
+          clientHashFunction : undefined
+        })
+
         sinon.stub(service.cryptoKeyStorageApi, 'setFhePrivateKey', (key) ->
-          storedKey = key
           service.cryptoKeyStorageApi.getFhePrivateKey.restore()
-          sinon.stub(service.cryptoKeyStorageApi, 'getFhePrivateKey').returns(storedKey)
+          sinon.stub(service.cryptoKeyStorageApi, 'getFhePrivateKey').returns(key)
           return Promise.resolve()
         )
-        service.getFhePrivateKey()
-        .then (uint8Key) ->
-          log.error('uint8key', uint8Key)
-          log.error('storedKey', storedKey)
-          expect(storedKey).toBeDefined()
-          expect(storedKey.length).toBe(1024)
-          expect(uint8Key).toEqual(BinaryUtils.stringToUint8('fhe.priv'))
+        sinon.stub(service.cryptoKeyStorageApi, 'setSearchPrivateKey', (key) ->
+          service.cryptoKeyStorageApi.getSearchPrivateKey.restore()
+          sinon.stub(service.cryptoKeyStorageApi, 'getSearchPrivateKey').returns(key)
+          return Promise.resolve()
+        )
+        sinon.stub(service.cryptoKeyStorageApi, 'setClientHashFunction', (key) ->
+          service.cryptoKeyStorageApi.getClientHashFunction.restore()
+          sinon.stub(service.cryptoKeyStorageApi, 'getClientHashFunction').returns(key)
+          return Promise.resolve()
+        )
+
+        service.getAllCredentials()
+        .then (allCredentials) ->
+          fhePrivateKey      = allCredentials.FHE_PRIVATE_KEY
+          searchPrivateKey   = allCredentials.SEARCH_PRIVATE_KEY
+          clientHashFunction = allCredentials.CLIENT_HASH_FUNCTION
+
+          expect(fhePrivateKey).toEqual(BinaryUtils.stringToUint8('fhe.priv'))
+          expect(searchPrivateKey).toEqual(BinaryUtils.stringToUint8('search.pvt'))
+          expect(clientHashFunction).toEqual(BinaryUtils.stringToUint8('hash.fun'))
+
           done()
 
       it 'should throw if keys are partially initalized', (done) ->
-        sinon.stub(service.cryptoKeyStorageApi, 'getFhePrivateKey')
-          .returns(ENCRYPTED_STORED_UINT8_KEY)
+        mockServerKeys({
+          fhePrivateKey      : ENCRYPTED_STORED_UINT8_KEY
+          searchPrivateKey   : undefined
+          clientHashFunction : undefined
+        })
 
-        service.getFhePrivateKey()
+        service.getAllCredentials()
         .then (uint8key) ->
           throw new Error 'the preceeding call should have failed, but did not'
           done()
         .catch (e) ->
+          log.warn('test failed as expected: ', { message: e.message })
           done()
 
-      it 'should load and decrypt a key if all keys exist', (done) ->
-        sinon.stub(service.cryptoKeyStorageApi, 'getFhePrivateKey')
-          .returns(ENCRYPTED_STORED_UINT8_KEY)
-        sinon.stub(service.cryptoKeyStorageApi, 'getSearchPrivateKey')
-          .returns(ENCRYPTED_STORED_UINT8_KEY)
-        sinon.stub(service.cryptoKeyStorageApi, 'getClientHashFunction')
-          .returns(ENCRYPTED_STORED_UINT8_KEY)
+      it 'should load and decrypt all keys if all keys exist', (done) ->
+        mockServerKeys({
+          fhePrivateKey      : ENCRYPTED_STORED_UINT8_KEY
+          searchPrivateKey   : ENCRYPTED_STORED_UINT8_KEY
+          clientHashFunction : ENCRYPTED_STORED_UINT8_KEY
+        })
 
-        service.getFhePrivateKey()
-        .then (uint8key) ->
-          expect(uint8key).toEqual(BinaryUtils.stringToUint8('fhe.priv'))
+        service.getAllCredentials()
+        .then (allCredentials) ->
+          fhePrivateKey      = allCredentials.FHE_PRIVATE_KEY
+          searchPrivateKey   = allCredentials.SEARCH_PRIVATE_KEY
+          clientHashFunction = allCredentials.CLIENT_HASH_FUNCTION
+
+          expect(fhePrivateKey).toEqual(BinaryUtils.stringToUint8('fhe.priv'))
+          expect(searchPrivateKey).toEqual(BinaryUtils.stringToUint8('fhe.priv'))
+          expect(clientHashFunction).toEqual(BinaryUtils.stringToUint8('fhe.priv'))
+
           done()

@@ -83,6 +83,14 @@ define 'kryptnostic.search-credential-service', [
       .then =>
         @ensureCredentialsInitialized()
       .then =>
+        @getStoredCredentials()
+
+    # private
+    # =======
+
+    getStoredCredentials: ->
+      Promise.resolve()
+      .then =>
         credentialPromises = _.mapValues(CredentialType, (credentialType) =>
           loadCredential = credentialType.getter(@cryptoKeyStorageApi)
           return loadCredential()
@@ -96,13 +104,10 @@ define 'kryptnostic.search-credential-service', [
             return @searchKeySerializer.decrypt(credential)
         )
 
-    # private
-    # =======
-
     hasInitialized: ->
       Promise.resolve()
       .then =>
-        @getAllCredentials()
+        @getStoredCredentials()
       .then (credentials) ->
         credentials    = _.compact(_.values(credentials))
         expectedLength = _.size(_.values(CredentialType))
@@ -129,7 +134,7 @@ define 'kryptnostic.search-credential-service', [
       .then =>
         @initializeCredential(CredentialType.CLIENT_HASH_FUNCTION, clientKeys, notifier)
 
-    initializeCredential: (credentialType, clientKeys) ->
+    initializeCredential: (credentialType, clientKeys, notifier) ->
       { uint8Key } = {}
 
       Promise.resolve()

@@ -67,43 +67,21 @@ define 'kryptnostic.search-credential-service', [
       @searchKeyGenerator  = new SearchKeyGenerator()
       @searchKeySerializer = new SearchKeySerializer()
 
-    getFhePrivateKey: ->
-      return @getCredential('FHE_PRIVATE_KEY')
-
-    getSearchPrivateKey: ->
-      return @getCredential('SEARCH_PRIVATE_KEY')
-
-    getClientHashFunction: ->
-      return @getCredential('CLIENT_HASH_FUNCTION')
-
-    # TODO fix notifier
-
-    # private
-    # =======
-
-    getCredential: (key) ->
-      Promise.resolve()
-      .then =>
-        @ensureCredentialsInitialized()
-      .then =>
-        @getAllCredentials()
-      .then (allCredentials) ->
-        log.info('allCredentials', allCredentials)
-        return allCredentials[key]
-
     # initializes keys if needed.
-    ensureCredentialsInitialized: ->
+    ensureCredentialsInitialized: ( notifier = -> ) ->
       Promise.resolve()
       .then =>
         @hasInitialized()
       .then (initialized) =>
         if !initialized
-          return @initializeCredentials()
+          return @initializeCredentials(notifier)
         else
           return Promise.resolve()
 
     getAllCredentials: ->
       Promise.resolve()
+      .then =>
+        @ensureCredentialsInitialized()
       .then =>
         credentialPromises = _.mapValues(CredentialType, (credentialType) =>
           loadCredential = credentialType.getter(@cryptoKeyStorageApi)
@@ -117,6 +95,9 @@ define 'kryptnostic.search-credential-service', [
           else
             return @searchKeySerializer.decrypt(credential)
         )
+
+    # private
+    # =======
 
     hasInitialized: ->
       Promise.resolve()
@@ -135,19 +116,25 @@ define 'kryptnostic.search-credential-service', [
           log.error("expected #{expectedLength} credentials but got #{credentials.length}")
           throw new Error 'credentials are in a partially initialized state'
 
-    initializeCredentials: ->
+    initializeCredentials: (notifier) ->
+      { clientKeys } = {}
+
       Promise.resolve()
       .then =>
         clientKeys = @searchKeyGenerator.generateClientKeys()
-        storePromises = _.mapValues(CredentialType, (credentialType) =>
-          @initializeCredential(credentialType, clientKeys)
-        )
-        Promise.props(storePromises)
+      .then =>
+        @initializeCredential(CredentialType.FHE_PRIVATE_KEY, clientKeys, notifier)
+      .then =>
+        @initializeCredential(CredentialType.SEARCH_PRIVATE_KEY, clientKeys, notifier)
+      .then =>
+        @initializeCredential(CredentialType.CLIENT_HASH_FUNCTION, clientKeys, notifier)
 
     initializeCredential: (credentialType, clientKeys) ->
       { uint8Key } = {}
 
       Promise.resolve()
+      .then ->
+        Promise.resolve(notifier(credentialType.stage))
       .then =>
         uint8Key           = credentialType.generator(clientKeys)
         encryptedKeyChunks = @searchKeySerializer.encrypt(uint8Key)

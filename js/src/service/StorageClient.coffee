@@ -1,7 +1,6 @@
 define 'kryptnostic.storage-client', [
   'require'
   'bluebird'
-  'kryptnostic.logger'
   'kryptnostic.validators'
   'kryptnostic.object-api'
   'kryptnostic.kryptnostic-object'
@@ -17,10 +16,7 @@ define 'kryptnostic.storage-client', [
   PendingObjectRequest  = require 'kryptnostic.pending-object-request'
   CryptoServiceLoader   = require 'kryptnostic.crypto-service-loader'
   ObjectApi             = require 'kryptnostic.object-api'
-  Logger                = require 'kryptnostic.logger'
   SearchIndexingService = require 'kryptnostic.search-indexing-service'
-
-  logger = Logger.get('StorageClient')
 
   { validateId, validateNonEmptyString } = validators
 

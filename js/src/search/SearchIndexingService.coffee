@@ -100,11 +100,12 @@ define 'kryptnostic.search-indexing-service', [
           # encrypt metadata
           kryptnosticObject = KryptnosticObject.createFromDecrypted({ id, body })
           kryptnosticObject.setChunkingStrategy(JsonChunkingStrategy.URI)
-          kryptnosticObject.encrypt(cryptoService)
-          kryptnosticObject.validateEncrypted()
+          encrypted = kryptnosticObject.encrypt(cryptoService)
+          encrypted.validateEncrypted()
 
           # format request
-          data = kryptnosticObject.data
+          data = encrypted.body
+          _.extend(data, { key: id, strategy: { '@class': JsonChunkingStrategy.URI } })
           indexedMetadata = new IndexedMetadata { key, data , id }
           metadataIndex.push(indexedMetadata)
 

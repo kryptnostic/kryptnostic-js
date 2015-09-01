@@ -18,7 +18,6 @@ define 'kryptnostic.search-indexing-service', [
 
   Promise               = require 'bluebird'
 
-  BinaryUtils           = require 'kryptnostic.binary-utils'
   CryptoServiceLoader   = require 'kryptnostic.crypto-service-loader'
   DocumentSearchKeyApi  = require 'kryptnostic.document-search-key-api'
   IndexedMetadata       = require 'kryptnostic.indexed-metadata'
@@ -44,7 +43,7 @@ define 'kryptnostic.search-indexing-service', [
     constructor : ->
       @cryptoServiceLoader  = new CryptoServiceLoader()
       @documentSearchKeyApi = new DocumentSearchKeyApi()
-      @kryptnosticEngine    = new MockKryptnosticEngine()
+      @engine               = new MockKryptnosticEngine()
       @metadataApi          = new MetadataApi()
       @metadataMapper       = new MetadataMapper()
       @objectIndexer        = new ObjectIndexer()
@@ -58,33 +57,27 @@ define 'kryptnostic.search-indexing-service', [
         return Promise.resolve()
 
       { body } = storageRequest
-      { objectAddressFunction, objectSearchKey, objectConversionMatrix } = {}
+      { objectAddressMatrix, objectSearchKey, objectIndexPair } = {}
 
-      uintId = BinaryUtils.stringToUint8(id)
+      Promise.resolve()
+      .then =>
+        objectAddressMatrix = @engine.getObjectAddressMatrix()
+        objectSearchKey     = @engine.getObjectSearchKey()
+        objectIndexPair     = @engine.getObjectIndexPair({ objectSearchKey, objectAddressMatrix })
 
-      Promise.props({
-        _objectAddressFunction  : @kryptnosticEngine.getObjectAddressFunction(uintId)
-        _objectSearchKey        : @kryptnosticEngine.getObjectSearchKey(uintId)
-        _objectConversionMatrix : @kryptnosticEngine.getObjectConversionMatrix(uintId)
-      })
-      .then ({ _objectAddressFunction, _objectSearchKey, _objectConversionMatrix }) =>
-        objectAddressFunction  = _objectAddressFunction
-        objectSearchKey        = _objectSearchKey
-        objectConversionMatrix = _objectConversionMatrix
-
-        encryptedAddressFunction = @searchKeySerializer.encrypt(objectAddressFunction)
+        encryptedAddressFunction = @searchKeySerializer.encrypt(objectAddressMatrix)
         @documentSearchKeyApi.uploadAddressFunction(id, encryptedAddressFunction)
       .then =>
-        @documentSearchKeyApi.uploadSharingPair(id, { objectSearchKey, objectConversionMatrix })
+        @documentSearchKeyApi.uploadSharingPair(id, objectIndexPair)
       .then =>
         @objectIndexer.index(id, body)
       .then (metadata) =>
-        @prepareMetadataRequest({ id, metadata, objectAddressFunction, objectSearchKey })
+        @prepareMetadataRequest({ id, metadata, objectAddressMatrix, objectSearchKey })
       .then (metadataRequest) =>
         @metadataApi.uploadMetadata( metadataRequest )
 
     # currently produces a single request, batch later if needed.
-    prepareMetadataRequest: ({ id, metadata, objectAddressFunction, objectSearchKey }) ->
+    prepareMetadataRequest: ({ id, metadata, objectAddressMatrix, objectSearchKey }) ->
       Promise.resolve()
       .then =>
         @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss : false })

@@ -82,6 +82,10 @@ define [
   afterEach ->
     serializer.credentialLoader.getCredentials.restore()
 
+  createUint8Array = ({ size, generator }) ->
+    raw = [0...size].map( (i) -> generator(i) )
+    return new Uint8Array(raw)
+
   # tests
   # =====
 
@@ -90,9 +94,28 @@ define [
     describe 'end-to-end encrypted serialization', ->
 
       it 'should encrypt a value and deserialize to the same value', ->
-
         encrypted = serializer.encrypt(MOCK_SEARCH_KEY)
         decrypted = serializer.decrypt(encrypted)
 
         expect(decrypted).toEqual(MOCK_SEARCH_KEY)
         expect(encrypted).not.toEqual(decrypted)
+
+      it 'should encrypt and deserialize a large array of repeated bytes', ->
+        key = createUint8Array({ size : 10000, generator: (i) -> 128 })
+
+        encrypted = serializer.encrypt(key)
+        decrypted = serializer.decrypt(encrypted)
+
+        expect(decrypted).toEqual(key)
+        expect(encrypted).not.toEqual(key)
+
+      it 'should encrypt and deserialize a large array containing all possible byte values', ->
+        key = createUint8Array({ size : 10000, generator: (i) -> i % 256 })
+
+        encrypted = serializer.encrypt(key)
+        decrypted = serializer.decrypted(encrypted)
+
+        expect(decrypted).toEqual(key)
+        expect(encrypted).not.toEqual(key)
+
+

@@ -8,6 +8,10 @@ define 'kryptnostic.document-search-key-api', [
   Logger  = require 'kryptnostic.logger'
   Promise = require 'bluebird'
 
+  indexingServiceUrl = -> Configuration.get('servicesUrl') + "/indexing";
+  sharingPairUrl     = -> indexingServiceUrl() + "/share";
+  addressFunctionUrl = -> indexingServiceUrl() + "/address";
+
   log = Logger.get('DocumentSearchKeyApi')
 
   #
@@ -18,11 +22,15 @@ define 'kryptnostic.document-search-key-api', [
 
     # input: uint8 representation of addres matrix, encrypted and serialized by SearchKeySerializer.
     uploadAddressFunction: (id, uint8) ->
-      log.warn('DocumentSearchKeyApi is not implemented!')
-      return Promise.resolve()
+      Requests.postToUrl(addressFunctionUrl() + '/' + id, uint8)
+      .then (response) ->
+        log.info('uploadAddressFunction', { id } )
+        return response.data
 
     uploadSharingPair: (id, { objectSearchKey, objectConversionMatrix }) ->
-      log.warn('DocumentSearchKeyApi is not implemented!')
-      return Promise.resolve()
+      Requests.postToUrl(sharingPairUrl() + '/' + id, objectSearchKey + objectConversionMatrix)
+      .then (response) ->
+        log.info('uploadSharingPair', { id } )
+        return response.data
 
   return DocumentSearchKeyApi

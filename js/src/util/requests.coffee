@@ -23,6 +23,30 @@ define 'kryptnostic.requests', [
     request.headers[CREDENTIAL_HEADER] = credentials.credential
     return request
 
+  getAsBlobFromUrl: (url) ->
+    return Promise.resolve()
+    .then ->
+      Promise.resolve(
+        axios(
+          wrapCredentials({
+            url          : url
+            method       : 'GET'
+            responseType : 'blob'
+          })))
+
+  postToUrl: (url, data) ->
+    return Promise.resolve()
+    .then ->
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            url    : url
+            method : 'POST'
+            data   : data
+          })))
+
   return {
     wrapCredentials,
+    getAsBlobFromUrl,
+    postToUrl,
   }

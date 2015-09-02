@@ -2,10 +2,17 @@ define 'kryptnostic.crypto-key-storage-api', [
   'require'
   'bluebird'
   'kryptnostic.logger'
+  'kryptnostic.requests'
 ], (require) ->
 
-  Promise = require 'bluebird'
-  Logger  = require 'kryptnostic.logger'
+  Promise  = require 'bluebird'
+  Requests = require 'kryptnostic.requests'
+  Logger   = require 'kryptnostic.logger'
+
+  rootKeysUrl   = -> Configuration.get('servicesUrl') + '/keys'
+  privateKeyUrl = -> rootKeysUrl() + '/private'
+  publicKeyUrl  = -> rootKeysUrl() + '/public'
+  clientHashUrl = -> rootKeysUrl() + '/hash'
 
   log = Logger.get('CryptoKeyStorageApi')
 
@@ -19,33 +26,37 @@ define 'kryptnostic.crypto-key-storage-api', [
     # =======
 
     getFhePrivateKey: ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+      return Requests.getAsBlobFromUrl(privateKeyUrl())
 
     setFhePrivateKey: (key) ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+      return Requests.postToUrl(privateKeyUrl(), key)
+      .then (response) ->
+        log.info('setFhePrivateKey')
+        return response.data
 
     # search key
     # ==========
 
     getSearchPrivateKey: ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+      return Requests.getAsBlobFromUrl(publicKeyUrl())
 
     setSearchPrivateKey: (key) ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+      return Requests.postToUrl(publicKeyUrl(), key)
+      .then (response) ->
+        log.info('setSearchPrivateKey')
+        return response.data
+
 
     # client hash
     # ===========
 
     getClientHashFunction: ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+      return Requests.getAsBlobFromUrl(clientHashUrl())
 
     setClientHashFunction: (key) ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+      return Requests.postToUrl(clientHashUrl(), key)
+      .then (response) ->
+        log.info('uploadSharingPair')
+        return response.data
 
   return CryptoKeyStorageApi

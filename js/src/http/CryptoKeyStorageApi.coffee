@@ -10,9 +10,10 @@ define 'kryptnostic.crypto-key-storage-api', [
   Logger   = require 'kryptnostic.logger'
 
   rootKeysUrl   = -> Configuration.get('servicesUrl') + '/keys'
-  privateKeyUrl = -> rootKeysUrl() + '/private'
-  publicKeyUrl  = -> rootKeysUrl() + '/public'
   clientHashUrl = -> rootKeysUrl() + '/hash'
+  fhePrivateKeyUrl = -> rootKeysUrl() + '/private'
+  rsaPublicKeyUrl  = -> rootKeysUrl() + '/rsapublic'
+  fheSearchPrivateKeyUrl  = -> rootKeysUrl() + '/searchprivate'
 
   log = Logger.get('CryptoKeyStorageApi')
 
@@ -22,14 +23,26 @@ define 'kryptnostic.crypto-key-storage-api', [
   #
   class CryptoKeyStorageApi
 
+    # rsa public key
+    # ==========
+
+    getRsaPublicKey: ->
+      return Requests.getAsBlobFromUrl(rsaPublicKeyUrl())
+
+    setRsaPublicKey: (key) ->
+      return Requests.postToUrl(rsaPublicKeyUrl(), key)
+      .then (response) ->
+        log.info('setSearchPrivateKey')
+        return response.data
+
     # fhe key
     # =======
 
     getFhePrivateKey: ->
-      return Requests.getAsBlobFromUrl(privateKeyUrl())
+      return Requests.getAsBlobFromUrl(fhePrivateKeyUrl())
 
     setFhePrivateKey: (key) ->
-      return Requests.postToUrl(privateKeyUrl(), key)
+      return Requests.postToUrl(fhePrivateKeyUrl(), key)
       .then (response) ->
         log.info('setFhePrivateKey')
         return response.data
@@ -38,10 +51,10 @@ define 'kryptnostic.crypto-key-storage-api', [
     # ==========
 
     getSearchPrivateKey: ->
-      return Requests.getAsBlobFromUrl(publicKeyUrl())
+      return Requests.getAsBlobFromUrl(fheSearchPrivateKeyUrl())
 
     setSearchPrivateKey: (key) ->
-      return Requests.postToUrl(publicKeyUrl(), key)
+      return Requests.postToUrl(fheSearchPrivateKeyUrl(), key)
       .then (response) ->
         log.info('setSearchPrivateKey')
         return response.data

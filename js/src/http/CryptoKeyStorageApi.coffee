@@ -1,11 +1,9 @@
 define 'kryptnostic.crypto-key-storage-api', [
   'require'
-  'bluebird'
   'kryptnostic.logger'
   'kryptnostic.requests'
 ], (require) ->
 
-  Promise  = require 'bluebird'
   Requests = require 'kryptnostic.requests'
   Logger   = require 'kryptnostic.logger'
 

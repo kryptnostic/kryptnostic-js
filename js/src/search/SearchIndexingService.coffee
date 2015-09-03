@@ -3,7 +3,7 @@ define 'kryptnostic.search-indexing-service', [
   'bluebird'
   'kryptnostic.chunking.strategy.json'
   'kryptnostic.crypto-service-loader'
-  'kryptnostic.document-search-key-api'
+  'kryptnostic.object-search-key-api'
   'kryptnostic.kryptnostic-object'
   'kryptnostic.logger'
   'kryptnostic.metadata-api'
@@ -19,7 +19,7 @@ define 'kryptnostic.search-indexing-service', [
   Promise               = require 'bluebird'
 
   CryptoServiceLoader   = require 'kryptnostic.crypto-service-loader'
-  DocumentSearchKeyApi  = require 'kryptnostic.document-search-key-api'
+  ObjectSearchKeyApi    = require 'kryptnostic.object-search-key-api'
   IndexedMetadata       = require 'kryptnostic.indexed-metadata'
   JsonChunkingStrategy  = require 'kryptnostic.chunking.strategy.json'
   KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
@@ -42,7 +42,7 @@ define 'kryptnostic.search-indexing-service', [
 
     constructor : ->
       @cryptoServiceLoader  = new CryptoServiceLoader()
-      @documentSearchKeyApi = new DocumentSearchKeyApi()
+      @objectSearchKeyApi   = new ObjectSearchKeyApi()
       @engine               = new MockKryptnosticEngine()
       @metadataApi          = new MetadataApi()
       @metadataMapper       = new MetadataMapper()
@@ -66,9 +66,9 @@ define 'kryptnostic.search-indexing-service', [
         objectIndexPair     = @engine.getObjectIndexPair({ objectSearchKey, objectAddressMatrix })
 
         encryptedAddressFunction = @searchKeySerializer.encrypt(objectAddressMatrix)
-        @documentSearchKeyApi.uploadAddressFunction(id, encryptedAddressFunction)
+        @objectSearchKeyApi.uploadAddressFunction(id, encryptedAddressFunction)
       .then =>
-        @documentSearchKeyApi.uploadSharingPair(id, objectIndexPair)
+        @objectSearchKeyApi.uploadSharingPair(id, objectIndexPair)
       .then =>
         @objectIndexer.index(id, body)
       .then (metadata) =>

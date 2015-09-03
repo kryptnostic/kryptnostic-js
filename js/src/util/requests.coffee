@@ -25,21 +25,21 @@ define 'kryptnostic.requests', [
 
   getAsBlobFromUrl: (url) ->
     return Promise.resolve(
-        axios(
-          wrapCredentials({
-            url          : url
-            method       : 'GET'
-            responseType : 'blob'
-          })))
+      axios(
+        wrapCredentials({
+          url          : url
+          method       : 'GET'
+          responseType : 'blob'
+        })))
 
   postToUrl: (url, data) ->
     return Promise.resolve(
-        axios(
-          Requests.wrapCredentials({
-            url    : url
-            method : 'POST'
-            data   : data
-          })))
+      axios(
+        Requests.wrapCredentials({
+          url    : url
+          method : 'POST'
+          data   : data
+        })))
 
   return {
     wrapCredentials,

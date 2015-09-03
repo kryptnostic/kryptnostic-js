@@ -1,12 +1,10 @@
 define 'kryptnostic.search-api', [
   'require'
-  'bluebird'
   'kryptnostic.logger'
   'kryptnostic.requests'
 ], (require) ->
 
   Logger  = require 'kryptnostic.logger'
-  Promise = require 'bluebird'
   Requests = require 'kryptnostic.requests'
 
   searchServiceUrl   = -> Configuration.get('servicesUrl') + '/search/fast'

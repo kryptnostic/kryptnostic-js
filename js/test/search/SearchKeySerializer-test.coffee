@@ -117,11 +117,11 @@ define [
         testKey( key )
 
       it 'should encrypt and deserialize a large array of repeated bytes', ->
-        key = createUint8Array({ size : 100000, generator: (i) -> 128 })
+        key = createUint8Array({ size : 100, generator: (i) -> 128 })
         testKey( key )
 
       it 'should encrypt and deserialize a large array containing all possible byte values', ->
-        key = createUint8Array({ size : 100000, generator: (i) -> i % 256 })
+        key = createUint8Array({ size : 100, generator: (i) -> i % 256 })
         testKey( key )
 
 

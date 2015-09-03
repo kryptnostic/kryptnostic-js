@@ -122,5 +122,14 @@ define [
         key = createUint8Array({ size : 1000, generator: (i) -> i % 256 })
         testKey( key )
 
+      it 'should encrypt and deserialize a large array containing high byte value', ->
+        key = createUint8Array({ size : 1000, generator: (i) -> 255 })
+        testKey( key )
 
+      it 'should encrypt and deserialize a large array containing low byte value', ->
+        key = createUint8Array({ size : 1000, generator: (i) -> 0 })
+        testKey( key )
 
+      it 'should encrypt and deserialize a large array containing random byte values', ->
+        key = createUint8Array({ size : 1000, generator: (i) -> (Math.random() * (256 - 0) + 0) })
+        testKey( key )

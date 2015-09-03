@@ -18,9 +18,9 @@ define 'kryptnostic.search-key-serializer', [
   log = Logger.get('SearchKeySerializer')
 
   {
-    chunkUint
+    chunkUint8
     cleanUint8Buffer
-    joinUint
+    joinUint8
     stringToUint16
     uint16ToString
     uint16ToUint8
@@ -79,7 +79,7 @@ define 'kryptnostic.search-key-serializer', [
         .map((chunk) -> stringToUint16(chunk))
         .map((chunk) -> uint16ToUint8(chunk))
         .tap((chunks) -> validateEncryptedChunks(chunks))
-        .thru((chunks) -> joinUint(chunks))
+        .thru((chunks) -> joinUint8(chunks))
         .value()
 
       return encryptedUint
@@ -89,7 +89,7 @@ define 'kryptnostic.search-key-serializer', [
       rsaCryptoService = @createRsaCryptoService()
 
       decryptedUint = _.chain(uint8)
-        .thru((uint8) -> chunkUint(uint8, ENCRYPTED_PADDED_BLOCK_LENGTH))
+        .thru((uint8) -> chunkUint8(uint8, ENCRYPTED_PADDED_BLOCK_LENGTH))
         .tap((chunks) -> validateEncryptedChunks(chunks))
         .map((chunk) -> uint8ToUint16(chunk))
         .map((chunk) -> uint16ToString(chunk))

@@ -90,7 +90,10 @@ define [
     raw = [0...size].map( (i) -> generator(i) )
     return new Uint8Array(raw)
 
-  checkResults = ({ key, encrypted, decrypted }) ->
+  testKey = (key) ->
+    encrypted = serializer.encrypt(key)
+    decrypted = serializer.decrypt(encrypted)
+
     errorMessage = """
       expected decrypted output to equal key:
       #{JSON.stringify(key)}
@@ -98,12 +101,7 @@ define [
     """
     expect(key).toEqual(decrypted, errorMessage)
     expect(encrypted).not.toEqual(key)
-
-  testKey = (key) ->
-    encrypted = serializer.encrypt(key)
-    decrypted = serializer.decrypt(encrypted)
-
-    checkResults { key , encrypted, decrypted }
+    expect(encrypted.length > key.length).toBe(true, 'encryption should pad key')
 
   # tests
   # =====
@@ -117,11 +115,11 @@ define [
         testKey( key )
 
       it 'should encrypt and deserialize a large array of repeated bytes', ->
-        key = createUint8Array({ size : 100, generator: (i) -> 128 })
+        key = createUint8Array({ size : 1000, generator: (i) -> 128 })
         testKey( key )
 
       it 'should encrypt and deserialize a large array containing all possible byte values', ->
-        key = createUint8Array({ size : 100, generator: (i) -> i % 256 })
+        key = createUint8Array({ size : 1000, generator: (i) -> i % 256 })
         testKey( key )
 
 

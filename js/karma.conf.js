@@ -71,10 +71,14 @@ module.exports = function(config) {
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: false,
+    singleRun                  : false,
 
-    captureTimeout           : 100000,
+    captureTimeout             : 100000,
 
-    browserNoActivityTimeout : 100000
+    browserNoActivityTimeout   : 100000,
+
+    browserDisconnectTimeout   : 100000,
+
+    browserDisconnectTolerance : 0,
   });
 };

@@ -32,31 +32,43 @@ define 'kryptnostic.search-credential-service', [
       getter    : (api) -> api.getFhePrivateKey
       setter    : (api) -> api.setFhePrivateKey
       stage     : AuthenticationStage.FHE_KEYGEN
+      encrypt   : true
     }
     SEARCH_PRIVATE_KEY : {
       generator : (clientKeys) -> clientKeys.searchPrivateKey
       getter    : (api) -> api.getSearchPrivateKey
       setter    : (api) -> api.setSearchPrivateKey
       stage     : AuthenticationStage.SEARCH_KEYGEN
+      encrypt   : true
     }
     CLIENT_HASH_FUNCTION : {
       generator : (clientKeys) -> clientKeys.clientHashFunction
       getter    : (api) -> api.getClientHashFunction
       setter    : (api) -> api.setClientHashFunction
       stage     : AuthenticationStage.CLIENT_HASH_GEN
+      encrypt   : false
     }
   }
 
+  serializeKey = ({ credentialType, uint8Key, searchKeySerializer }) ->
+    if _.isEmpty(uint8Key)
+      return uint8Key
+    else if credentialType.encrypt
+      return searchKeySerializer.encrypt(uint8Key)
+    else
+      return uint8Key
+
+  deserializeKey = ({ credentialType, uint8Key, searchKeySerializer }) ->
+    if _.isEmpty(uint8Key)
+      return uint8Key
+    else if credentialType.encrypt
+      return searchKeySerializer.decrypt(uint8Key)
+    else
+      return uint8Key
 
   #
-  # Loads or generates credentials produced by the KryptnosticEngine.
-  # These credentials include:
-  #
-  # 1) search private key
-  # 2) fhe private key
-  # 3) client hash function
-  #
-  # This class is designed to be used one-time during authentication.
+  # Loads or generates credentials produced by the SearchKeyGenerator, including
+  # search private key, fhe private key, and client hash function.
   #
   # Author: rbuckheit
   #
@@ -98,11 +110,10 @@ define 'kryptnostic.search-credential-service', [
         )
         Promise.props(credentialPromises)
       .then (credentialsByType) =>
-        return _.mapValues(credentialsByType, (credential) =>
-          if _.isEmpty(credential)
-            return credential
-          else
-            return @searchKeySerializer.decrypt(credential)
+        return _.mapValues(credentialsByType, (credential, typeKey) =>
+          credentialType = CredentialType[typeKey]
+          uint8Key       = credential
+          return deserializeKey({ credentialType, uint8Key, @searchKeySerializer })
         )
 
     hasInitialized: ->
@@ -137,17 +148,17 @@ define 'kryptnostic.search-credential-service', [
         @initializeCredential(CredentialType.CLIENT_HASH_FUNCTION, clientKeys, notifier)
 
     initializeCredential: (credentialType, clientKeys, notifier) ->
-      { uint8Key } = {}
+      { uint8Key, storeableKey } = {}
 
       Promise.resolve()
       .then ->
         log.info('initializeCredential', credentialType.stage)
         Promise.resolve(notifier(credentialType.stage))
       .then =>
-        uint8Key           = credentialType.generator(clientKeys)
-        encryptedKeyChunks = @searchKeySerializer.encrypt(uint8Key)
-        storeCredential    = credentialType.setter(@cryptoKeyStorageApi)
-        storeCredential(encryptedKeyChunks)
+        uint8Key        = credentialType.generator(clientKeys)
+        storeableKey    = serializeKey({ credentialType, uint8Key, @searchKeySerializer })
+        storeCredential = credentialType.setter(@cryptoKeyStorageApi)
+        storeCredential(storeableKey)
       .then ->
         return uint8Key
 

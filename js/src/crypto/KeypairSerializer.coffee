@@ -29,7 +29,7 @@ define 'kryptnostic.keypair-serializer', [
 
     @hydrate : (serialized) ->
       if !serialized || isUndefined(serialized)
-        log.warn('keypair not initialized')
+        log.info('keypair not initialized')
         return undefined
 
       privateKeyBuffer = Forge.util.createBuffer(atob(serialized), 'raw')

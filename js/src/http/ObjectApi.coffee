@@ -27,8 +27,6 @@ define 'kryptnostic.object-api', [
 
   DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
 
-
-
   #
   # HTTP calls for interacting with the /object endpoint of Kryptnostic Services.
   # Author: rbuckheit

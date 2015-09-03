@@ -2,12 +2,16 @@ define [
   'require'
   'forge'
   'sinon'
+  'kryptnostic.logger'
   'kryptnostic.search-key-serializer'
 ], (require) ->
 
   sinon               = require 'sinon'
-  Forge               = require 'forge'
+  forge               = require 'forge'
   SearchKeySerializer = require 'kryptnostic.search-key-serializer'
+  Logger              = require('kryptnostic.logger')
+
+  log = Logger.get('SearchKeySerializer-test')
 
   # mock data
   # =========
@@ -70,8 +74,8 @@ define [
 
   beforeEach ->
     # rsa key init
-    privateKey = Forge.pki.privateKeyFromPem(MOCK_PEM_RSA_PRIVATE_KEY)
-    publicKey  = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e)
+    privateKey = forge.pki.privateKeyFromPem(MOCK_PEM_RSA_PRIVATE_KEY)
+    publicKey  = forge.pki.setRsaPublicKey(privateKey.n, privateKey.e)
     keypair    = { privateKey, publicKey }
 
     serializer = new SearchKeySerializer()
@@ -86,6 +90,21 @@ define [
     raw = [0...size].map( (i) -> generator(i) )
     return new Uint8Array(raw)
 
+  checkResults = ({ key, encrypted, decrypted }) ->
+    errorMessage = """
+      expected decrypted output to equal key:
+      #{JSON.stringify(key)}
+      #{JSON.stringify(decrypted)}
+    """
+    expect(key).toEqual(decrypted, errorMessage)
+    expect(encrypted).not.toEqual(key)
+
+  testKey = (key) ->
+    encrypted = serializer.encrypt(key)
+    decrypted = serializer.decrypt(encrypted)
+
+    checkResults { key , encrypted, decrypted }
+
   # tests
   # =====
 
@@ -94,28 +113,16 @@ define [
     describe 'end-to-end encrypted serialization', ->
 
       it 'should encrypt a value and deserialize to the same value', ->
-        encrypted = serializer.encrypt(MOCK_SEARCH_KEY)
-        decrypted = serializer.decrypt(encrypted)
-
-        expect(decrypted).toEqual(MOCK_SEARCH_KEY)
-        expect(encrypted).not.toEqual(decrypted)
+        key = MOCK_SEARCH_KEY
+        testKey( key )
 
       it 'should encrypt and deserialize a large array of repeated bytes', ->
-        key = createUint8Array({ size : 10000, generator: (i) -> 128 })
-
-        encrypted = serializer.encrypt(key)
-        decrypted = serializer.decrypt(encrypted)
-
-        expect(decrypted).toEqual(key)
-        expect(encrypted).not.toEqual(key)
+        key = createUint8Array({ size : 100000, generator: (i) -> 128 })
+        testKey( key )
 
       it 'should encrypt and deserialize a large array containing all possible byte values', ->
-        key = createUint8Array({ size : 10000, generator: (i) -> i % 256 })
+        key = createUint8Array({ size : 100000, generator: (i) -> i % 256 })
+        testKey( key )
 
-        encrypted = serializer.encrypt(key)
-        decrypted = serializer.decrypted(encrypted)
-
-        expect(decrypted).toEqual(key)
-        expect(encrypted).not.toEqual(key)
 
 

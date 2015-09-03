@@ -69,6 +69,17 @@ define 'kryptnostic.binary-utils', [
   UINT8_REPRESENTABLE_SIZE  = Math.pow(2, 8)
   UINT16_REPRESENTABLE_SIZE = Math.pow(2, 16)
 
+  # cleans a uint8 array so that the underlying buffer byteLength
+  # matches the array length exactly with no extra padding.
+  cleanUint8Buffer = (arr) ->
+    validateUint8(arr)
+
+    if arr.length is arr.byteLength and arr.length is arr.buffer.byteLength
+      return arr
+    else
+      raw = [0...arr.length].map((i) -> arr[i])
+      return new Uint8Array(raw)
+
   uint8ToNumeric = (arr) ->
     validateUint8(arr)
     return [0...arr.length].map((i) -> arr[i])
@@ -125,6 +136,7 @@ define 'kryptnostic.binary-utils', [
 
   return {
     chunkUint
+    cleanUint8Buffer
     hexToUint
     joinUint
     stringToHex

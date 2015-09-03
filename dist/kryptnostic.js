@@ -17753,6 +17753,593 @@ if (typeof module !== "undefined" && module.exports) {
     return self;
 }));
 
+// +----------------------------------------------------------------------+
+// | murmurHash3.js v2.1.2 (http://github.com/karanlyons/murmurHash.js)   |
+// | A javascript implementation of MurmurHash3's x86 hashing algorithms. |
+// |----------------------------------------------------------------------|
+// | Copyright (c) 2012 Karan Lyons                                       |
+// | Freely distributable under the MIT license.                          |
+// +----------------------------------------------------------------------+
+
+
+;(function (root, undefined) {
+	'use strict';
+	
+	// Create a local object that'll be exported or referenced globally.
+	var library = {
+		'version': '2.1.2',
+		'x86': {},
+		'x64': {}
+	};
+	
+	
+	
+	
+	// PRIVATE FUNCTIONS
+	// -----------------
+	
+	function _x86Multiply(m, n) {
+		//
+		// Given two 32bit ints, returns the two multiplied together as a
+		// 32bit int.
+		//
+		
+		return ((m & 0xffff) * n) + ((((m >>> 16) * n) & 0xffff) << 16);
+	}
+	
+	
+	function _x86Rotl(m, n) {
+		//
+		// Given a 32bit int and an int representing a number of bit positions,
+		// returns the 32bit int rotated left by that number of positions.
+		//
+		
+		return (m << n) | (m >>> (32 - n));
+	}
+	
+	
+	function _x86Fmix(h) {
+		//
+		// Given a block, returns murmurHash3's final x86 mix of that block.
+		//
+		
+		h ^= h >>> 16;
+		h  = _x86Multiply(h, 0x85ebca6b);
+		h ^= h >>> 13;
+		h  = _x86Multiply(h, 0xc2b2ae35);
+		h ^= h >>> 16;
+		
+		return h;
+	}
+	
+	
+	function _x64Add(m, n) {
+		//
+		// Given two 64bit ints (as an array of two 32bit ints) returns the two
+		// added together as a 64bit int (as an array of two 32bit ints).
+		//
+		
+		m = [m[0] >>> 16, m[0] & 0xffff, m[1] >>> 16, m[1] & 0xffff];
+		n = [n[0] >>> 16, n[0] & 0xffff, n[1] >>> 16, n[1] & 0xffff];
+		var o = [0, 0, 0, 0];
+		
+		o[3] += m[3] + n[3];
+		o[2] += o[3] >>> 16;
+		o[3] &= 0xffff;
+		
+		o[2] += m[2] + n[2];
+		o[1] += o[2] >>> 16;
+		o[2] &= 0xffff;
+		
+		o[1] += m[1] + n[1];
+		o[0] += o[1] >>> 16;
+		o[1] &= 0xffff;
+		
+		o[0] += m[0] + n[0];
+		o[0] &= 0xffff;
+		
+		return [(o[0] << 16) | o[1], (o[2] << 16) | o[3]];
+	}
+	
+	
+	function _x64Multiply(m, n) {
+		//
+		// Given two 64bit ints (as an array of two 32bit ints) returns the two
+		// multiplied together as a 64bit int (as an array of two 32bit ints).
+		//
+		
+		m = [m[0] >>> 16, m[0] & 0xffff, m[1] >>> 16, m[1] & 0xffff];
+		n = [n[0] >>> 16, n[0] & 0xffff, n[1] >>> 16, n[1] & 0xffff];
+		var o = [0, 0, 0, 0];
+		
+		o[3] += m[3] * n[3];
+		o[2] += o[3] >>> 16;
+		o[3] &= 0xffff;
+		
+		o[2] += m[2] * n[3];
+		o[1] += o[2] >>> 16;
+		o[2] &= 0xffff;
+		
+		o[2] += m[3] * n[2];
+		o[1] += o[2] >>> 16;
+		o[2] &= 0xffff;
+		
+		o[1] += m[1] * n[3];
+		o[0] += o[1] >>> 16;
+		o[1] &= 0xffff;
+		
+		o[1] += m[2] * n[2];
+		o[0] += o[1] >>> 16;
+		o[1] &= 0xffff;
+		
+		o[1] += m[3] * n[1];
+		o[0] += o[1] >>> 16;
+		o[1] &= 0xffff;
+		
+		o[0] += (m[0] * n[3]) + (m[1] * n[2]) + (m[2] * n[1]) + (m[3] * n[0]);
+		o[0] &= 0xffff;
+		
+		return [(o[0] << 16) | o[1], (o[2] << 16) | o[3]];
+	}
+	
+	
+	function _x64Rotl(m, n) {
+		//
+		// Given a 64bit int (as an array of two 32bit ints) and an int
+		// representing a number of bit positions, returns the 64bit int (as an
+		// array of two 32bit ints) rotated left by that number of positions.
+		//
+		
+		n %= 64;
+		
+		if (n === 32) {
+			return [m[1], m[0]];
+		}
+		
+		else if (n < 32) {
+			return [(m[0] << n) | (m[1] >>> (32 - n)), (m[1] << n) | (m[0] >>> (32 - n))];
+		}
+		
+		else {
+			n -= 32;
+			return [(m[1] << n) | (m[0] >>> (32 - n)), (m[0] << n) | (m[1] >>> (32 - n))];
+		}
+	}
+	
+	
+	function _x64LeftShift(m, n) {
+		//
+		// Given a 64bit int (as an array of two 32bit ints) and an int
+		// representing a number of bit positions, returns the 64bit int (as an
+		// array of two 32bit ints) shifted left by that number of positions.
+		//
+		
+		n %= 64;
+		
+		if (n === 0) {
+			return m;
+		}
+		
+		else if (n < 32) {
+			return [(m[0] << n) | (m[1] >>> (32 - n)), m[1] << n];
+		}
+		
+		else {
+			return [m[1] << (n - 32), 0];
+		}
+	}
+	
+	
+	function _x64Xor(m, n) {
+		//
+		// Given two 64bit ints (as an array of two 32bit ints) returns the two
+		// xored together as a 64bit int (as an array of two 32bit ints).
+		//
+		
+		return [m[0] ^ n[0], m[1] ^ n[1]];
+	}
+	
+	
+	function _x64Fmix(h) {
+		//
+		// Given a block, returns murmurHash3's final x64 mix of that block.
+		// (`[0, h[0] >>> 1]` is a 33 bit unsigned right shift. This is the
+		// only place where we need to right shift 64bit ints.)
+		//
+		
+		h = _x64Xor(h, [0, h[0] >>> 1]);
+		h = _x64Multiply(h, [0xff51afd7, 0xed558ccd]);
+		h = _x64Xor(h, [0, h[0] >>> 1]);
+		h = _x64Multiply(h, [0xc4ceb9fe, 0x1a85ec53]);
+		h = _x64Xor(h, [0, h[0] >>> 1]);
+		
+		return h;
+	}
+	
+	
+	
+	
+	// PUBLIC FUNCTIONS
+	// ----------------
+	
+	library.x86.hash32 = function (key, seed) {
+		//
+		// Given a string and an optional seed as an int, returns a 32 bit hash
+		// using the x86 flavor of MurmurHash3, as an unsigned int.
+		//
+		
+		key = key || '';
+		seed = seed || 0;
+		
+		var remainder = key.length % 4;
+		var bytes = key.length - remainder;
+		
+		var h1 = seed;
+		
+		var k1 = 0;
+		
+		var c1 = 0xcc9e2d51;
+		var c2 = 0x1b873593;
+		
+		for (var i = 0; i < bytes; i = i + 4) {
+			k1 = ((key.charCodeAt(i) & 0xff)) | ((key.charCodeAt(i + 1) & 0xff) << 8) | ((key.charCodeAt(i + 2) & 0xff) << 16) | ((key.charCodeAt(i + 3) & 0xff) << 24);
+			
+			k1 = _x86Multiply(k1, c1);
+			k1 = _x86Rotl(k1, 15);
+			k1 = _x86Multiply(k1, c2);
+			
+			h1 ^= k1;
+			h1 = _x86Rotl(h1, 13);
+			h1 = _x86Multiply(h1, 5) + 0xe6546b64;
+		}
+		
+		k1 = 0;
+		
+		switch (remainder) {
+			case 3:
+				k1 ^= (key.charCodeAt(i + 2) & 0xff) << 16;
+			
+			case 2:
+				k1 ^= (key.charCodeAt(i + 1) & 0xff) << 8;
+			
+			case 1:
+				k1 ^= (key.charCodeAt(i) & 0xff);
+				k1 = _x86Multiply(k1, c1);
+				k1 = _x86Rotl(k1, 15);
+				k1 = _x86Multiply(k1, c2);
+				h1 ^= k1;
+		}
+		
+		h1 ^= key.length;
+		h1 = _x86Fmix(h1);
+		
+		return h1 >>> 0;
+	};
+	
+	
+	library.x86.hash128 = function (key, seed) {
+		//
+		// Given a string and an optional seed as an int, returns a 128 bit
+		// hash using the x86 flavor of MurmurHash3, as an unsigned hex.
+		//
+		
+		key = key || '';
+		seed = seed || 0;
+		
+		var remainder = key.length % 16;
+		var bytes = key.length - remainder;
+		
+		var h1 = seed;
+		var h2 = seed;
+		var h3 = seed;
+		var h4 = seed;
+		
+		var k1 = 0;
+		var k2 = 0;
+		var k3 = 0;
+		var k4 = 0;
+		
+		var c1 = 0x239b961b;
+		var c2 = 0xab0e9789;
+		var c3 = 0x38b34ae5;
+		var c4 = 0xa1e38b93;
+		
+		for (var i = 0; i < bytes; i = i + 16) {
+			k1 = ((key.charCodeAt(i) & 0xff)) | ((key.charCodeAt(i + 1) & 0xff) << 8) | ((key.charCodeAt(i + 2) & 0xff) << 16) | ((key.charCodeAt(i + 3) & 0xff) << 24);
+			k2 = ((key.charCodeAt(i + 4) & 0xff)) | ((key.charCodeAt(i + 5) & 0xff) << 8) | ((key.charCodeAt(i + 6) & 0xff) << 16) | ((key.charCodeAt(i + 7) & 0xff) << 24);
+			k3 = ((key.charCodeAt(i + 8) & 0xff)) | ((key.charCodeAt(i + 9) & 0xff) << 8) | ((key.charCodeAt(i + 10) & 0xff) << 16) | ((key.charCodeAt(i + 11) & 0xff) << 24);
+			k4 = ((key.charCodeAt(i + 12) & 0xff)) | ((key.charCodeAt(i + 13) & 0xff) << 8) | ((key.charCodeAt(i + 14) & 0xff) << 16) | ((key.charCodeAt(i + 15) & 0xff) << 24);
+			
+			k1 = _x86Multiply(k1, c1);
+			k1 = _x86Rotl(k1, 15);
+			k1 = _x86Multiply(k1, c2);
+			h1 ^= k1;
+			
+			h1 = _x86Rotl(h1, 19);
+			h1 += h2;
+			h1 = _x86Multiply(h1, 5) + 0x561ccd1b;
+			
+			k2 = _x86Multiply(k2, c2);
+			k2 = _x86Rotl(k2, 16);
+			k2 = _x86Multiply(k2, c3);
+			h2 ^= k2;
+			
+			h2 = _x86Rotl(h2, 17);
+			h2 += h3;
+			h2 = _x86Multiply(h2, 5) + 0x0bcaa747;
+			
+			k3 = _x86Multiply(k3, c3);
+			k3 = _x86Rotl(k3, 17);
+			k3 = _x86Multiply(k3, c4);
+			h3 ^= k3;
+			
+			h3 = _x86Rotl(h3, 15);
+			h3 += h4;
+			h3 = _x86Multiply(h3, 5) + 0x96cd1c35;
+			
+			k4 = _x86Multiply(k4, c4);
+			k4 = _x86Rotl(k4, 18);
+			k4 = _x86Multiply(k4, c1);
+			h4 ^= k4;
+			
+			h4 = _x86Rotl(h4, 13);
+			h4 += h1;
+			h4 = _x86Multiply(h4, 5) + 0x32ac3b17;
+		}
+		
+		k1 = 0;
+		k2 = 0;
+		k3 = 0;
+		k4 = 0;
+		
+		switch (remainder) {
+			case 15:
+				k4 ^= key.charCodeAt(i + 14) << 16;
+			
+			case 14:
+				k4 ^= key.charCodeAt(i + 13) << 8;
+			
+			case 13:
+				k4 ^= key.charCodeAt(i + 12);
+				k4 = _x86Multiply(k4, c4);
+				k4 = _x86Rotl(k4, 18);
+				k4 = _x86Multiply(k4, c1);
+				h4 ^= k4;
+			
+			case 12:
+				k3 ^= key.charCodeAt(i + 11) << 24;
+			
+			case 11:
+				k3 ^= key.charCodeAt(i + 10) << 16;
+			
+			case 10:
+				k3 ^= key.charCodeAt(i + 9) << 8;
+			
+			case 9:
+				k3 ^= key.charCodeAt(i + 8);
+				k3 = _x86Multiply(k3, c3);
+				k3 = _x86Rotl(k3, 17);
+				k3 = _x86Multiply(k3, c4);
+				h3 ^= k3;
+			
+			case 8:
+				k2 ^= key.charCodeAt(i + 7) << 24;
+			
+			case 7:
+				k2 ^= key.charCodeAt(i + 6) << 16;
+			
+			case 6:
+				k2 ^= key.charCodeAt(i + 5) << 8;
+			
+			case 5:
+				k2 ^= key.charCodeAt(i + 4);
+				k2 = _x86Multiply(k2, c2);
+				k2 = _x86Rotl(k2, 16);
+				k2 = _x86Multiply(k2, c3);
+				h2 ^= k2;
+			
+			case 4:
+				k1 ^= key.charCodeAt(i + 3) << 24;
+			
+			case 3:
+				k1 ^= key.charCodeAt(i + 2) << 16;
+			
+			case 2:
+				k1 ^= key.charCodeAt(i + 1) << 8;
+			
+			case 1:
+				k1 ^= key.charCodeAt(i);
+				k1 = _x86Multiply(k1, c1);
+				k1 = _x86Rotl(k1, 15);
+				k1 = _x86Multiply(k1, c2);
+				h1 ^= k1;
+		}
+		
+		h1 ^= key.length;
+		h2 ^= key.length;
+		h3 ^= key.length;
+		h4 ^= key.length;
+		
+		h1 += h2;
+		h1 += h3;
+		h1 += h4;
+		h2 += h1;
+		h3 += h1;
+		h4 += h1;
+		
+		h1 = _x86Fmix(h1);
+		h2 = _x86Fmix(h2);
+		h3 = _x86Fmix(h3);
+		h4 = _x86Fmix(h4);
+		
+		h1 += h2;
+		h1 += h3;
+		h1 += h4;
+		h2 += h1;
+		h3 += h1;
+		h4 += h1;
+		
+		return ("00000000" + (h1 >>> 0).toString(16)).slice(-8) + ("00000000" + (h2 >>> 0).toString(16)).slice(-8) + ("00000000" + (h3 >>> 0).toString(16)).slice(-8) + ("00000000" + (h4 >>> 0).toString(16)).slice(-8);
+	};
+	
+	
+	library.x64.hash128 = function (key, seed) {
+		//
+		// Given a string and an optional seed as an int, returns a 128 bit
+		// hash using the x64 flavor of MurmurHash3, as an unsigned hex.
+		//
+		
+		key = key || '';
+		seed = seed || 0;
+		
+		var remainder = key.length % 16;
+		var bytes = key.length - remainder;
+		
+		var h1 = [0, seed];
+		var h2 = [0, seed];
+		
+		var k1 = [0, 0];
+		var k2 = [0, 0];
+		
+		var c1 = [0x87c37b91, 0x114253d5];
+		var c2 = [0x4cf5ad43, 0x2745937f];
+		
+		for (var i = 0; i < bytes; i = i + 16) {
+			k1 = [((key.charCodeAt(i + 4) & 0xff)) | ((key.charCodeAt(i + 5) & 0xff) << 8) | ((key.charCodeAt(i + 6) & 0xff) << 16) | ((key.charCodeAt(i + 7) & 0xff) << 24), ((key.charCodeAt(i) & 0xff)) | ((key.charCodeAt(i + 1) & 0xff) << 8) | ((key.charCodeAt(i + 2) & 0xff) << 16) | ((key.charCodeAt(i + 3) & 0xff) << 24)];
+			k2 = [((key.charCodeAt(i + 12) & 0xff)) | ((key.charCodeAt(i + 13) & 0xff) << 8) | ((key.charCodeAt(i + 14) & 0xff) << 16) | ((key.charCodeAt(i + 15) & 0xff) << 24), ((key.charCodeAt(i + 8) & 0xff)) | ((key.charCodeAt(i + 9) & 0xff) << 8) | ((key.charCodeAt(i + 10) & 0xff) << 16) | ((key.charCodeAt(i + 11) & 0xff) << 24)];
+			
+			k1 = _x64Multiply(k1, c1);
+			k1 = _x64Rotl(k1, 31);
+			k1 = _x64Multiply(k1, c2);
+			h1 = _x64Xor(h1, k1);
+			
+			h1 = _x64Rotl(h1, 27);
+			h1 = _x64Add(h1, h2);
+			h1 = _x64Add(_x64Multiply(h1, [0, 5]), [0, 0x52dce729]);
+			
+			k2 = _x64Multiply(k2, c2);
+			k2 = _x64Rotl(k2, 33);
+			k2 = _x64Multiply(k2, c1);
+			h2 = _x64Xor(h2, k2);
+			
+			h2 = _x64Rotl(h2, 31);
+			h2 = _x64Add(h2, h1);
+			h2 = _x64Add(_x64Multiply(h2, [0, 5]), [0, 0x38495ab5]);
+		}
+		
+		k1 = [0, 0];
+		k2 = [0, 0];
+		
+		switch(remainder) {
+			case 15:
+				k2 = _x64Xor(k2, _x64LeftShift([0, key.charCodeAt(i + 14)], 48));
+			
+			case 14:
+				k2 = _x64Xor(k2, _x64LeftShift([0, key.charCodeAt(i + 13)], 40));
+			
+			case 13:
+				k2 = _x64Xor(k2, _x64LeftShift([0, key.charCodeAt(i + 12)], 32));
+			
+			case 12:
+				k2 = _x64Xor(k2, _x64LeftShift([0, key.charCodeAt(i + 11)], 24));
+			
+			case 11:
+				k2 = _x64Xor(k2, _x64LeftShift([0, key.charCodeAt(i + 10)], 16));
+			
+			case 10:
+				k2 = _x64Xor(k2, _x64LeftShift([0, key.charCodeAt(i + 9)], 8));
+			
+			case 9:
+				k2 = _x64Xor(k2, [0, key.charCodeAt(i + 8)]);
+				k2 = _x64Multiply(k2, c2);
+				k2 = _x64Rotl(k2, 33);
+				k2 = _x64Multiply(k2, c1);
+				h2 = _x64Xor(h2, k2);
+			
+			case 8:
+				k1 = _x64Xor(k1, _x64LeftShift([0, key.charCodeAt(i + 7)], 56));
+			
+			case 7:
+				k1 = _x64Xor(k1, _x64LeftShift([0, key.charCodeAt(i + 6)], 48));
+			
+			case 6:
+				k1 = _x64Xor(k1, _x64LeftShift([0, key.charCodeAt(i + 5)], 40));
+			
+			case 5:
+				k1 = _x64Xor(k1, _x64LeftShift([0, key.charCodeAt(i + 4)], 32));
+			
+			case 4:
+				k1 = _x64Xor(k1, _x64LeftShift([0, key.charCodeAt(i + 3)], 24));
+			
+			case 3:
+				k1 = _x64Xor(k1, _x64LeftShift([0, key.charCodeAt(i + 2)], 16));
+			
+			case 2:
+				k1 = _x64Xor(k1, _x64LeftShift([0, key.charCodeAt(i + 1)], 8));
+			
+			case 1:
+				k1 = _x64Xor(k1, [0, key.charCodeAt(i)]);
+				k1 = _x64Multiply(k1, c1);
+				k1 = _x64Rotl(k1, 31);
+				k1 = _x64Multiply(k1, c2);
+				h1 = _x64Xor(h1, k1);
+		}
+		
+		h1 = _x64Xor(h1, [0, key.length]);
+		h2 = _x64Xor(h2, [0, key.length]);
+		
+		h1 = _x64Add(h1, h2);
+		h2 = _x64Add(h2, h1);
+		
+		h1 = _x64Fmix(h1);
+		h2 = _x64Fmix(h2);
+		
+		h1 = _x64Add(h1, h2);
+		h2 = _x64Add(h2, h1);
+		
+		return ("00000000" + (h1[0] >>> 0).toString(16)).slice(-8) + ("00000000" + (h1[1] >>> 0).toString(16)).slice(-8) + ("00000000" + (h2[0] >>> 0).toString(16)).slice(-8) + ("00000000" + (h2[1] >>> 0).toString(16)).slice(-8);
+	};
+	
+	
+	
+	
+	// INITIALIZATION
+	// --------------
+	
+	// Export murmurHash3 for CommonJS, either as an AMD module or just as part
+	// of the global object.
+	if (typeof exports !== 'undefined') {
+		if (typeof module !== 'undefined' && module.exports) {
+			exports = module.exports = library;
+		}
+		
+		exports.murmurHash3 = library;
+	}
+	
+	else if (typeof define === 'function' && define.amd) {
+		define('murmurhash3',[], function() {
+			return library;
+		});
+	}
+	
+	else {
+		// Use murmurHash3.noConflict to restore `murmurHash3` back to its
+		// original value. Returns a reference to the library object, to allow
+		// it to be used under a different name.
+		library._murmurHash3 = root.murmurHash3
+		
+		library.noConflict = function () {
+			root.murmurHash3 = library._murmurHash3;
+			library._murmurHash3 = undefined;
+			library.noConflict = undefined;
+			
+			return library;
+		};
+		
+		root.murmurHash3 = library;
+	}
+})(this);
+
 /* pako 0.2.6 nodeca/pako */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define('pako',[],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.pako = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
@@ -24649,13 +25236,14 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.authentication-service', ['require', 'bluebird', 'kryptnostic.logger', 'kryptnostic.configuration', 'kryptnostic.credential-provider-loader', 'kryptnostic.credential-service', 'kryptnostic.authentication-stage', 'kryptnostic.user-directory-api'], function(require) {
-    var AuthenticationService, AuthenticationStage, Config, CredentialProviderLoader, CredentialService, LOGIN_FAILURE_MESSAGE, Logger, Promise, UserDirectoryApi, log;
+  define('kryptnostic.authentication-service', ['require', 'bluebird', 'kryptnostic.logger', 'kryptnostic.configuration', 'kryptnostic.credential-provider-loader', 'kryptnostic.credential-service', 'kryptnostic.search-credential-service', 'kryptnostic.authentication-stage', 'kryptnostic.user-directory-api'], function(require) {
+    var AuthenticationService, AuthenticationStage, Config, CredentialProviderLoader, CredentialService, LOGIN_FAILURE_MESSAGE, Logger, Promise, SearchCredentialService, UserDirectoryApi, log;
     Promise = require('bluebird');
     Logger = require('kryptnostic.logger');
     Config = require('kryptnostic.configuration');
     CredentialProviderLoader = require('kryptnostic.credential-provider-loader');
     CredentialService = require('kryptnostic.credential-service');
+    SearchCredentialService = require('kryptnostic.search-credential-service');
     AuthenticationStage = require('kryptnostic.authentication-stage');
     UserDirectoryApi = require('kryptnostic.user-directory-api');
     log = Logger.get('AuthenticationService');
@@ -24664,7 +25252,7 @@ define("function-name", function(){});
       function AuthenticationService() {}
 
       AuthenticationService.authenticate = function(_arg, notifier) {
-        var credential, credentialProvider, credentialService, email, keypair, password, principal, userDirectoryApi, _ref;
+        var credential, credentialProvider, credentialService, email, keypair, password, principal, searchCredentialService, userDirectoryApi, _ref;
         email = _arg.email, password = _arg.password;
         if (notifier == null) {
           notifier = function() {};
@@ -24672,6 +25260,7 @@ define("function-name", function(){});
         _ref = {}, principal = _ref.principal, credential = _ref.credential, keypair = _ref.keypair;
         credentialService = new CredentialService();
         userDirectoryApi = new UserDirectoryApi();
+        searchCredentialService = new SearchCredentialService();
         credentialProvider = CredentialProviderLoader.load(Config.get('credentialProvider'));
         return Promise.resolve().then(function() {
           return userDirectoryApi.resolve({
@@ -24699,11 +25288,14 @@ define("function-name", function(){});
           }, notifier);
         }).then(function(_keypair) {
           keypair = _keypair;
-          credentialProvider.store({
+          return credentialProvider.store({
             principal: principal,
             credential: credential,
             keypair: keypair
           });
+        }).then(function() {
+          return searchCredentialService.ensureCredentialsInitialized(notifier);
+        }).then(function() {
           return Promise.resolve(notifier(AuthenticationStage.COMPLETED));
         }).then(function() {
           return log.info('authentication complete');
@@ -24733,6 +25325,9 @@ define("function-name", function(){});
       DERIVE_CREDENTIAL: 'deriving credential',
       RSA_KEYGEN: 'generating rsa keypair',
       DERIVE_KEYPAIR: 'deriving rsa keypair',
+      FHE_KEYGEN: 'initializing fhe key',
+      SEARCH_KEYGEN: 'initializing search key',
+      CLIENT_HASH_GEN: 'initializing hash function',
       COMPLETED: 'authentication complete'
     };
     return AuthenticationStage;
@@ -24744,15 +25339,23 @@ define("function-name", function(){});
 // Generated by CoffeeScript 1.7.1
 (function() {
   define('kryptnostic.credential-loader', ['require', 'kryptnostic.configuration', 'kryptnostic.credential-provider-loader'], function(require) {
-    var Config, CredentialLoader, CredentialProviderLoader;
+    var Config, CredentialLoader, CredentialProviderLoader, Logger, log;
+    Logger = require('kryptnostic.logger');
     Config = require('kryptnostic.configuration');
     CredentialProviderLoader = require('kryptnostic.credential-provider-loader');
+    log = Logger.get('CredentialLoader');
     CredentialLoader = (function() {
       function CredentialLoader() {}
 
       CredentialLoader.getCredentials = function() {
-        var credentialProvider;
-        credentialProvider = CredentialProviderLoader.load(Config.get('credentialProvider'));
+        log.warn('CredentialLoader.getCredentials is deprecated, use the non-static version');
+        return new CredentialLoader().getCredentials();
+      };
+
+      CredentialLoader.prototype.getCredentials = function() {
+        var credentialProvider, providerUri;
+        providerUri = Config.get('credentialProvider');
+        credentialProvider = CredentialProviderLoader.load(providerUri);
         return credentialProvider.load();
       };
 
@@ -24988,6 +25591,319 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
+  define('kryptnostic.search-credential-service', ['require', 'lodash', 'bluebird', 'kryptnostic.logger', 'kryptnostic.authentication-stage', 'kryptnostic.search-key-generator', 'kryptnostic.mock.search-key-generator', 'kryptnostic.crypto-key-storage-api', 'kryptnostic.credential-loader', 'kryptnostic.search-key-serializer'], function(require) {
+    var AuthenticationStage, CredentialLoader, CredentialType, CryptoKeyStorageApi, Logger, Promise, SearchCredentialService, SearchKeyGenerator, SearchKeySerializer, deserializeKey, log, serializeKey, _;
+    _ = require('lodash');
+    Promise = require('bluebird');
+    Logger = require('kryptnostic.logger');
+    AuthenticationStage = require('kryptnostic.authentication-stage');
+    CredentialLoader = require('kryptnostic.credential-loader');
+    CryptoKeyStorageApi = require('kryptnostic.crypto-key-storage-api');
+    SearchKeySerializer = require('kryptnostic.search-key-serializer');
+    SearchKeyGenerator = require('kryptnostic.search-key-generator');
+    log = Logger.get('SearchCredentialService');
+    CredentialType = {
+      FHE_PRIVATE_KEY: {
+        generator: function(clientKeys) {
+          return clientKeys.fhePrivateKey;
+        },
+        getter: function(api) {
+          return api.getFhePrivateKey;
+        },
+        setter: function(api) {
+          return api.setFhePrivateKey;
+        },
+        stage: AuthenticationStage.FHE_KEYGEN,
+        encrypt: true
+      },
+      SEARCH_PRIVATE_KEY: {
+        generator: function(clientKeys) {
+          return clientKeys.searchPrivateKey;
+        },
+        getter: function(api) {
+          return api.getSearchPrivateKey;
+        },
+        setter: function(api) {
+          return api.setSearchPrivateKey;
+        },
+        stage: AuthenticationStage.SEARCH_KEYGEN,
+        encrypt: true
+      },
+      CLIENT_HASH_FUNCTION: {
+        generator: function(clientKeys) {
+          return clientKeys.clientHashFunction;
+        },
+        getter: function(api) {
+          return api.getClientHashFunction;
+        },
+        setter: function(api) {
+          return api.setClientHashFunction;
+        },
+        stage: AuthenticationStage.CLIENT_HASH_GEN,
+        encrypt: false
+      }
+    };
+    serializeKey = function(_arg) {
+      var credentialType, searchKeySerializer, uint8Key;
+      credentialType = _arg.credentialType, uint8Key = _arg.uint8Key, searchKeySerializer = _arg.searchKeySerializer;
+      if (_.isEmpty(uint8Key)) {
+        return uint8Key;
+      } else if (credentialType.encrypt) {
+        return searchKeySerializer.encrypt(uint8Key);
+      } else {
+        return uint8Key;
+      }
+    };
+    deserializeKey = function(_arg) {
+      var credentialType, searchKeySerializer, uint8Key;
+      credentialType = _arg.credentialType, uint8Key = _arg.uint8Key, searchKeySerializer = _arg.searchKeySerializer;
+      if (_.isEmpty(uint8Key)) {
+        return uint8Key;
+      } else if (credentialType.encrypt) {
+        return searchKeySerializer.decrypt(uint8Key);
+      } else {
+        return uint8Key;
+      }
+    };
+    SearchCredentialService = (function() {
+      function SearchCredentialService() {
+        this.credentialLoader = new CredentialLoader();
+        this.cryptoKeyStorageApi = new CryptoKeyStorageApi();
+        this.searchKeyGenerator = new SearchKeyGenerator();
+        this.searchKeySerializer = new SearchKeySerializer();
+      }
+
+      SearchCredentialService.prototype.ensureCredentialsInitialized = function(notifier) {
+        if (notifier == null) {
+          notifier = function() {};
+        }
+        return Promise.resolve().then((function(_this) {
+          return function() {
+            return _this.hasInitialized();
+          };
+        })(this)).then((function(_this) {
+          return function(initialized) {
+            if (!initialized) {
+              return _this.initializeCredentials(notifier);
+            } else {
+              return Promise.resolve();
+            }
+          };
+        })(this));
+      };
+
+      SearchCredentialService.prototype.getAllCredentials = function() {
+        return Promise.resolve().then((function(_this) {
+          return function() {
+            return _this.ensureCredentialsInitialized();
+          };
+        })(this)).then((function(_this) {
+          return function() {
+            return _this.getStoredCredentials();
+          };
+        })(this));
+      };
+
+      SearchCredentialService.prototype.getStoredCredentials = function() {
+        return Promise.resolve().then((function(_this) {
+          return function() {
+            var credentialPromises;
+            credentialPromises = _.mapValues(CredentialType, function(credentialType) {
+              var loadCredential;
+              loadCredential = credentialType.getter(_this.cryptoKeyStorageApi);
+              return loadCredential();
+            });
+            return Promise.props(credentialPromises);
+          };
+        })(this)).then((function(_this) {
+          return function(credentialsByType) {
+            return _.mapValues(credentialsByType, function(credential, typeKey) {
+              var credentialType, uint8Key;
+              credentialType = CredentialType[typeKey];
+              uint8Key = credential;
+              return deserializeKey({
+                credentialType: credentialType,
+                uint8Key: uint8Key,
+                searchKeySerializer: _this.searchKeySerializer
+              });
+            });
+          };
+        })(this));
+      };
+
+      SearchCredentialService.prototype.hasInitialized = function() {
+        return Promise.resolve().then((function(_this) {
+          return function() {
+            return _this.getStoredCredentials();
+          };
+        })(this)).then(function(credentials) {
+          var expectedLength;
+          credentials = _.compact(_.values(credentials));
+          expectedLength = _.size(_.values(CredentialType));
+          if (_.isEmpty(credentials)) {
+            return false;
+          } else if (credentials.length === expectedLength) {
+            return true;
+          } else {
+            log.error('user account is in a partially initialized state');
+            log.error("expected " + expectedLength + " credentials but got " + credentials.length);
+            throw new Error('credentials are in a partially initialized state');
+          }
+        });
+      };
+
+      SearchCredentialService.prototype.initializeCredentials = function(notifier) {
+        var clientKeys;
+        clientKeys = {}.clientKeys;
+        return Promise.resolve().then((function(_this) {
+          return function() {
+            log.info('generating search credentials');
+            return clientKeys = _this.searchKeyGenerator.generateClientKeys();
+          };
+        })(this)).then((function(_this) {
+          return function() {
+            return _this.initializeCredential(CredentialType.FHE_PRIVATE_KEY, clientKeys, notifier);
+          };
+        })(this)).then((function(_this) {
+          return function() {
+            return _this.initializeCredential(CredentialType.SEARCH_PRIVATE_KEY, clientKeys, notifier);
+          };
+        })(this)).then((function(_this) {
+          return function() {
+            return _this.initializeCredential(CredentialType.CLIENT_HASH_FUNCTION, clientKeys, notifier);
+          };
+        })(this));
+      };
+
+      SearchCredentialService.prototype.initializeCredential = function(credentialType, clientKeys, notifier) {
+        var storeableKey, uint8Key, _ref;
+        _ref = {}, uint8Key = _ref.uint8Key, storeableKey = _ref.storeableKey;
+        return Promise.resolve().then(function() {
+          log.info('initializeCredential', credentialType.stage);
+          return Promise.resolve(notifier(credentialType.stage));
+        }).then((function(_this) {
+          return function() {
+            var storeCredential;
+            uint8Key = credentialType.generator(clientKeys);
+            storeableKey = serializeKey({
+              credentialType: credentialType,
+              uint8Key: uint8Key,
+              searchKeySerializer: _this.searchKeySerializer
+            });
+            storeCredential = credentialType.setter(_this.cryptoKeyStorageApi);
+            return storeCredential(storeableKey);
+          };
+        })(this)).then(function() {
+          return uint8Key;
+        });
+      };
+
+      return SearchCredentialService;
+
+    })();
+    return SearchCredentialService;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.search-key-serializer', ['require', 'forge', 'kryptnostic.logger', 'kryptnostic.binary-utils', 'kryptnostic.rsa-crypto-service', 'kryptnostic.credential-loader', 'kryptnostic.chunking.strategy.default'], function(require) {
+    var BinaryUtils, CredentialLoader, DefaultChunkingStrategy, ENCRYPTED_PADDED_BLOCK_LENGTH, Logger, RsaCryptoService, SearchKeySerializer, UNENCRYPTED_BLOCK_LENGTH, chunkUint8, cleanUint8Buffer, forge, joinUint8, log, stringToUint16, uint16ToString, uint16ToUint8, uint8ToUint16, validateEncryptedChunks;
+    forge = require('forge');
+    BinaryUtils = require('kryptnostic.binary-utils');
+    CredentialLoader = require('kryptnostic.credential-loader');
+    DefaultChunkingStrategy = require('kryptnostic.chunking.strategy.default');
+    Logger = require('kryptnostic.logger');
+    RsaCryptoService = require('kryptnostic.rsa-crypto-service');
+    log = Logger.get('SearchKeySerializer');
+    chunkUint8 = BinaryUtils.chunkUint8, cleanUint8Buffer = BinaryUtils.cleanUint8Buffer, joinUint8 = BinaryUtils.joinUint8, stringToUint16 = BinaryUtils.stringToUint16, uint16ToString = BinaryUtils.uint16ToString, uint16ToUint8 = BinaryUtils.uint16ToUint8, uint8ToUint16 = BinaryUtils.uint8ToUint16;
+    UNENCRYPTED_BLOCK_LENGTH = 384;
+    ENCRYPTED_PADDED_BLOCK_LENGTH = 1024;
+    validateEncryptedChunks = function(chunks) {
+      return chunks.forEach(function(chunk) {
+        if (chunk.length !== ENCRYPTED_PADDED_BLOCK_LENGTH) {
+          log.error('chunk failed validation', {
+            length: chunk.length,
+            expected: ENCRYPTED_PADDED_BLOCK_LENGTH
+          });
+          throw new Error('chunk validation error: wrong block size');
+        }
+      });
+    };
+    return SearchKeySerializer = (function() {
+      function SearchKeySerializer() {
+        this.chunkingStrategy = new DefaultChunkingStrategy();
+        this.credentialLoader = new CredentialLoader();
+      }
+
+      SearchKeySerializer.prototype.createRsaCryptoService = function() {
+        var keypair;
+        keypair = this.credentialLoader.getCredentials().keypair;
+        return new RsaCryptoService(keypair);
+      };
+
+      SearchKeySerializer.prototype.encrypt = function(uint8) {
+        var encryptedUint, rsaCryptoService;
+        rsaCryptoService = this.createRsaCryptoService();
+        encryptedUint = _.chain(uint8).thru(function(uint8) {
+          return cleanUint8Buffer(uint8);
+        }).thru(function(uint8) {
+          return forge.util.binary.base64.encode(uint8);
+        }).thru((function(_this) {
+          return function(string) {
+            return _this.chunkingStrategy.split(string, UNENCRYPTED_BLOCK_LENGTH);
+          };
+        })(this)).map(function(chunk) {
+          return rsaCryptoService.encrypt(chunk);
+        }).map(function(chunk) {
+          return stringToUint16(chunk);
+        }).map(function(chunk) {
+          return uint16ToUint8(chunk);
+        }).tap(function(chunks) {
+          return validateEncryptedChunks(chunks);
+        }).thru(function(chunks) {
+          return joinUint8(chunks);
+        }).value();
+        return encryptedUint;
+      };
+
+      SearchKeySerializer.prototype.decrypt = function(uint8) {
+        var decryptedUint, rsaCryptoService;
+        rsaCryptoService = this.createRsaCryptoService();
+        decryptedUint = _.chain(uint8).thru(function(uint8) {
+          return chunkUint8(uint8, ENCRYPTED_PADDED_BLOCK_LENGTH);
+        }).tap(function(chunks) {
+          return validateEncryptedChunks(chunks);
+        }).map(function(chunk) {
+          return uint8ToUint16(chunk);
+        }).map(function(chunk) {
+          return uint16ToString(chunk);
+        }).map(function(chunk) {
+          return rsaCryptoService.decrypt(chunk);
+        }).thru((function(_this) {
+          return function(chunks) {
+            return _this.chunkingStrategy.join(chunks);
+          };
+        })(this)).thru(function(string) {
+          return forge.util.binary.base64.decode(string);
+        }).thru(function(uint8) {
+          return cleanUint8Buffer(uint8);
+        }).value();
+        return decryptedUint;
+      };
+
+      return SearchKeySerializer;
+
+    })();
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
   define('kryptnostic.credential-provider.memory', ['require', 'kryptnostic.logger'], function(require) {
     var InMemoryCredentialProvider, Logger, log;
     Logger = require('kryptnostic.logger');
@@ -25173,11 +26089,12 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.chunking.registry', ['require', 'kryptnostic.chunking.strategy.default', 'kryptnostic.logger'], function(require) {
-    var ChunkingStrategyRegistry, DEFAULT_STRATEGY, STRATEGIES, logger;
+  define('kryptnostic.chunking.registry', ['require', 'kryptnostic.chunking.strategy.default', 'kryptnostic.chunking.strategy.json', 'kryptnostic.logger'], function(require) {
+    var ChunkingStrategyRegistry, DEFAULT_STRATEGY, JSON_STRATEGY, STRATEGIES, logger;
     logger = require('kryptnostic.logger').get('ChunkingStrategyRegistry');
     DEFAULT_STRATEGY = 'kryptnostic.chunking.strategy.default';
-    STRATEGIES = [DEFAULT_STRATEGY];
+    JSON_STRATEGY = 'kryptnostic.chunking.strategy.json';
+    STRATEGIES = [DEFAULT_STRATEGY, JSON_STRATEGY];
     ChunkingStrategyRegistry = (function() {
       function ChunkingStrategyRegistry() {}
 
@@ -25237,8 +26154,11 @@ define("function-name", function(){});
 
       DefaultChunkingStrategy.URI = 'com.kryptnostic.kodex.v1.serialization.crypto.DefaultChunkingStrategy';
 
-      DefaultChunkingStrategy.prototype.split = function(data) {
-        return _.chain(data).chunk(BLOCK_LENGTH_IN_BYTES).map(function(chunkArr) {
+      DefaultChunkingStrategy.prototype.split = function(data, blockBytes) {
+        if (blockBytes == null) {
+          blockBytes = BLOCK_LENGTH_IN_BYTES;
+        }
+        return _.chain(data).chunk(blockBytes).map(function(chunkArr) {
           return chunkArr.join(EMPTY_STRING);
         }).value();
       };
@@ -25251,6 +26171,41 @@ define("function-name", function(){});
 
     })();
     return DefaultChunkingStrategy;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.chunking.strategy.json', ['require', 'lodash'], function(require) {
+    var JsonChunkingStrategy, validateChunks, _;
+    _ = require('lodash');
+    validateChunks = function(chunks) {
+      if (chunks.length !== 1) {
+        throw new Error('expected exactly one chunk');
+      }
+    };
+    JsonChunkingStrategy = (function() {
+      function JsonChunkingStrategy() {}
+
+      JsonChunkingStrategy.URI = 'com.kryptnostic.kodex.v1.serialization.crypto.JsonChunkingStrategy';
+
+      JsonChunkingStrategy.prototype.split = function(object) {
+        var chunk;
+        chunk = JSON.stringify(object);
+        return [chunk];
+      };
+
+      JsonChunkingStrategy.prototype.join = function(chunks) {
+        validateChunks(chunks);
+        return JSON.parse(_.first(chunks));
+      };
+
+      return JsonChunkingStrategy;
+
+    })();
+    return JsonChunkingStrategy;
   });
 
 }).call(this);
@@ -25366,9 +26321,10 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.crypto-service-loader', ['require', 'kryptnostic.logger', 'kryptnostic.cypher', 'kryptnostic.rsa-crypto-service', 'kryptnostic.aes-crypto-service', 'kryptnostic.directory-api', 'kryptnostic.crypto-service-marshaller', 'kryptnostic.credential-loader'], function(require) {
+  define('kryptnostic.crypto-service-loader', ['require', 'bluebird', 'kryptnostic.logger', 'kryptnostic.cypher', 'kryptnostic.rsa-crypto-service', 'kryptnostic.aes-crypto-service', 'kryptnostic.directory-api', 'kryptnostic.crypto-service-marshaller', 'kryptnostic.credential-loader'], function(require) {
     'use strict';
-    var AesCryptoService, CredentialLoader, CryptoServiceLoader, CryptoServiceMarshaller, Cypher, DEFAULT_OPTS, DirectoryApi, EMPTY_BUFFER, INT_SIZE, Logger, RsaCryptoService, logger;
+    var AesCryptoService, CredentialLoader, CryptoServiceLoader, CryptoServiceMarshaller, Cypher, DEFAULT_OPTS, DirectoryApi, EMPTY_BUFFER, INT_SIZE, Logger, Promise, RsaCryptoService, logger;
+    Promise = require('bluebird');
     RsaCryptoService = require('kryptnostic.rsa-crypto-service');
     AesCryptoService = require('kryptnostic.aes-crypto-service');
     Cypher = require('kryptnostic.cypher');
@@ -25386,22 +26342,26 @@ define("function-name", function(){});
       function CryptoServiceLoader() {
         this.directoryApi = new DirectoryApi();
         this.marshaller = new CryptoServiceMarshaller();
+        this.credentialLoader = new CredentialLoader();
       }
 
       CryptoServiceLoader.prototype.getRsaCryptoService = function() {
         var keypair;
-        keypair = CredentialLoader.getCredentials().keypair;
+        keypair = this.credentialLoader.getCredentials().keypair;
         return new RsaCryptoService(keypair);
       };
 
       CryptoServiceLoader.prototype.getObjectCryptoService = function(id, options) {
-        var expectMiss, rsaCryptoService;
+        var expectMiss;
         options = _.defaults({}, options, DEFAULT_OPTS);
         expectMiss = options.expectMiss;
-        rsaCryptoService = this.getRsaCryptoService();
-        return this.directoryApi.getObjectCryptoService(id).then((function(_this) {
-          return function(serializedCryptoService) {
-            var cryptoService;
+        return Promise.props({
+          rsaCryptoService: this.getRsaCryptoService(),
+          serializedCryptoService: this.directoryApi.getObjectCryptoService(id)
+        }).then((function(_this) {
+          return function(_arg) {
+            var cryptoService, rsaCryptoService, serializedCryptoService;
+            serializedCryptoService = _arg.serializedCryptoService, rsaCryptoService = _arg.rsaCryptoService;
             if (!serializedCryptoService && expectMiss) {
               logger.info('no cryptoService exists for this object. creating one on-the-fly', {
                 id: id
@@ -25506,13 +26466,19 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.hash-function', ['require', 'forge'], function(require) {
-    var forge;
+  define('kryptnostic.hash-function', ['require', 'forge', 'murmurhash3'], function(require) {
+    var MURMUR3_128, SHA_256, forge, murmurhash3;
     forge = require('forge');
+    murmurhash3 = require('murmurhash3');
+    SHA_256 = function(data) {
+      return btoa(forge.md.sha256.create().update(atob(data)).digest().data);
+    };
+    MURMUR3_128 = function(string) {
+      return murmurhash3.x86.hash128(string);
+    };
     return {
-      SHA_256: function(data) {
-        return btoa(forge.md.sha256.create().update(atob(data)).digest().data);
-      }
+      SHA_256: SHA_256,
+      MURMUR3_128: MURMUR3_128
     };
   });
 
@@ -25546,7 +26512,7 @@ define("function-name", function(){});
       KeypairSerializer.hydrate = function(serialized) {
         var privateKey, privateKeyAsn1, privateKeyBuffer, publicKey;
         if (!serialized || isUndefined(serialized)) {
-          log.warn('keypair not initialized');
+          log.info('keypair not initialized');
           return void 0;
         }
         privateKeyBuffer = Forge.util.createBuffer(atob(serialized), 'raw');
@@ -25636,13 +26602,17 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.rsa-crypto-service', ['require', 'forge'], function(require) {
+  define('kryptnostic.rsa-crypto-service', ['require', 'forge', 'lodash'], function(require) {
     'use strict';
-    var Forge, RsaCryptoService;
+    var Forge, RsaCryptoService, _;
+    _ = require('lodash');
     Forge = require('forge');
     RsaCryptoService = (function() {
       function RsaCryptoService(_arg) {
         this.privateKey = _arg.privateKey, this.publicKey = _arg.publicKey;
+        if (_.isEmpty(this.privateKey) && _.isEmpty(this.publicKey)) {
+          throw new Error('no public key or private key provided');
+        }
       }
 
       RsaCryptoService.prototype.encrypt = function(plaintext) {
@@ -25707,8 +26677,254 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.directory-api', ['require', 'axios', 'bluebird', 'kryptnostic.configuration', 'kryptnostic.logger', 'kryptnostic.public-key-envelope', 'kryptnostic.requests', 'kryptnostic.block-ciphertext'], function(require) {
-    var BlockCiphertext, Configuration, DEFAULT_HEADERS, DirectoryApi, Logger, Promise, PublicKeyEnvelope, Requests, axios, cryptoServiceUrl, log, privateKeyUrl, publicKeyUrl, saltUrl, usersInRealmUrl, validateCrytpoServiceByteBuffer, validateId;
+  define('kryptnostic.kryptnostic-engine', ['require', 'kryptnostic.logger'], function(require) {
+    var ENGINE_MISSING_ERROR, KryptnosticEngine, Logger, log;
+    Logger = require('kryptnostic.logger');
+    ENGINE_MISSING_ERROR = 'KryptnosticClient is unavailable. This component must be included separately.\nIt is not built as a part of the kryptnostic.js binary. Please see the krytpnostic.js\ndocumentation for more information and/or file an issue on the kryptnostic-js github project:\nhttps://github.com/kryptnostic/kryptnostic-js/issues';
+    log = Logger.get('KryptnosticEngine');
+    KryptnosticEngine = (function() {
+      function KryptnosticEngine(_arg) {
+        this.fhePrivateKey = _arg.fhePrivateKey, this.searchPrivateKey = _arg.searchPrivateKey;
+        if (!((typeof Module !== "undefined" && Module !== null) && (Module.KryptnosticClient != null))) {
+          log.error(ENGINE_MISSING_ERROR);
+        }
+      }
+
+      KryptnosticEngine.prototype.createClient = function() {
+        return new Module.KryptnosticClient(this.fhePrivateKey, this.searchPrivateKey);
+      };
+
+      KryptnosticEngine.prototype.getObjectSearchKey = function() {
+        return this.createClient().getObjectSearchKey();
+      };
+
+      KryptnosticEngine.prototype.getObjectAddressMatrix = function() {
+        return this.createClient().getObjectAddressMatrix();
+      };
+
+      KryptnosticEngine.prototype.getObjectIndexPair = function(_arg) {
+        var objectAddressMatrix, objectSearchKey;
+        objectSearchKey = _arg.objectSearchKey, objectAddressMatrix = _arg.objectAddressMatrix;
+        return this.createClient().getObjectIndexPair(objectSearchKey, objectAddressMatrix);
+      };
+
+      KryptnosticEngine.prototype.getMetadatumAddress = function(_arg) {
+        var objectAddressFunction, objectSearchKey, token;
+        objectAddressFunction = _arg.objectAddressFunction, token = _arg.token, objectSearchKey = _arg.objectSearchKey;
+        return this.createClient().getMetadatumAddress(objectAddressFunction, objectSearchKey, token);
+      };
+
+      KryptnosticEngine.prototype.getEncryptedSearchToken = function(_arg) {
+        var token;
+        token = _arg.token;
+        return this.createClient().getEncryptedSearchToken(token);
+      };
+
+      KryptnosticEngine.prototype.getObjectSharingPair = function(_arg) {
+        var objectIndexPair;
+        objectIndexPair = _arg.objectIndexPair;
+        return this.createClient().getObjectSharingPair(objectIndexPair);
+      };
+
+      KryptnosticEngine.prototype.getObjectIndexPairFromSharing = function(_arg) {
+        var objectSharingPair;
+        objectSharingPair = _arg.objectSharingPair;
+        return this.createClient().getObjectUploadPair(objectSharingPair);
+      };
+
+      return KryptnosticEngine;
+
+    })();
+    return KryptnosticEngine;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.mock.kryptnostic-engine', ['require', 'kryptnostic.binary-utils'], function(require) {
+    var BinaryUtils, MockKryptnosticEngine, SPACE, pad;
+    BinaryUtils = require('kryptnostic.binary-utils');
+    SPACE = ' ';
+    pad = function(string) {
+      if (string.length % 2 === 0) {
+        return string;
+      } else {
+        return string + SPACE;
+      }
+    };
+    MockKryptnosticEngine = (function() {
+      function MockKryptnosticEngine(_arg) {
+        var _ref;
+        _ref = _arg != null ? _arg : {}, this.fhePrivateKey = _ref.fhePrivateKey, this.searchPrivateKey = _ref.searchPrivateKey;
+      }
+
+      MockKryptnosticEngine.prototype.getObjectSearchKey = function() {
+        return BinaryUtils.stringToUint8(pad('doc.search'));
+      };
+
+      MockKryptnosticEngine.prototype.getObjectAddressMatrix = function() {
+        return BinaryUtils.stringToUint8(pad('doc.addressfun'));
+      };
+
+      MockKryptnosticEngine.prototype.getObjectIndexPair = function(_arg) {
+        var objectAddressMatrix, objectSearchKey;
+        objectSearchKey = _arg.objectSearchKey, objectAddressMatrix = _arg.objectAddressMatrix;
+        return BinaryUtils.stringToUint8(pad('doc.index'));
+      };
+
+      MockKryptnosticEngine.prototype.getMetadatumAddress = function(_arg) {
+        var objectAddressMatrix, objectSearchKey, token;
+        objectAddressMatrix = _arg.objectAddressMatrix, objectSearchKey = _arg.objectSearchKey, token = _arg.token;
+        return BinaryUtils.stringToUint8('search.address.' + BinaryUtils.uint8ToString(token));
+      };
+
+      MockKryptnosticEngine.prototype.getEncryptedSearchToken = function(_arg) {
+        var token;
+        token = _arg.token;
+        return BinaryUtils.stringToUint8(pad('search.token.' + BinaryUtils.uint8ToString(token)));
+      };
+
+      MockKryptnosticEngine.prototype.getObjectSharingPair = function(_arg) {
+        var objectIndexPair;
+        objectIndexPair = _arg.objectIndexPair;
+        return BinaryUtils.stringToUint8('doc.sharing.' + BinaryUtils.uint8ToString(objectIndexPair));
+      };
+
+      MockKryptnosticEngine.prototype.getObjectIndexPairFromSharing = function(_arg) {
+        var objectSharingPair;
+        objectSharingPair = _arg.objectSharingPair;
+        return BinaryUtils.stringToUint8('doc.upload.' + BinaryUtils.uint8ToString(objectUploadPair));
+      };
+
+      return MockKryptnosticEngine;
+
+    })();
+    return MockKryptnosticEngine;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.mock.search-key-generator', ['require', 'kryptnostic.binary-utils'], function(require) {
+    var BinaryUtils, MockSearchKeyGenerator, pad;
+    BinaryUtils = require('kryptnostic.binary-utils');
+    pad = function(string) {
+      if (string.length % 2 === 0) {
+        return string;
+      } else {
+        return string + SPACE;
+      }
+    };
+    MockSearchKeyGenerator = (function() {
+      function MockSearchKeyGenerator() {}
+
+      MockSearchKeyGenerator.prototype.generateClientKeys = function() {
+        return {
+          fhePrivateKey: BinaryUtils.stringToUint8(pad('fhe.priv')),
+          searchPrivateKey: BinaryUtils.stringToUint8(pad('search.pvt')),
+          clientHashFunction: BinaryUtils.stringToUint8(pad('hash.fun'))
+        };
+      };
+
+      return MockSearchKeyGenerator;
+
+    })();
+    return MockSearchKeyGenerator;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.search-key-generator', ['require', 'kryptnostic.logger'], function(require) {
+    var ENGINE_MISSING_ERROR, Logger, SearchKeyGenerator, log;
+    Logger = require('kryptnostic.logger');
+    ENGINE_MISSING_ERROR = 'KryptnosticClient is unavailable. This component must be included separately.\nIt is not built as a part of the kryptnostic.js binary. Please see the krytpnostic.js\ndocumentation for more information and/or file an issue on the kryptnostic-js github project:\nhttps://github.com/kryptnostic/kryptnostic-js/issues';
+    log = Logger.get('SearchKeyGenerator');
+    SearchKeyGenerator = (function() {
+      function SearchKeyGenerator() {
+        if (!((typeof Module !== "undefined" && Module !== null) && (Module.KryptnosticClient != null))) {
+          log.error(ENGINE_MISSING_ERROR);
+        }
+      }
+
+      SearchKeyGenerator.prototype.generateClientKeys = function() {
+        var engine;
+        engine = new Module.KryptnosticClient();
+        return {
+          fhePrivateKey: engine.getPrivateKey(),
+          searchPrivateKey: engine.getSearchPrivateKey(),
+          clientHashFunction: engine.getClientHashFunction()
+        };
+      };
+
+      return SearchKeyGenerator;
+
+    })();
+    return SearchKeyGenerator;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.crypto-key-storage-api', ['require', 'bluebird', 'kryptnostic.logger'], function(require) {
+    var CryptoKeyStorageApi, Logger, Promise, log;
+    Promise = require('bluebird');
+    Logger = require('kryptnostic.logger');
+    log = Logger.get('CryptoKeyStorageApi');
+    CryptoKeyStorageApi = (function() {
+      function CryptoKeyStorageApi() {}
+
+      CryptoKeyStorageApi.prototype.getFhePrivateKey = function() {
+        log.warn('CryptoKeyStorageApi not implemented!');
+        return Promise.resolve();
+      };
+
+      CryptoKeyStorageApi.prototype.setFhePrivateKey = function(key) {
+        log.warn('CryptoKeyStorageApi not implemented!');
+        return Promise.resolve();
+      };
+
+      CryptoKeyStorageApi.prototype.getSearchPrivateKey = function() {
+        log.warn('CryptoKeyStorageApi not implemented!');
+        return Promise.resolve();
+      };
+
+      CryptoKeyStorageApi.prototype.setSearchPrivateKey = function(key) {
+        log.warn('CryptoKeyStorageApi not implemented!');
+        return Promise.resolve();
+      };
+
+      CryptoKeyStorageApi.prototype.getClientHashFunction = function() {
+        log.warn('CryptoKeyStorageApi not implemented!');
+        return Promise.resolve();
+      };
+
+      CryptoKeyStorageApi.prototype.setClientHashFunction = function(key) {
+        log.warn('CryptoKeyStorageApi not implemented!');
+        return Promise.resolve();
+      };
+
+      return CryptoKeyStorageApi;
+
+    })();
+    return CryptoKeyStorageApi;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.directory-api', ['require', 'axios', 'bluebird', 'kryptnostic.configuration', 'kryptnostic.logger', 'kryptnostic.public-key-envelope', 'kryptnostic.requests', 'kryptnostic.block-ciphertext', 'kryptnostic.validators'], function(require) {
+    var BlockCiphertext, Configuration, DEFAULT_HEADERS, DirectoryApi, Logger, Promise, PublicKeyEnvelope, Requests, axios, cryptoServiceUrl, log, privateKeyUrl, publicKeyUrl, saltUrl, usersInRealmUrl, validateCrytpoServiceByteBuffer, validateId, validators;
     axios = require('axios');
     Requests = require('kryptnostic.requests');
     Logger = require('kryptnostic.logger');
@@ -25716,6 +26932,8 @@ define("function-name", function(){});
     Configuration = require('kryptnostic.configuration');
     BlockCiphertext = require('kryptnostic.block-ciphertext');
     Promise = require('bluebird');
+    validators = require('kryptnostic.validators');
+    validateId = validators.validateId;
     cryptoServiceUrl = function() {
       return Configuration.get('servicesUrl') + '/directory/object';
     };
@@ -25734,11 +26952,6 @@ define("function-name", function(){});
     log = Logger.get('DirectoryApi');
     DEFAULT_HEADERS = {
       'Content-Type': 'application/json'
-    };
-    validateId = function(id) {
-      if (!id) {
-        throw new Error('cannot request or upload crypto service without an id!');
-      }
     };
     validateCrytpoServiceByteBuffer = function(byteBufferStr) {
       if (!_.isString(byteBufferStr) || _.isEmpty(byteBufferStr)) {
@@ -25924,8 +27137,63 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.object-api', ['require', 'axios', 'bluebird', 'kryptnostic.configuration', 'kryptnostic.kryptnostic-object', 'kryptnostic.logger', 'kryptnostic.requests', 'kryptnostic.object-metadata'], function(require) {
-    var Config, DEFAULT_HEADER, KryptnosticObject, Logger, ObjectApi, ObjectMetadata, Promise, Requests, axios, log, objectUrl, validateId, validateType;
+  define('kryptnostic.document-search-key-api', ['require', 'bluebird', 'kryptnostic.logger', 'kryptnostic.configuration'], function(require) {
+    var DocumentSearchKeyApi, Logger, Promise, log;
+    Logger = require('kryptnostic.logger');
+    Promise = require('bluebird');
+    log = Logger.get('DocumentSearchKeyApi');
+    DocumentSearchKeyApi = (function() {
+      function DocumentSearchKeyApi() {}
+
+      DocumentSearchKeyApi.prototype.uploadAddressFunction = function(id, uint8) {
+        log.warn('DocumentSearchKeyApi is not implemented!');
+        return Promise.resolve();
+      };
+
+      DocumentSearchKeyApi.prototype.uploadSharingPair = function(id, _arg) {
+        var objectConversionMatrix, objectSearchKey;
+        objectSearchKey = _arg.objectSearchKey, objectConversionMatrix = _arg.objectConversionMatrix;
+        log.warn('DocumentSearchKeyApi is not implemented!');
+        return Promise.resolve();
+      };
+
+      return DocumentSearchKeyApi;
+
+    })();
+    return DocumentSearchKeyApi;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.metadata-api', ['require', 'bluebird', 'kryptnostic.logger'], function(require) {
+    var Logger, MetadataApi, Promise, log;
+    Logger = require('kryptnostic.logger');
+    Promise = require('bluebird');
+    log = Logger.get('MetadataApi');
+    MetadataApi = (function() {
+      function MetadataApi() {}
+
+      MetadataApi.prototype.uploadMetadata = function(metadataRequest) {
+        log.warn('metadata api not implemented!', metadataRequest);
+        return Promise.resolve();
+      };
+
+      return MetadataApi;
+
+    })();
+    return MetadataApi;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.object-api', ['require', 'axios', 'bluebird', 'kryptnostic.configuration', 'kryptnostic.kryptnostic-object', 'kryptnostic.logger', 'kryptnostic.requests', 'kryptnostic.object-metadata', 'kryptnostic.validators'], function(require) {
+    var Config, DEFAULT_HEADER, KryptnosticObject, Logger, ObjectApi, ObjectMetadata, Promise, Requests, axios, log, objectUrl, validateId, validateObjectType, validators;
     axios = require('axios');
     Requests = require('kryptnostic.requests');
     KryptnosticObject = require('kryptnostic.kryptnostic-object');
@@ -25933,27 +27201,14 @@ define("function-name", function(){});
     Config = require('kryptnostic.configuration');
     Promise = require('bluebird');
     ObjectMetadata = require('kryptnostic.object-metadata');
+    validators = require('kryptnostic.validators');
+    validateId = validators.validateId, validateObjectType = validators.validateObjectType;
     objectUrl = function() {
       return Config.get('servicesUrl') + '/object';
     };
     log = Logger.get('ObjectApi');
     DEFAULT_HEADER = {
       'Content-Type': 'application/json'
-    };
-    validateId = function(id) {
-      if (!id) {
-        log.error('illegal id', id);
-        throw new Error('missing or empty id');
-      }
-      if (!_.isString(id)) {
-        log.error('illegal id', id);
-        throw new Error('id must be a string');
-      }
-    };
-    validateType = function(type) {
-      if (!type) {
-        throw new Error('missing or empty object type');
-      }
     };
     ObjectApi = (function() {
       function ObjectApi() {}
@@ -25994,7 +27249,7 @@ define("function-name", function(){});
       };
 
       ObjectApi.prototype.getObjectIdsByType = function(type) {
-        validateType(type);
+        validateObjectType(type);
         return Promise.resolve(axios(Requests.wrapCredentials({
           url: objectUrl() + '/type/' + type,
           method: 'GET'
@@ -26112,6 +27367,30 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
+  define('kryptnostic.search-api', ['require', 'bluebird', 'kryptnostic.logger'], function(require) {
+    var Logger, Promise, SearchApi, log;
+    Logger = require('kryptnostic.logger');
+    Promise = require('bluebird');
+    log = Logger.get('SearchApi');
+    SearchApi = (function() {
+      function SearchApi() {}
+
+      SearchApi.prototype.search = function(encryptedToken) {
+        log.warn('search api not implemented!');
+        return Promise.resolve([]);
+      };
+
+      return SearchApi;
+
+    })();
+    return SearchApi;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
   define('kryptnostic.sharing-api', ['require', 'axios', 'bluebird', 'kryptnostic.configuration', 'kryptnostic.requests', 'kryptnostic.logger'], function(require) {
     var Config, DEFAULT_HEADER, KEYS_PATH, Logger, OBJECT_PATH, Promise, REVOKE_PATH, Requests, SHARE_PATH, SharingApi, TYPE_PATH, axios, logger, sharingUrl;
     axios = require('axios');
@@ -26149,7 +27428,7 @@ define("function-name", function(){});
           return axios(Requests.wrapCredentials({
             url: sharingUrl() + OBJECT_PATH + SHARE_PATH,
             method: 'POST',
-            headers: _.clone(DEFAULT_HEADER),
+            headers: _.cloneDeep(DEFAULT_HEADER),
             data: JSON.stringify(sharingRequest)
           }));
         }).then(function(response) {
@@ -26162,7 +27441,7 @@ define("function-name", function(){});
         return axios(Requests.wrapCredentials({
           url: sharingUrl() + OBJECT_PATH + REVOKE_PATH,
           method: 'POST',
-          headers: _.clone(DEFAULT_HEADER),
+          headers: _.cloneDeep(DEFAULT_HEADER),
           data: JSON.stringify(revocationRequest)
         })).then(function(response) {
           return logger.debug('revokeObject', response.data.data);
@@ -26174,16 +27453,12 @@ define("function-name", function(){});
         return axios(Requests.wrapCredentials({
           url: sharingUrl() + KEYS_PATH,
           method: 'POST',
-          headers: _.clone(DEFAULT_HEADER),
+          headers: _.cloneDeep(DEFAULT_HEADER),
           data: JSON.stringify(keyRegistrationRequest)
         })).then(function(response) {
           logger.debug('registerKeys', response);
           return response.data;
         });
-      };
-
-      SharingApi.prototype.registerSearchKeys = function(encryptedSearchObjectKeys) {
-        throw new Error('unimplemented');
       };
 
       return SharingApi;
@@ -26455,7 +27730,14 @@ define("function-name", function(){});
       };
 
       KryptnosticObject.createFromEncrypted = function(raw) {
-        return new KryptnosticObject(raw);
+        var kryptnosticObject;
+        kryptnosticObject = new KryptnosticObject(raw);
+        _.defaults(kryptnosticObject, {
+          metadata: {
+            strategy: {}
+          }
+        });
+        return kryptnosticObject;
       };
 
       KryptnosticObject.createFromDecrypted = function(_arg) {
@@ -26464,7 +27746,6 @@ define("function-name", function(){});
         metadata = new ObjectMetadata({
           id: id
         });
-        log.info('metadata', metadata);
         body = {
           data: body
         };
@@ -26474,8 +27755,27 @@ define("function-name", function(){});
         });
       };
 
+      KryptnosticObject.prototype.setChunkingStrategy = function(strategyUri) {
+        return this.metadata.strategy['@class'] = strategyUri;
+      };
+
+      KryptnosticObject.prototype.validateEncrypted = function() {
+        if (!this.isEncrypted()) {
+          throw new Error('object must be in an encrypted state');
+        }
+      };
+
+      KryptnosticObject.prototype.validateDecrypted = function() {
+        if (!this.isDecrypted()) {
+          throw new Error('object must be in a decrypted state');
+        }
+      };
+
       KryptnosticObject.prototype.isEncrypted = function() {
-        return _.isArray(this.body.data);
+        var isArray, isEncryptedBlock;
+        isArray = _.isArray(this.body.data);
+        isEncryptedBlock = _.first(this.body.data).constructor.name === 'EncryptedBlock';
+        return isArray && isEncryptedBlock;
       };
 
       KryptnosticObject.prototype.isDecrypted = function() {
@@ -26571,6 +27871,45 @@ define("function-name", function(){});
 
     })();
     return ObjectMetadata;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.metadata-request', ['require'], function(require) {
+    var MetadataRequest, validateMetadata;
+    validateMetadata = function(metadata) {
+      var metadatum, _i, _len, _results;
+      if (!_.isArray(metadata)) {
+        throw new Error('must construct with a list of metadata');
+      }
+      _results = [];
+      for (_i = 0, _len = metadata.length; _i < _len; _i++) {
+        metadatum = metadata[_i];
+        if (metadatum.constructor.name !== 'IndexedMetadata') {
+          throw new Error('metadata list member must be indexed metadata');
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
+    };
+    MetadataRequest = (function() {
+      function MetadataRequest(_arg) {
+        this.metadata = _arg.metadata;
+        this.validate();
+      }
+
+      MetadataRequest.prototype.validate = function() {
+        return validateMetadata(this.metadata);
+      };
+
+      return MetadataRequest;
+
+    })();
+    return MetadataRequest;
   });
 
 }).call(this);
@@ -26747,6 +28086,41 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
+  define('kryptnostic.schema.encryptable', ['require', 'kryptnostic.schema.encrypted-block', 'kryptnostic.schema.block-ciphertext'], function(require) {
+    var BLOCK_CIPHERTEXT_SCHEMA, ENCRYPTED_BLOCK_SCHEMA;
+    ENCRYPTED_BLOCK_SCHEMA = require('kryptnostic.schema.encrypted-block');
+    BLOCK_CIPHERTEXT_SCHEMA = require('kryptnostic.schema.block-ciphertext');
+    return {
+      properties: {
+        data: {
+          description: 'list of encrypted blocks',
+          type: 'array',
+          required: true,
+          allowEmpty: false,
+          items: ENCRYPTED_BLOCK_SCHEMA
+        },
+        key: {
+          description: 'id of the cryptoservice for decrypting this object',
+          type: 'string',
+          required: true,
+          allowEmpty: false
+        },
+        strategy: {
+          type: 'object',
+          required: true
+        },
+        name: _.extend({}, BLOCK_CIPHERTEXT_SCHEMA, {
+          description: 'encrypted class name'
+        })
+      }
+    };
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
   define('kryptnostic.schema.encrypted-block', ['require', 'kryptnostic.schema.block-ciphertext'], function(require) {
     var BLOCK_CIPHERTEXT_SCHEMA, SCHEMA;
     BLOCK_CIPHERTEXT_SCHEMA = require('kryptnostic.schema.block-ciphertext');
@@ -26784,6 +28158,36 @@ define("function-name", function(){});
           type: 'number',
           required: true
         }
+      }
+    };
+    return SCHEMA;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.schema.indexed-metadata', ['require', 'kryptnostic.schema.encryptable'], function(require) {
+    var ENCRYPTABLE_SCHEMA, SCHEMA;
+    ENCRYPTABLE_SCHEMA = require('kryptnostic.schema.encryptable');
+    SCHEMA = {
+      properties: {
+        key: {
+          description: 'the indexed search key for this term',
+          type: 'string',
+          required: true,
+          allowEmpty: false
+        },
+        id: {
+          description: 'the object id which the term came from',
+          type: 'string',
+          required: true,
+          allowEmpty: false
+        },
+        data: _.extend({}, ENCRYPTABLE_SCHEMA, {
+          description: 'the encrypted metadata content'
+        })
       }
     };
     return SCHEMA;
@@ -26985,6 +28389,11 @@ define("function-name", function(){});
           type: 'string',
           required: true,
           allowEmpty: false
+        },
+        isSearchable: {
+          description: 'indicates whether the object should be indexed',
+          type: 'boolean',
+          required: false
         }
       }
     };
@@ -27062,16 +28471,120 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
+  define('kryptnostic.indexed-metadata', ['require', 'lodash', 'kryptnostic.schema.indexed-metadata', 'kryptnostic.schema.validator'], function(require) {
+    var DEFAULT_OPTS, IndexedMetadata, SCHEMA, validator, _;
+    _ = require('lodash');
+    SCHEMA = require('kryptnostic.schema.indexed-metadata');
+    validator = require('kryptnostic.schema.validator');
+    DEFAULT_OPTS = {};
+    IndexedMetadata = (function() {
+      function IndexedMetadata(opts) {
+        _.extend(this, DEFAULT_OPTS, opts);
+        this.validate();
+      }
+
+      IndexedMetadata.prototype.validate = function() {
+        return validator.validate(this, IndexedMetadata, SCHEMA);
+      };
+
+      return IndexedMetadata;
+
+    })();
+    return IndexedMetadata;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.search.metadata-mapper', ['require', 'kryptnostic.logger', 'kryptnostic.binary-utils', 'kryptnostic.hash-function', 'kryptnostic.mock.kryptnostic-engine', 'kryptnostic.search.random-index-generator'], function(require) {
+    var BinaryUtils, HashFunction, Logger, MINIMUM_TOKEN_LENGTH, MetadataMapper, MockKryptnosticEngine, RandomIndexGenerator, computeBucketSize, log;
+    Logger = require('kryptnostic.logger');
+    BinaryUtils = require('kryptnostic.binary-utils');
+    HashFunction = require('kryptnostic.hash-function');
+    MockKryptnosticEngine = require('kryptnostic.mock.kryptnostic-engine');
+    RandomIndexGenerator = require('kryptnostic.search.random-index-generator');
+    MINIMUM_TOKEN_LENGTH = 1;
+    log = Logger.get('MetadataMapper');
+    computeBucketSize = function(metadata) {
+      return _.reduce(metadata, function(max, _arg) {
+        var locations;
+        locations = _arg.locations;
+        return Math.max(max, locations.length);
+      }, 0);
+    };
+    MetadataMapper = (function() {
+      function MetadataMapper() {
+        this.engine = new MockKryptnosticEngine();
+        this.indexGenerator = new RandomIndexGenerator();
+        this.hashFunction = HashFunction.MURMUR3_128;
+      }
+
+      MetadataMapper.prototype.mapToKeys = function(_arg) {
+        var balancedMetadatum, bucketLength, id, indexString, indexUint, locations, metadata, metadataMap, metadatum, objectAddressMatrix, objectSearchKey, paddedLocations, token, tokenHex, tokenUint, _i, _len;
+        metadata = _arg.metadata, objectAddressMatrix = _arg.objectAddressMatrix, objectSearchKey = _arg.objectSearchKey;
+        metadataMap = {};
+        bucketLength = computeBucketSize(metadata);
+        for (_i = 0, _len = metadata.length; _i < _len; _i++) {
+          metadatum = metadata[_i];
+          token = metadatum.token, locations = metadatum.locations, id = metadatum.id;
+          if (token.length <= MINIMUM_TOKEN_LENGTH) {
+            continue;
+          }
+          tokenHex = this.hashFunction(token);
+          tokenUint = BinaryUtils.hexToUint(tokenHex);
+          indexUint = this.engine.getMetadatumAddress({
+            token: tokenUint,
+            objectAddressMatrix: objectAddressMatrix,
+            objectSearchKey: objectSearchKey
+          });
+          indexString = BinaryUtils.uint8ToString(indexUint);
+          paddedLocations = this.subListAndPad(locations, bucketLength);
+          balancedMetadatum = {
+            id: id,
+            token: token,
+            locations: paddedLocations
+          };
+          if (metadataMap[indexString]) {
+            metadataMap[indexString].push(balancedMetadatum);
+          } else {
+            metadataMap[indexString] = [balancedMetadatum];
+          }
+        }
+        return metadataMap;
+      };
+
+      MetadataMapper.prototype.subListAndPad = function(locations, desiredLength) {
+        var falseIndices, padCount;
+        padCount = desiredLength - locations.length;
+        falseIndices = this.indexGenerator.generate(padCount);
+        return locations.concat(falseIndices);
+      };
+
+      return MetadataMapper;
+
+    })();
+    return MetadataMapper;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
   define('kryptnostic.search.indexer', ['require', 'lodash', 'kryptnostic.search.tokenizer'], function(require) {
     var ObjectIndexer, ObjectTokenizer, _;
     _ = require('lodash');
     ObjectTokenizer = require('kryptnostic.search.tokenizer');
     ObjectIndexer = (function() {
-      function ObjectIndexer() {}
+      function ObjectIndexer() {
+        this.objectTokenizer = new ObjectTokenizer();
+      }
 
-      ObjectIndexer.index = function(id, text) {
+      ObjectIndexer.prototype.index = function(id, text) {
         var invertedIndex, metadata;
-        invertedIndex = ObjectTokenizer.analyze(text);
+        invertedIndex = this.objectTokenizer.analyze(text);
         metadata = _.map(invertedIndex, function(locations, token) {
           return {
             id: id,
@@ -27103,7 +28616,7 @@ define("function-name", function(){});
 
       TOKEN_REGEX = /([a-zA-Z0-9]+)/g;
 
-      ObjectTokenizer.analyze = function(source) {
+      ObjectTokenizer.prototype.analyze = function(source) {
         var index, invertedIndex, match, word;
         if (!_.isString(source)) {
           throw new Error('source must be a string');
@@ -27125,6 +28638,232 @@ define("function-name", function(){});
 
     })();
     return ObjectTokenizer;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.search.random-index-generator', ['require'], function(require) {
+    var RandomIndexGenerator;
+    RandomIndexGenerator = (function() {
+      function RandomIndexGenerator() {}
+
+      RandomIndexGenerator.prototype.generate = function(count) {
+        var buffer;
+        buffer = new Uint32Array(count);
+        window.crypto.getRandomValues(buffer);
+        return Array.prototype.slice.call(buffer);
+      };
+
+      return RandomIndexGenerator;
+
+    })();
+    return RandomIndexGenerator;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.search-client', ['require', 'kryptnostic.binary-utils', 'kryptnostic.crypto-service-loader', 'kryptnostic.mock.kryptnostic-engine', 'kryptnostic.search-api'], function(require) {
+    var BinaryUtils, CryptoServiceLoader, KryptnosticObject, MockKryptnosticEngine, SearchApi, SearchClient;
+    BinaryUtils = require('kryptnostic.binary-utils');
+    CryptoServiceLoader = require('kryptnostic.crypto-service-loader');
+    KryptnosticObject = require('kryptnostic.kryptnostic-object');
+    MockKryptnosticEngine = require('kryptnostic.mock.kryptnostic-engine');
+    SearchApi = require('kryptnostic.search-api');
+    SearchClient = (function() {
+      function SearchClient() {
+        this.engine = new MockKryptnosticEngine();
+        this.cryptoServiceLoader = new CryptoServiceLoader();
+        this.searchApi = new SearchApi();
+      }
+
+      SearchClient.prototype.search = function(token) {
+        return Promise.resolve().then((function(_this) {
+          return function() {
+            var encryptedToken;
+            token = BinaryUtils.stringToUint8(token);
+            encryptedToken = _this.engine.getEncryptedSearchToken({
+              token: token
+            });
+            return _this.searchApi.search(encryptedToken);
+          };
+        })(this)).then(function(encryptedMetadata) {
+          return Promise.all(_.map(encryptedMetadata, (function(_this) {
+            return function(encryptedMetadatum) {
+              return _this.decryptMetadatum(encryptedMetadatum);
+            };
+          })(this)));
+        }).then(function(decryptedMetadata) {
+          return decryptedMetadata;
+        });
+      };
+
+      SearchClient.prototype.decryptMetadatum = function(encryptedMetadatum) {
+        return Promise.resolve().then((function(_this) {
+          return function() {
+            var id;
+            id = encryptedMetadatum.key;
+            return _this.cryptoServiceLoader.getObjectCryptoService(id, {
+              expectMiss: false
+            });
+          };
+        })(this)).then(function(cryptoService) {
+          var body, decrypted, kryptnosticObject;
+          body = encryptedMetadatum;
+          kryptnosticObject = KryptnosticObject.createFromEncrypted({
+            body: body
+          });
+          kryptnosticObject.setChunkingStrategy(JsonChunkingStrategy.URI);
+          decrypted = kryptnosticObject.decrypt(cryptoService);
+          return decrypted.body;
+        });
+      };
+
+      return SearchClient;
+
+    })();
+    return SearchClient;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.search-indexing-service', ['require', 'bluebird', 'kryptnostic.chunking.strategy.json', 'kryptnostic.crypto-service-loader', 'kryptnostic.document-search-key-api', 'kryptnostic.kryptnostic-object', 'kryptnostic.logger', 'kryptnostic.metadata-api', 'kryptnostic.metadata-request', 'kryptnostic.mock.kryptnostic-engine', 'kryptnostic.search-key-serializer', 'kryptnostic.search.indexer', 'kryptnostic.search.metadata-mapper', 'kryptnostic.sharing-client', 'kryptnostic.indexed-metadata'], function(require) {
+    var CryptoServiceLoader, DocumentSearchKeyApi, IndexedMetadata, JsonChunkingStrategy, KryptnosticObject, Logger, MetadataApi, MetadataMapper, MetadataRequest, MockKryptnosticEngine, ObjectIndexer, Promise, SearchIndexingService, SearchKeySerializer, SharingClient, log;
+    Promise = require('bluebird');
+    CryptoServiceLoader = require('kryptnostic.crypto-service-loader');
+    DocumentSearchKeyApi = require('kryptnostic.document-search-key-api');
+    IndexedMetadata = require('kryptnostic.indexed-metadata');
+    JsonChunkingStrategy = require('kryptnostic.chunking.strategy.json');
+    KryptnosticObject = require('kryptnostic.kryptnostic-object');
+    Logger = require('kryptnostic.logger');
+    MetadataApi = require('kryptnostic.metadata-api');
+    MetadataMapper = require('kryptnostic.search.metadata-mapper');
+    MetadataRequest = require('kryptnostic.metadata-request');
+    MockKryptnosticEngine = require('kryptnostic.mock.kryptnostic-engine');
+    ObjectIndexer = require('kryptnostic.search.indexer');
+    SearchKeySerializer = require('kryptnostic.search-key-serializer');
+    SharingClient = require('kryptnostic.sharing-client');
+    log = Logger.get('SearchIndexingService');
+    SearchIndexingService = (function() {
+      function SearchIndexingService() {
+        this.cryptoServiceLoader = new CryptoServiceLoader();
+        this.documentSearchKeyApi = new DocumentSearchKeyApi();
+        this.engine = new MockKryptnosticEngine();
+        this.metadataApi = new MetadataApi();
+        this.metadataMapper = new MetadataMapper();
+        this.objectIndexer = new ObjectIndexer();
+        this.searchKeySerializer = new SearchKeySerializer();
+        this.sharingClient = new SharingClient();
+      }
+
+      SearchIndexingService.prototype.submit = function(_arg) {
+        var body, id, objectAddressMatrix, objectIndexPair, objectSearchKey, storageRequest, _ref;
+        id = _arg.id, storageRequest = _arg.storageRequest;
+        if (!storageRequest.isSearchable) {
+          log.info('skipping non-searchable object', {
+            id: id
+          });
+          return Promise.resolve();
+        }
+        body = storageRequest.body;
+        _ref = {}, objectAddressMatrix = _ref.objectAddressMatrix, objectSearchKey = _ref.objectSearchKey, objectIndexPair = _ref.objectIndexPair;
+        return Promise.resolve().then((function(_this) {
+          return function() {
+            var encryptedAddressFunction;
+            objectAddressMatrix = _this.engine.getObjectAddressMatrix();
+            objectSearchKey = _this.engine.getObjectSearchKey();
+            objectIndexPair = _this.engine.getObjectIndexPair({
+              objectSearchKey: objectSearchKey,
+              objectAddressMatrix: objectAddressMatrix
+            });
+            encryptedAddressFunction = _this.searchKeySerializer.encrypt(objectAddressMatrix);
+            return _this.documentSearchKeyApi.uploadAddressFunction(id, encryptedAddressFunction);
+          };
+        })(this)).then((function(_this) {
+          return function() {
+            return _this.documentSearchKeyApi.uploadSharingPair(id, objectIndexPair);
+          };
+        })(this)).then((function(_this) {
+          return function() {
+            return _this.objectIndexer.index(id, body);
+          };
+        })(this)).then((function(_this) {
+          return function(metadata) {
+            return _this.prepareMetadataRequest({
+              id: id,
+              metadata: metadata,
+              objectAddressMatrix: objectAddressMatrix,
+              objectSearchKey: objectSearchKey
+            });
+          };
+        })(this)).then((function(_this) {
+          return function(metadataRequest) {
+            return _this.metadataApi.uploadMetadata(metadataRequest);
+          };
+        })(this));
+      };
+
+      SearchIndexingService.prototype.prepareMetadataRequest = function(_arg) {
+        var id, metadata, objectAddressMatrix, objectSearchKey;
+        id = _arg.id, metadata = _arg.metadata, objectAddressMatrix = _arg.objectAddressMatrix, objectSearchKey = _arg.objectSearchKey;
+        return Promise.resolve().then((function(_this) {
+          return function() {
+            return _this.cryptoServiceLoader.getObjectCryptoService(id, {
+              expectMiss: false
+            });
+          };
+        })(this)).then((function(_this) {
+          return function(cryptoService) {
+            var body, data, encrypted, indexedMetadata, key, keyedMetadata, kryptnosticObject, metadataIndex;
+            keyedMetadata = _this.metadataMapper.mapToKeys({
+              metadata: metadata,
+              objectAddressMatrix: objectAddressMatrix,
+              objectSearchKey: objectSearchKey
+            });
+            metadataIndex = [];
+            for (key in keyedMetadata) {
+              metadata = keyedMetadata[key];
+              body = metadata;
+              kryptnosticObject = KryptnosticObject.createFromDecrypted({
+                id: id,
+                body: body
+              });
+              kryptnosticObject.setChunkingStrategy(JsonChunkingStrategy.URI);
+              encrypted = kryptnosticObject.encrypt(cryptoService);
+              encrypted.validateEncrypted();
+              data = encrypted.body;
+              _.extend(data, {
+                key: id,
+                strategy: {
+                  '@class': JsonChunkingStrategy.URI
+                }
+              });
+              indexedMetadata = new IndexedMetadata({
+                key: key,
+                data: data,
+                id: id
+              });
+              metadataIndex.push(indexedMetadata);
+            }
+            return new MetadataRequest({
+              metadata: metadataIndex
+            });
+          };
+        })(this));
+      };
+
+      return SearchIndexingService;
+
+    })();
+    return SearchIndexingService;
   });
 
 }).call(this);
@@ -27304,11 +29043,12 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.sharing-client', ['require', 'bluebird', 'kryptnostic.logger', 'kryptnostic.sharing-api', 'kryptnostic.directory-api', 'kryptnostic.sharing-request', 'kryptnostic.revocation-request', 'kryptnostic.credential-loader', 'kryptnostic.crypto-service-loader', 'kryptnostic.crypto-service-marshaller'], function(require) {
-    var CredentialLoader, CryptoServiceLoader, CryptoServiceMarshaller, DirectoryApi, Logger, Promise, RevocationRequest, RsaCryptoService, SharingApi, SharingClient, SharingRequest, log, validateId, validateUsers, _;
+  define('kryptnostic.sharing-client', ['require', 'bluebird', 'kryptnostic.logger', 'kryptnostic.validators', 'kryptnostic.sharing-api', 'kryptnostic.directory-api', 'kryptnostic.sharing-request', 'kryptnostic.revocation-request', 'kryptnostic.credential-loader', 'kryptnostic.crypto-service-loader', 'kryptnostic.crypto-service-marshaller'], function(require) {
+    var CredentialLoader, CryptoServiceLoader, CryptoServiceMarshaller, DirectoryApi, Logger, Promise, RevocationRequest, RsaCryptoService, SharingApi, SharingClient, SharingRequest, log, validateId, validateUuids, validators, _;
     _ = require('lodash');
     Promise = require('bluebird');
     Logger = require('kryptnostic.logger');
+    validators = require('kryptnostic.validators');
     SharingApi = require('kryptnostic.sharing-api');
     DirectoryApi = require('kryptnostic.directory-api');
     SharingRequest = require('kryptnostic.sharing-request');
@@ -27318,38 +29058,30 @@ define("function-name", function(){});
     CryptoServiceLoader = require('kryptnostic.crypto-service-loader');
     CryptoServiceMarshaller = require('kryptnostic.crypto-service-marshaller');
     log = Logger.get('SharingClient');
-    validateId = function(id) {
-      if (!id) {
-        log.error('illegal id', id);
-        throw new Error('object id must be specified!');
-      }
-    };
-    validateUsers = function(uuids) {
-      if (!_.isArray(uuids)) {
-        log.error('illegal uuids', uuids);
-        throw new Error('uuids must be a list');
-      }
-    };
+    validateId = validators.validateId, validateUuids = validators.validateUuids;
     SharingClient = (function() {
       function SharingClient() {
         this.sharingApi = new SharingApi();
         this.directoryApi = new DirectoryApi();
         this.cryptoServiceMarshaller = new CryptoServiceMarshaller();
+        this.cryptoServiceLoader = new CryptoServiceLoader();
+        this.credentialLoader = new CredentialLoader();
       }
 
       SharingClient.prototype.shareObject = function(id, uuids) {
-        var cryptoServiceLoader, principal, sharingKey;
+        var principal, sharingKey;
         if (_.isEmpty(uuids)) {
           return Promise.resolve();
         }
         validateId(id);
-        validateUsers(uuids);
-        principal = CredentialLoader.getCredentials().principal;
-        cryptoServiceLoader = new CryptoServiceLoader();
+        validateUuids(uuids);
+        principal = this.credentialLoader.getCredentials().principal;
         sharingKey = '';
-        return Promise.resolve().then(function() {
-          return cryptoServiceLoader.getObjectCryptoService(id);
-        }).then((function(_this) {
+        return Promise.resolve().then((function(_this) {
+          return function() {
+            return _this.cryptoServiceLoader.getObjectCryptoService(id);
+          };
+        })(this)).then((function(_this) {
           return function(cryptoService) {
             var promiseMap;
             promiseMap = _.mapValues(_.object(uuids), function(empty, uuid) {
@@ -27390,7 +29122,7 @@ define("function-name", function(){});
         return Promise.resolve().then((function(_this) {
           return function() {
             validateId(id);
-            validateUsers(uuids);
+            validateUuids(uuids);
             revocationRequest = new RevocationRequest({
               id: id,
               users: uuids
@@ -27420,35 +29152,22 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.storage-client', ['require', 'bluebird', 'kryptnostic.logger', 'kryptnostic.object-api', 'kryptnostic.kryptnostic-object', 'kryptnostic.crypto-service-loader', 'kryptnostic.pending-object-request'], function(require) {
+  define('kryptnostic.storage-client', ['require', 'bluebird', 'kryptnostic.validators', 'kryptnostic.object-api', 'kryptnostic.kryptnostic-object', 'kryptnostic.crypto-service-loader', 'kryptnostic.pending-object-request', 'kryptnostic.search-indexing-service'], function(require) {
     'use strict';
-    var CryptoServiceLoader, KryptnosticObject, Logger, ObjectApi, PendingObjectRequest, Promise, StorageClient, logger, validateBody, validateDecrypted, validateId;
+    var CryptoServiceLoader, KryptnosticObject, ObjectApi, PendingObjectRequest, Promise, SearchIndexingService, StorageClient, validateId, validateNonEmptyString, validators;
     Promise = require('bluebird');
+    validators = require('kryptnostic.validators');
     KryptnosticObject = require('kryptnostic.kryptnostic-object');
     PendingObjectRequest = require('kryptnostic.pending-object-request');
     CryptoServiceLoader = require('kryptnostic.crypto-service-loader');
     ObjectApi = require('kryptnostic.object-api');
-    Logger = require('kryptnostic.logger');
-    logger = Logger.get('StorageClient');
-    validateId = function(id) {
-      if (!(_.isString(id) && !_.isEmpty(id))) {
-        throw new Error('must specify a string id');
-      }
-    };
-    validateBody = function(body) {
-      if (!(_.isString(body) && !_.isEmpty(body))) {
-        throw new Error('object body cannot be empty!');
-      }
-    };
-    validateDecrypted = function(kryptnosticObject) {
-      if (kryptnosticObject.isEncrypted()) {
-        throw new Error('expected object to be in decrypted state');
-      }
-    };
+    SearchIndexingService = require('kryptnostic.search-indexing-service');
+    validateId = validators.validateId, validateNonEmptyString = validators.validateNonEmptyString;
     StorageClient = (function() {
       function StorageClient() {
         this.objectApi = new ObjectApi();
         this.cryptoServiceLoader = new CryptoServiceLoader();
+        this.searchIndexingService = new SearchIndexingService();
       }
 
       StorageClient.prototype.getObjectIds = function() {
@@ -27467,13 +29186,115 @@ define("function-name", function(){});
         return this.objectApi.getObjectMetadata(id);
       };
 
+      StorageClient.prototype.deleteObject = function(id) {
+        return this.objectApi.deleteObject(id);
+      };
+
+      StorageClient.prototype.appendObject = function(id, body) {
+        return Promise.resolve().then(function() {
+          validateId(id);
+          return validateNonEmptyString(body);
+        }).then((function(_this) {
+          return function() {
+            return _this.objectApi.createPendingObjectFromExisting(id);
+          };
+        })(this)).then((function(_this) {
+          return function() {
+            return _this.cryptoServiceLoader.getObjectCryptoService(id, {
+              expectMiss: false
+            });
+          };
+        })(this)).then((function(_this) {
+          return function(cryptoService) {
+            return _this.encrypt({
+              id: id,
+              body: body,
+              cryptoService: cryptoService
+            });
+          };
+        })(this)).then((function(_this) {
+          return function(encrypted) {
+            return _this.submitObjectBlocks(encrypted);
+          };
+        })(this)).then(function() {
+          return id;
+        });
+      };
+
+      StorageClient.prototype.uploadObject = function(storageRequest) {
+        var id, sharingKey, _ref;
+        _ref = {}, id = _ref.id, sharingKey = _ref.sharingKey;
+        return Promise.resolve().then(function() {
+          return storageRequest.validate();
+        }).then((function(_this) {
+          return function() {
+            return _this.createPending(storageRequest);
+          };
+        })(this)).then((function(_this) {
+          return function(_id) {
+            id = _id;
+            return _this.cryptoServiceLoader.getObjectCryptoService(id, {
+              expectMiss: true
+            });
+          };
+        })(this)).then((function(_this) {
+          return function(cryptoService) {
+            var body;
+            body = storageRequest.body;
+            return _this.encrypt({
+              id: id,
+              body: body,
+              cryptoService: cryptoService
+            });
+          };
+        })(this)).then((function(_this) {
+          return function(encrypted) {
+            return _this.submitObjectBlocks(encrypted);
+          };
+        })(this)).then((function(_this) {
+          return function() {
+            return _this.searchIndexingService.submit({
+              id: id,
+              storageRequest: storageRequest
+            });
+          };
+        })(this)).then(function() {
+          return id;
+        });
+      };
+
+      StorageClient.prototype.encrypt = function(_arg) {
+        var body, cryptoService, id, kryptnosticObject;
+        id = _arg.id, body = _arg.body, cryptoService = _arg.cryptoService;
+        kryptnosticObject = KryptnosticObject.createFromDecrypted({
+          id: id,
+          body: body
+        });
+        return kryptnosticObject.encrypt(cryptoService);
+      };
+
+      StorageClient.prototype.createPending = function(storageRequest) {
+        var parentObjectId, pendingRequest, type;
+        if (storageRequest == null) {
+          storageRequest = {};
+        }
+        if (storageRequest.objectId != null) {
+          return this.objectApi.createPendingObjectFromExisting(objectId);
+        } else {
+          type = storageRequest.type, parentObjectId = storageRequest.parentObjectId;
+          pendingRequest = new PendingObjectRequest({
+            type: type,
+            parentObjectId: parentObjectId
+          });
+          return this.objectApi.createPendingObject(pendingRequest);
+        }
+      };
+
       StorageClient.prototype.submitObjectBlocks = function(kryptnosticObject) {
         return Promise.resolve().then((function(_this) {
           return function() {
             var encryptedBlocks, objectId;
-            if (!kryptnosticObject.isEncrypted()) {
-              throw new Error('cannot submit blocks for an unencrypted object');
-            }
+            kryptnosticObject.validateEncrypted();
             objectId = kryptnosticObject.metadata.id;
             encryptedBlocks = kryptnosticObject.body.data;
             return Promise.reduce(encryptedBlocks, function(chain, nextEncryptableBlock) {
@@ -27481,77 +29302,6 @@ define("function-name", function(){});
                 return _this.objectApi.updateObject(objectId, nextEncryptableBlock);
               });
             }, Promise.resolve());
-          };
-        })(this));
-      };
-
-      StorageClient.prototype.deleteObject = function(id) {
-        return Promise.resolve().then((function(_this) {
-          return function() {
-            validateId(id);
-            return _this.objectApi.deleteObject(id);
-          };
-        })(this));
-      };
-
-      StorageClient.prototype.appendObject = function(id, body) {
-        return Promise.resolve().then(function() {
-          validateId(id);
-          return validateBody(body);
-        }).then((function(_this) {
-          return function() {
-            return _this.objectApi.createPendingObjectFromExisting(id);
-          };
-        })(this)).then((function(_this) {
-          return function() {
-            var kryptnosticObject;
-            kryptnosticObject = KryptnosticObject.createFromDecrypted({
-              id: id,
-              body: body
-            });
-            validateDecrypted(kryptnosticObject);
-            return _this.cryptoServiceLoader.getObjectCryptoService(id, {
-              expectMiss: false
-            }).then(function(cryptoService) {
-              var encrypted;
-              encrypted = kryptnosticObject.encrypt(cryptoService);
-              return _this.submitObjectBlocks(encrypted);
-            }).then(function() {
-              return id;
-            });
-          };
-        })(this));
-      };
-
-      StorageClient.prototype.uploadObject = function(storageRequest) {
-        var body, objectId, pendingOpts, pendingPromise, pendingRequest;
-        storageRequest.validate();
-        body = storageRequest.body, objectId = storageRequest.objectId;
-        pendingPromise = void 0;
-        if (objectId != null) {
-          pendingPromise = this.objectApi.createPendingObjectFromExisting(objectId);
-        } else {
-          pendingOpts = _.pick(storageRequest, 'type', 'parentObjectId');
-          pendingRequest = new PendingObjectRequest(pendingOpts);
-          pendingPromise = this.objectApi.createPendingObject(pendingRequest);
-        }
-        return pendingPromise.then((function(_this) {
-          return function(id) {
-            var kryptnosticObject;
-            kryptnosticObject = KryptnosticObject.createFromDecrypted({
-              id: id,
-              body: body
-            });
-            validateDecrypted(kryptnosticObject);
-            return _this.cryptoServiceLoader.getObjectCryptoService(id, {
-              expectMiss: true
-            }).then(function(cryptoService) {
-              var encrypted;
-              encrypted = kryptnosticObject.encrypt(cryptoService);
-              return _this.submitObjectBlocks(encrypted);
-            }).then(function() {
-              return id;
-            });
           };
         })(this));
       };
@@ -27671,21 +29421,15 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.permission-change-visitor', ['require', 'bluebird', 'kryptnostic.logger', 'kryptnostic.storage-client', 'kryptnostic.sharing-client'], function(require) {
-    var Logger, PermissionChangeVisitor, Promise, SharingClient, StorageClient, log, validateId;
+  define('kryptnostic.permission-change-visitor', ['require', 'bluebird', 'kryptnostic.logger', 'kryptnostic.validators', 'kryptnostic.storage-client', 'kryptnostic.sharing-client'], function(require) {
+    var Logger, PermissionChangeVisitor, Promise, SharingClient, StorageClient, log, validateId, validators;
     Promise = require('bluebird');
     Logger = require('kryptnostic.logger');
+    validators = require('kryptnostic.validators');
     StorageClient = require('kryptnostic.storage-client');
     SharingClient = require('kryptnostic.sharing-client');
     log = Logger.get('PermissionChangeVisitor');
-    validateId = function(id) {
-      if (!(_.isString(id) && !_.isEmpty(id))) {
-        log.error('illegal id argument', {
-          id: id
-        });
-        throw new Error('illegal id argument');
-      }
-    };
+    validateId = validators.validateId;
     return PermissionChangeVisitor = (function() {
       function PermissionChangeVisitor(uuids) {
         this.uuids = uuids;
@@ -27934,6 +29678,11 @@ define("function-name", function(){});
         this.moduleName = moduleName;
       }
 
+      Logger.setLevel = function(level) {
+        log.info('log level changing to', level);
+        return log.setLevel(level, PERSIST);
+      };
+
       Logger.prototype.trace = function() {
         var args, message;
         message = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
@@ -27968,6 +29717,179 @@ define("function-name", function(){});
 
     })();
     return Logger;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.binary-utils', ['require', 'lodash', 'kryptnostic.logger'], function(require) {
+    var EMPTY_STRING, HEX_CHARS_PER_BYTE, HEX_SIZE_PER_CHAR, Logger, UINT16_REPRESENTABLE_SIZE, UINT8_REPRESENTABLE_SIZE, chunkUint8, cleanUint8Buffer, getCharCode, hexToUint, joinUint8, log, stringToHex, stringToUint16, stringToUint8, uint16ToString, uint16ToUint8, uint8ToNumeric, uint8ToString, uint8ToUint16, validateString, validateUint16, validateUint8, _;
+    _ = require('lodash');
+    Logger = require('kryptnostic.logger');
+    log = Logger.get('BinaryUtils');
+    EMPTY_STRING = '';
+    validateString = function(arg) {
+      if (!_.isString(arg)) {
+        throw new Error('argument is not a string');
+      }
+    };
+    validateUint8 = function(arg) {
+      if (arg.buffer == null) {
+        throw new Error('argument is not a uint8 array');
+      }
+    };
+    validateUint16 = function(arg) {
+      if (arg.buffer == null) {
+        throw new Error('argument is not a uint16 array');
+      }
+    };
+    getCharCode = function(c, maxSize) {
+      var code;
+      code = c.charCodeAt();
+      if (code >= maxSize) {
+        throw new Error('code outside of range!');
+      } else {
+        return code;
+      }
+    };
+    HEX_CHARS_PER_BYTE = 2;
+    HEX_SIZE_PER_CHAR = 16;
+    hexToUint = function(hex) {
+      var bytes, hexByte, index, _i, _ref;
+      validateString(hex);
+      bytes = [];
+      for (index = _i = 0, _ref = hex.length; HEX_CHARS_PER_BYTE > 0 ? _i < _ref : _i > _ref; index = _i += HEX_CHARS_PER_BYTE) {
+        hexByte = hex.substr(index, HEX_CHARS_PER_BYTE);
+        bytes.push(parseInt(hexByte, HEX_SIZE_PER_CHAR));
+      }
+      return new Uint8Array(bytes);
+    };
+    stringToHex = function(str) {
+      if (!_.isString(str)) {
+        throw new Error('argument is not a string');
+      }
+      return str.split(EMPTY_STRING).map(function(c) {
+        return c.charCodeAt().toString(16);
+      }).join(EMPTY_STRING);
+    };
+    UINT8_REPRESENTABLE_SIZE = Math.pow(2, 8);
+    UINT16_REPRESENTABLE_SIZE = Math.pow(2, 16);
+    cleanUint8Buffer = function(arr) {
+      var raw, _i, _ref, _results;
+      validateUint8(arr);
+      if (arr.length === arr.byteLength && arr.length === arr.buffer.byteLength) {
+        return arr;
+      } else {
+        raw = (function() {
+          _results = [];
+          for (var _i = 0, _ref = arr.length; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i++ : _i--){ _results.push(_i); }
+          return _results;
+        }).apply(this).map(function(i) {
+          return arr[i];
+        });
+        return new Uint8Array(raw);
+      }
+    };
+    uint8ToNumeric = function(arr) {
+      var _i, _ref, _results;
+      validateUint8(arr);
+      return (function() {
+        _results = [];
+        for (var _i = 0, _ref = arr.length; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i++ : _i--){ _results.push(_i); }
+        return _results;
+      }).apply(this).map(function(i) {
+        return arr[i];
+      });
+    };
+    uint8ToString = function(arr) {
+      var _i, _ref, _results;
+      validateUint8(arr);
+      return (function() {
+        _results = [];
+        for (var _i = 0, _ref = arr.length; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i++ : _i--){ _results.push(_i); }
+        return _results;
+      }).apply(this).map(function(i) {
+        return String.fromCharCode(arr[i]);
+      }).join(EMPTY_STRING);
+    };
+    uint16ToString = function(arr) {
+      var _i, _ref, _results;
+      validateUint16(arr);
+      return (function() {
+        _results = [];
+        for (var _i = 0, _ref = arr.length; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i++ : _i--){ _results.push(_i); }
+        return _results;
+      }).apply(this).map(function(i) {
+        return String.fromCharCode(arr[i]);
+      }).join(EMPTY_STRING);
+    };
+    stringToUint8 = function(string) {
+      validateString(string);
+      return new Uint8Array(_.map(string, function(c) {
+        return getCharCode(c, UINT8_REPRESENTABLE_SIZE);
+      }));
+    };
+    stringToUint16 = function(string) {
+      validateString(string);
+      return new Uint16Array(_.map(string, function(c) {
+        return getCharCode(c, UINT16_REPRESENTABLE_SIZE);
+      }));
+    };
+    uint16ToUint8 = function(arr) {
+      validateUint16(arr);
+      return new Uint8Array(arr.buffer);
+    };
+    uint8ToUint16 = function(arr) {
+      validateUint8(arr);
+      return new Uint16Array(arr.buffer);
+    };
+    joinUint8 = function(arrays) {
+      var buffer, copyIndex, targetLength;
+      targetLength = _.reduce(arrays, (function(length, arr) {
+        return length + arr.length;
+      }), 0);
+      buffer = new Uint8Array(targetLength);
+      copyIndex = 0;
+      arrays.forEach(function(arr) {
+        var sublistIndex, _i, _ref, _results;
+        _results = [];
+        for (sublistIndex = _i = 0, _ref = arr.length; 0 <= _ref ? _i < _ref : _i > _ref; sublistIndex = 0 <= _ref ? ++_i : --_i) {
+          buffer[copyIndex] = arr[sublistIndex];
+          _results.push(copyIndex += 1);
+        }
+        return _results;
+      });
+      return buffer;
+    };
+    chunkUint8 = function(array, chunkSizeBytes) {
+      var arrays, buffer, copyIndex, subarr;
+      validateUint8(array);
+      arrays = [];
+      copyIndex = 0;
+      buffer = new Uint8Array(chunkSizeBytes);
+      while (copyIndex < array.length) {
+        subarr = array.subarray(copyIndex, copyIndex + chunkSizeBytes);
+        arrays.push(new Uint8Array(subarr));
+        copyIndex += chunkSizeBytes;
+      }
+      return arrays;
+    };
+    return {
+      chunkUint8: chunkUint8,
+      cleanUint8Buffer: cleanUint8Buffer,
+      hexToUint: hexToUint,
+      joinUint8: joinUint8,
+      stringToHex: stringToHex,
+      stringToUint16: stringToUint16,
+      stringToUint8: stringToUint8,
+      uint16ToString: uint16ToString,
+      uint16ToUint8: uint16ToUint8,
+      uint8ToString: uint8ToString,
+      uint8ToUint16: uint8ToUint16,
+      uint8ToNumeric: uint8ToNumeric
+    };
   });
 
 }).call(this);
@@ -28010,7 +29932,7 @@ define("function-name", function(){});
         credentials = {};
       }
       if (_.isEmpty(credentials)) {
-        credentials = CredentialLoader.getCredentials();
+        credentials = new CredentialLoader().getCredentials();
       }
       _.defaults(request, {
         headers: {}
@@ -28029,9 +29951,65 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
+  define('kryptnostic.validators', ['require', 'lodash', 'kryptnostic.logger'], function(require) {
+    var Logger, log, validateId, validateKey, validateNonEmptyString, validateObjectType, validateUuid, validateUuids, _;
+    _ = require('lodash');
+    Logger = require('kryptnostic.logger');
+    log = Logger.get('validators');
+    validateNonEmptyString = function(value, desc) {
+      if (desc == null) {
+        desc = 'value';
+      }
+      if (!_.isString(value)) {
+        log.error("" + desc + " is not a string", value);
+        throw new Error("" + desc + " is not a string");
+      }
+      if (_.isEmpty(value)) {
+        log.error("" + desc + " is empty", value);
+        throw new Error("" + desc + " is empty");
+      }
+    };
+    validateUuid = function(uuid) {
+      return validateNonEmptyString(uuid, 'uuid');
+    };
+    validateId = function(id) {
+      return validateNonEmptyString(id, 'id');
+    };
+    validateKey = function(key) {
+      return validateNonEmptyString(key, 'key');
+    };
+    validateObjectType = function(type) {
+      return validateNonEmptyString(type, 'object type');
+    };
+    validateUuids = function(uuids) {
+      if (!_.isArray(uuids)) {
+        log.error('uuid list is not an array', {
+          uuids: uuids
+        });
+        throw new Error('uuid list is not an array');
+      }
+      return uuids.forEach(function(uuid) {
+        return validateUuid(uuid);
+      });
+    };
+    return {
+      validateId: validateId,
+      validateKey: validateKey,
+      validateUuid: validateUuid,
+      validateUuids: validateUuids,
+      validateObjectType: validateObjectType,
+      validateNonEmptyString: validateNonEmptyString
+    };
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
   var EXPORTED_MODULES;
 
-  EXPORTED_MODULES = ['axios', 'bluebird', 'forge', 'jscache', 'lodash', 'loglevel', 'pako', 'revalidator', 'function-name', 'cs!auth/AuthenticationService', 'cs!auth/AuthenticationStage', 'cs!auth/CredentialLoader', 'cs!auth/CredentialProviderLoader', 'cs!auth/CredentialService', 'cs!auth/SaltGenerator', 'cs!auth/credential-provider/InMemoryCredentialProvider', 'cs!auth/credential-provider/KeyValueCredentialProvider', 'cs!auth/credential-provider/LocalStorageCredentialProvider', 'cs!auth/credential-provider/SessionStorageCredentialProvider', 'cs!chunking/ChunkingStrategyRegistry', 'cs!chunking/DefaultChunkingStrategy', 'cs!crypto/AbstractCryptoService', 'cs!crypto/AesCryptoService', 'cs!crypto/CryptoAlgorithm', 'cs!crypto/CryptoServiceLoader', 'cs!crypto/CryptoServiceMarshaller', 'cs!crypto/Cypher', 'cs!crypto/HashFunction', 'cs!crypto/KeypairSerializer', 'cs!crypto/PasswordCryptoService', 'cs!crypto/RsaCryptoService', 'cs!crypto/RsaKeyGenerator', 'cs!http/DirectoryApi', 'cs!http/ObjectApi', 'cs!http/RegistrationApi', 'cs!http/SharingApi', 'cs!http/UserDirectoryApi', 'cs!marshalling/DeflatingMarshaller', 'cs!model/crypto/PublicKeyEnvelope', 'cs!model/object/BlockCiphertext', 'cs!model/object/EncryptedBlock', 'cs!model/object/KryptnosticObject', 'cs!model/object/ObjectMetadata', 'cs!model/request/PendingObjectRequest', 'cs!model/request/RevocationRequest', 'cs!model/request/SharingRequest', 'cs!model/request/StorageRequest', 'cs!model/request/UserRegistrationRequest', 'cs!model/schema/block-ciphertext', 'cs!model/schema/encrypted-block', 'cs!model/schema/kryptnostic-object', 'cs!model/schema/object-metadata', 'cs!model/schema/pending-object-request', 'cs!model/schema/revocation-request', 'cs!model/schema/sharing-request', 'cs!model/schema/storage-request', 'cs!model/schema/user-registration-request', 'cs!model/schema/validator', 'cs!search/ObjectIndexer', 'cs!search/ObjectTokenizer', 'cs!service/BlockEncryptionService', 'cs!service/ConfigurationService', 'cs!service/RegistrationClient', 'cs!service/SharingClient', 'cs!service/StorageClient', 'cs!service/UserClient', 'cs!tree/DeletionVisitor', 'cs!tree/PermissionChangeVisitor', 'cs!tree/TreeLoader', 'cs!tree/TreeNode', 'cs!util/Logger', 'cs!util/object-utils', 'cs!util/requests'];
+  EXPORTED_MODULES = ['axios', 'bluebird', 'forge', 'jscache', 'lodash', 'loglevel', 'murmurhash3', 'pako', 'revalidator', 'function-name', 'cs!auth/AuthenticationService', 'cs!auth/AuthenticationStage', 'cs!auth/CredentialLoader', 'cs!auth/CredentialProviderLoader', 'cs!auth/CredentialService', 'cs!auth/SaltGenerator', 'cs!auth/SearchCredentialService', 'cs!auth/SearchKeySerializer', 'cs!auth/credential-provider/InMemoryCredentialProvider', 'cs!auth/credential-provider/KeyValueCredentialProvider', 'cs!auth/credential-provider/LocalStorageCredentialProvider', 'cs!auth/credential-provider/SessionStorageCredentialProvider', 'cs!chunking/ChunkingStrategyRegistry', 'cs!chunking/DefaultChunkingStrategy', 'cs!chunking/JsonChunkingStrategy', 'cs!crypto/AbstractCryptoService', 'cs!crypto/AesCryptoService', 'cs!crypto/CryptoAlgorithm', 'cs!crypto/CryptoServiceLoader', 'cs!crypto/CryptoServiceMarshaller', 'cs!crypto/Cypher', 'cs!crypto/HashFunction', 'cs!crypto/KeypairSerializer', 'cs!crypto/PasswordCryptoService', 'cs!crypto/RsaCryptoService', 'cs!crypto/RsaKeyGenerator', 'cs!engine/KryptnosticEngine', 'cs!engine/MockKryptnosticEngine', 'cs!engine/MockSearchKeyGenerator', 'cs!engine/SearchKeyGenerator', 'cs!http/CryptoKeyStorageApi', 'cs!http/DirectoryApi', 'cs!http/DocumentSearchKeyApi', 'cs!http/MetadataApi', 'cs!http/ObjectApi', 'cs!http/RegistrationApi', 'cs!http/SearchApi', 'cs!http/SharingApi', 'cs!http/UserDirectoryApi', 'cs!marshalling/DeflatingMarshaller', 'cs!model/crypto/PublicKeyEnvelope', 'cs!model/object/BlockCiphertext', 'cs!model/object/EncryptedBlock', 'cs!model/object/KryptnosticObject', 'cs!model/object/ObjectMetadata', 'cs!model/request/MetadataRequest', 'cs!model/request/PendingObjectRequest', 'cs!model/request/RevocationRequest', 'cs!model/request/SharingRequest', 'cs!model/request/StorageRequest', 'cs!model/request/UserRegistrationRequest', 'cs!model/schema/block-ciphertext', 'cs!model/schema/encryptable', 'cs!model/schema/encrypted-block', 'cs!model/schema/indexed-metadata', 'cs!model/schema/kryptnostic-object', 'cs!model/schema/object-metadata', 'cs!model/schema/pending-object-request', 'cs!model/schema/revocation-request', 'cs!model/schema/sharing-request', 'cs!model/schema/storage-request', 'cs!model/schema/user-registration-request', 'cs!model/schema/validator', 'cs!model/search/IndexedMetadata', 'cs!search/MetadataMapper', 'cs!search/ObjectIndexer', 'cs!search/ObjectTokenizer', 'cs!search/RandomIndexGenerator', 'cs!search/SearchClient', 'cs!search/SearchIndexingService', 'cs!service/BlockEncryptionService', 'cs!service/ConfigurationService', 'cs!service/RegistrationClient', 'cs!service/SharingClient', 'cs!service/StorageClient', 'cs!service/UserClient', 'cs!tree/DeletionVisitor', 'cs!tree/PermissionChangeVisitor', 'cs!tree/TreeLoader', 'cs!tree/TreeNode', 'cs!util/Logger', 'cs!util/binary-utils', 'cs!util/object-utils', 'cs!util/requests', 'cs!util/validators'];
 
   define('kryptnostic', EXPORTED_MODULES, function(require) {
     'use strict';

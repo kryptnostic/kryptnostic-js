@@ -69,6 +69,17 @@ define 'kryptnostic.binary-utils', [
   UINT8_REPRESENTABLE_SIZE  = Math.pow(2, 8)
   UINT16_REPRESENTABLE_SIZE = Math.pow(2, 16)
 
+  # cleans a uint8 array so that the underlying buffer byteLength
+  # matches the array length exactly with no extra padding.
+  cleanUint8Buffer = (arr) ->
+    validateUint8(arr)
+
+    if arr.length is arr.byteLength and arr.length is arr.buffer.byteLength
+      return arr
+    else
+      raw = [0...arr.length].map((i) -> arr[i])
+      return new Uint8Array(raw)
+
   uint8ToNumeric = (arr) ->
     validateUint8(arr)
     return [0...arr.length].map((i) -> arr[i])
@@ -97,7 +108,7 @@ define 'kryptnostic.binary-utils', [
     validateUint8(arr)
     return new Uint16Array(arr.buffer)
 
-  joinUint = (arrays) ->
+  joinUint8 = (arrays) ->
     targetLength = _.reduce(arrays, ((length, arr) -> length + arr.length), 0)
     buffer       = new Uint8Array(targetLength)
     copyIndex    = 0
@@ -109,24 +120,25 @@ define 'kryptnostic.binary-utils', [
 
     return buffer
 
-  chunkUint = (array, chunkSize) ->
+  chunkUint8 = (array, chunkSizeBytes) ->
     validateUint8(array)
 
     arrays    = []
     copyIndex = 0
-    buffer    = new Uint8Array(chunkSize)
+    buffer    = new Uint8Array(chunkSizeBytes)
 
     while copyIndex < array.length
-      subarr = array.subarray(copyIndex, copyIndex + chunkSize)
+      subarr = array.subarray(copyIndex, copyIndex + chunkSizeBytes)
       arrays.push(new Uint8Array(subarr))
-      copyIndex += chunkSize
+      copyIndex += chunkSizeBytes
 
     return arrays
 
   return {
-    chunkUint
+    chunkUint8
+    cleanUint8Buffer
     hexToUint
-    joinUint
+    joinUint8
     stringToHex
     stringToUint16
     stringToUint8

@@ -42,7 +42,7 @@
   "devDependencies" : {
     "axios"              : "0.5.4",
     "bluebird"           : "2.9.32",
-    "forge"              : "0.6.21",
+    "forge"              : "0.6.31",
     "function-name"      : "https://raw.githubusercontent.com/kryptnostic/Function.name/6705081d59ccfc59999450694a273a15f91d09ff/Function.name.js",
     "jscache"            : "https://raw.githubusercontent.com/monsur/jscache/ba01cdcf3e8a426782e0c297832b6c81286c9e8a/cache.js",
     "kryptnostic-client" : "https://raw.githubusercontent.com/kryptnostic/krypto-js/v0.0.1/KryptnosticClient.js",

@@ -82,17 +82,17 @@ define [
     uint3  = new Uint8Array([7, 8, 9])
     flat   = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9])
 
-    describe 'joinUint', ->
+    describe 'joinUint8', ->
 
       it 'should flatten uint arrays', ->
         nested = [ uint1, uint2, uint3 ]
-        expect(BinaryUtils.joinUint(nested)).toEqual(flat)
+        expect(BinaryUtils.joinUint8(nested)).toEqual(flat)
 
-    describe 'chunkUint', ->
+    describe 'chunkUint8', ->
 
       it 'should split uint array into chunks', ->
         chunkSize = 3
-        expect(BinaryUtils.chunkUint(flat, chunkSize)).toEqual([ uint1, uint2, uint3 ])
+        expect(BinaryUtils.chunkUint8(flat, chunkSize)).toEqual([ uint1, uint2, uint3 ])
 
     describe 'uint8ToUint16', ->
 

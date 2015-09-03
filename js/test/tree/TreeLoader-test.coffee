@@ -4,16 +4,14 @@ define [
   'bluebird'
   'kryptnostic.tree-loader'
   'kryptnostic.logger'
-  'kryptnostic.credential-loader'
 ], (require) ->
 
   MOCK_CREDS = { principal: 'krypt|demo', credential: 'fake', keypair: {} }
 
-  Logger           = require 'kryptnostic.logger'
-  TreeLoader       = require 'kryptnostic.tree-loader'
-  sinon            = require 'sinon'
-  Promise          = require 'bluebird'
-  CredentialLoader = require 'kryptnostic.credential-loader'
+  Logger     = require 'kryptnostic.logger'
+  TreeLoader = require 'kryptnostic.tree-loader'
+  sinon      = require 'sinon'
+  Promise    = require 'bluebird'
 
   log = Logger.get('TreeLoader')
 
@@ -59,11 +57,11 @@ define [
       else
         return Promise.reject('simulated 404 - object does not exist')
     )
-    sinon.stub(CredentialLoader, 'getCredentials').returns(MOCK_CREDS)
+    sinon.stub(treeLoader.objectApi, 'wrapCredentials', (request, credentials) -> return request )
 
   afterEach ->
     treeLoader.objectApi.getObjectMetadata.restore()
-    CredentialLoader.getCredentials.restore()
+    treeLoader.objectApi.wrapCredentials.restore()
 
   # tests
   # =====

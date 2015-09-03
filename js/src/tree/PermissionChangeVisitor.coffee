@@ -2,21 +2,20 @@ define 'kryptnostic.permission-change-visitor', [
   'require'
   'bluebird'
   'kryptnostic.logger'
+  'kryptnostic.validators'
   'kryptnostic.storage-client'
   'kryptnostic.sharing-client'
 ], (require) ->
 
   Promise       = require 'bluebird'
   Logger        = require 'kryptnostic.logger'
+  validators    = require 'kryptnostic.validators'
   StorageClient = require 'kryptnostic.storage-client'
   SharingClient = require 'kryptnostic.sharing-client'
 
   log = Logger.get('PermissionChangeVisitor')
 
-  validateId = (id) ->
-    unless _.isString(id) and not _.isEmpty(id)
-      log.error('illegal id argument', { id })
-      throw new Error 'illegal id argument'
+  { validateId } = validators
 
   #
   # Changes permissions on the visited object nodes.

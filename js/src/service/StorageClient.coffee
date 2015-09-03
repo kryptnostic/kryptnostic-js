@@ -1,34 +1,24 @@
 define 'kryptnostic.storage-client', [
   'require'
   'bluebird'
-  'kryptnostic.logger'
+  'kryptnostic.validators'
   'kryptnostic.object-api'
   'kryptnostic.kryptnostic-object'
   'kryptnostic.crypto-service-loader'
   'kryptnostic.pending-object-request'
+  'kryptnostic.search-indexing-service'
 ], (require) ->
   'use strict'
 
-  Promise              = require 'bluebird'
-  KryptnosticObject    = require 'kryptnostic.kryptnostic-object'
-  PendingObjectRequest = require 'kryptnostic.pending-object-request'
-  CryptoServiceLoader  = require 'kryptnostic.crypto-service-loader'
-  ObjectApi            = require 'kryptnostic.object-api'
-  Logger               = require 'kryptnostic.logger'
+  Promise               = require 'bluebird'
+  validators            = require 'kryptnostic.validators'
+  KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
+  PendingObjectRequest  = require 'kryptnostic.pending-object-request'
+  CryptoServiceLoader   = require 'kryptnostic.crypto-service-loader'
+  ObjectApi             = require 'kryptnostic.object-api'
+  SearchIndexingService = require 'kryptnostic.search-indexing-service'
 
-  logger = Logger.get('StorageClient')
-
-  validateId = (id) ->
-    unless _.isString(id) and not _.isEmpty(id)
-      throw new Error 'must specify a string id'
-
-  validateBody = (body) ->
-    unless _.isString(body) and not _.isEmpty(body)
-      throw new Error 'object body cannot be empty!'
-
-  validateDecrypted = (kryptnosticObject) ->
-    if kryptnosticObject.isEncrypted()
-      throw new Error 'expected object to be in decrypted state'
+  { validateId, validateNonEmptyString } = validators
 
   #
   # Client for listing and loading Kryptnostic encrypted objects.
@@ -37,8 +27,9 @@ define 'kryptnostic.storage-client', [
   class StorageClient
 
     constructor : ->
-      @objectApi           = new ObjectApi()
-      @cryptoServiceLoader = new CryptoServiceLoader()
+      @objectApi             = new ObjectApi()
+      @cryptoServiceLoader   = new CryptoServiceLoader()
+      @searchIndexingService = new SearchIndexingService()
 
     getObjectIds : ->
       return @objectApi.getObjectIds()
@@ -52,11 +43,62 @@ define 'kryptnostic.storage-client', [
     getObjectMetadata : (id) ->
       return @objectApi.getObjectMetadata(id)
 
+    deleteObject : (id) ->
+      return @objectApi.deleteObject(id)
+
+    appendObject : (id, body) ->
+      Promise.resolve()
+      .then ->
+        validateId(id)
+        validateNonEmptyString(body)
+      .then =>
+        @objectApi.createPendingObjectFromExisting(id)
+      .then =>
+        @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss : false })
+      .then (cryptoService) =>
+        @encrypt({ id, body, cryptoService })
+      .then (encrypted) =>
+        @submitObjectBlocks(encrypted)
+      .then ->
+        return id
+
+    uploadObject : (storageRequest) ->
+      { id, sharingKey } = {}
+
+      Promise.resolve()
+      .then ->
+        storageRequest.validate()
+      .then =>
+        @createPending(storageRequest)
+      .then (_id) =>
+        id = _id
+        @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss : true })
+      .then (cryptoService) =>
+        { body } = storageRequest
+        @encrypt({ id, body, cryptoService })
+      .then (encrypted) =>
+        @submitObjectBlocks(encrypted)
+      .then =>
+        @searchIndexingService.submit({ id, storageRequest })
+      .then ->
+        return id
+
+    encrypt : ({ id, body, cryptoService }) ->
+      kryptnosticObject = KryptnosticObject.createFromDecrypted({ id, body })
+      return kryptnosticObject.encrypt(cryptoService)
+
+    createPending : (storageRequest = {}) ->
+      if storageRequest.objectId?
+        return @objectApi.createPendingObjectFromExisting(objectId)
+      else
+        { type, parentObjectId } = storageRequest
+        pendingRequest = new PendingObjectRequest { type, parentObjectId }
+        return @objectApi.createPendingObject(pendingRequest)
+
     submitObjectBlocks : (kryptnosticObject) ->
       Promise.resolve()
       .then =>
-        unless kryptnosticObject.isEncrypted()
-          throw new Error('cannot submit blocks for an unencrypted object')
+        kryptnosticObject.validateEncrypted()
 
         objectId        = kryptnosticObject.metadata.id
         encryptedBlocks = kryptnosticObject.body.data
@@ -65,54 +107,5 @@ define 'kryptnostic.storage-client', [
           return Promise.resolve(chain)
             .then => @objectApi.updateObject(objectId, nextEncryptableBlock)
         , Promise.resolve())
-
-    deleteObject : (id) ->
-      Promise.resolve()
-      .then =>
-        validateId(id)
-        return @objectApi.deleteObject(id)
-
-    appendObject : (id, body) ->
-      Promise.resolve()
-      .then ->
-        validateId(id)
-        validateBody(body)
-      .then =>
-        @objectApi.createPendingObjectFromExisting(id)
-      .then =>
-        kryptnosticObject = KryptnosticObject.createFromDecrypted({ id, body })
-        validateDecrypted(kryptnosticObject)
-
-        @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss: false })
-        .then (cryptoService) =>
-          encrypted = kryptnosticObject.encrypt(cryptoService)
-          @submitObjectBlocks(encrypted)
-        .then ->
-          return id
-
-    uploadObject : (storageRequest) ->
-      storageRequest.validate()
-
-      { body, objectId } = storageRequest
-      pendingPromise     = undefined
-
-      if objectId?
-        pendingPromise = @objectApi.createPendingObjectFromExisting(objectId)
-      else
-        pendingOpts    = _.pick(storageRequest, 'type', 'parentObjectId')
-        pendingRequest = new PendingObjectRequest(pendingOpts)
-        pendingPromise = @objectApi.createPendingObject(pendingRequest)
-
-      pendingPromise
-      .then (id) =>
-        kryptnosticObject = KryptnosticObject.createFromDecrypted({ id, body })
-        validateDecrypted(kryptnosticObject)
-
-        @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss: true })
-        .then (cryptoService) =>
-          encrypted = kryptnosticObject.encrypt(cryptoService)
-          @submitObjectBlocks(encrypted)
-        .then ->
-          return id
 
   return StorageClient

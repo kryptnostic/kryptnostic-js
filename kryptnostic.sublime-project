@@ -2,7 +2,7 @@
   "folders": [
     {
       "path"                    : ".",
-      "folder_exclude_patterns" : ["node_modules", "bower_components"]
+      "folder_exclude_patterns" : [ "node_modules", "bower_components" ]
     }
   ],
   "settings": {

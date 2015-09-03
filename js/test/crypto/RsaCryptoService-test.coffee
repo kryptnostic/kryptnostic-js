@@ -7,7 +7,7 @@ define [
   RsaCryptoService = require 'kryptnostic.rsa-crypto-service'
   Forge            = require 'forge'
 
-  PEM_PRIVATE_KEY = '-----BEGIN RSA PRIVATE KEY-----\
+  MOCK_PEM_RSA_PRIVATE_KEY = '-----BEGIN RSA PRIVATE KEY-----\
     MIIJKwIBAAKCAgEAzpyv1zURE1mRL503+xBcsV6IBd7lJ1So2cE9bLHg41loWnNb\
     aogaSbIgE1xCukwptgcKAVryTCkcbEb2gKGYLGB465BRJ6w1dr24VvfgdFynwRHj\
     8FfZSVIvauUj9vPnALLeXhxvsNOQe0b3/yJby067pusRbHc5LF9k7zxwAQkLGkqa\
@@ -77,7 +77,7 @@ define [
   describe 'RsaCryptoService', ->
 
     it 'should correctly decrypt a known-good ciphertext', ->
-      privateKey    = Forge.pki.privateKeyFromPem(PEM_PRIVATE_KEY)
+      privateKey    = Forge.pki.privateKeyFromPem(MOCK_PEM_RSA_PRIVATE_KEY)
       publicKey     = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e)
       cryptoService = new RsaCryptoService({ privateKey, publicKey })
       ciphertext    = atob(CIPHERTEXT_BASE_64)

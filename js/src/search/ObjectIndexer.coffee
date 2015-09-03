@@ -16,8 +16,11 @@ define 'kryptnostic.search.indexer', [
 
   class ObjectIndexer
 
-    @index: (id, text) ->
-      invertedIndex = ObjectTokenizer.analyze(text)
+    constructor : ->
+      @objectTokenizer = new ObjectTokenizer()
+
+    index: (id, text) ->
+      invertedIndex = @objectTokenizer.analyze(text)
       metadata = _.map(invertedIndex, (locations, token) ->
         return { id, locations, token }
       )

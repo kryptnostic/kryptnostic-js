@@ -17,7 +17,7 @@ require([
   Config.set({
     servicesUrl : 'http://localhost:8081/v1',
     heraclesUrl : 'http://localhost:8082/v1'
-  })
+  });
 
   var registrationClient      = new RegistrationClient();
   var userRegistrationRequest = new UserRegistrationRequest({

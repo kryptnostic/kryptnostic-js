@@ -12,10 +12,6 @@ define 'kryptnostic.credential-loader', [
 
   class CredentialLoader
 
-    @getCredentials: ->
-      log.warn('CredentialLoader.getCredentials is deprecated, use the non-static version')
-      return new CredentialLoader().getCredentials()
-
     getCredentials: ->
       providerUri        = Config.get('credentialProvider')
       credentialProvider = CredentialProviderLoader.load(providerUri)

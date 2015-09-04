@@ -7,7 +7,9 @@ define 'kryptnostic.object-search-key-api', [
   Logger  = require 'kryptnostic.logger'
 
   indexingServiceUrl = -> Configuration.get('servicesUrl') + '/indexing'
-  sharingPairUrl     = -> indexingServiceUrl() + '/share'
+  sharingPairUrl     = -> indexingServiceUrl() + '/sharingPair'
+  objectMetadataUrl  = -> indexingServiceUrl() + '/metadata'
+  indexPairUrl       = -> indexingServiceUrl() + '/indexPair'
   addressFunctionUrl = -> indexingServiceUrl() + '/address'
 
   log = Logger.get('ObjectSearchKeyApi')
@@ -27,6 +29,12 @@ define 'kryptnostic.object-search-key-api', [
 
     uploadSharingPair: ( id, sharingPairBlob ) ->
       Requests.postToUrl(sharingPairUrl() + '/' + id, sharingPairBlob )
+      .then (response) ->
+        log.info('uploadSharingPair', { id } )
+        return response.data
+
+    getIndexPair: ( id ) ->
+      Requests.getAsBlobFromUrl(sharingPairUrl() + '/' + id)
       .then (response) ->
         log.info('uploadSharingPair', { id } )
         return response.data

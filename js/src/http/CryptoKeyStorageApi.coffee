@@ -7,11 +7,11 @@ define 'kryptnostic.crypto-key-storage-api', [
   Requests = require 'kryptnostic.requests'
   Logger   = require 'kryptnostic.logger'
 
-  rootKeysUrl   = -> Configuration.get('servicesUrl') + '/keys'
-  clientHashUrl = -> rootKeysUrl() + '/hash'
-  fhePrivateKeyUrl = -> rootKeysUrl() + '/private'
-  rsaPublicKeyUrl  = -> rootKeysUrl() + '/rsapublic'
-  fheSearchPrivateKeyUrl  = -> rootKeysUrl() + '/searchprivate'
+  rootKeysUrl            = -> Configuration.get('servicesUrl') + '/keys'
+  clientHashUrl          = -> rootKeysUrl() + '/hash'
+  fhePrivateKeyUrl       = -> rootKeysUrl() + '/private'
+  rsaPublicKeyUrl        = -> rootKeysUrl() + '/rsapublic'
+  fheSearchPrivateKeyUrl = -> rootKeysUrl() + '/searchprivate'
 
   log = Logger.get('CryptoKeyStorageApi')
 

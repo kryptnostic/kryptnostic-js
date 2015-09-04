@@ -65,7 +65,7 @@ define 'kryptnostic.kryptnostic-object', [
     # true if data is in chunked/encrypted form, false otherwise.
     isEncrypted : ->
       isArray          = _.isArray(@body.data)
-      isEncryptedBlock = _.first(@body.data).constructor.name is 'EncryptedBlock'
+      isEncryptedBlock = _.first(@body.data).block?
       return isArray and isEncryptedBlock
 
     # true if data is in joined/decrypted form, false otherwise.
@@ -75,6 +75,7 @@ define 'kryptnostic.kryptnostic-object', [
     # decrypt and join object using a cryptoService
     decrypt : (cryptoService) ->
       if @isDecrypted()
+        log.error('object is already decrypted', this)
         return this
       else
         blockEncryptionService = new BlockEncryptionService()
@@ -89,6 +90,7 @@ define 'kryptnostic.kryptnostic-object', [
     # chunk and encrypt using a cryptoService
     encrypt : (cryptoService) ->
       if @isEncrypted()
+        log.error('object is already encrypted', this)
         return this
       else
         blockEncryptionService = new BlockEncryptionService()

@@ -16,7 +16,7 @@ define 'kryptnostic.block-encryption-service', [
 
   VERIFY_HASH_FUNCTION = HashFunction.SHA_256
 
-  logger = Logger.get('BlockEncryptionService')
+  log = Logger.get('BlockEncryptionService')
 
   TYPE_MAPPINGS = {
     'String' : 'java.lang.String'
@@ -52,7 +52,7 @@ define 'kryptnostic.block-encryption-service', [
         timeCreated = new Date().getTime()
 
         block = { block, name, verify, index, last, strategy, timeCreated }
-        logger.info('created block')
+        log.info('created block')
         return new EncryptedBlock(block)
 
     # convert encrypted blocks into string data chunks
@@ -60,7 +60,7 @@ define 'kryptnostic.block-encryption-service', [
       return blocks.map ({ block, verify }) ->
         computed = VERIFY_HASH_FUNCTION(block.contents)
         unless verify is computed
-          logger.info('block verify mismatch', { verify, computed })
+          log.info('block verify mismatch', { verify, computed })
           throw new Error('cannot decrypt block because verify of block contents does not match.')
         decrypted = cryptoService.decrypt(block)
         return decrypted

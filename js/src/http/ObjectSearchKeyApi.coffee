@@ -5,9 +5,9 @@ define 'kryptnostic.object-search-key-api', [
   'kryptnostic.configuration'
 ], (require) ->
 
-  Logger  = require 'kryptnostic.logger'
-  Requests = require 'kryptnostic.requests'
-  Configuration = require 'kryptnostic.configuration'
+  Logger             = require 'kryptnostic.logger'
+  Requests           = require 'kryptnostic.requests'
+  Configuration      = require 'kryptnostic.configuration'
 
   indexingServiceUrl = -> Configuration.get('servicesUrl') + '/indexing'
   sharingPairUrl     = -> indexingServiceUrl() + '/sharingPair'
@@ -25,13 +25,13 @@ define 'kryptnostic.object-search-key-api', [
 
     # input: uint8 representation of addres matrix, encrypted and serialized by SearchKeySerializer.
     uploadAddressFunction: ( id, uint8 ) ->
-      Requests.postToUrl(addressFunctionUrl() + '/' + id, uint8)
+      Requests.postUint8ToUrl(addressFunctionUrl() + '/' + id, uint8)
       .then (response) ->
         log.info('uploadAddressFunction', { id } )
         return response.data
 
     uploadSharingPair: ( id, sharingPairBlob ) ->
-      Requests.postToUrl(sharingPairUrl() + '/' + id, sharingPairBlob )
+      Requests.postUint8ToUrl(sharingPairUrl() + '/' + id, sharingPairBlob )
       .then (response) ->
         log.info('uploadSharingPair', { id } )
         return response.data

@@ -5,9 +5,9 @@ define 'kryptnostic.crypto-key-storage-api', [
   'kryptnostic.configuration'
 ], (require) ->
 
-  Requests = require 'kryptnostic.requests'
-  Logger   = require 'kryptnostic.logger'
-  Configuration = require 'kryptnostic.configuration'
+  Requests               = require 'kryptnostic.requests'
+  Logger                 = require 'kryptnostic.logger'
+  Configuration          = require 'kryptnostic.configuration'
 
   rootKeysUrl            = -> Configuration.get('servicesUrl') + '/keys'
   clientHashUrl          = -> rootKeysUrl() + '/hash'
@@ -30,7 +30,7 @@ define 'kryptnostic.crypto-key-storage-api', [
       return Requests.getAsUint8FromUrl(rsaPublicKeyUrl())
 
     setRsaPublicKey: (key) ->
-      return Requests.postToUrl(rsaPublicKeyUrl(), key)
+      return Requests.postUint8ToUrl(rsaPublicKeyUrl(), key)
       .then (response) ->
         log.info('setSearchPrivateKey')
         return response.data
@@ -42,7 +42,7 @@ define 'kryptnostic.crypto-key-storage-api', [
       return Requests.getAsUint8FromUrl(fhePrivateKeyUrl())
 
     setFhePrivateKey: (key) ->
-      return Requests.postToUrl(fhePrivateKeyUrl(), key)
+      return Requests.postUint8ToUrl(fhePrivateKeyUrl(), key)
       .then (response) ->
         log.info('setFhePrivateKey')
         return response.data
@@ -54,7 +54,7 @@ define 'kryptnostic.crypto-key-storage-api', [
       return Requests.getAsUint8FromUrl(fheSearchPrivateKeyUrl())
 
     setSearchPrivateKey: (key) ->
-      return Requests.postToUrl(fheSearchPrivateKeyUrl(), key)
+      return Requests.postUint8ToUrl(fheSearchPrivateKeyUrl(), key)
       .then (response) ->
         log.info('setSearchPrivateKey')
         return response.data
@@ -67,7 +67,7 @@ define 'kryptnostic.crypto-key-storage-api', [
       return Requests.getAsUint8FromUrl(clientHashUrl())
 
     setClientHashFunction: (key) ->
-      return Requests.postToUrl(clientHashUrl(), key)
+      return Requests.postUint8ToUrl(clientHashUrl(), key)
       .then (response) ->
         log.info('uploadSharingPair')
         return response.data

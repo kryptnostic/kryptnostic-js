@@ -35,7 +35,7 @@ define 'kryptnostic.requests', [
         })))
     return new Uint8Array(response)
 
-  postToUrl = (url, data) ->
+  postUint8ToUrl = (url, data) ->
     return Promise.resolve(
       axios(
         wrapCredentials({
@@ -47,5 +47,5 @@ define 'kryptnostic.requests', [
   return {
     wrapCredentials,
     getAsUint8FromUrl,
-    postToUrl,
+    postUint8ToUrl,
   }

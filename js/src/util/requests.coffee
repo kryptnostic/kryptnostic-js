@@ -38,7 +38,7 @@ define 'kryptnostic.requests', [
   postToUrl = (url, data) ->
     return Promise.resolve(
       axios(
-        Requests.wrapCredentials({
+        wrapCredentials({
           url    : url
           method : 'POST'
           data   : data

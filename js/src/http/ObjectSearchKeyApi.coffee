@@ -1,10 +1,13 @@
 define 'kryptnostic.object-search-key-api', [
   'require'
   'kryptnostic.logger'
+  'kryptnostic.requests'
   'kryptnostic.configuration'
 ], (require) ->
 
   Logger  = require 'kryptnostic.logger'
+  Requests = require 'kryptnostic.requests'
+  Configuration = require 'kryptnostic.configuration'
 
   indexingServiceUrl = -> Configuration.get('servicesUrl') + '/indexing'
   sharingPairUrl     = -> indexingServiceUrl() + '/sharingPair'

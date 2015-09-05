@@ -2,10 +2,12 @@ define 'kryptnostic.crypto-key-storage-api', [
   'require'
   'kryptnostic.logger'
   'kryptnostic.requests'
+  'kryptnostic.configuration'
 ], (require) ->
 
   Requests = require 'kryptnostic.requests'
   Logger   = require 'kryptnostic.logger'
+  Configuration = require 'kryptnostic.configuration'
 
   rootKeysUrl            = -> Configuration.get('servicesUrl') + '/keys'
   clientHashUrl          = -> rootKeysUrl() + '/hash'
@@ -25,7 +27,7 @@ define 'kryptnostic.crypto-key-storage-api', [
     # ==========
 
     getRsaPublicKey: ->
-      return Requests.getAsBlobFromUrl(rsaPublicKeyUrl())
+      return Requests.getAsUint8FromUrl(rsaPublicKeyUrl())
 
     setRsaPublicKey: (key) ->
       return Requests.postToUrl(rsaPublicKeyUrl(), key)
@@ -37,7 +39,7 @@ define 'kryptnostic.crypto-key-storage-api', [
     # =======
 
     getFhePrivateKey: ->
-      return Requests.getAsBlobFromUrl(fhePrivateKeyUrl())
+      return Requests.getAsUint8FromUrl(fhePrivateKeyUrl())
 
     setFhePrivateKey: (key) ->
       return Requests.postToUrl(fhePrivateKeyUrl(), key)
@@ -49,7 +51,7 @@ define 'kryptnostic.crypto-key-storage-api', [
     # ==========
 
     getSearchPrivateKey: ->
-      return Requests.getAsBlobFromUrl(fheSearchPrivateKeyUrl())
+      return Requests.getAsUint8FromUrl(fheSearchPrivateKeyUrl())
 
     setSearchPrivateKey: (key) ->
       return Requests.postToUrl(fheSearchPrivateKeyUrl(), key)
@@ -62,7 +64,7 @@ define 'kryptnostic.crypto-key-storage-api', [
     # ===========
 
     getClientHashFunction: ->
-      return Requests.getAsBlobFromUrl(clientHashUrl())
+      return Requests.getAsUint8FromUrl(clientHashUrl())
 
     setClientHashFunction: (key) ->
       return Requests.postToUrl(clientHashUrl(), key)

@@ -1,9 +1,11 @@
 define 'kryptnostic.requests', [
   'require'
+  'axios'
   'kryptnostic.credential-loader'
 ], (require) ->
   'use strict'
 
+  axios         = require 'axios'
   CredentialLoader = require 'kryptnostic.credential-loader'
 
   PRINCIPAL_HEADER  = 'X-Kryptnostic-Principal'
@@ -23,14 +25,15 @@ define 'kryptnostic.requests', [
     request.headers[CREDENTIAL_HEADER] = credentials.credential
     return request
 
-  getAsBlobFromUrl = (url) ->
-    return Promise.resolve(
+  getAsUint8FromUrl = (url) ->
+    response = Promise.resolve(
       axios(
         wrapCredentials({
           url          : url
           method       : 'GET'
-          responseType : 'blob'
+          responseType : 'arraybuffer'
         })))
+    return new Uint8Array(response)
 
   postToUrl = (url, data) ->
     return Promise.resolve(
@@ -43,6 +46,6 @@ define 'kryptnostic.requests', [
 
   return {
     wrapCredentials,
-    getAsBlobFromUrl,
+    getAsUint8FromUrl,
     postToUrl,
   }

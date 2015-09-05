@@ -34,6 +34,6 @@ define 'kryptnostic.object-search-key-api', [
         return response.data
 
     getIndexPair: ( id ) ->
-      return Requests.getAsBlobFromUrl(sharingPairUrl() + '/' + id)
+      return Requests.getAsUint8FromUrl(sharingPairUrl() + '/' + id)
 
   return ObjectSearchKeyApi

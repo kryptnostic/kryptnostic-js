@@ -12,7 +12,7 @@ define 'kryptnostic.crypto-key-storage-api', [
   rootKeysUrl            = -> Configuration.get('servicesUrl') + '/keys'
   clientHashUrl          = -> rootKeysUrl() + '/hash'
   fhePrivateKeyUrl       = -> rootKeysUrl() + '/private'
-  rsaPublicKeyUrl        = -> rootKeysUrl() + '/rsapublic'
+  # rsaPublicKeyUrl        = -> rootKeysUrl() + '/rsapublic'
   fheSearchPrivateKeyUrl = -> rootKeysUrl() + '/searchprivate'
 
   log = Logger.get('CryptoKeyStorageApi')
@@ -25,15 +25,16 @@ define 'kryptnostic.crypto-key-storage-api', [
 
     # rsa public key
     # ==========
+    #   For future use
 
-    getRsaPublicKey: ->
-      return Requests.getAsUint8FromUrl(rsaPublicKeyUrl())
+    # getRsaPublicKey: ->
+    #   return Requests.getAsUint8FromUrl(rsaPublicKeyUrl())
 
-    setRsaPublicKey: (key) ->
-      return Requests.postUint8ToUrl(rsaPublicKeyUrl(), key)
-      .then (response) ->
-        log.info('setSearchPrivateKey')
-        return response.data
+    # setRsaPublicKey: (key) ->
+    #   return Requests.postUint8ToUrl(rsaPublicKeyUrl(), key)
+    #   .then (response) ->
+    #     log.info('setSearchPrivateKey')
+    #     return response.data
 
     # fhe key
     # =======

@@ -1,28 +1,31 @@
 define 'kryptnostic.sharing-client', [
   'require'
   'bluebird'
-  'kryptnostic.logger'
-  'kryptnostic.validators'
-  'kryptnostic.sharing-api'
-  'kryptnostic.directory-api'
-  'kryptnostic.sharing-request'
-  'kryptnostic.revocation-request'
   'kryptnostic.credential-loader'
   'kryptnostic.crypto-service-loader'
   'kryptnostic.crypto-service-marshaller'
+  'kryptnostic.directory-api'
+  'kryptnostic.logger'
+  'kryptnostic.object-sharing-service'
+  'kryptnostic.revocation-request'
+  'kryptnostic.rsa-crypto-service'
+  'kryptnostic.sharing-api'
+  'kryptnostic.sharing-request'
+  'kryptnostic.validators'
 ], (require) ->
   _                       = require 'lodash'
   Promise                 = require 'bluebird'
-  Logger                  = require 'kryptnostic.logger'
-  validators              = require 'kryptnostic.validators'
-  SharingApi              = require 'kryptnostic.sharing-api'
-  DirectoryApi            = require 'kryptnostic.directory-api'
-  SharingRequest          = require 'kryptnostic.sharing-request'
-  RevocationRequest       = require 'kryptnostic.revocation-request'
   CredentialLoader        = require 'kryptnostic.credential-loader'
-  RsaCryptoService        = require 'kryptnostic.rsa-crypto-service'
   CryptoServiceLoader     = require 'kryptnostic.crypto-service-loader'
   CryptoServiceMarshaller = require 'kryptnostic.crypto-service-marshaller'
+  DirectoryApi            = require 'kryptnostic.directory-api'
+  Logger                  = require 'kryptnostic.logger'
+  ObjectSharingService    = require 'kryptnostic.object-sharing-service'
+  RevocationRequest       = require 'kryptnostic.revocation-request'
+  RsaCryptoService        = require 'kryptnostic.rsa-crypto-service'
+  SharingApi              = require 'kryptnostic.sharing-api'
+  SharingRequest          = require 'kryptnostic.sharing-request'
+  validators              = require 'kryptnostic.validators'
 
   log = Logger.get('SharingClient')
 
@@ -40,6 +43,7 @@ define 'kryptnostic.sharing-client', [
       @cryptoServiceMarshaller = new CryptoServiceMarshaller()
       @cryptoServiceLoader     = new CryptoServiceLoader()
       @credentialLoader        = new CredentialLoader()
+      @objectSharingService    = new ObjectSharingService()
 
     shareObject: (id, uuids) ->
       if _.isEmpty(uuids)
@@ -56,15 +60,14 @@ define 'kryptnostic.sharing-client', [
         @cryptoServiceLoader.getObjectCryptoService(id)
       .then (cryptoService) =>
         promiseMap = _.mapValues(_.object(uuids), (empty, uuid) =>
-          return @directoryApi.getPublicKey(uuid)
+          return @directoryApi.getRsaPublicKey(uuid)
         )
 
         Promise.props(promiseMap)
-        .then (uuidsToKeyEnvelopes) =>
-          seals = _.chain(uuidsToKeyEnvelopes)
-            .mapValues((keyEnvelope, uuid) =>
-              publicKey        = keyEnvelope.toRsaPublicKey()
-              rsaCryptoService = new RsaCryptoService({ publicKey })
+        .then (uuidsToRsaPublicKeys) =>
+          seals = _.chain(uuidsToRsaPublicKeys)
+            .mapValues((rsaPublicKey, uuid) =>
+              rsaCryptoService = new RsaCryptoService({ rsaPublicKey })
               marshalledCrypto = @cryptoServiceMarshaller.marshall(cryptoService)
               seal             = rsaCryptoService.encrypt(marshalledCrypto)
               sealBase64       = btoa(seal)
@@ -76,6 +79,10 @@ define 'kryptnostic.sharing-client', [
           log.warn('sharing request will be sent with an empty sharing key')
           sharingRequest = new SharingRequest { id, users : seals, sharingKey }
           @sharingApi.shareObject(sharingRequest)
+
+          _.map(uuidsToRsaPublicKeys, (rsaPublicKey, uuid) =>
+            @objectSharingService.shareObject(id, rsaPublicKey)
+          )
 
     revokeObject: (id, uuids) ->
       { revocationRequest } = {}

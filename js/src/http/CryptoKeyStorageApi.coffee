@@ -2,10 +2,18 @@ define 'kryptnostic.crypto-key-storage-api', [
   'require'
   'bluebird'
   'kryptnostic.logger'
+  'kryptnostic.requests'
+  'kryptnostic.configuration'
 ], (require) ->
 
-  Promise = require 'bluebird'
-  Logger  = require 'kryptnostic.logger'
+  Requests      = require 'kryptnostic.requests'
+  Logger        = require 'kryptnostic.logger'
+  Configuration = require 'kryptnostic.configuration'
+
+  rootKeysUrl            = -> Configuration.get('servicesUrl') + '/keys'
+  clientHashUrl          = -> rootKeysUrl() + '/hash'
+  fhePrivateKeyUrl       = -> rootKeysUrl() + '/private'
+  fheSearchPrivateKeyUrl = -> rootKeysUrl() + '/searchprivate'
 
   log = Logger.get('CryptoKeyStorageApi')
 
@@ -15,37 +23,51 @@ define 'kryptnostic.crypto-key-storage-api', [
   #
   class CryptoKeyStorageApi
 
+    # rsa public key
+    # ==========
+    #   For future use
+
+    # getRsaPublicKey: ->
+    #   return Requests.getAsUint8FromUrl(rsaPublicKeyUrl())
+
+    # setRsaPublicKey: (key) ->
+    #   return Requests.postUint8ToUrl(rsaPublicKeyUrl(), key)
+    #   .then (response) ->
+    #     log.info('setSearchPrivateKey')
+    #     return response.data
+
     # fhe key
     # =======
 
     getFhePrivateKey: ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+      return Requests.getAsUint8FromUrl( fhePrivateKeyUrl() )
 
     setFhePrivateKey: (key) ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+      Requests.postUint8ToUrl(fhePrivateKeyUrl(), key)
+      .then (response) ->
+        log.info('setFhePrivateKey')
 
     # search key
     # ==========
 
     getSearchPrivateKey: ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+      return Requests.getAsUint8FromUrl( fheSearchPrivateKeyUrl() )
 
     setSearchPrivateKey: (key) ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+      Requests.postUint8ToUrl(fheSearchPrivateKeyUrl(), key)
+      .then (response) ->
+        log.info('setSearchPrivateKey')
+
 
     # client hash
     # ===========
 
     getClientHashFunction: ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+      return Requests.getAsUint8FromUrl( clientHashUrl() )
 
     setClientHashFunction: (key) ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+      Requests.postUint8ToUrl(clientHashUrl(), key)
+      .then (response) ->
+        log.info('uploadSharingPair')
 
   return CryptoKeyStorageApi

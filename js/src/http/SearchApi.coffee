@@ -1,5 +1,6 @@
 define 'kryptnostic.search-api', [
   'require'
+  'bluebird'
   'kryptnostic.logger'
   'kryptnostic.requests'
   'kryptnostic.configuration'

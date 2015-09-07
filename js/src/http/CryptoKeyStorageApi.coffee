@@ -1,18 +1,18 @@
 define 'kryptnostic.crypto-key-storage-api', [
   'require'
+  'bluebird'
   'kryptnostic.logger'
   'kryptnostic.requests'
   'kryptnostic.configuration'
 ], (require) ->
 
-  Requests               = require 'kryptnostic.requests'
-  Logger                 = require 'kryptnostic.logger'
-  Configuration          = require 'kryptnostic.configuration'
+  Requests      = require 'kryptnostic.requests'
+  Logger        = require 'kryptnostic.logger'
+  Configuration = require 'kryptnostic.configuration'
 
   rootKeysUrl            = -> Configuration.get('servicesUrl') + '/keys'
   clientHashUrl          = -> rootKeysUrl() + '/hash'
   fhePrivateKeyUrl       = -> rootKeysUrl() + '/private'
-  # rsaPublicKeyUrl        = -> rootKeysUrl() + '/rsapublic'
   fheSearchPrivateKeyUrl = -> rootKeysUrl() + '/searchprivate'
 
   log = Logger.get('CryptoKeyStorageApi')
@@ -36,41 +36,44 @@ define 'kryptnostic.crypto-key-storage-api', [
     #     log.info('setSearchPrivateKey')
     #     return response.data
 
+    success = ( uint8Array ) ->
+      return uint8Array
+
+    error = ( message ) ->
+      return log.error( message )
+
     # fhe key
     # =======
 
     getFhePrivateKey: ->
-      return Requests.getAsUint8FromUrl(fhePrivateKeyUrl())
+      return Requests.getAsUint8FromUrl( fhePrivateKeyUrl(), success, error )
 
     setFhePrivateKey: (key) ->
-      return Requests.postUint8ToUrl(fhePrivateKeyUrl(), key)
+      Requests.postUint8ToUrl(fhePrivateKeyUrl(), key)
       .then (response) ->
         log.info('setFhePrivateKey')
-        return response.data
 
     # search key
     # ==========
 
     getSearchPrivateKey: ->
-      return Requests.getAsUint8FromUrl(fheSearchPrivateKeyUrl())
+      return Requests.getAsUint8FromUrl( fheSearchPrivateKeyUrl(), success, error )
 
     setSearchPrivateKey: (key) ->
-      return Requests.postUint8ToUrl(fheSearchPrivateKeyUrl(), key)
+      Requests.postUint8ToUrl(fheSearchPrivateKeyUrl(), key)
       .then (response) ->
         log.info('setSearchPrivateKey')
-        return response.data
 
 
     # client hash
     # ===========
 
     getClientHashFunction: ->
-      return Requests.getAsUint8FromUrl(clientHashUrl())
+      return Requests.getAsUint8FromUrl( clientHashUrl(), success, error )
 
     setClientHashFunction: (key) ->
-      return Requests.postUint8ToUrl(clientHashUrl(), key)
+      Requests.postUint8ToUrl(clientHashUrl(), key)
       .then (response) ->
         log.info('uploadSharingPair')
-        return response.data
 
   return CryptoKeyStorageApi

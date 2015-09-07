@@ -1,5 +1,6 @@
 define 'kryptnostic.object-search-key-api', [
   'require'
+  'bluebird'
   'kryptnostic.logger'
   'kryptnostic.requests'
   'kryptnostic.configuration'
@@ -23,20 +24,26 @@ define 'kryptnostic.object-search-key-api', [
   #
   class ObjectSearchKeyApi
 
+    success = ( uint8Array ) ->
+      return uint8Array
+
+    error = ( message ) ->
+      return log.error( message )
+
     # input: uint8 representation of addres matrix, encrypted and serialized by SearchKeySerializer.
-    uploadAddressFunction: ( id, uint8 ) ->
-      Requests.postUint8ToUrl(addressFunctionUrl() + '/' + id, uint8)
+    uploadAddressMatrix: ( objectId, addressMatrixAsUint8Array ) ->
+      Requests.postUint8ToUrl(addressFunctionUrl() + '/' + objectId, addressMatrixAsUint8Array)
       .then (response) ->
-        log.info('uploadAddressFunction', { id } )
+        log.info('uploadAddressFunction', { objectId } )
         return response.data
 
-    uploadSharingPair: ( id, sharingPairBlob ) ->
-      Requests.postUint8ToUrl(sharingPairUrl() + '/' + id, sharingPairBlob )
+    uploadSharingPair: ( objectId, sharingPairAsUint8 ) ->
+      Requests.postUint8ToUrl(sharingPairUrl() + '/' + objectId, sharingPairAsUint8 )
       .then (response) ->
-        log.info('uploadSharingPair', { id } )
+        log.info('uploadSharingPair', { objectId } )
         return response.data
 
-    getIndexPair: ( id ) ->
-      return Requests.getAsUint8FromUrl(sharingPairUrl() + '/' + id)
+    getIndexPair: ( objectId ) ->
+      return Requests.getAsUint8FromUrl(sharingPairUrl() + '/' + objectId, success, error )
 
   return ObjectSearchKeyApi

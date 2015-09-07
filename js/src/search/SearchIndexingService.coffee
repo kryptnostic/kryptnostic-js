@@ -66,7 +66,7 @@ define 'kryptnostic.search-indexing-service', [
         objectIndexPair     = @engine.getObjectIndexPair({ objectSearchKey, objectAddressMatrix })
 
         encryptedAddressFunction = @searchKeySerializer.encrypt(objectAddressMatrix)
-        @objectSearchKeyApi.uploadAddressFunction(id, encryptedAddressFunction)
+        @objectSearchKeyApi.uploadAddressMatrix(id, encryptedAddressFunction)
       .then =>
         @objectSearchKeyApi.uploadSharingPair(id, objectIndexPair)
       .then =>

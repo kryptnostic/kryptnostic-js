@@ -24,12 +24,6 @@ define 'kryptnostic.object-search-key-api', [
   #
   class ObjectSearchKeyApi
 
-    success = ( uint8Array ) ->
-      return uint8Array
-
-    error = ( message ) ->
-      return log.error( message )
-
     # input: uint8 representation of addres matrix, encrypted and serialized by SearchKeySerializer.
     uploadAddressMatrix: ( objectId, addressMatrixAsUint8Array ) ->
       Requests.postUint8ToUrl(addressFunctionUrl() + '/' + objectId, addressMatrixAsUint8Array)
@@ -44,6 +38,6 @@ define 'kryptnostic.object-search-key-api', [
         return response.data
 
     getIndexPair: ( objectId ) ->
-      return Requests.getAsUint8FromUrl(sharingPairUrl() + '/' + objectId, success, error )
+      return Requests.getAsUint8FromUrl(sharingPairUrl() + '/' + objectId )
 
   return ObjectSearchKeyApi

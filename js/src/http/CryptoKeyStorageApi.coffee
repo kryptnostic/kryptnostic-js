@@ -36,17 +36,11 @@ define 'kryptnostic.crypto-key-storage-api', [
     #     log.info('setSearchPrivateKey')
     #     return response.data
 
-    success = ( uint8Array ) ->
-      return uint8Array
-
-    error = ( message ) ->
-      return log.error( message )
-
     # fhe key
     # =======
 
     getFhePrivateKey: ->
-      return Requests.getAsUint8FromUrl( fhePrivateKeyUrl(), success, error )
+      return Requests.getAsUint8FromUrl( fhePrivateKeyUrl() )
 
     setFhePrivateKey: (key) ->
       Requests.postUint8ToUrl(fhePrivateKeyUrl(), key)
@@ -57,7 +51,7 @@ define 'kryptnostic.crypto-key-storage-api', [
     # ==========
 
     getSearchPrivateKey: ->
-      return Requests.getAsUint8FromUrl( fheSearchPrivateKeyUrl(), success, error )
+      return Requests.getAsUint8FromUrl( fheSearchPrivateKeyUrl() )
 
     setSearchPrivateKey: (key) ->
       Requests.postUint8ToUrl(fheSearchPrivateKeyUrl(), key)
@@ -69,7 +63,7 @@ define 'kryptnostic.crypto-key-storage-api', [
     # ===========
 
     getClientHashFunction: ->
-      return Requests.getAsUint8FromUrl( clientHashUrl(), success, error )
+      return Requests.getAsUint8FromUrl( clientHashUrl() )
 
     setClientHashFunction: (key) ->
       Requests.postUint8ToUrl(clientHashUrl(), key)

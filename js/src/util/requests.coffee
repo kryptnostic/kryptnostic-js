@@ -27,7 +27,7 @@ define 'kryptnostic.requests', [
     request.headers[CREDENTIAL_HEADER] = credentials.credential
     return request
 
-  getAsUint8FromUrl = ( url, onSuccess, onError ) ->
+  getAsUint8FromUrl = ( url ) ->
     Promise.resolve(
       axios(
         wrapCredentials({
@@ -36,9 +36,7 @@ define 'kryptnostic.requests', [
           responseType : 'arraybuffer'
         })))
     .then (response) ->
-      onSuccess(new Uint8Array(response))
-    .catch (response) ->
-      onError('get uint8 array failed')
+      new Uint8Array(response)
 
   postUint8ToUrl = (url, data) ->
     Promise.resolve(

@@ -129,6 +129,20 @@ define 'kryptnostic.directory-api', [
       .catch (e) ->
         return undefined
 
+    # same as @getPublicKey(), but additionally calls .toRsaPublicKey() on the public key envelope
+    getRsaPublicKey: (uuid) ->
+      Promise.resolve(axios(Requests.wrapCredentials({
+        url    : publicKeyUrl() + '/' + uuid
+        method : 'GET'
+      })))
+      .then (response) ->
+        envelope = response.data
+        log.debug('getRsaPublicKey', { envelope })
+        publicKeyEnvelope = new PublicKeyEnvelope(envelope)
+        return publicKeyEnvelope.toRsaPublicKey()
+      .catch (e) ->
+        return undefined
+
     # gets the user's encrypted salt.
     # request is not wrapped because the user has not auth'ed yet.
     getSalt: (uuid) ->

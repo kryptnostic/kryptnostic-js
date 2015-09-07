@@ -26,18 +26,23 @@ define 'kryptnostic.object-search-key-api', [
 
     # input: uint8 representation of addres matrix, encrypted and serialized by SearchKeySerializer.
     uploadAddressMatrix: ( objectId, addressMatrixAsUint8Array ) ->
-      Requests.postUint8ToUrl(addressFunctionUrl() + '/' + objectId, addressMatrixAsUint8Array)
-      .then (response) ->
-        log.info('uploadAddressFunction', { objectId } )
-        return response.data
+      Requests
+        .postUint8ToUrl(addressFunctionUrl() + '/' + objectId, addressMatrixAsUint8Array)
+        .then (response) ->
+          log.info('uploadAddressFunction', { objectId } )
+          return response.data
 
     uploadSharingPair: ( objectId, sharingPairAsUint8 ) ->
-      Requests.postUint8ToUrl(sharingPairUrl() + '/' + objectId, sharingPairAsUint8 )
-      .then (response) ->
-        log.info('uploadSharingPair', { objectId } )
-        return response.data
+      Requests
+        .postUint8ToUrl(sharingPairUrl() + '/' + objectId, sharingPairAsUint8)
+        .then (response) ->
+          log.info('uploadSharingPair', { objectId } )
+          return response.data
 
     getIndexPair: ( objectId ) ->
-      return Requests.getAsUint8FromUrl(sharingPairUrl() + '/' + objectId )
+      Requests
+        .getAsUint8FromUrl(sharingPairUrl() + '/' + objectId)
+        .then (response) ->
+          return response
 
   return ObjectSearchKeyApi

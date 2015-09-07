@@ -22,7 +22,7 @@ define 'kryptnostic.object-sharing-service', [
 
   log = Logger.get('ObjectSharingService')
 
-  { validateId, validateUuid, validateUuids } = Validators
+  { validateId, validateUuid } = Validators
 
   class ObjectSharingService
 
@@ -32,26 +32,17 @@ define 'kryptnostic.object-sharing-service', [
       @documentSearchKeyApi = new DocumentSearchKeyApi()
       @searchKeySerializer  = new SearchKeySerializer()
 
-    shareObjectWithUser: (objectId, userUuid) ->
+    shareObject: (objectId, rsaPublicKey) ->
+
+      validateId(objectId)
 
       Promise.resolve()
         .then =>
-
-          validateId(objectId)
-          validateUuid(userUuid)
-
-          rsaPublicKeyPromise    = @directoryApi.getRsaPublicKey(userUuid)
-          objectIndexPairPromise = @documentSearchKeyApi.getIndexPair(objectId)
-
-          Promise.props({
-            userRsaPublicKey : rsaPublicKeyPromise,
-            objectIndexPair  : objectIndexPairPromise
-          })
-          .then (userRsaPublicKey, objectIndexPair) =>
-            @createEncryptedObjectSharingPair(userRsaPublicKey, objectIndexPair)
-          .then (encryptedObjectSharingPair) =>
-            @documentSearchKeyApi.uploadSharingPair(objectId, encryptedObjectSharingPair)
-
+          @documentSearchKeyApi.getIndexPair(objectId)
+        .then (objectIndexPair) =>
+          @createObjectSharingPair(rsaPublicKey, objectIndexPair)
+        .then (objectSharingPair) =>
+          @documentSearchKeyApi.uploadSharingPair(objectId, objectSharingPair)
         .catch (e) ->
           log.error('sharing object failed')
           log.error(e)
@@ -60,7 +51,7 @@ define 'kryptnostic.object-sharing-service', [
     # helpers (should be private, but can't figure out how to test them if they are...)
     #
 
-    createEncryptedObjectSharingPair: (rsaPublicKey, objectIndexPair) =>
+    createObjectSharingPair: (rsaPublicKey, objectIndexPair) =>
       objectSharingPair = @engine.getObjectSharingPair({ objectIndexPair })
       rsaCryptoService = new RsaCryptoService({ rsaPublicKey })
       # DOIT - refactor SearchKeySerializer and its encryption logic into a more generic class

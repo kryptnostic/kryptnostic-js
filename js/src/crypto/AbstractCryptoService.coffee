@@ -16,8 +16,8 @@ define 'kryptnostic.abstract-crypto-service', [
       unless @algorithm is CryptoAlgorithm.AES and @mode is 'CTR'
         throw new Error 'cypher not implemented'
 
-    encrypt: (key, iv, plaintext) ->
-      ciphertext = encryptBuffer( key, iv, Forge.util.createBuffer(plaintext) )
+    encrypt: (key, iv, plaintext) =>
+      ciphertext = @encryptBuffer( key, iv, Forge.util.createBuffer(plaintext) )
       return ciphertext
 
     encryptBuffer: (key, iv, buffer) ->
@@ -27,8 +27,8 @@ define 'kryptnostic.abstract-crypto-service', [
       cipher.finish()
       return cipher.output.data
 
-    decrypt: (key, iv, ciphertext) ->
-      buffer = decrypt(key, iv, Forge.util.createBuffer(ciphertext))
+    decrypt: (key, iv, ciphertext) =>
+      buffer = @decryptToBuffer(key, iv, Forge.util.createBuffer(ciphertext))
       return buffer.data
 
     decryptToBuffer: (key, iv, buffer) ->

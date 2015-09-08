@@ -64,7 +64,7 @@ define 'kryptnostic.search-credential-service', [
       return uint8Key
     else if credentialType.encrypt
       cryptoServiceLoader.getObjectCryptoService(credentialType.id, { expectMiss : true })
-      .then (cryptoService) =>
+      .then (cryptoService) ->
         return cryptoService.encryptUint8Array(uint8Key)
     else
       return uint8Key
@@ -74,7 +74,7 @@ define 'kryptnostic.search-credential-service', [
       return uint8Key
     else if credentialType.encrypt
       cryptoServiceLoader.getObjectCryptoService(credentialType.id, { expectMiss : true })
-      .then (cryptoService) =>
+      .then (cryptoService) ->
         return cryptoService.decryptToUint8Array(BlockCiphertext(uint8Key))
     else
       return uint8Key

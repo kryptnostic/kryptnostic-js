@@ -17,17 +17,25 @@ define 'kryptnostic.abstract-crypto-service', [
         throw new Error 'cypher not implemented'
 
     encrypt: (key, iv, plaintext) ->
+      ciphertext = encryptBuffer( key, iv, Forge.util.createBuffer(plaintext) )
+      return ciphertext
+
+    encryptBuffer: (key, iv, buffer) ->
       cipher = Forge.cipher.createCipher(@algorithm + '-' + @mode, key)
       cipher.start({ iv })
-      cipher.update(Forge.util.createBuffer(plaintext))
+      cipher.update(buffer)
       cipher.finish()
       return cipher.output.data
 
     decrypt: (key, iv, ciphertext) ->
+      buffer = decrypt(key, iv, Forge.util.createBuffer(ciphertext))
+      return buffer.data
+
+    decryptToBuffer: (key, iv, buffer) ->
       decipher = Forge.cipher.createDecipher(@algorithm + '-' + @mode, key)
       decipher.start({ iv })
-      decipher.update(Forge.util.createBuffer(ciphertext))
+      decipher.update(buffer)
       decipher.finish()
-      return decipher.output.data
+      return decipher.output
 
   return AbstractCryptoService

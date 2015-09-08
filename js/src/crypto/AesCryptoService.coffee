@@ -39,9 +39,9 @@ define 'kryptnostic.aes-crypto-service', [
         contents : btoa(ciphertext)
       }
 
-    encryptUint8Array: ( input ) ->
+    encryptUint8Array: ( uint8 ) ->
       iv         = Forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
-      buffer     = Forge.util.createBuffer(input);
+      buffer     = Forge.util.createBuffer(uint8);
       ciphertext = @abstractCryptoService.encryptBuffer(@key, iv, buffer)
 
       return new BlockCiphertext {

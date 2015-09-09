@@ -29,9 +29,9 @@ define 'kryptnostic.sharing-api', [
   shareObjectUrl          = -> sharingEndpoint() + OBJECT_PATH + SHARE_PATH
   revokeObjectUrl         = -> sharingEndpoint() + OBJECT_PATH + REVOKE_PATH
   getIncomingSharesUrl    = -> sharingEndpoint() + OBJECT_PATH
-  removeIncomingSharesUrl = (objectId )-> sharingEndpoint() + OBJECT_PATH + '/' + objectId
+  removeIncomingSharesUrl = (id ) -> sharingEndpoint() + OBJECT_PATH + '/' + id
   addObjectIndexPairUrl   = -> sharingEndpoint() + KEYS_PATH
-  getObjectIndexPairUrl   = (objectId) -> sharingEndpoint() + OBJECT_PATH + '/' + objectId + OBJECT_KEYS
+  getObjectIndexPairUrl   = (id) -> sharingEndpoint() + OBJECT_PATH + '/' + id + OBJECT_KEYS
 
   logger = Logger.get('SharingApi')
 

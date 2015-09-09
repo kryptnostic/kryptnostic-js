@@ -64,13 +64,15 @@ define 'kryptnostic.search-credential-service', [
     else
       return uint8Key
 
+      #seems that decryptKey should take in blockciphertext instead of uint8key
   decryptKey = ({ credentialType, uint8Key, cryptoServiceLoader }) ->
     if _.isEmpty(uint8Key)
       return uint8Key
     else if credentialType.encrypt
       cryptoServiceLoader.getObjectCryptoService(credentialType.id, { expectMiss : true })
       .then (cryptoService) ->
-        return cryptoService.decryptToUint8Array(BlockCiphertext(uint8Key))
+        return cryptoService.decryptToUint8Array(uint8Key)
+        #return cryptoService.decryptToUint8Array(BlockCiphertext(uint8Key))
     else
       return uint8Key
 

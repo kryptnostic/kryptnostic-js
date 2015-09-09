@@ -143,6 +143,38 @@ define 'kryptnostic.directory-api', [
       .catch (e) ->
         return undefined
 
+    #
+    # gets a set of public keys for the given user UUIDs in the form of PublicKeyEnvelope, where
+    # each public key will become an RSA public key via PublicKeyEnvelope.toRsaPublicKey()
+    #
+    # @param {Array.<UUID>} - a set user UUIDs for which to get public keys
+    # @return {Object.<UUID, RsaPublicKey>} - a map of UUIDs to RSA public keys
+    #
+    batchGetRsaPublicKeys: (uuids) ->
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            url    : publicKeyUrl()
+            method : 'POST'
+            data   : JSON.stringify(uuids)
+          })
+        )
+      )
+      .then (response) ->
+        uuidsToPublicKeyEnvelopes = response.data
+        log.debug('batchGetRsaPublicKeys', { uuidsToPublicKeyEnvelopes })
+
+        # transform public keys to RSA public keys
+        uuidsToRsaPublicKeys = _.chain(uuidsToPublicKeyEnvelopes)
+          .mapValues((envelope) ->
+            publicKeyEnvelope = new PublicKeyEnvelope(envelope)
+            return publicKeyEnvelope.toRsaPublicKey()
+          )
+        return uuidsToRsaPublicKeys
+
+      .catch (e) ->
+        return undefined
+
     # gets the user's encrypted salt.
     # request is not wrapped because the user has not auth'ed yet.
     getSalt: (uuid) ->

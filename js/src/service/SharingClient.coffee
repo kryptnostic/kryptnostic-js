@@ -5,6 +5,7 @@ define 'kryptnostic.sharing-client', [
   'kryptnostic.crypto-service-loader'
   'kryptnostic.crypto-service-marshaller'
   'kryptnostic.directory-api'
+  'kryptnostic.kryptnostic-engine'
   'kryptnostic.logger'
   'kryptnostic.object-sharing-service'
   'kryptnostic.revocation-request'
@@ -13,23 +14,32 @@ define 'kryptnostic.sharing-client', [
   'kryptnostic.sharing-request'
   'kryptnostic.validators'
 ], (require) ->
+
+  # libraries
   _                       = require 'lodash'
   Promise                 = require 'bluebird'
+
+  # Kryptnostic apis
+  DirectoryApi            = require 'kryptnostic.directory-api'
+  SharingApi              = require 'kryptnostic.sharing-api'
+
+  # Kryptnostic classes
   CredentialLoader        = require 'kryptnostic.credential-loader'
   CryptoServiceLoader     = require 'kryptnostic.crypto-service-loader'
   CryptoServiceMarshaller = require 'kryptnostic.crypto-service-marshaller'
-  DirectoryApi            = require 'kryptnostic.directory-api'
-  Logger                  = require 'kryptnostic.logger'
+  KryptnosticEngine       = require 'kryptnostic.kryptnostic-engine'
   ObjectSharingService    = require 'kryptnostic.object-sharing-service'
   RevocationRequest       = require 'kryptnostic.revocation-request'
   RsaCryptoService        = require 'kryptnostic.rsa-crypto-service'
-  SharingApi              = require 'kryptnostic.sharing-api'
   SharingRequest          = require 'kryptnostic.sharing-request'
-  validators              = require 'kryptnostic.validators'
+
+  # Kryptnostic utils
+  Logger                  = require 'kryptnostic.logger'
+  Validators              = require 'kryptnostic.validators'
 
   log = Logger.get('SharingClient')
 
-  { validateId, validateUuids } = validators
+  { validateId, validateUuids } = Validators
 
   #
   # Client for granting and revoking shared access to Kryptnostic objects.
@@ -38,6 +48,7 @@ define 'kryptnostic.sharing-client', [
   class SharingClient
 
     constructor: ->
+      @engine                  = new KryptnosticEngine()
       @sharingApi              = new SharingApi()
       @directoryApi            = new DirectoryApi()
       @cryptoServiceMarshaller = new CryptoServiceMarshaller()
@@ -45,44 +56,62 @@ define 'kryptnostic.sharing-client', [
       @credentialLoader        = new CredentialLoader()
       @objectSharingService    = new ObjectSharingService()
 
-    shareObject: (id, uuids) ->
+    #
+    # shares an object with the given object ID with the given set of user UUIDs
+    #
+    # @param {String} objectId
+    # @param {Array<String>} uuids
+    #
+    shareObject: (objectId, uuids) ->
+
       if _.isEmpty(uuids)
         return Promise.resolve()
 
-      validateId(id)
+      validateId(objectId)
       validateUuids(uuids)
 
       { principal } = @credentialLoader.getCredentials()
-      sharingKey    = ''
 
-      Promise.resolve()
-      .then =>
-        @cryptoServiceLoader.getObjectCryptoService(id)
-      .then (cryptoService) =>
-        promiseMap = _.mapValues(_.object(uuids), (empty, uuid) =>
-          return @directoryApi.getRsaPublicKey(uuid)
+      Promise.join(
+        @sharingApi.getObjectIndexPair(objectId),
+        @cryptoServiceLoader.getObjectCryptoService(objectId),
+        @directoryApi.batchGetRsaPublicKeys(uuids),
+        (objectIndexPair, objectCryptoService, uuidsToRsaPublicKeys) ->
+
+        # transform RSA public key to Base64 seal
+        seals = _.mapValues(uuidsToRsaPublicKeys, (rsaPublicKey) =>
+          rsaCryptoService = new RsaCryptoService({ rsaPublicKey })
+          marshalledCrypto = @cryptoServiceMarshaller.marshall(objectCryptoService)
+          seal             = rsaCryptoService.encrypt(marshalledCrypto)
+          sealBase64       = btoa(seal)
+          return sealBase64
         )
+        log.info('seals', seals)
 
-        Promise.props(promiseMap)
-        .then (uuidsToRsaPublicKeys) =>
-          seals = _.chain(uuidsToRsaPublicKeys)
-            .mapValues((rsaPublicKey, uuid) =>
-              rsaCryptoService = new RsaCryptoService({ rsaPublicKey })
-              marshalledCrypto = @cryptoServiceMarshaller.marshall(cryptoService)
-              seal             = rsaCryptoService.encrypt(marshalledCrypto)
-              sealBase64       = btoa(seal)
-              return sealBase64
-            )
-            .value()
+        if !objectIndexPair
+          # if we did not get an object index pair, we can omit it from the SharingRequest
+          sharingRequest = new SharingRequest({
+            id          : objectId,
+            users       : seals
+          })
+        else
+          # create the object sharing pair from the object index pair, and encrypt it
+          objectSharingPair = @engine.getObjectSharingPairFromObjectIndexPair(objectIndexPair)
+          encryptedObjectSharingPair = objectCryptoService.encryptUint8Array(objectSharingPair)
 
-          log.info('seals', seals)
-          log.warn('sharing request will be sent with an empty sharing key')
-          sharingRequest = new SharingRequest { id, users : seals, sharingKey }
-          @sharingApi.shareObject(sharingRequest)
+          sharingRequest = new SharingRequest({
+            id          : objectId,
+            users       : seals,
+            sharingPair : encryptedObjectSharingPair
+          })
 
-          _.map(uuidsToRsaPublicKeys, (rsaPublicKey, uuid) =>
-            @objectSharingService.shareObject(id, rsaPublicKey)
-          )
+        # send off the object sharing request
+        @sharingApi.shareObject(sharingRequest)
+      )
+      .catch (e) ->
+        # DOTO - how do we handle failure when sharing an object?
+        log.error('failed to share object', e)
+        return undefined
 
     revokeObject: (id, uuids) ->
       { revocationRequest } = {}
@@ -90,7 +119,8 @@ define 'kryptnostic.sharing-client', [
       if _.isEmpty(uuids)
         return Promise.resolve()
 
-      Promise.resolve()
+      Promise
+      .resolve()
       .then =>
         validateId(id)
         validateUuids(uuids)
@@ -99,7 +129,31 @@ define 'kryptnostic.sharing-client', [
       .then ->
         log.info('revoked access', { id, uuids })
 
-    processIncomingShares : ->
-      throw new Error 'unimplemented'
+    processIncomingShares: ->
+      Promise
+      .resolve()
+      .then =>
+        @sharingApi.getIncomingShares()
+      .then (incomingShares) =>
+        _.forEach(incomingShares, (sharedObject) =>
+          objectId = sharedObject.id
+          Promise.resolve()
+          .then =>
+            @cryptoServiceLoader.getObjectCryptoService(
+              objectId,
+              { expectMiss: false } # ObjectCryptoService should exist
+            )
+          .then (objectCryptoService) =>
+            encryptedSharingPair = sharedObject.encryptedSharingPair
+            decryptedSharingPair = objectCryptoService.decryptToUint8Array(encryptedSharingPair)
+            objectIndexPair = @engine.getObjectIndexPairFromObjectSharingPair(decryptedSharingPair)
+            @sharingApi.addObjectIndexPair(objectId, objectIndexPair)
+        )
+      .catch (e) ->
+        # DOTO - how do we handle failure when processing incoming shares?
+        log.error('failed to process incoming shares', e)
+        return undefined
+
+
 
   return SharingClient

@@ -51,10 +51,10 @@ define 'kryptnostic.kryptnostic-engine', [
     # sharing
     # =======
 
-    getObjectSharingPair: ({ objectIndexPair }) ->
-      return @createClient().getObjectSharingPair(objectIndexPair)
+    getObjectSharingPairFromObjectIndexPair: ({ objectIndexPair }) ->
+      return @createClient().getObjectSharingPairFromObjectIndexPair(objectIndexPair)
 
-    getObjectIndexPairFromSharing: ({ objectSharingPair }) ->
-      return @createClient().getObjectUploadPair(objectSharingPair)
+    getObjectIndexPairFromObjectSharingPair: ({ objectSharingPair }) ->
+      return @createClient().getObjectIndexPairFromObjectSharingPair(objectSharingPair)
 
   return KryptnosticEngine

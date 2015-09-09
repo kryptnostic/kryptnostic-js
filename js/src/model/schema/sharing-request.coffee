@@ -14,9 +14,9 @@ define 'kryptnostic.schema.sharing-request', [], ->
         required    : false
         allowEmpty  : false
       }
-      sharingKey : {
-        description : 'the document sharing key'
-        type        : 'string'
+      sharingPair : {
+        description : 'the encrypted object sharing pair'
+        type        : 'object'
         required    : false
         allowEmpty  : true
       }

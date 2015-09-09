@@ -57,6 +57,6 @@ define 'kryptnostic.aes-crypto-service', [
 
     decryptToUint8Array: (blockCiphertext) ->
       plaintext = @decrypt(blockCiphertext)
-      return new Uint8Array(_.map(string, (c) -> c.charCodeAt() ) )
+      return new Uint8Array(_.map(plaintext, (c) -> c.charCodeAt() ) )
 
   return AesCryptoService

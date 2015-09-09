@@ -49,7 +49,7 @@ define 'kryptnostic.search-credential-service', [
       getter    : (api) -> api.getClientHashFunction
       setter    : (api) -> api.setClientHashFunction
       stage     : AuthenticationStage.CLIENT_HASH_GEN
-      encrypt   : true
+      encrypt   : false
       id        : 'KryptnosticEngine.PrivateKey'
     }
   }
@@ -60,21 +60,24 @@ define 'kryptnostic.search-credential-service', [
     else if credentialType.encrypt
       cryptoServiceLoader.getObjectCryptoService(credentialType.id, { expectMiss : true })
       .then (cryptoService) ->
-        return cryptoService.encryptUint8Array(uint8Key)
+        return cryptoService.encryptUint8Array(BlockCipertext(uint8Key))
     else
-      return uint8Key
+      return BlockCipertext(uint8Key)
 
       #seems that decryptKey should take in blockciphertext instead of uint8key
-  decryptKey = ({ credentialType, uint8Key, cryptoServiceLoader }) ->
+  decryptKey = ({ credentialType, blockCiphertext, cryptoServiceLoader }) ->
+  #decryptKey = ({ credentialType, uint8Key, cryptoServiceLoader }) ->
     if _.isEmpty(uint8Key)
       return uint8Key
     else if credentialType.encrypt
       cryptoServiceLoader.getObjectCryptoService(credentialType.id, { expectMiss : true })
       .then (cryptoService) ->
-        return cryptoService.decryptToUint8Array(uint8Key)
-        #return cryptoService.decryptToUint8Array(BlockCiphertext(uint8Key))
+        #return cryptoService.decryptToUint8Array(uint8Key)
+        return cryptoService.decryptToUint8Array(blockCiphertext)
     else
+      uint8Key = new Uint8Array(_.map(blockCiphertext, (c) -> c.charCodeAt() ) )
       return uint8Key
+      #return uint8Key
 
   #
   # Loads or generates credentials produced by the SearchKeyGenerator, including
@@ -128,8 +131,10 @@ define 'kryptnostic.search-credential-service', [
       .then (credentialsByType) =>
         return _.mapValues(credentialsByType, (credential, typeKey) =>
           credentialType = CredentialType[typeKey]
-          uint8Key       = credential
-          return decryptKey({ credentialType, uint8Key, @cryptoServiceLoader }).data
+          #uint8Key       = credential
+          blockCiphertext = credential
+          #return decryptKey({ credentialType, uint8Key, @cryptoServiceLoader }).data
+          return decryptKey({ credentialType, blockCiphertext, @cryptoServiceLoader }).data
         )
 
     hasInitialized: ->
@@ -165,6 +170,8 @@ define 'kryptnostic.search-credential-service', [
 
     initializeCredential: (credentialType, clientKeys, notifier) ->
       { uint8Key, storeableKey } = {}
+
+      console.trace()
 
       Promise.resolve()
       .then ->

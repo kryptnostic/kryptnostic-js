@@ -7,6 +7,8 @@ define 'kryptnostic.metadata-api', [
   Logger  = require 'kryptnostic.logger'
   Promise = require 'bluebird'
 
+  metadataUrl = -> Configuration.get('servicesUrl') + '/indexing/metadata'
+
   log = Logger.get('MetadataApi')
 
   #
@@ -16,7 +18,6 @@ define 'kryptnostic.metadata-api', [
   class MetadataApi
 
     uploadMetadata: (metadataRequest) ->
-      log.warn('metadata api not implemented!', metadataRequest)
       return Promise.resolve()
 
   return MetadataApi

@@ -2,10 +2,15 @@ define 'kryptnostic.search-api', [
   'require'
   'bluebird'
   'kryptnostic.logger'
+  'kryptnostic.requests'
+  'kryptnostic.configuration'
 ], (require) ->
 
-  Logger  = require 'kryptnostic.logger'
-  Promise = require 'bluebird'
+  Logger           = require 'kryptnostic.logger'
+  Requests         = require 'kryptnostic.requests'
+  Configuration    = require 'kryptnostic.configuration'
+
+  searchServiceUrl = -> Configuration.get('servicesUrl') + '/search/fast'
 
   log = Logger.get('SearchApi')
 
@@ -17,7 +22,9 @@ define 'kryptnostic.search-api', [
 
     # returns a list of encrypted indexMetadata for matches.
     search: (encryptedToken) ->
-      log.warn('search api not implemented!')
-      return Promise.resolve([])
+      return Requests.postUint8ToUrl(searchServiceUrl(), encryptedToken)
+      .then (response) ->
+        log.info('searched')
+        return response.data
 
   return SearchApi

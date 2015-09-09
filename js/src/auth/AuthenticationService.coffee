@@ -67,9 +67,10 @@ define 'kryptnostic.authentication-service', [
       .then (_searchCredential) ->
         searchCredential = _searchCredential
         fhePrivateKey = searchCredential.FHE_PRIVATE_KEY
-        searchPrivateKey = searchCredential.SEARCH_PRIVAYE_KEY
+        searchPrivateKey = searchCredential.SEARCH_PRIVATE_KEY
         engine = new KryptnosticEngine({ fhePrivateKey, searchPrivateKey })
         KryptnosticEngineProvider.setEngine(engine)
+        log.info('engine set')
       .then ->
         Promise.resolve(notifier(AuthenticationStage.COMPLETED))
       .then ->

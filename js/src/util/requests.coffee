@@ -38,6 +38,20 @@ define 'kryptnostic.requests', [
     .then (response) ->
       new Uint8Array(response)
 
+  getBlockCiphertextFromUrl = (url) ->
+    Promise.resolve(
+      axios(
+        wrapCredentials({
+          url          : url
+          method       : 'GET'
+          responseType : 'json'
+        })))
+    .then (response) ->
+      if response isnt null and typeof response isnt 'undefined'
+        return response
+      else
+        return null
+
   postUint8ToUrl = (url, data) ->
     Promise.resolve(
       axios(
@@ -50,5 +64,6 @@ define 'kryptnostic.requests', [
   return {
     wrapCredentials,
     getAsUint8FromUrl,
+    getBlockCiphertextFromUrl,
     postUint8ToUrl,
   }

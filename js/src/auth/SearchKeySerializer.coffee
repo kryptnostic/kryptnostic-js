@@ -68,14 +68,10 @@ define 'kryptnostic.search-key-serializer', [
     # encrypt and chunk an unencrypted key. returns a uint8 array.
     # the array is chunked internally with fixed size of ENCRYPTED_PADDED_BLOCK_LENGTH.
     encrypt: (uint8) ->
+
       rsaCryptoService = @createRsaCryptoService()
-      return @doEncryption(uint8, rsaCryptoService)
 
-    encryptWithRsaCryptoService: (uint8, rsaCryptoService) ->
-      return @doEncryption(uint8, rsaCryptoService)
-
-    doEncryption: (uint8, rsaCryptoService) ->
-      return _.chain(uint8)
+      encryptedUint = _.chain(uint8)
         .thru((uint8) -> cleanUint8Buffer(uint8))
         .thru((uint8) -> forge.util.binary.base64.encode(uint8))
         .thru((string) => @chunkingStrategy.split(string, UNENCRYPTED_BLOCK_LENGTH))
@@ -85,6 +81,8 @@ define 'kryptnostic.search-key-serializer', [
         .tap((chunks) -> validateEncryptedChunks(chunks))
         .thru((chunks) -> joinUint8(chunks))
         .value()
+
+      return encryptedUint
 
     # decrypt and join a chunked stored key. returns a uint8 array of decrypted key.
     decrypt: (uint8) ->

@@ -33,7 +33,6 @@ define 'kryptnostic.search-indexing-service', [
   ObjectIndexer             = require 'kryptnostic.search.indexer'
   SearchKeySerializer       = require 'kryptnostic.search-key-serializer'
   SharingClient             = require 'kryptnostic.sharing-client'
-  SearchCredentialService   = require 'kryptnostic.search-credential-service'
   KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
 
   log = Logger.get('SearchIndexingService')

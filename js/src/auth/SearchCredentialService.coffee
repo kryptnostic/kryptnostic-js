@@ -20,7 +20,6 @@ define 'kryptnostic.search-credential-service', [
   CryptoKeyStorageApi = require 'kryptnostic.crypto-key-storage-api'
   SearchKeyGenerator  = require 'kryptnostic.search-key-generator'
   CryptoServiceLoader = require 'kryptnostic.crypto-service-loader'
-  AesCryptoService    = require 'kryptnostic.aes-crypto-service'
   BlockCiphertext     = require 'kryptnostic.block-ciphertext'
 
   log = Logger.get('SearchCredentialService')

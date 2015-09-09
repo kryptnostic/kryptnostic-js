@@ -13,7 +13,6 @@ define 'kryptnostic.search-client', [
   KryptnosticObject         = require 'kryptnostic.kryptnostic-object'
   KryptnosticEngine         = require 'kryptnostic.kryptnostic-engine' #MOCK#
   SearchApi                 = require 'kryptnostic.search-api'
-  SearchCredentialService   = require 'kryptnostic.search-credential-service'
   KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
 
   #

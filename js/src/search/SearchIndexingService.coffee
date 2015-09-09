@@ -3,37 +3,39 @@ define 'kryptnostic.search-indexing-service', [
   'bluebird'
   'kryptnostic.chunking.strategy.json'
   'kryptnostic.crypto-service-loader'
-  'kryptnostic.object-search-key-api'
   'kryptnostic.kryptnostic-object'
   'kryptnostic.logger'
   'kryptnostic.metadata-api'
   'kryptnostic.metadata-request'
   'kryptnostic.kryptnostic-engine'
-  'kryptnostic.search-key-serializer'
   'kryptnostic.search.indexer'
   'kryptnostic.search.metadata-mapper'
-  'kryptnostic.sharing-client'
   'kryptnostic.indexed-metadata'
   'kryptnostic.search-credential-service' #added to load the keys stored
   'kryptnostic.kryptnostic-engine-provider'
 ], (require) ->
 
-  Promise                   = require 'bluebird'
+  # libraries
+  Promise               = require 'bluebird'
 
-  CryptoServiceLoader       = require 'kryptnostic.crypto-service-loader'
-  ObjectSearchKeyApi        = require 'kryptnostic.object-search-key-api'
-  IndexedMetadata           = require 'kryptnostic.indexed-metadata'
-  JsonChunkingStrategy      = require 'kryptnostic.chunking.strategy.json'
-  KryptnosticObject         = require 'kryptnostic.kryptnostic-object'
-  Logger                    = require 'kryptnostic.logger'
-  MetadataApi               = require 'kryptnostic.metadata-api'
-  MetadataMapper            = require 'kryptnostic.search.metadata-mapper'
-  MetadataRequest           = require 'kryptnostic.metadata-request'
-  KryptnosticEngine         = require 'kryptnostic.kryptnostic-engine'
-  ObjectIndexer             = require 'kryptnostic.search.indexer'
+  # Kryptnostic apis
+  MetadataApi           = require 'kryptnostic.metadata-api'
+  SharingApi            = require 'kryptnostic.sharing-api'
+
+  # Kryptnostic classes
+  JsonChunkingStrategy  = require 'kryptnostic.chunking.strategy.json'
+  CryptoServiceLoader   = require 'kryptnostic.crypto-service-loader'
+  IndexedMetadata       = require 'kryptnostic.indexed-metadata'
+  KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
+  MetadataRequest       = require 'kryptnostic.metadata-request'
+  ObjectIndexer         = require 'kryptnostic.search.indexer'
+  MetadataMapper        = require 'kryptnostic.search.metadata-mapper'
   SearchKeySerializer       = require 'kryptnostic.search-key-serializer'
   SharingClient             = require 'kryptnostic.sharing-client'
   KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
+
+  # Kryptnostic utils
+  Logger                = require 'kryptnostic.logger'
 
   log = Logger.get('SearchIndexingService')
 
@@ -44,11 +46,11 @@ define 'kryptnostic.search-indexing-service', [
   class SearchIndexingService
 
     constructor : ->
-      @cryptoServiceLoader  = new CryptoServiceLoader()
-      @objectSearchKeyApi   = new ObjectSearchKeyApi()
-      @metadataApi          = new MetadataApi()
-      @metadataMapper       = new MetadataMapper()
-      @objectIndexer        = new ObjectIndexer()
+      @cryptoServiceLoader = new CryptoServiceLoader()
+      @sharingApi          = new SharingApi()
+      @metadataApi         = new MetadataApi()
+      @metadataMapper      = new MetadataMapper()
+      @objectIndexer       = new ObjectIndexer()
       @searchKeySerializer  = new SearchKeySerializer()
       @sharingClient        = new SharingClient()
 
@@ -67,11 +69,7 @@ define 'kryptnostic.search-indexing-service', [
         objectAddressMatrix = engine.getObjectAddressMatrix()
         objectSearchKey     = engine.getObjectSearchKey()
         objectIndexPair     = engine.getObjectIndexPair({ objectSearchKey, objectAddressMatrix })
-
-        encryptedAddressFunction = @searchKeySerializer.encrypt(objectAddressMatrix)
-        @objectSearchKeyApi.uploadAddressMatrix(id, encryptedAddressFunction)
-      .then =>
-        @objectSearchKeyApi.uploadSharingPair(id, objectIndexPair)
+        @sharingApi.addObjectIndexPair(id, objectIndexPair)
       .then =>
         @objectIndexer.index(id, body)
       .then (metadata) =>

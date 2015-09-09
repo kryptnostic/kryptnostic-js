@@ -34,7 +34,9 @@ define 'kryptnostic.requests', [
           url          : url
           method       : 'GET'
           responseType : 'arraybuffer'
-        })))
+        })
+      )
+    )
     .then (response) ->
       new Uint8Array(response)
 
@@ -59,7 +61,9 @@ define 'kryptnostic.requests', [
           url    : url
           method : 'POST'
           data   : data
-        })))
+        })
+      )
+    )
 
   return {
     wrapCredentials,

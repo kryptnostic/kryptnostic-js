@@ -43,11 +43,16 @@ define 'kryptnostic.sharing-api', [
 
     # get all incoming shares
     getIncomingShares: ->
-      axios(Requests.wrapCredentials({
-        url    : getIncomingSharesUrl()
-        method : 'GET'
-      }))
+      Promise.resolve()
+      .then ->
+        axios(
+          Requests.wrapCredentials({
+            url    : getIncomingSharesUrl()
+            method : 'GET'
+          })
+        )
       .then (response) ->
+        logger.debug('getIncomingShares()', response)
         return response.data
 
     removeIncomingShares: ->
@@ -58,49 +63,56 @@ define 'kryptnostic.sharing-api', [
       Promise.resolve()
       .then ->
         sharingRequest.validate()
-
-        axios(Requests.wrapCredentials({
-          url     : shareObjectUrl()
-          method  : 'POST'
-          headers : _.cloneDeep(DEFAULT_HEADER)
-          data    : JSON.stringify(sharingRequest)
-        }))
+        axios(
+          Requests.wrapCredentials({
+            url     : shareObjectUrl()
+            method  : 'POST'
+            headers : DEFAULT_HEADER
+            data    : JSON.stringify(sharingRequest)
+          })
+        )
       .then (response) ->
-        logger.debug('shareObject', response.data.data)
+        logger.debug('shareObject()', response.data.data)
 
     # revoke access to an object
     revokeObject: (revocationRequest) ->
-      revocationRequest.validate()
-
-      axios(Requests.wrapCredentials({
-        url     : revokeObjectUrl()
-        method  : 'POST'
-        headers : _.cloneDeep(DEFAULT_HEADER)
-        data    : JSON.stringify(revocationRequest)
-      }))
+      Promise.resolve()
+      .then ->
+        revocationRequest.validate()
+        axios(
+          Requests.wrapCredentials({
+            url     : revokeObjectUrl()
+            method  : 'POST'
+            headers : DEFAULT_HEADER
+            data    : JSON.stringify(revocationRequest)
+          })
+        )
       .then (response) ->
-        logger.debug('revokeObject', response.data.data)
+        logger.debug('revokeObject()', response.data.data)
 
     getObjectIndexPair: (objectId) ->
       Requests
-        .getAsUint8FromUrl(
-          getObjectIndexPairUrl(objectId)
-        )
-        .then (response) ->
-          return response
-
-    addObjectIndexPair: (objectId, objectIndexPair) ->
-      requestData = {}
-      requestData[objectId] = btoa(objectIndexPair)
-      axios(
-        Requests.wrapCredentials({
-          url     : addObjectIndexPairUrl()
-          method  : 'PUT'
-          headers : _.cloneDeep(DEFAULT_HEADER)
-          data    : JSON.stringify(requestData)
-        })
+      .getAsUint8FromUrl(
+        getObjectIndexPairUrl(objectId)
       )
       .then (response) ->
-        log.debug('SharingApi.addIndexPairs()', response)
+        log.debug('getObjectIndexPair()', response.data)
+        return response.data
+
+    addObjectIndexPair: (objectId, objectIndexPair) ->
+      Promise.resolve()
+      .then ->
+        requestData = {}
+        requestData[objectId] = btoa(objectIndexPair)
+        axios(
+          Requests.wrapCredentials({
+            url     : addObjectIndexPairUrl()
+            method  : 'PUT'
+            headers : DEFAULT_HEADER
+            data    : JSON.stringify(requestData)
+          })
+        )
+      .then (response) ->
+        log.debug('addIndexPairs()', response.data)
 
   return SharingApi

@@ -8,7 +8,7 @@ define 'kryptnostic.search-indexing-service', [
   'kryptnostic.logger'
   'kryptnostic.metadata-api'
   'kryptnostic.metadata-request'
-  'kryptnostic.kryptnostic-engine' #MOCK#
+  'kryptnostic.kryptnostic-engine'
   'kryptnostic.search-key-serializer'
   'kryptnostic.search.indexer'
   'kryptnostic.search.metadata-mapper'
@@ -21,7 +21,7 @@ define 'kryptnostic.search-indexing-service', [
   Promise                   = require 'bluebird'
 
   CryptoServiceLoader       = require 'kryptnostic.crypto-service-loader'
-  DocumentSearchKeyApi      = require 'kryptnostic.document-search-key-api'
+  ObjectSearchKeyApi        = require 'kryptnostic.object-search-key-api'
   IndexedMetadata           = require 'kryptnostic.indexed-metadata'
   JsonChunkingStrategy      = require 'kryptnostic.chunking.strategy.json'
   KryptnosticObject         = require 'kryptnostic.kryptnostic-object'

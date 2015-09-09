@@ -3,7 +3,7 @@ define 'kryptnostic.object-sharing-service', [
   'bluebird'
   'kryptnostic.logger'
   'kryptnostic.directory-api'
-  'kryptnostic.document-search-key-api'
+  'kryptnostic.object-search-key-api'
   'kryptnostic.mock.kryptnostic-engine'
   'kryptnostic.rsa-crypto-service'
   'kryptnostic.search-key-serializer'
@@ -13,7 +13,7 @@ define 'kryptnostic.object-sharing-service', [
 
   Promise               = require 'bluebird'
   DirectoryApi          = require 'kryptnostic.directory-api'
-  DocumentSearchKeyApi  = require 'kryptnostic.document-search-key-api'
+  ObjectSearchKeyApi  = require 'kryptnostic.object-search-key-api'
   Logger                = require 'kryptnostic.logger'
   MockKryptnosticEngine = require 'kryptnostic.mock.kryptnostic-engine'
   RsaCryptoService      = require 'kryptnostic.rsa-crypto-service'
@@ -29,7 +29,7 @@ define 'kryptnostic.object-sharing-service', [
     constructor: ->
       @engine               = new MockKryptnosticEngine()
       @directoryApi         = new DirectoryApi()
-      @documentSearchKeyApi = new DocumentSearchKeyApi()
+      @objectSearchKeyApi = new ObjectSearchKeyApi()
       @searchKeySerializer  = new SearchKeySerializer()
 
     shareObject: (objectId, rsaPublicKey) ->
@@ -38,11 +38,11 @@ define 'kryptnostic.object-sharing-service', [
 
       Promise.resolve()
         .then =>
-          @documentSearchKeyApi.getIndexPair(objectId)
+          @objectSearchKeyApi.getIndexPair(objectId)
         .then (objectIndexPair) =>
           @createObjectSharingPair(rsaPublicKey, objectIndexPair)
         .then (objectSharingPair) =>
-          @documentSearchKeyApi.uploadSharingPair(objectId, objectSharingPair)
+          @objectSearchKeyApi.uploadSharingPair(objectId, objectSharingPair)
         .catch (e) ->
           log.error('sharing object failed')
           log.error(e)

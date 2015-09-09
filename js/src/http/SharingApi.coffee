@@ -7,29 +7,33 @@ define 'kryptnostic.sharing-api', [
   'kryptnostic.logger'
 ], (require) ->
 
+  # libraries
   axios    = require 'axios'
-  Requests = require 'kryptnostic.requests'
-  Logger   = require 'kryptnostic.logger'
-  Config   = require 'kryptnostic.configuration'
   Promise  = require 'bluebird'
+
+  # Kryptnostic utils
+  Config   = require 'kryptnostic.configuration'
+  Logger   = require 'kryptnostic.logger'
+  Requests = require 'kryptnostic.requests'
 
   TYPE_PATH   = '/type'
   SHARE_PATH  = '/share'
   REVOKE_PATH = '/revoke'
   OBJECT_PATH = '/object'
   KEYS_PATH   = '/keys'
+  OBJECT_KEYS = '/objectKeys'
 
   DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
 
-  sharingUrl  = -> Config.get('servicesUrl') + '/share'
+  sharingEndpoint         = -> Config.get('servicesUrl') + SHARE_PATH
+  shareObjectUrl          = -> sharingEndpoint() + OBJECT_PATH + SHARE_PATH
+  revokeObjectUrl         = -> sharingEndpoint() + OBJECT_PATH + REVOKE_PATH
+  getIncomingSharesUrl    = -> sharingEndpoint() + OBJECT_PATH
+  removeIncomingSharesUrl = (objectId )-> sharingEndpoint() + OBJECT_PATH + '/' + objectId
+  addObjectIndexPairUrl   = -> sharingEndpoint() + KEYS_PATH
+  getObjectIndexPairUrl   = (objectId) -> sharingEndpoint() + OBJECT_PATH + '/' + objectId + OBJECT_KEYS
 
-  indexingServiceUrl = -> Configuration.get('servicesUrl') + '/indexing'
-  sharingPairUrl     = -> indexingServiceUrl() + '/sharingPair'
-  objectMetadataUrl  = -> indexingServiceUrl() + '/metadata'
-  indexPairUrl       = -> indexingServiceUrl() + '/indexPair'
-  addressFunctionUrl = -> indexingServiceUrl() + '/address'
-
-  logger      = Logger.get('SharingApi')
+  logger = Logger.get('SharingApi')
 
   #
   # HTTP calls for interacting with the /share endpoint of Kryptnostic Services.
@@ -40,7 +44,7 @@ define 'kryptnostic.sharing-api', [
     # get all incoming shares
     getIncomingShares: ->
       axios(Requests.wrapCredentials({
-        url    : sharingUrl() + OBJECT_PATH
+        url    : getIncomingSharesUrl()
         method : 'GET'
       }))
       .then (response) ->
@@ -56,7 +60,7 @@ define 'kryptnostic.sharing-api', [
         sharingRequest.validate()
 
         axios(Requests.wrapCredentials({
-          url     : sharingUrl() + OBJECT_PATH + SHARE_PATH
+          url     : shareObjectUrl()
           method  : 'POST'
           headers : _.cloneDeep(DEFAULT_HEADER)
           data    : JSON.stringify(sharingRequest)
@@ -69,7 +73,7 @@ define 'kryptnostic.sharing-api', [
       revocationRequest.validate()
 
       axios(Requests.wrapCredentials({
-        url     : sharingUrl() + OBJECT_PATH + REVOKE_PATH
+        url     : revokeObjectUrl()
         method  : 'POST'
         headers : _.cloneDeep(DEFAULT_HEADER)
         data    : JSON.stringify(revocationRequest)
@@ -77,32 +81,20 @@ define 'kryptnostic.sharing-api', [
       .then (response) ->
         logger.debug('revokeObject', response.data.data)
 
-    # register keys
-    registerKeys: (keyRegistrationRequest) ->
-      keyRegistrationRequest.validate()
-
-      axios(Requests.wrapCredentials({
-        url     : sharingUrl() + KEYS_PATH
-        method  : 'POST'
-        headers : _.cloneDeep(DEFAULT_HEADER)
-        data    : JSON.stringify(keyRegistrationRequest)
-      }))
-      .then (response) ->
-        logger.debug('registerKeys', response)
-        return response.data
-
     getObjectIndexPair: (objectId) ->
       Requests
-        .getAsUint8FromUrl(sharingPairUrl() + '/' + objectId)
+        .getAsUint8FromUrl(
+          getObjectIndexPairUrl(objectId)
+        )
         .then (response) ->
           return response
 
-    addIndexPair: (objectId, objectIndexPair) ->
+    addObjectIndexPair: (objectId, objectIndexPair) ->
       requestData = {}
       requestData[objectId] = btoa(objectIndexPair)
       axios(
         Requests.wrapCredentials({
-          url     : sharingUrl() + KEYS_PATH
+          url     : addObjectIndexPairUrl()
           method  : 'PUT'
           headers : _.cloneDeep(DEFAULT_HEADER)
           data    : JSON.stringify(requestData)

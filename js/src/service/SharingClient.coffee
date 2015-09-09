@@ -139,7 +139,7 @@ define 'kryptnostic.sharing-client', [
             encryptedSharingPair = sharedObject.encryptedSharingPair
             decryptedSharingPair = objectCryptoService.decryptToUint8Array(encryptedSharingPair)
             objectIndexPair = @engine.getObjectIndexPairFromObjectSharingPair(decryptedSharingPair)
-            @sharingApi.addIndexPair(objectId, objectIndexPair)
+            @sharingApi.addObjectIndexPair(objectId, objectIndexPair)
         )
       .catch (e) ->
         # DOTO - how do we handle failure when processing incoming shares?

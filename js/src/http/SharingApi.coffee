@@ -22,6 +22,13 @@ define 'kryptnostic.sharing-api', [
   DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
 
   sharingUrl  = -> Config.get('servicesUrl') + '/share'
+
+  indexingServiceUrl = -> Configuration.get('servicesUrl') + '/indexing'
+  sharingPairUrl     = -> indexingServiceUrl() + '/sharingPair'
+  objectMetadataUrl  = -> indexingServiceUrl() + '/metadata'
+  indexPairUrl       = -> indexingServiceUrl() + '/indexPair'
+  addressFunctionUrl = -> indexingServiceUrl() + '/address'
+
   logger      = Logger.get('SharingApi')
 
   #
@@ -31,13 +38,16 @@ define 'kryptnostic.sharing-api', [
   class SharingApi
 
     # get all incoming shares
-    getIncomingShares : ->
+    getIncomingShares: ->
       axios(Requests.wrapCredentials({
         url    : sharingUrl() + OBJECT_PATH
         method : 'GET'
       }))
       .then (response) ->
         return response.data
+
+    removeIncomingShares: ->
+      throw new Error 'removeIncomingShares() not implemented'
 
     # share an object
     shareObject: (sharingRequest) ->
@@ -80,5 +90,25 @@ define 'kryptnostic.sharing-api', [
       .then (response) ->
         logger.debug('registerKeys', response)
         return response.data
+
+    getObjectIndexPair: (objectId) ->
+      Requests
+        .getAsUint8FromUrl(sharingPairUrl() + '/' + objectId)
+        .then (response) ->
+          return response
+
+    addIndexPair: (objectId, objectIndexPair) ->
+      requestData = {}
+      requestData[objectId] = btoa(objectIndexPair)
+      axios(
+        Requests.wrapCredentials({
+          url     : sharingUrl() + KEYS_PATH
+          method  : 'PUT'
+          headers : _.cloneDeep(DEFAULT_HEADER)
+          data    : JSON.stringify(requestData)
+        })
+      )
+      .then (response) ->
+        log.debug('SharingApi.addIndexPairs()', response)
 
   return SharingApi

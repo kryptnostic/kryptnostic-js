@@ -7,7 +7,6 @@ define 'kryptnostic.sharing-client', [
   'kryptnostic.directory-api'
   'kryptnostic.kryptnostic-engine'
   'kryptnostic.logger'
-  'kryptnostic.object-sharing-service'
   'kryptnostic.revocation-request'
   'kryptnostic.rsa-crypto-service'
   'kryptnostic.sharing-api'
@@ -28,7 +27,6 @@ define 'kryptnostic.sharing-client', [
   CryptoServiceLoader     = require 'kryptnostic.crypto-service-loader'
   CryptoServiceMarshaller = require 'kryptnostic.crypto-service-marshaller'
   KryptnosticEngine       = require 'kryptnostic.kryptnostic-engine'
-  ObjectSharingService    = require 'kryptnostic.object-sharing-service'
   RevocationRequest       = require 'kryptnostic.revocation-request'
   RsaCryptoService        = require 'kryptnostic.rsa-crypto-service'
   SharingRequest          = require 'kryptnostic.sharing-request'
@@ -54,7 +52,6 @@ define 'kryptnostic.sharing-client', [
       @cryptoServiceMarshaller = new CryptoServiceMarshaller()
       @cryptoServiceLoader     = new CryptoServiceLoader()
       @credentialLoader        = new CredentialLoader()
-      @objectSharingService    = new ObjectSharingService()
 
     #
     # shares an object with the given object ID with the given set of user UUIDs

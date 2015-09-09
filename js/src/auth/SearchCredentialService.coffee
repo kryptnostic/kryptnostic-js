@@ -8,7 +8,6 @@ define 'kryptnostic.search-credential-service', [
   'kryptnostic.crypto-key-storage-api'
   'kryptnostic.credential-loader'
   'kryptnostic.crypto-service-loader'
-  'kryptnostic.aes-crypto-service'
   'kryptnostic.block-ciphertext'
 ], (require) ->
 

@@ -108,10 +108,10 @@ define 'kryptnostic.sharing-client', [
         # send off the object sharing request
         @sharingApi.shareObject(sharingRequest)
       )
-      .catch (e) ->
-        # DOTO - how do we handle failure when sharing an object?
-        log.error('failed to share object', e)
-        return undefined
+      # DOTO - how do we handle failure when sharing an object?
+      # .catch (e) ->
+      #   log.error('failed to share object', e)
+      #   return undefined
 
     revokeObject: (id, uuids) ->
       { revocationRequest } = {}
@@ -149,10 +149,10 @@ define 'kryptnostic.sharing-client', [
             objectIndexPair = @engine.getObjectIndexPairFromObjectSharingPair(decryptedSharingPair)
             @sharingApi.addObjectIndexPair(objectId, objectIndexPair)
         )
-      .catch (e) ->
-        # DOTO - how do we handle failure when processing incoming shares?
-        log.error('failed to process incoming shares', e)
-        return undefined
+      # DOTO - how do we handle failure when processing incoming shares?
+      # .catch (e) ->
+      #   log.error('failed to process incoming shares', e)
+      #   return undefined
 
 
 

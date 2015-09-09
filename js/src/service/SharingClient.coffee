@@ -78,10 +78,6 @@ define 'kryptnostic.sharing-client', [
         @directoryApi.batchGetRsaPublicKeys(uuids),
         (objectIndexPair, objectCryptoService, uuidsToRsaPublicKeys) ->
 
-        # create the object sharing pair from the object index pair, and encrypt it
-        objectSharingPair = @engine.getObjectSharingPairFromObjectIndexPair(objectIndexPair)
-        encryptedObjectSharingPair = objectCryptoService.encryptUint8Array(objectSharingPair)
-
         # transform RSA public key to Base64 seal
         seals = _.mapValues(uuidsToRsaPublicKeys, (rsaPublicKey) =>
           rsaCryptoService = new RsaCryptoService({ rsaPublicKey })
@@ -92,12 +88,24 @@ define 'kryptnostic.sharing-client', [
         )
         log.info('seals', seals)
 
+        if !objectIndexPair
+          # if we did not get an object index pair, we can omit it from the SharingRequest
+          sharingRequest = new SharingRequest({
+            id          : objectId,
+            users       : seals
+          })
+        else
+          # create the object sharing pair from the object index pair, and encrypt it
+          objectSharingPair = @engine.getObjectSharingPairFromObjectIndexPair(objectIndexPair)
+          encryptedObjectSharingPair = objectCryptoService.encryptUint8Array(objectSharingPair)
+
+          sharingRequest = new SharingRequest({
+            id          : objectId,
+            users       : seals,
+            sharingPair : encryptedObjectSharingPair
+          })
+
         # send off the object sharing request
-        sharingRequest = new SharingRequest({
-          id          : objectId,
-          users       : seals,
-          sharingPair : encryptedObjectSharingPair
-        })
         @sharingApi.shareObject(sharingRequest)
       )
       .catch (e) ->

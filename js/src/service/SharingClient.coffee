@@ -72,12 +72,11 @@ define 'kryptnostic.sharing-client', [
 
       { principal } = @credentialLoader.getCredentials()
 
-      Promise.join({
-        @sharingApi.getObjectIndexPair(objectId)
-        @cryptoServiceLoader.getObjectCryptoService(objectId)
-        @directoryApi.batchGetRsaPublicKeys(uuids)
-      })
-      .then (objectIndexPair, objectCryptoService, uuidsToRsaPublicKeys) =>
+      Promise.join(
+        @sharingApi.getObjectIndexPair(objectId),
+        @cryptoServiceLoader.getObjectCryptoService(objectId),
+        @directoryApi.batchGetRsaPublicKeys(uuids),
+        (objectIndexPair, objectCryptoService, uuidsToRsaPublicKeys) ->
 
         # create the object sharing pair from the object index pair, and encrypt it
         objectSharingPair = @engine.getObjectSharingPairFromObjectIndexPair(objectIndexPair)
@@ -100,9 +99,7 @@ define 'kryptnostic.sharing-client', [
           sharingPair : encryptedObjectSharingPair
         })
         @sharingApi.shareObject(sharingRequest)
-
-        return undefined
-
+      )
       .catch (e) ->
         # DOTO - how do we handle failure when sharing an object?
         log.error('failed to share object', e)
@@ -141,7 +138,7 @@ define 'kryptnostic.sharing-client', [
           .then (objectCryptoService) =>
             encryptedSharingPair = sharedObject.encryptedSharingPair
             decryptedSharingPair = objectCryptoService.decryptToUint8Array(encryptedSharingPair)
-            objectIndexPair      = @engine.getObjectIndexPairFromObjectSharingPair(decryptedSharingPair)
+            objectIndexPair = @engine.getObjectIndexPairFromObjectSharingPair(decryptedSharingPair)
             @sharingApi.addIndexPair(objectId, objectIndexPair)
         )
       .catch (e) ->

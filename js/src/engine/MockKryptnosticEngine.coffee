@@ -45,10 +45,10 @@ define 'kryptnostic.mock.kryptnostic-engine', [
     # sharing
     # =======
 
-    getObjectSharingPair: ({ objectIndexPair }) ->
+    getObjectSharingPairFromObjectIndexPair: ({ objectIndexPair }) ->
       return BinaryUtils.stringToUint8('doc.sharing.' + BinaryUtils.uint8ToString(objectIndexPair))
 
-    getObjectIndexPairFromSharing: ({ objectSharingPair }) ->
+    getObjectIndexPairFromObjectSharingPair: ({ objectSharingPair }) ->
       return BinaryUtils.stringToUint8('doc.upload.' + BinaryUtils.uint8ToString(objectUploadPair))
 
   return MockKryptnosticEngine

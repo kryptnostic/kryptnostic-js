@@ -5,7 +5,7 @@ define 'kryptnostic.sharing-client', [
   'kryptnostic.crypto-service-loader'
   'kryptnostic.crypto-service-marshaller'
   'kryptnostic.directory-api'
-  'kryptnostic.kryptnostic-engine'
+  'kryptnostic.kryptnostic-engine-provider'
   'kryptnostic.logger'
   'kryptnostic.revocation-request'
   'kryptnostic.rsa-crypto-service'
@@ -26,7 +26,7 @@ define 'kryptnostic.sharing-client', [
   CredentialLoader        = require 'kryptnostic.credential-loader'
   CryptoServiceLoader     = require 'kryptnostic.crypto-service-loader'
   CryptoServiceMarshaller = require 'kryptnostic.crypto-service-marshaller'
-  KryptnosticEngine       = require 'kryptnostic.kryptnostic-engine'
+  KryptnosticEngineProvider       = require 'kryptnostic.kryptnostic-engine-provider'
   RevocationRequest       = require 'kryptnostic.revocation-request'
   RsaCryptoService        = require 'kryptnostic.rsa-crypto-service'
   SharingRequest          = require 'kryptnostic.sharing-request'
@@ -46,7 +46,7 @@ define 'kryptnostic.sharing-client', [
   class SharingClient
 
     constructor: ->
-      @engine                  = new KryptnosticEngine()
+      @engine                  = KryptnosticEngineProvider.getEngine()
       @sharingApi              = new SharingApi()
       @directoryApi            = new DirectoryApi()
       @cryptoServiceMarshaller = new CryptoServiceMarshaller()

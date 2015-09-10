@@ -55,29 +55,27 @@ define 'kryptnostic.search-credential-service', [
   }
 
   encryptKey = ({ credentialType, uint8Key, cryptoServiceLoader }) ->
+    blockciphertext = new BlockCiphertext(uint8Key)
     if _.isEmpty(uint8Key)
       return uint8Key
     else if credentialType.encrypt
       cryptoServiceLoader.getObjectCryptoService(credentialType.id, { expectMiss : true })
       .then (cryptoService) ->
-        return cryptoService.encryptUint8Array(BlockCipertext(uint8Key))
+        return cryptoService.encryptUint8Array(blockciphertext)
     else
-      return BlockCipertext(uint8Key)
+      return blockciphertext
 
-      #seems that decryptKey should take in blockciphertext instead of uint8key
+  #seems that decryptKey should take in blockciphertext instead of uint8key
   decryptKey = ({ credentialType, blockCiphertext, cryptoServiceLoader }) ->
-  #decryptKey = ({ credentialType, uint8Key, cryptoServiceLoader }) ->
-    if _.isEmpty(uint8Key)
-      return uint8Key
+    if _.isEmpty(blockCiphertext)
+      return blockCiphertext
     else if credentialType.encrypt
       cryptoServiceLoader.getObjectCryptoService(credentialType.id, { expectMiss : true })
       .then (cryptoService) ->
-        #return cryptoService.decryptToUint8Array(uint8Key)
         return cryptoService.decryptToUint8Array(blockCiphertext)
     else
       uint8Key = new Uint8Array(_.map(blockCiphertext, (c) -> c.charCodeAt() ) )
       return uint8Key
-      #return uint8Key
 
   #
   # Loads or generates credentials produced by the SearchKeyGenerator, including
@@ -131,9 +129,7 @@ define 'kryptnostic.search-credential-service', [
       .then (credentialsByType) =>
         return _.mapValues(credentialsByType, (credential, typeKey) =>
           credentialType = CredentialType[typeKey]
-          #uint8Key       = credential
           blockCiphertext = credential
-          #return decryptKey({ credentialType, uint8Key, @cryptoServiceLoader }).data
           return decryptKey({ credentialType, blockCiphertext, @cryptoServiceLoader }).data
         )
 

@@ -11,8 +11,11 @@ define 'kryptnostic.search-indexing-service', [
   'kryptnostic.search.indexer'
   'kryptnostic.search.metadata-mapper'
   'kryptnostic.indexed-metadata'
-  'kryptnostic.search-credential-service' #added to load the keys stored
+  # 'kryptnostic.search-credential-service' #added to load the keys stored
   'kryptnostic.kryptnostic-engine-provider'
+  'kryptnostic.sharing-api'
+  'kryptnostic.search-key-serializer'
+  'kryptnostic.sharing-client'
 ], (require) ->
 
   # libraries

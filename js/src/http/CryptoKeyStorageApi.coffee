@@ -68,6 +68,6 @@ define 'kryptnostic.crypto-key-storage-api', [
     setClientHashFunction: (key) ->
       Requests.postUint8ToUrl(clientHashUrl(), key)
       .then (response) ->
-        log.info('uploadSharingPair')
+        log.info('setClientHashFunction')
 
   return CryptoKeyStorageApi

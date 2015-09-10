@@ -20,6 +20,7 @@ define 'kryptnostic.rsa-key-generator', [
     generateKeypair: ->
       params = { bits: RSA_KEY_SIZE, e: EXPONENT }
       log.info('generating keypair', params)
-      return @generate(params)
+      return
+      # return @generate(params)
 
   return RsaKeyGenerator

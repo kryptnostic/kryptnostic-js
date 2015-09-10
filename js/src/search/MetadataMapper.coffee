@@ -3,7 +3,7 @@ define 'kryptnostic.search.metadata-mapper', [
   'kryptnostic.logger'
   'kryptnostic.binary-utils'
   'kryptnostic.hash-function'
-  'kryptnostic.kryptnostic-engine' #MOCK#
+  'kryptnostic.kryptnostic-engine'
   'kryptnostic.search.random-index-generator'
   'kryptnostic.search-credential-service' #added to load the keys stored
 ], (require) ->
@@ -11,7 +11,7 @@ define 'kryptnostic.search.metadata-mapper', [
   Logger                = require 'kryptnostic.logger'
   BinaryUtils           = require 'kryptnostic.binary-utils'
   HashFunction          = require 'kryptnostic.hash-function'
-  KryptnosticEngine     = require 'kryptnostic.kryptnostic-engine' #MOCK#
+  KryptnosticEngine     = require 'kryptnostic.kryptnostic-engine'
   RandomIndexGenerator  = require 'kryptnostic.search.random-index-generator'
   SearchCredentialService = require 'kryptnostic.search-credential-service'
 
@@ -38,7 +38,7 @@ define 'kryptnostic.search.metadata-mapper', [
 
     constructor: ->
       @service        = new SearchCredentialService()
-      #@engine         = new KryptnosticEngine() #MOCK#
+      @engine         = @newKryptnosticEngine()
       @indexGenerator = new RandomIndexGenerator()
       @hashFunction   = HashFunction.MURMUR3_128
 
@@ -47,7 +47,7 @@ define 'kryptnostic.search.metadata-mapper', [
       .then (credentials) ->
         fhePrivateKey = credentials.FHE_PRIVATE_KEY
         searchPrivateKey = credentials.SEARCH_PRIVATE_KEY
-        engine = new KryptnosticEngine(fhePrivateKey, searchPrivateKey)
+        engine = new KryptnosticEngine({ fhePrivateKey, searchPrivateKey })
         return engine
 
     mapToKeys: ({ metadata, objectAddressMatrix, objectSearchKey }) ->

@@ -39,7 +39,7 @@ else
 fi
 
 echo; echo "copying kryptnostic client";
-cp bower_components/kryptnostic-client/index.js dist/KryptnosticClient.js;
+cp bower_components/krypto-js/KryptnosticClient.js dist/KryptnosticClient.js;
 
 echo; echo 'compiling demo.coffee...';
 ./node_modules/coffee-script/bin/coffee -c demo/demo.coffee;

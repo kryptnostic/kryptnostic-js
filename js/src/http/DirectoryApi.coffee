@@ -8,6 +8,7 @@ define 'kryptnostic.directory-api', [
   'kryptnostic.requests'
   'kryptnostic.block-ciphertext'
   'kryptnostic.validators'
+  'kryptnostic.caching-service'
 ], (require) ->
 
   axios             = require 'axios'
@@ -18,6 +19,7 @@ define 'kryptnostic.directory-api', [
   BlockCiphertext   = require 'kryptnostic.block-ciphertext'
   Promise           = require 'bluebird'
   validators        = require 'kryptnostic.validators'
+  Cache             = require 'kryptnostic.caching-service'
 
   { validateId }    = validators
 
@@ -44,6 +46,9 @@ define 'kryptnostic.directory-api', [
 
     # returns a serialized cryptoservice for the requested object
     getObjectCryptoService: (objectId) ->
+      cached = Cache.get( Cache.CRYPTO_SERVICES, objectId )
+      if cached?
+        return cached
       Promise.resolve()
       .then ->
         validateId(objectId)
@@ -54,6 +59,8 @@ define 'kryptnostic.directory-api', [
         })))
       .then (response) ->
         serializedCryptoService = response.data.data
+        if serializedCryptoService
+          Cache.store( Cache.CRYPTO_SERVICES, objectId, serializedCryptoService )
         log.info('getObjectCryptoService', { objectId })
         return serializedCryptoService
 
@@ -118,6 +125,9 @@ define 'kryptnostic.directory-api', [
 
     # gets the public key of a user in the same realm as the caller.
     getPublicKey: (uuid) ->
+      cached = Cache.get(Cache.PUBLIC_KEYS, uuid )
+      if cached?
+        return cached
       Promise.resolve(axios(Requests.wrapCredentials({
         url    : publicKeyUrl() + '/' + uuid
         method : 'GET'
@@ -125,13 +135,18 @@ define 'kryptnostic.directory-api', [
       .then (response) ->
         envelope = response.data
         log.debug('getPublicKey', { envelope })
-        return new PublicKeyEnvelope(envelope)
+        keyEnv = new PublicKeyEnvelope(envelope)
+        Cache.store( Cache.PUBLIC_KEYS, uuid, keyEnv )
+        return keyEnv
       .catch (e) ->
         return undefined
 
     # gets the user's encrypted salt.
     # request is not wrapped because the user has not auth'ed yet.
     getSalt: (uuid) ->
+      cached = Cache.get( Cache.SALTS, uuid )
+      if cached?
+        return cached
       Promise.resolve(axios({
         url    : saltUrl() + '/' + uuid
         method : 'GET'
@@ -142,7 +157,9 @@ define 'kryptnostic.directory-api', [
         if _.isEmpty(ciphertext)
           throw new Error 'incorrect credentials'
         else
-          return new BlockCiphertext(ciphertext)
+          ciphertext = new BlockCiphertext(ciphertext)
+          Cache.store( Cache.SALTS, uuid, ciphertext )
+          return ciphertext
 
     # sets the encrypted salt for a new user account.
     # manually sets principal and credential headers since user has not auth'ed yet.

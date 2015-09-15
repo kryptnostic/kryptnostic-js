@@ -26,15 +26,22 @@ define 'kryptnostic.caching-provider.jscache', [
   #
   class JscacheCachingProvider
 
-    @cache = new Cache(MAX_CACHED_OBJECTS)
+    @cache = {} # new Cache(MAX_CACHED_OBJECTS)
 
-    @store: ( key, value ) ->
-      @cache.setItem( key, value, getCacheOpts() )
+    @store: ( group, key, value ) ->
+      if !@cache[group]?
+        @cache[group] = new Cache(MAX_CACHED_OBJECTS)
+      @cache[group].setItem( key, value, getCacheOpts() )
 
-    @get: ( key ) ->
-      @cache.getItem( key )
+    @get: ( group, key ) ->
+      if @cache[group]?
+        value = @cache[group].getItem( key )
+        return value
+      return null
 
     @destroy: ->
-      @cache.clear()
+      for k, v of @cache
+        v.clear()
+      @cache = {}
 
   return JscacheCachingProvider

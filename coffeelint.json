@@ -21,7 +21,7 @@
     }
   },
   "cyclomatic_complexity": {
-    "value" : 8,
+    "value" : 9,
     "level" : "error"
   },
   "duplicate_key": {

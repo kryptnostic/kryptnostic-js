@@ -14,11 +14,14 @@ define 'kryptnostic.caching-provider.memory', [
 
     @cache = {}
 
-    @store: ( key, value ) ->
-      @cache[key] = value
+    @store: ( group, key, value ) ->
+      if !@cache[group]?
+        @cache[group] = {}
+      @cache[group][key] = value
 
-    @get: ( key ) ->
-      value = @cache[key]
+    @get: ( group, key ) ->
+      if @cache[group]?
+        value = @cache[group][key]
       if value?
         return value
       return null

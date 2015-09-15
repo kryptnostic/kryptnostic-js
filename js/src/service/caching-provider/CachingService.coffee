@@ -18,6 +18,7 @@ define 'kryptnostic.caching-service', [
   class CachingService
 
     @USERS           = 'users'
+    @UUIDS           = 'uuids'
     @SALTS           = 'user_salts'
     @PUBLIC_KEYS     = 'public_keys'
     @DEFAULT_GROUP   = 'default_group'
@@ -28,16 +29,16 @@ define 'kryptnostic.caching-service', [
       if !group? || !key? || !value?
         throw new Error 'Bad arguments to store cache!' + group + ', ' + key + ', ' + value
       cache = CachingProviderLoader.load(Config.get('cachingProvider'))
-      log.info( 'Cached ' + key + ', ' + value + 'under group ' + group )
+      log.warn( 'Cached ' + group + ': ' + key + ', ' + JSON.stringify(value) )
       cache.store( group, key, value )
 
     @get: ( group, key ) ->
       cache = CachingProviderLoader.load(Config.get('cachingProvider'))
       cached = cache.get( group, key )
       if cached?
-        log.info( 'Cache hit: ' + key )
+        log.warn( 'Cache hit: ' + group + ', ' + key + ': ' + JSON.stringify(cached) )
       else
-        log.info( 'Cache miss: ' + key )
+        log.warn( 'Cache miss: ' + group + ', ' + key )
       return cached
 
     @destroy: ->

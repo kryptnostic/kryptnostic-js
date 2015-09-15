@@ -12,7 +12,7 @@ define 'kryptnostic.logger', [
 
   PERSIST = true
 
-  log.setLevel('trace', PERSIST)
+  log.setLevel('info', PERSIST)
 
   # helpers
   # =======

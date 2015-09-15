@@ -146,7 +146,9 @@ define 'kryptnostic.directory-api', [
     getSalt: (uuid) ->
       cached = Cache.get( Cache.SALTS, uuid )
       if cached?
-        return cached
+        return Promise.resolve()
+        .then =>
+          return cached
       Promise.resolve(axios({
         url    : saltUrl() + '/' + uuid
         method : 'GET'

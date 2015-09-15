@@ -58,11 +58,12 @@ define 'kryptnostic.user-directory-api', [
           return uuid
 
     getUser: (uuid) ->
-      return Promise.resolve()
-      .then ->
-        cached = Cache.get( Cache.USERS, uuid )
-        if cached?
+      cached = Cache.get( Cache.USERS, uuid )
+      if cached?
+        return Promise.resolve()
+        .then =>
           return cached
+      return Promise.resolve()
       .then ->
         validateUuid(uuid)
         axios({

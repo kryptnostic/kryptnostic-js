@@ -17,16 +17,28 @@ define 'kryptnostic.caching-service', [
   #
   class CachingService
 
-    # store something in the cache
-    @store: ( key, value ) ->
-      cache = CachingProviderLoader.load(Config.get('cachingProvider'))
-      log.error( 'Cached ' + key + ', ' + value )
-      cache.store( key, value )
+    @USERS           = 'users'
+    @SALTS           = 'user_salts'
+    @PUBLIC_KEYS     = 'public_keys'
+    @DEFAULT_GROUP   = 'default_group'
+    @CRYPTO_SERVICES = 'object_crypto_services'
 
-    @get: ( key ) ->
+    # store something in the cache
+    @store: ( group, key, value ) ->
+      if !group? || !key? || !value?
+        throw new Error 'Bad arguments to store cache!' + group + ', ' + key + ', ' + value
       cache = CachingProviderLoader.load(Config.get('cachingProvider'))
-      log.error( 'Get ' + key )
-      cache.get( key )
+      log.info( 'Cached ' + key + ', ' + value + 'under group ' + group )
+      cache.store( group, key, value )
+
+    @get: ( group, key ) ->
+      cache = CachingProviderLoader.load(Config.get('cachingProvider'))
+      cached = cache.get( group, key )
+      if cached?
+        log.info( 'Cache hit: ' + key )
+      else
+        log.info( 'Cache miss: ' + key )
+      return cached
 
     @destroy: ->
       cache = CachingProviderLoader.load(Config.get('cachingProvider'))

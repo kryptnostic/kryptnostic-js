@@ -2,10 +2,12 @@ define [
   'require'
   'kryptnostic.caching-provider.jscache'
   'kryptnostic.caching-provider.memory'
+  'kryptnostic.caching-service'
 ], (require) ->
 
   JscacheCachingProvider        = require 'kryptnostic.caching-provider.jscache'
   InMemoryCachingProvider       = require 'kryptnostic.caching-provider.memory'
+  CachingService                = require 'kryptnostic.caching-service'
 
   [
     JscacheCachingProvider
@@ -41,13 +43,13 @@ define [
       describe '#store', ->
 
         it 'should store an arbitrary object', ->
-          CachingProvider.store( key, value )
+          CachingProvider.store( CachingService.DEFAULT_GROUP, key, value )
 
       describe '#load', ->
 
         it 'should load all stored credentials', ->
-          CachingProvider.store( key2, value2 )
-          gotten = CachingProvider.get( key2 )
+          CachingProvider.store( CachingService.DEFAULT_GROUP, key2, value2 )
+          gotten = CachingProvider.get( CachingService.DEFAULT_GROUP, key2 )
 
           expect(gotten.f).toBeDefined()
           expect(gotten.f).toBe('br')
@@ -55,12 +57,12 @@ define [
           expect(gotten.b).toBe('bz')
 
         it 'should return falsey if the object is not present', ->
-          expect( CachingProvider.get('82') ).toBeNull()
+          expect( CachingProvider.get( CachingService.DEFAULT_GROUP, '82') ).toBeNull()
 
       describe '#destroy', ->
 
         it 'should destroy all stored credentials', ->
-          CachingProvider.store( key3, value3 )
+          CachingProvider.store( CachingService.DEFAULT_GROUP, key3, value3 )
           CachingProvider.destroy()
 
-          expect( CachingProvider.get( key3 ) ).toBeNull()
+          expect( CachingProvider.get( CachingService.DEFAULT_GROUP, key3 ) ).toBeNull()

@@ -28,7 +28,7 @@ define 'kryptnostic.caching-provider.jscache', [
 
     @cache = new Cache(MAX_CACHED_OBJECTS)
 
-    @store: ( key, value, type ) ->
+    @store: ( key, value ) ->
       @cache.setItem( key, value, getCacheOpts() )
 
     @get: ( key ) ->

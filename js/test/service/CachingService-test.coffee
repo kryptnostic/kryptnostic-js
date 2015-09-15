@@ -1,75 +1,85 @@
 define [
   'require'
-  # 'kryptnostic.caching-provider.locache'
-  'kryptnostic.caching-provider.jscache'
-  'kryptnostic.caching-provider.memory'
-  # 'kryptnostic.caching-provider.local-storage'
-  # 'kryptnostic.caching-provider.session-storage'
+  'sinon'
+  'kryptnostic.caching-service'
+  'kryptnostic.user-directory-api'
 ], (require) ->
 
-  # LocacheCachingProvider        = require 'kryptnostic.caching-provider.locache'
-  JscacheCachingProvider        = require 'kryptnostic.caching-provider.jscache'
-  InMemoryCachingProvider       = require 'kryptnostic.caching-provider.memory'
-  # LocalStorageCachingProvider   = require 'kryptnostic.caching-provider.local-storage'
-  # SessionStorageCachingProvider = require 'kryptnostic.caching-provider.session-storage'
+  sinon            = require 'sinon'
+  CachingService   = require 'kryptnostic.caching-service'
+  UserDirectoryApi = require 'kryptnostic.user-directory-api'
 
-  [
-    # LocacheCachingProvider
-    JscacheCachingProvider
-    InMemoryCachingProvider
-    # LocalStorageCachingProvider
-    # SessionStorageCachingProvider
-  ].forEach ( CachingProvider ) ->
+  key   = 'testKey'
+  value = {
+    foo: 'bar',
+    bang: 'baz'
+  }
 
-    key = '1234'
-    value = {
-      foo: 'bar',
-      bang: 'baz'
-    }
+  key2   = 'testKey2'
+  value2 = {
+    f: 'br',
+    b: 'bz'
+  }
 
-    key2 = '5678'
-    value2 = {
-      f: 'br',
-      b: 'bz'
-    }
+  key3   = 'testKey3'
+  value3 = {
+    a: 'b',
+    c: 'd'
+  }
 
-    key3 = '910'
-    value3 = {
-      a: 'b',
-      c: 'd'
-    }
+  key4   = '1-2-3-4-5-6-7-8-9'
+  MOCK_USER = {
+    id   : '1-2-3-4-5-6-7-8-9'
+    name : 'christopher wallace'
+  }
 
-    beforeEach ->
-      CachingProvider.destroy()
+  # setup
+  # =====
 
-    afterEach ->
-      CachingProvider.destroy()
+  { userDirectory } = {}
 
-    describe CachingProvider.constructor.name, ->
+  beforeEach ->
+    userDirectory = new UserDirectoryApi()
+    sinon.stub(userDirectory, 'getUser', (uuid) ->
+      return Promise.resolve(_.cloneDeep( MOCK_USER ))
+    )
 
-      describe '#store', ->
+  afterEach ->
+    CachingService.destroy()
 
-        it 'should store an arbitrary object', ->
-          CachingProvider.store( key, value )
+  describe 'CachingService', ->
 
-      describe '#load', ->
+    describe '#store', ->
 
-        it 'should load all stored credentials', ->
-          CachingProvider.store( key2, value2 )
-          gotten = CachingProvider.get( key2 )
+      it 'should store an arbitrary object', ->
+        CachingService.store( key, value )
 
-          expect(gotten.f).toBeDefined()
-          expect(gotten.f).toBe('br')
-          expect(gotten.b).toBeDefined()
-          expect(gotten.b).toBe('bz')
+    describe '#load', ->
 
-        it 'should return falsey if the object is not present', ->
-          expect( CachingProvider.get('82') ).toBeNull()
+      it 'should load a stored object', ->
+        CachingService.store( key2, value2 )
+        gotten = CachingService.get( key2 )
 
-      describe '#destroy', ->
+        expect(gotten.f).toBeDefined()
+        expect(gotten.f).toBe('br')
+        expect(gotten.b).toBeDefined()
+        expect(gotten.b).toBe('bz')
 
-        it 'should destroy all stored credentials', ->
-          CachingProvider.store( key3, value3 )
-          CachingProvider.destroy()
+      it 'should return falsey if the object is not present', ->
+        expect( CachingService.get('82') ).toBeNull()
 
-          expect( CachingProvider.get( key3 ) ).toBeNull()
+    # for the future
+    #
+    # describe '#loadWithCallback', ->
+    #   it 'should fetch an object if not present', ->
+    #     gotten = CachingService.getAndLoad( key4, userDirectory.getUser( key4 ) )
+    #     expect( gotten ).toBe( MOCK_USER )
+    #     expect( CachingService.get( key4 ) ).toBe( MOCK_USER )
+
+    describe '#destroy', ->
+
+      it 'should destroy all stored credentials', ->
+        CachingService.store( key3, value3 )
+        CachingService.destroy()
+
+        expect( CachingService.get( key3 ) ).toBeNull()

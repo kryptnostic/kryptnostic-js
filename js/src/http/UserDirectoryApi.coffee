@@ -2,16 +2,19 @@ define 'kryptnostic.user-directory-api', [
   'require'
   'axios'
   'bluebird'
-  'kryptnostic.configuration'
   'kryptnostic.logger'
+  'kryptnostic.configuration'
+  'kryptnostic.caching-service'
 ], (require) ->
 
   axios         = require 'axios'
   Promise       = require 'bluebird'
   Logger        = require 'kryptnostic.logger'
   Configuration = require 'kryptnostic.configuration'
+  Cache         = require 'kryptnostic.caching-service'
 
-  getUsersUrl   = -> Configuration.get('heraclesUrl') + '/directory/users'
+  getUserUrl   = -> Configuration.get('heraclesUrl') + '/directory/user'
+  getUsersUrl  = -> Configuration.get('heraclesUrl') + '/directory/users'
 
   log = Logger.get('UserDirectoryApi')
 
@@ -33,12 +36,16 @@ define 'kryptnostic.user-directory-api', [
   #
   class UserDirectoryApi
 
+    getUserName: ( uuid ) =>
+      user = @getUser( uuid )
+      return user.name
+
     resolve: ({ email }) ->
       Promise.resolve()
       .then ->
         validateEmail(email)
         axios({
-          url    : getUsersUrl() + '/email/' + email
+          url    : getUserUrl() + '/email/' + email
           method : 'GET'
         })
       .then (response) ->
@@ -50,11 +57,14 @@ define 'kryptnostic.user-directory-api', [
           return uuid
 
     getUser: (uuid) ->
+      cached = Cache.get( Cache.USERS, uuid )
+      if cached?
+        return cached
       Promise.resolve()
       .then ->
         validateUuid(uuid)
         axios({
-          url    : getUsersUrl() + '/' + uuid
+          url    : getUserUrl() + '/' + uuid
           method : 'GET'
         })
       .then (response) ->
@@ -63,6 +73,24 @@ define 'kryptnostic.user-directory-api', [
         if user is 'null' or !user
           return undefined
         else
+          Cache.store( Cache.USERS, uuid, user )
           return user
+
+    getUsers: ( uuids ) ->
+      Promise.resolve()
+      .then ->
+        for uuid in uuids
+          validateUuid(uuid)
+        axios({
+          url    : getUsersUrl() + '/'
+          body   : uuids
+          method : 'GET'
+        })
+      .then (response) ->
+        users = response.data
+        log.info('getUsers', users)
+        if users is 'null' or !users
+          return undefined
+        return users
 
   return UserDirectoryApi

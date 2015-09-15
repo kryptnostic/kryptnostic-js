@@ -44,7 +44,7 @@ define [
         expect( gotten.b ).toBeDefined()
         expect( gotten.b ).toBe('bz')
 
-      it 'should return falsey if the object is not present', ->
+      it 'should return null if the object is not present', ->
         expect( CachingService.get( CachingService.DEFAULT_GROUP, '82') ).toBeNull()
 
     # for the future

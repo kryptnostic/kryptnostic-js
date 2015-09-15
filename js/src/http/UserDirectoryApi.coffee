@@ -37,8 +37,9 @@ define 'kryptnostic.user-directory-api', [
   class UserDirectoryApi
 
     getUserName: ( uuid ) =>
-      user = @getUser( uuid )
-      return user.name
+      @getUser( uuid )
+      .then (user) ->
+        return user.name
 
     resolve: ({ email }) ->
       Promise.resolve()
@@ -57,10 +58,11 @@ define 'kryptnostic.user-directory-api', [
           return uuid
 
     getUser: (uuid) ->
-      cached = Cache.get( Cache.USERS, uuid )
-      if cached?
-        return cached
-      Promise.resolve()
+      return Promise.resolve()
+      .then ->
+        cached = Cache.get( Cache.USERS, uuid )
+        if cached?
+          return cached
       .then ->
         validateUuid(uuid)
         axios({
@@ -82,9 +84,9 @@ define 'kryptnostic.user-directory-api', [
         for uuid in uuids
           validateUuid(uuid)
         axios({
-          url    : getUsersUrl() + '/'
-          body   : uuids
-          method : 'GET'
+          url    : getUsersUrl()
+          method : 'POST'
+          data   : uuids
         })
       .then (response) ->
         users = response.data

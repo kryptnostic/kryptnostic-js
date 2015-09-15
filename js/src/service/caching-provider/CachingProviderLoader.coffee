@@ -1,11 +1,8 @@
 define 'kryptnostic.caching-provider-loader', [
   'require'
   'kryptnostic.logger'
-  # 'kryptnostic.caching-provider.locache'
   'kryptnostic.caching-provider.jscache'
   'kryptnostic.caching-provider.memory'
-  # 'kryptnostic.caching-provider.local-storage'
-  # 'kryptnostic.caching-provider.session-storage'
 ], (require) ->
 
   Logger  = require 'kryptnostic.logger'

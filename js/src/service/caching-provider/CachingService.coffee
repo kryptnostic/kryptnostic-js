@@ -20,6 +20,7 @@ define 'kryptnostic.caching-service', [
     @USERS           = 'users'
     @UUIDS           = 'uuids'
     @SALTS           = 'user_salts'
+    @OBJECTS         = 'objects'
     @PUBLIC_KEYS     = 'public_keys'
     @DEFAULT_GROUP   = 'default_group'
     @CRYPTO_SERVICES = 'object_crypto_services'
@@ -40,6 +41,28 @@ define 'kryptnostic.caching-service', [
       else
         log.warn( 'Cache miss: ' + group + ', ' + key )
       return cached
+
+    # search for a set of keys in a particular group
+    # returns an object:
+    #   { uncached: [uncachedKeys], cached: [cachedObjects] }
+    @search: ( group, keys ) ->
+      cache = CachingProviderLoader.load(Config.get('cachingProvider'))
+      results = {}
+      results['uncached'] = []
+      results['cached'] = []
+      for key in keys
+        cached = cache.get( group, key )
+        if cached?
+          list = results['cached']
+          list.push(cached)
+          results['cached'] = list
+          log.warn('search hit: ' + group + ", " + key)
+        else
+          uncached = results['uncached']
+          uncached.push(key)
+          results['uncached'] = uncached
+          log.warn('search miss: ' + group + ", " + key)
+      return results
 
     @destroy: ->
       cache = CachingProviderLoader.load(Config.get('cachingProvider'))

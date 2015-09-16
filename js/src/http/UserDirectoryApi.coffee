@@ -61,7 +61,7 @@ define 'kryptnostic.user-directory-api', [
       cached = Cache.get( Cache.USERS, uuid )
       if cached?
         return Promise.resolve()
-        .then =>
+        .then ->
           return cached
       return Promise.resolve()
       .then ->

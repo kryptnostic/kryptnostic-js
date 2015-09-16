@@ -70,14 +70,14 @@ define 'kryptnostic.sharing-client', [
       { principal } = @credentialLoader.getCredentials()
 
       Promise.join(
-        @sharingApi.getObjectIndexPair(objectId),
-        @cryptoServiceLoader.getObjectCryptoService(objectId),
-        @directoryApi.batchGetRsaPublicKeys(uuids),
+        @sharingApi.getObjectIndexPair( objectId ),
+        @cryptoServiceLoader.getObjectCryptoService( objectId ),
+        @directoryApi.getPublicKeys( uuids ),
         (objectIndexPair, objectCryptoService, uuidsToRsaPublicKeys) ->
 
         # transform RSA public key to Base64 seal
         seals = _.mapValues(uuidsToRsaPublicKeys, (rsaPublicKey) =>
-          rsaCryptoService = new RsaCryptoService({ rsaPublicKey })
+          rsaCryptoService = new RsaCryptoService({ rsaPublicKey.toRsaPublicKey() })
           marshalledCrypto = @cryptoServiceMarshaller.marshall(objectCryptoService)
           seal             = rsaCryptoService.encrypt(marshalledCrypto)
           sealBase64       = btoa(seal)

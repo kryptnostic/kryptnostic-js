@@ -48,7 +48,9 @@ define 'kryptnostic.directory-api', [
     getObjectCryptoService: (objectId) ->
       cached = Cache.get( Cache.CRYPTO_SERVICES, objectId )
       if cached?
-        return cached
+        return Promise.resolve()
+        .then ->
+          return cached
       Promise.resolve()
       .then ->
         validateId(objectId)
@@ -127,7 +129,9 @@ define 'kryptnostic.directory-api', [
     getPublicKey: (uuid) ->
       cached = Cache.get(Cache.PUBLIC_KEYS, uuid )
       if cached?
-        return cached
+        return Promise.resolve()
+        .then ->
+          return cached
       Promise.resolve(axios(Requests.wrapCredentials({
         url    : publicKeyUrl() + '/' + uuid
         method : 'GET'
@@ -162,28 +166,21 @@ define 'kryptnostic.directory-api', [
     # @param {Array.<UUID>} - a set user UUIDs for which to get public keys
     # @return {Object.<UUID, RsaPublicKey>} - a map of UUIDs to RSA public keys
     #
-    batchGetRsaPublicKeys: (uuids) ->
-      Promise.resolve(
-        axios(
-          Requests.wrapCredentials({
-            url    : publicKeyUrl()
-            method : 'POST'
-            data   : JSON.stringify(uuids)
-          })
-        )
-      )
+    getPublicKeys: ( uuids ) ->
+      Promise.resolve(axios(Requests.wrapCredentials({
+        url    : publicKeyUrl()
+        data   : uuids
+        method : 'POST'
+      })))
       .then (response) ->
-        uuidsToPublicKeyEnvelopes = response.data
-        log.debug('batchGetRsaPublicKeys', { uuidsToPublicKeyEnvelopes })
-
+        uuidsToKeysMap = response.data
+        log.warn('getPublicKeys', { uuidsToKeysMap })
         # transform public keys to RSA public keys
-        uuidsToRsaPublicKeys = _.chain(uuidsToPublicKeyEnvelopes)
+        result = _.chain(uuidsToPublicKeyEnvelopes)
           .mapValues((envelope) ->
-            publicKeyEnvelope = new PublicKeyEnvelope(envelope)
-            return publicKeyEnvelope.toRsaPublicKey()
+            return new PublicKeyEnvelope(envelope)
           )
-        return uuidsToRsaPublicKeys
-
+        return result
       .catch (e) ->
         return undefined
 
@@ -193,7 +190,7 @@ define 'kryptnostic.directory-api', [
       cached = Cache.get( Cache.SALTS, uuid )
       if cached?
         return Promise.resolve()
-        .then =>
+        .then ->
           return cached
       Promise.resolve(axios({
         url    : saltUrl() + '/' + uuid

@@ -63,7 +63,7 @@ define 'kryptnostic.directory-api', [
         serializedCryptoService = response.data.data
         if serializedCryptoService
           Cache.store( Cache.CRYPTO_SERVICES, objectId, serializedCryptoService )
-        log.info('getObjectCryptoService', { objectId })
+        log.debug('getObjectCryptoService', { objectId })
         return serializedCryptoService
 
     # stores a serialized cryptoservice for the requested object
@@ -80,7 +80,7 @@ define 'kryptnostic.directory-api', [
           headers : _.cloneDeep(DEFAULT_HEADERS)
         })))
       .then (response) ->
-        log.info('setObjectCryptoService', { objectId })
+        log.debug('setObjectCryptoService', { objectId })
         return response.data
 
     # gets encrypted RSA private keys for the current user
@@ -153,7 +153,7 @@ define 'kryptnostic.directory-api', [
       })))
       .then (response) ->
         uuidsToKeysMap = response.data
-        log.warn('getPublicKeys', { uuidsToKeysMap })
+        log.debug('getPublicKeys', { uuidsToKeysMap })
         result = {}
         for uuid, key of uuidsToKeysMap
           result[uuid] = new PublicKeyEnvelope( key )
@@ -176,7 +176,7 @@ define 'kryptnostic.directory-api', [
       }))
       .then (response) ->
         ciphertext = response.data
-        log.info('ciphertext', ciphertext)
+        log.debug('ciphertext', ciphertext)
         if _.isEmpty(ciphertext)
           throw new Error 'incorrect credentials'
         else

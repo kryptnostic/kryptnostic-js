@@ -30,16 +30,16 @@ define 'kryptnostic.caching-service', [
       if !group? || !key? || !value?
         throw new Error 'Bad arguments to store cache!' + group + ', ' + key + ', ' + value
       cache = CachingProviderLoader.load(Config.get('cachingProvider'))
-      log.warn( 'Cached ' + group + ': ' + key + ', ' + JSON.stringify(value) )
+      log.debug( 'Cached ' + group + ': ' + key + ', ' + JSON.stringify(value) )
       cache.store( group, key, value )
 
     @get: ( group, key ) ->
       cache = CachingProviderLoader.load(Config.get('cachingProvider'))
       cached = cache.get( group, key )
       if cached?
-        log.warn( 'Cache hit: ' + group + ', ' + key + ': ' + JSON.stringify(cached) )
+        log.debug( 'Cache hit: ' + group + ', ' + key + ': ' + JSON.stringify(cached) )
       else
-        log.warn( 'Cache miss: ' + group + ', ' + key )
+        log.debug( 'Cache miss: ' + group + ', ' + key )
       return cached
 
     # search for a set of keys in a particular group
@@ -56,12 +56,12 @@ define 'kryptnostic.caching-service', [
           list = results['cached']
           list.push(cached)
           results['cached'] = list
-          log.warn('search hit: ' + group + ", " + key)
+          log.debug('search hit: ' + group + ', ' + key)
         else
           uncached = results['uncached']
           uncached.push(key)
           results['uncached'] = uncached
-          log.warn('search miss: ' + group + ", " + key)
+          log.debug('search miss: ' + group + ', ' + key)
       return results
 
     @destroy: ->

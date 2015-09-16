@@ -79,7 +79,14 @@ define 'kryptnostic.user-directory-api', [
           Cache.store( Cache.USERS, uuid, user )
           return user
 
-    getUsers: ( uuids ) ->
+    getUsers: ( initialUUIDs ) ->
+      searchResults = Cache.search( Cache.USERS, initialUUIDs )
+      uuids = searchResults['uncached']
+      cached = searchResults['cached']
+      if uuids.length == 0
+        return Promise.resolve()
+        .then ->
+          return cached
       Promise.resolve()
       .then ->
         for uuid in uuids
@@ -94,6 +101,8 @@ define 'kryptnostic.user-directory-api', [
         log.info('getUsers', users)
         if users is 'null' or !users
           return undefined
-        return users
+        for user in users
+          Cache.store( Cache.USERS, user.id, user )
+        return cached.concat(users)
 
   return UserDirectoryApi

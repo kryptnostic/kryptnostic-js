@@ -55,9 +55,7 @@ define 'kryptnostic.sharing-client', [
       .then =>
         @cryptoServiceLoader.getObjectCryptoService(id)
       .then (cryptoService) =>
-        promiseMap = _.mapValues(_.object(uuids), (empty, uuid) =>
-          return @directoryApi.getPublicKey(uuid)
-        )
+        promiseMap = @directoryApi.getPublicKeys( uuids )
 
         Promise.props(promiseMap)
         .then (uuidsToKeyEnvelopes) =>

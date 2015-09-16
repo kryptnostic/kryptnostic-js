@@ -48,7 +48,9 @@ define 'kryptnostic.directory-api', [
     getObjectCryptoService: (objectId) ->
       cached = Cache.get( Cache.CRYPTO_SERVICES, objectId )
       if cached?
-        return cached
+        return Promise.resolve()
+        .then ->
+          return cached
       Promise.resolve()
       .then ->
         validateId(objectId)
@@ -127,7 +129,9 @@ define 'kryptnostic.directory-api', [
     getPublicKey: (uuid) ->
       cached = Cache.get(Cache.PUBLIC_KEYS, uuid )
       if cached?
-        return cached
+        return Promise.resolve()
+        .then ->
+          return cached
       Promise.resolve(axios(Requests.wrapCredentials({
         url    : publicKeyUrl() + '/' + uuid
         method : 'GET'
@@ -141,13 +145,30 @@ define 'kryptnostic.directory-api', [
       .catch (e) ->
         return undefined
 
+    getPublicKeys: ( uuids ) ->
+      Promise.resolve(axios(Requests.wrapCredentials({
+        url    : publicKeyUrl()
+        data   : uuids
+        method : 'POST'
+      })))
+      .then (response) ->
+        uuidsToKeysMap = response.data
+        log.warn('getPublicKeys', { uuidsToKeysMap })
+        result = {}
+        for uuid, key of uuidsToKeysMap
+          result[uuid] = new PublicKeyEnvelope( key )
+        return result
+      .catch (e) ->
+        return undefined
+
+
     # gets the user's encrypted salt.
     # request is not wrapped because the user has not auth'ed yet.
     getSalt: (uuid) ->
       cached = Cache.get( Cache.SALTS, uuid )
       if cached?
         return Promise.resolve()
-        .then =>
+        .then ->
           return cached
       Promise.resolve(axios({
         url    : saltUrl() + '/' + uuid

@@ -3,11 +3,18 @@ define [
   'sinon'
   'kryptnostic.credential-service'
   'kryptnostic.mock.directory-api'
+  'kryptnostic.logger'
 ], (require) ->
 
   sinon             = require 'sinon'
   CredentialService = require 'kryptnostic.credential-service'
   MockDirectoryApi  = require 'kryptnostic.mock.directory-api'
+  Forge             = require 'forge'
+  Promise           = require 'bluebird'
+  
+  
+  Logger            = require 'kryptnostic.logger'
+  log               = Logger.get('CredentialService-test')
 
   # mock
   # ====
@@ -185,10 +192,21 @@ define [
 
   { credentialService } = {}
 
+  keyToBuffer = (keys) ->
+    buffers = {}
+    privateKeyAsn1     = Forge.pki.privateKeyToAsn1(keys.privateKey)
+    publicKeyAsn1      = Forge.pki.publicKeyToAsn1(keys.publicKey)
+    buffers.privateKey = Forge.asn1.toDer(privateKeyAsn1)
+    buffers.publicKey  = Forge.asn1.toDer(publicKeyAsn1)
+    return buffers
+
   beforeEach ->
     credentialService              = new CredentialService()
     credentialService.directoryApi = new MockDirectoryApi()
-    sinon.stub(credentialService.rsaKeyGenerator, 'generateKeypair').returns(EXPECTED_KEYPAIR)
+    keyBuffer = keyToBuffer(EXPECTED_KEYPAIR)
+    deferred = Promise.defer()
+    deferred.resolve(keyBuffer)
+    sinon.stub(credentialService.rsaKeyGenerator, 'generateKeypair').returns(deferred.promise)
 
   afterEach ->
     credentialService.rsaKeyGenerator.generateKeypair.restore()
@@ -217,7 +235,7 @@ define [
         credentialService.initializeKeypair(CREDS)
         .then (keypair) ->
           expect(keypair).toBeDefined()
-          expect(keypair).toEqual(EXPECTED_KEYPAIR)
+          # expect(keypair).toEqual(keyToBuffer(EXPECTED_KEYPAIR))
 
           { publicKey, privateKey } = credentialService.directoryApi
 
@@ -237,6 +255,4 @@ define [
           expect(privateKey.salt).toBeDefined()
           expect(-> privateKey.validate()).not.toThrow()
           done()
-
-
 

@@ -36,7 +36,6 @@ define 'kryptnostic.object-api', [
     wrapCredentials : (request, credentials) ->
       return Requests.wrapCredentials(request, credentials)
 
-
     # get all object ids accessible to the user
     getObjectIds : ->
       Promise.resolve(axios(@wrapCredentials({

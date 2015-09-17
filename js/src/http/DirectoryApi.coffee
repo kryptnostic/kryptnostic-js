@@ -8,6 +8,7 @@ define 'kryptnostic.directory-api', [
   'kryptnostic.requests'
   'kryptnostic.block-ciphertext'
   'kryptnostic.validators'
+  'kryptnostic.caching-service'
 ], (require) ->
 
   axios             = require 'axios'
@@ -18,6 +19,7 @@ define 'kryptnostic.directory-api', [
   BlockCiphertext   = require 'kryptnostic.block-ciphertext'
   Promise           = require 'bluebird'
   validators        = require 'kryptnostic.validators'
+  Cache             = require 'kryptnostic.caching-service'
 
   { validateId }    = validators
 
@@ -44,6 +46,11 @@ define 'kryptnostic.directory-api', [
 
     # returns a serialized cryptoservice for the requested object
     getObjectCryptoService: (objectId) ->
+      cached = Cache.get( Cache.CRYPTO_SERVICES, objectId )
+      if cached?
+        return Promise.resolve()
+        .then ->
+          return cached
       Promise.resolve()
       .then ->
         validateId(objectId)
@@ -54,7 +61,9 @@ define 'kryptnostic.directory-api', [
         })))
       .then (response) ->
         serializedCryptoService = response.data.data
-        log.info('getObjectCryptoService', { objectId })
+        if serializedCryptoService
+          Cache.store( Cache.CRYPTO_SERVICES, objectId, serializedCryptoService )
+        log.debug('getObjectCryptoService', { objectId })
         return serializedCryptoService
 
     # stores a serialized cryptoservice for the requested object
@@ -71,7 +80,7 @@ define 'kryptnostic.directory-api', [
           headers : _.cloneDeep(DEFAULT_HEADERS)
         })))
       .then (response) ->
-        log.info('setObjectCryptoService', { objectId })
+        log.debug('setObjectCryptoService', { objectId })
         return response.data
 
     # gets encrypted RSA private keys for the current user
@@ -118,6 +127,11 @@ define 'kryptnostic.directory-api', [
 
     # gets the public key of a user in the same realm as the caller.
     getPublicKey: (uuid) ->
+      cached = Cache.get(Cache.PUBLIC_KEYS, uuid )
+      if cached?
+        return Promise.resolve()
+        .then ->
+          return cached
       Promise.resolve(axios(Requests.wrapCredentials({
         url    : publicKeyUrl() + '/' + uuid
         method : 'GET'
@@ -125,7 +139,9 @@ define 'kryptnostic.directory-api', [
       .then (response) ->
         envelope = response.data
         log.debug('getPublicKey', { envelope })
-        return new PublicKeyEnvelope(envelope)
+        keyEnv = new PublicKeyEnvelope(envelope)
+        Cache.store( Cache.PUBLIC_KEYS, uuid, keyEnv )
+        return keyEnv
       .catch (e) ->
         return undefined
 
@@ -143,6 +159,24 @@ define 'kryptnostic.directory-api', [
       .catch (e) ->
         return undefined
 
+    getPublicKeys: ( uuids ) ->
+      Promise.resolve(axios(Requests.wrapCredentials({
+        url    : publicKeyUrl()
+        data   : uuids
+        method : 'POST'
+      })))
+      .then (response) ->
+        uuidsToKeysMap = response.data
+        log.debug('getPublicKeys', { uuidsToKeysMap })
+        # transform public keys to RSA public keys
+        result = _.chain(uuidsToPublicKeyEnvelopes)
+          .mapValues((envelope) ->
+            return new PublicKeyEnvelope(envelope)
+          )
+        return result
+      .catch (e) ->
+        return undefined
+
     #
     # gets a set of public keys for the given user UUIDs in the form of PublicKeyEnvelope, where
     # each public key will become an RSA public key via PublicKeyEnvelope.toRsaPublicKey()
@@ -150,45 +184,45 @@ define 'kryptnostic.directory-api', [
     # @param {Array.<UUID>} - a set user UUIDs for which to get public keys
     # @return {Object.<UUID, RsaPublicKey>} - a map of UUIDs to RSA public keys
     #
-    batchGetRsaPublicKeys: (uuids) ->
-      Promise.resolve(
-        axios(
-          Requests.wrapCredentials({
-            url    : publicKeyUrl()
-            method : 'POST'
-            data   : JSON.stringify(uuids)
-          })
-        )
-      )
+    batchGetPublicKeys: ( uuids ) ->
+      Promise.resolve(axios(Requests.wrapCredentials({
+        url    : publicKeyUrl()
+        data   : uuids
+        method : 'POST'
+      })))
       .then (response) ->
-        uuidsToPublicKeyEnvelopes = response.data
-        log.debug('batchGetRsaPublicKeys', { uuidsToPublicKeyEnvelopes })
-
+        uuidsToKeysMap = response.data
+        log.debug('getPublicKeys', { uuidsToKeysMap })
         # transform public keys to RSA public keys
-        uuidsToRsaPublicKeys = _.chain(uuidsToPublicKeyEnvelopes)
+        result = _.chain(uuidsToPublicKeyEnvelopes)
           .mapValues((envelope) ->
-            publicKeyEnvelope = new PublicKeyEnvelope(envelope)
-            return publicKeyEnvelope.toRsaPublicKey()
+            return new PublicKeyEnvelope(envelope).toRsaPublicKey()
           )
-        return uuidsToRsaPublicKeys
-
+        return result
       .catch (e) ->
         return undefined
 
     # gets the user's encrypted salt.
     # request is not wrapped because the user has not auth'ed yet.
     getSalt: (uuid) ->
+      cached = Cache.get( Cache.SALTS, uuid )
+      if cached?
+        return Promise.resolve()
+        .then ->
+          return cached
       Promise.resolve(axios({
         url    : saltUrl() + '/' + uuid
         method : 'GET'
       }))
       .then (response) ->
         ciphertext = response.data
-        log.info('ciphertext', ciphertext)
+        log.debug('ciphertext', ciphertext)
         if _.isEmpty(ciphertext)
           throw new Error 'incorrect credentials'
         else
-          return new BlockCiphertext(ciphertext)
+          ciphertext = new BlockCiphertext(ciphertext)
+          Cache.store( Cache.SALTS, uuid, ciphertext )
+          return ciphertext
 
     # sets the encrypted salt for a new user account.
     # manually sets principal and credential headers since user has not auth'ed yet.

@@ -2,16 +2,19 @@ define 'kryptnostic.user-directory-api', [
   'require'
   'axios'
   'bluebird'
-  'kryptnostic.configuration'
   'kryptnostic.logger'
+  'kryptnostic.configuration'
+  'kryptnostic.caching-service'
 ], (require) ->
 
   axios         = require 'axios'
   Promise       = require 'bluebird'
   Logger        = require 'kryptnostic.logger'
   Configuration = require 'kryptnostic.configuration'
+  Cache         = require 'kryptnostic.caching-service'
 
-  getUsersUrl   = -> Configuration.get('heraclesUrl') + '/directory/users'
+  getUserUrl   = -> Configuration.get('heraclesUrl') + '/directory/user'
+  getUsersUrl  = -> Configuration.get('heraclesUrl') + '/directory/users'
 
   log = Logger.get('UserDirectoryApi')
 
@@ -33,12 +36,17 @@ define 'kryptnostic.user-directory-api', [
   #
   class UserDirectoryApi
 
+    getUserName: ( uuid ) =>
+      @getUser( uuid )
+      .then (user) ->
+        return user.name
+
     resolve: ({ email }) ->
       Promise.resolve()
       .then ->
         validateEmail(email)
         axios({
-          url    : getUsersUrl() + '/email/' + email
+          url    : getUserUrl() + '/email/' + email
           method : 'GET'
         })
       .then (response) ->
@@ -50,11 +58,16 @@ define 'kryptnostic.user-directory-api', [
           return uuid
 
     getUser: (uuid) ->
-      Promise.resolve()
+      cached = Cache.get( Cache.USERS, uuid )
+      if cached?
+        return Promise.resolve()
+        .then ->
+          return cached
+      return Promise.resolve()
       .then ->
         validateUuid(uuid)
         axios({
-          url    : getUsersUrl() + '/' + uuid
+          url    : getUserUrl() + '/' + uuid
           method : 'GET'
         })
       .then (response) ->
@@ -63,6 +76,33 @@ define 'kryptnostic.user-directory-api', [
         if user is 'null' or !user
           return undefined
         else
+          Cache.store( Cache.USERS, uuid, user )
           return user
+
+    getUsers: ( initialUUIDs ) ->
+      searchResults = Cache.search( Cache.USERS, initialUUIDs )
+      uuids = searchResults['uncached']
+      cached = searchResults['cached']
+      if uuids.length == 0
+        return Promise.resolve()
+        .then ->
+          return cached
+      Promise.resolve()
+      .then ->
+        for uuid in uuids
+          validateUuid(uuid)
+        axios({
+          url    : getUsersUrl()
+          method : 'POST'
+          data   : uuids
+        })
+      .then (response) ->
+        users = response.data
+        log.info('getUsers', users)
+        if users is 'null' or !users
+          return undefined
+        for user in users
+          Cache.store( Cache.USERS, user.id, user )
+        return cached.concat(users)
 
   return UserDirectoryApi

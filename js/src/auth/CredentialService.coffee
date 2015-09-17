@@ -84,20 +84,22 @@ define 'kryptnostic.credential-service', [
       .then ->
         Promise.resolve(notifier(AuthenticationStage.RSA_KEYGEN))
       .then =>
-        keypair        = @rsaKeyGenerator.generateKeypair()
+        @rsaKeyGenerator.generateKeypair()
+      .then (keypairBuffer) =>
         passwordCrypto = new PasswordCryptoService()
 
-        privateKeyAsn1       = Forge.pki.privateKeyToAsn1(keypair.privateKey)
-        privateKeyBuffer     = Forge.asn1.toDer(privateKeyAsn1)
-        serializedPrivateKey = privateKeyBuffer.data
-
+        serializedPrivateKey = keypairBuffer.privateKey.data
         privateKey = passwordCrypto.encrypt(serializedPrivateKey, password)
 
-        publicKeyAsn1       = Forge.pki.publicKeyToAsn1(keypair.publicKey)
-        publicKeyBuffer     = Forge.asn1.toDer(publicKeyAsn1)
-        serializedPublicKey = publicKeyBuffer.data
-
+        serializedPublicKey = keypairBuffer.publicKey.data
         publicKey = PublicKeyEnvelope.createFromBuffer(serializedPublicKey)
+
+        keypair              = {}
+        privateKeyAsn1       = Forge.asn1.fromDer(serializedPrivateKey)
+        keypair.privateKey   = Forge.pki.privateKeyFromAsn1(privateKeyAsn1)
+        publicKeyAsn1        = Forge.asn1.fromDer(serializedPublicKey)
+        keypair.publicKey    = Forge.pki.publicKeyFromAsn1(publicKeyAsn1)
+        return keypair
       .then =>
         @directoryApi.setPrivateKey(privateKey)
       .then =>

@@ -5,25 +5,17 @@ define 'kryptnostic.rsa-key-generator', [
   'bluebird'
 ], (require) ->
 
-  Forge        = require 'forge'
-  Logger       = require 'kryptnostic.logger'
-  Promise      = require 'bluebird'
+  Forge            = require 'forge'
+  Logger           = require 'kryptnostic.logger'
+  Promise          = require 'bluebird'
   
-  log          = Logger.get('RsaKeyGenerator')
+  log              = Logger.get('RsaKeyGenerator')
   
-  RSA_KEY_SIZE = 4096
-  EXPONENT     = 0x10001
+  RSA_KEY_SIZE     = 4096
+  EXPONENT_NUM     = 0x10001
+  EXPONENT_BIG_INT = new Uint8Array([1, 0, 1])
 
   class RsaKeyGenerator
-
-    
-    generate: (params) ->
-      if window.crypto?.subtle?
-        return @webCryptoGenerate(params)
-      else if window.msCrypto?.subtle?
-        return @ieWebCryptoGenerate(params)
-      else
-        return @forgeGenerate(params)
 
     forgeGenerate: (params) ->
       Promise.resolve()
@@ -43,7 +35,7 @@ define 'kryptnostic.rsa-key-generator', [
         window.crypto.subtle.generateKey( {
           name: 'RSA-OAEP'
           modulusLength: params.bits
-          publicExponent: new Uint8Array([1, 0, 1]) # constants
+          publicExponent: params.e
           hash: { name: 'SHA-256' }
         }, true, ['encrypt', 'decrypt'])
       .then (keys) ->
@@ -68,15 +60,14 @@ define 'kryptnostic.rsa-key-generator', [
         keyOperation = window.msCrypto.subtle.generateKey( {
           name: 'RSA-OAEP'
           modulusLength: params.bits
-          publicExponent: new Uint8Array([1, 0, 1])
+          publicExponent: params.e
           hash: { name: 'SHA-256' }
         }, true, ['encrypt', 'decrypt'])
         keyOperation.onerror = ->
-          log.error('sad failure')
+          log.error('Failed to generate RSA keys using IE web crypto')
 
         keyOperation.oncomplete = ->
           keyPair = keyOperation.result
-          log.error(keyPair)
           return deferred.resolve(keyPair)
         
         return deferred.promise
@@ -84,12 +75,16 @@ define 'kryptnostic.rsa-key-generator', [
       .then (keys) ->
         deferred1 = Promise.defer()
         keyOpPrivate = window.msCrypto.subtle.exportKey('pkcs8', keys.privateKey)
+        keyOpPrivate.onerror = ->
+          log.error('Failed to export RSA private key using IE web crypto')
         keyOpPrivate.oncomplete = ->
           return deferred1.resolve(Forge.util.createBuffer(keyOpPrivate.result))
         privateKeyPromise = deferred1.promise
 
         deferred2 = Promise.defer()
         keyOpPublic = window.msCrypto.subtle.exportKey('spki', keys.publicKey)
+        keyOpPublic.onerror = ->
+          log.error('Failed to export RSA public key using IE web crypto')
         keyOpPublic.oncomplete = ->
           return deferred2.resolve(Forge.util.createBuffer(keyOpPublic.result))
         publicKeyPromise = deferred2.promise
@@ -99,31 +94,24 @@ define 'kryptnostic.rsa-key-generator', [
           keyPair.publicKey  = publicKey
           return keyPair
         )
-     
-    
 
     # Generate public and private RSA keys
     # returns a Promise object with private and public keys in Forge buffer objects
     generateKeypair: ->
-      params = { bits: RSA_KEY_SIZE, e: EXPONENT }
-      log.info('generating keypair', params)
-      return @generate(params)
-    
-    ##########
-    ## Helpers
-    ##########
-
-    numToUnsignedUint8Array: (num) ->
-      hexString = num.toString(2)
-      binary    = new Uint8Array(hexString.length)
-      for i in [0..hexString.length]
-        binary[i] = hexString[i]
-      uLength     = Math.ceil(binary.length / 8)
-      unsignedInt = new Uint8Array(uLength)
-      for i in [0..uLength]
-        uint8          = binary.subarray(i * 8, i * 8 + 7)
-        # Note: this shit is broken. Should probably hard-code constants.
-        unsignedInt[i] = parseInt(uint8, 2)
-      return unsignedInt
+      if window.crypto?.subtle?
+        params = { bits: RSA_KEY_SIZE, e: EXPONENT_BIG_INT }
+        log.info('generating keypair', params)
+        log.debug('using web crypto API to generate keypair')
+        return @webCryptoGenerate(params)
+      else if window.msCrypto?.subtle?
+        params = { bits: RSA_KEY_SIZE, e: EXPONENT_BIG_INT }
+        log.info('generating keypair', params)
+        log.debug('using IE 11 web crypto API to generate keypair')
+        return @ieWebCryptoGenerate(params)
+      else
+        params = { bits: RSA_KEY_SIZE, e: EXPONENT_NUM }
+        log.info('generating keypair', params)
+        log.debug('using Forge to generate keypair')
+        return @forgeGenerate(params)
 
   return RsaKeyGenerator

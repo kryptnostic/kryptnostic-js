@@ -159,13 +159,6 @@ define 'kryptnostic.directory-api', [
       .catch (e) ->
         return undefined
 
-    #
-    # gets a set of public keys for the given user UUIDs in the form of PublicKeyEnvelope, where
-    # each public key will become an RSA public key via PublicKeyEnvelope.toRsaPublicKey()
-    #
-    # @param {Array.<UUID>} - a set user UUIDs for which to get public keys
-    # @return {Object.<UUID, RsaPublicKey>} - a map of UUIDs to RSA public keys
-    #
     getPublicKeys: ( uuids ) ->
       Promise.resolve(axios(Requests.wrapCredentials({
         url    : publicKeyUrl()
@@ -179,6 +172,31 @@ define 'kryptnostic.directory-api', [
         result = _.chain(uuidsToPublicKeyEnvelopes)
           .mapValues((envelope) ->
             return new PublicKeyEnvelope(envelope)
+          )
+        return result
+      .catch (e) ->
+        return undefined
+
+    #
+    # gets a set of public keys for the given user UUIDs in the form of PublicKeyEnvelope, where
+    # each public key will become an RSA public key via PublicKeyEnvelope.toRsaPublicKey()
+    #
+    # @param {Array.<UUID>} - a set user UUIDs for which to get public keys
+    # @return {Object.<UUID, RsaPublicKey>} - a map of UUIDs to RSA public keys
+    #
+    batchGetPublicKeys: ( uuids ) ->
+      Promise.resolve(axios(Requests.wrapCredentials({
+        url    : publicKeyUrl()
+        data   : uuids
+        method : 'POST'
+      })))
+      .then (response) ->
+        uuidsToKeysMap = response.data
+        log.debug('getPublicKeys', { uuidsToKeysMap })
+        # transform public keys to RSA public keys
+        result = _.chain(uuidsToPublicKeyEnvelopes)
+          .mapValues((envelope) ->
+            return new PublicKeyEnvelope(envelope).toRsaPublicKey()
           )
         return result
       .catch (e) ->

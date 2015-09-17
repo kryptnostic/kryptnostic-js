@@ -85,7 +85,7 @@ define 'kryptnostic.credential-service', [
         Promise.resolve(notifier(AuthenticationStage.RSA_KEYGEN))
       .then =>
         @rsaKeyGenerator.generateKeypair()
-      .then (keypairBuffer) =>
+      .then (keypairBuffer) ->
         passwordCrypto       = new PasswordCryptoService()
         
         serializedPrivateKey = keypairBuffer.privateKey.data

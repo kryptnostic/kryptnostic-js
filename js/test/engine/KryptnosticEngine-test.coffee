@@ -129,18 +129,16 @@ define [
       _objSharePair1  = undefined
       _objSharePair2  = undefined
 
-      beforeAll ->
+      # a new KryptnosticEngine will generate the private keys on initialization if they are not
+      # passed into the constructor
+      _engine1 = new KryptnosticEngine()
 
-        # a new KryptnosticEngine will generate the private keys on initialization if they are not
-        # passed into the constructor
-        _engine1 = new KryptnosticEngine()
-
-        # we use .slice() because we want to initialize KryptnosticEngine with a fresh copy of
-        # the two keys to avoid potential bugs due to shared memory
-        _engine2 = new KryptnosticEngine({
-          fhePrivateKey    : _engine1.getPrivateKey().slice()
-          searchPrivateKey : _engine1.getSearchPrivateKey().slice()
-        })
+      # we use .slice() because we want to initialize KryptnosticEngine with a fresh copy of
+      # the two keys to avoid potential bugs due to shared memory
+      _engine2 = new KryptnosticEngine({
+        fhePrivateKey    : _engine1.getPrivateKey().slice()
+        searchPrivateKey : _engine1.getSearchPrivateKey().slice()
+      })
 
       it 'should calculate the same private key', ->
 

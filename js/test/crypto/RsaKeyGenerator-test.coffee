@@ -11,10 +11,10 @@ define [
 
   beforeEach ->
     rsaKeyGenerator = new RsaKeyGenerator()
-    sinon.stub(rsaKeyGenerator, 'generate', (_params) -> params = _params)
+    sinon.stub(rsaKeyGenerator, 'forgeGenerate', (_params) -> params = _params)
 
   afterEach ->
-    rsaKeyGenerator.generate.restore()
+    rsaKeyGenerator.forgeGenerate.restore()
 
   describe 'RsaKeyGenerator', ->
 

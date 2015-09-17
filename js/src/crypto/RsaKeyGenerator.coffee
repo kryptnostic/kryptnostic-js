@@ -39,11 +39,11 @@ define 'kryptnostic.rsa-key-generator', [
 
     webCryptoGenerate: (params) ->
       Promise.resolve()
-      .then =>
+      .then ->
         window.crypto.subtle.generateKey( {
           name: 'RSA-OAEP'
           modulusLength: params.bits
-          publicExponent: new Uint8Array([1,0,1]) # constants
+          publicExponent: new Uint8Array([1, 0, 1]) # constants
           hash: { name: 'SHA-256' }
         }, true, ['encrypt', 'decrypt'])
       .then (keys) ->
@@ -63,20 +63,20 @@ define 'kryptnostic.rsa-key-generator', [
     # IE 11 Web Crypto
     ieWebCryptoGenerate: (params) ->
       Promise.resolve()
-      .then =>
+      .then ->
         deferred = Promise.defer()
         keyOperation = window.msCrypto.subtle.generateKey( {
           name: 'RSA-OAEP'
           modulusLength: params.bits
-          publicExponent: new Uint8Array([1,0,1])
+          publicExponent: new Uint8Array([1, 0, 1])
           hash: { name: 'SHA-256' }
         }, true, ['encrypt', 'decrypt'])
-        keyOperation.onerror = =>
-          console.log('sad failure')
+        keyOperation.onerror = ->
+          log.error('sad failure')
 
-        keyOperation.oncomplete = =>
+        keyOperation.oncomplete = ->
           keyPair = keyOperation.result
-          console.log(keyPair)
+          log.error(keyPair)
           return deferred.resolve(keyPair)
         
         return deferred.promise
@@ -84,13 +84,13 @@ define 'kryptnostic.rsa-key-generator', [
       .then (keys) ->
         deferred1 = Promise.defer()
         keyOpPrivate = window.msCrypto.subtle.exportKey('pkcs8', keys.privateKey)
-        keyOpPrivate.oncomplete = =>
+        keyOpPrivate.oncomplete = ->
           return deferred1.resolve(Forge.util.createBuffer(keyOpPrivate.result))
         privateKeyPromise = deferred1.promise
 
         deferred2 = Promise.defer()
         keyOpPublic = window.msCrypto.subtle.exportKey('spki', keys.publicKey)
-        keyOpPublic.oncomplete = =>
+        keyOpPublic.oncomplete = ->
           return deferred2.resolve(Forge.util.createBuffer(keyOpPublic.result))
         publicKeyPromise = deferred2.promise
         Promise.join(privateKeyPromise, publicKeyPromise, (privateKey, publicKey) ->
@@ -118,11 +118,12 @@ define 'kryptnostic.rsa-key-generator', [
       binary    = new Uint8Array(hexString.length)
       for i in [0..hexString.length]
         binary[i] = hexString[i]
-      uLength     = Math.ceil(binary.length/8)
+      uLength     = Math.ceil(binary.length / 8)
       unsignedInt = new Uint8Array(uLength)
       for i in [0..uLength]
-        uint8          = binary.subarray(i*8, i*8 + 7)
-        unsignedInt[i] = parseInt(uint8, 2) # Note: this shit is broken. Should probably hard-code constants.
+        uint8          = binary.subarray(i * 8, i * 8 + 7)
+        # Note: this shit is broken. Should probably hard-code constants.
+        unsignedInt[i] = parseInt(uint8, 2)
       return unsignedInt
 
   return RsaKeyGenerator

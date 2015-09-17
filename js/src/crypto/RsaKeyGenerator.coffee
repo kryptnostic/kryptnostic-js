@@ -68,14 +68,14 @@ define 'kryptnostic.rsa-key-generator', [
 
     numToUnsignedUint8Array: (num) ->
       hexString = num.toString(2)
-      array = new Uint8Array(hexString.length)
+      binary    = new Uint8Array(hexString.length)
       for i in [0..hexString.length]
-        array[i] = hexString[i]
-      arr2size = Math.ceil(array.length/8)
-      array2 = new Uint8Array(arr2size)
-      for i in [0..arr2size]
-        uint8 = array.slice(i*8, i*8 + 7)
-        array2[i] = Number.parseInt(uint8, 2)
-      return array2
+        binary[i] = hexString[i]
+      uLength     = Math.ceil(binary.length/8)
+      unsignedInt = new Uint8Array(uLength)
+      for i in [0..uLength]
+        uint8          = binary.slice(i*8, i*8 + 7)
+        unsignedInt[i] = Number.parseInt(uint8, 2)
+      return unsignedInt
 
   return RsaKeyGenerator

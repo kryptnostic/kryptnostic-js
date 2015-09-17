@@ -132,6 +132,8 @@ define 'kryptnostic.search-credential-service', [
           blockCiphertext = credential
           return decryptKey({ credentialType, blockCiphertext, @cryptoServiceLoader }).data
         )
+      .catch (e) ->
+        log.error('failed to get stored credentials')
 
     hasInitialized: ->
       Promise.resolve()
@@ -166,8 +168,6 @@ define 'kryptnostic.search-credential-service', [
 
     initializeCredential: (credentialType, clientKeys, notifier) ->
       { uint8Key, storeableKey } = {}
-
-      console.trace()
 
       Promise.resolve()
       .then ->

@@ -108,15 +108,15 @@ define [
       searchKeyGenerator = new MockSearchKeyGenerator()
       service            = new SearchCredentialService()
 
-      { searchKeySerializer } = service
+      # { searchKeySerializer } = service
 
       sinon.stub(service.credentialLoader, 'getCredentials').returns({ keypair })
-      sinon.stub(searchKeySerializer.credentialLoader, 'getCredentials').returns({ keypair })
+      # sinon.stub(searchKeySerializer.credentialLoader, 'getCredentials').returns({ keypair })
       _.extend(service, { searchKeyGenerator })
 
     afterEach ->
       service.credentialLoader.getCredentials.restore()
-      service.searchKeySerializer.credentialLoader.getCredentials.restore()
+      # service.searchKeySerializer.credentialLoader.getCredentials.restore()
       unmockServerKeys()
 
     mockServerKeys = ({ fhePrivateKey, searchPrivateKey, clientHashFunction }) ->

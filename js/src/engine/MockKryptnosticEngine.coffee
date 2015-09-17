@@ -21,34 +21,10 @@ define 'kryptnostic.mock.kryptnostic-engine', [
 
     constructor: ({ @fhePrivateKey, @searchPrivateKey } = {}) ->
 
-    # indexing
-    # ========
+    generateObjectIndexPair: ->
+      return BinaryUtils.stringToUint8(pad('doc.search.doc.index'))
 
-    getObjectSearchKey: ->
-      return BinaryUtils.stringToUint8(pad('doc.search'))
-
-    getObjectAddressMatrix: ->
-      return BinaryUtils.stringToUint8(pad('doc.addressfun'))
-
-    getObjectIndexPair: ({ objectSearchKey, objectAddressMatrix }) ->
-      return BinaryUtils.stringToUint8(pad('doc.index'))
-
-    getMetadatumAddress: ({ objectAddressMatrix, objectSearchKey, token }) ->
+    calculateMetadataAddress: (objectIndexPair, token) ->
       return BinaryUtils.stringToUint8('search.address.' + BinaryUtils.uint8ToString(token))
-
-    # search
-    # ======
-
-    getEncryptedSearchToken: ({ token }) ->
-      return BinaryUtils.stringToUint8(pad('search.token.' + BinaryUtils.uint8ToString(token)))
-
-    # sharing
-    # =======
-
-    getObjectSharingPairFromObjectIndexPair: ({ objectIndexPair }) ->
-      return BinaryUtils.stringToUint8('doc.sharing.' + BinaryUtils.uint8ToString(objectIndexPair))
-
-    getObjectIndexPairFromObjectSharingPair: ({ objectSharingPair }) ->
-      return BinaryUtils.stringToUint8('doc.upload.' + BinaryUtils.uint8ToString(objectUploadPair))
 
   return MockKryptnosticEngine

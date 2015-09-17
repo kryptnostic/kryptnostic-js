@@ -1,15 +1,10 @@
 #!/bin/bash
 
 #
-# Runs all build checks which should be tested as part of CI build.
-# Author: rbuckheit
+# runs all build checks which should be tested as part of CI build.
 #
 
 set -e;
-
-mode=$1
-
-echo "running with mode $mode";
 
 # lint
 # ====
@@ -32,18 +27,22 @@ echo; echo "checking for unused imports..."
 echo; echo "building kryptnostic.js...";
 ./build.sh;
 
-# karma tests
+# karma unit tests
 # ===========
 echo; echo "running unit tests...";
-cd js;
-if [[ $mode =~ "--full" ]]; then
-  echo "running in browsers"
-  ../node_modules/karma-cli/bin/karma start --single-run true --browsers Chrome,Safari,PhantomJS,Firefox
-else
-  ../node_modules/karma-cli/bin/karma start --single-run true;
-fi
-cd -;
+node_modules/karma-cli/bin/karma start js/karma.conf.js --single-run true;
+
+# karma browser tests
+# ===================
+echo; echo "running browser-only tests...";
+echo; echo "TEMPORARY - inlining KryptnosticClient.js into KarmaJS context.html...";
+cp karmajs-kcjs-context.html node_modules/karma/static/context.html;
+
+echo;
+node_modules/karma-cli/bin/karma start js/karma-browser-only.conf.js --single-run true;
 
 # output
 # ======
-echo "BUILD SUCCESSFUL";
+echo "ALL TESTS PASSED!";
+echo ":)";
+echo;

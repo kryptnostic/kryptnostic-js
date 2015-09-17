@@ -5,12 +5,12 @@ define 'kryptnostic.rsa-key-generator', [
   'bluebird'
 ], (require) ->
 
-  Forge  = require 'forge'
-  Logger = require 'kryptnostic.logger'
-  Promise = require 'bluebird'
-
-  log = Logger.get('RsaKeyGenerator')
-
+  Forge        = require 'forge'
+  Logger       = require 'kryptnostic.logger'
+  Promise      = require 'bluebird'
+  
+  log          = Logger.get('RsaKeyGenerator')
+  
   RSA_KEY_SIZE = 4096
   EXPONENT     = 0x10001
 
@@ -24,7 +24,19 @@ define 'kryptnostic.rsa-key-generator', [
         # ie 11 web crypto
       # Forge crypto
       else
-        keyPair = Forge.rsa.generateKeyPair(params)
+        return @forgeGenerate(params)
+
+    forgeGenerate: (params) ->
+      Promise.resolve()
+      .then ->
+        keypair            = {}
+        forgeKeys          = Forge.rsa.generateKeyPair(params)
+        privateKeyAsn1     = Forge.pki.privateKeyToAsn1(forgeKeys.privateKey)
+        publicKeyAsn1      = Forge.pki.publicKeyToAsn1(forgeKeys.publicKey)
+        keypair.privateKey = Forge.asn1.toDer(privateKeyAsn1)
+        keypair.publicKey  = Forge.asn1.toDer(publicKeyAsn1)
+        return keypair
+
 
     webCryptoGenerate: (params) ->
       Promise.resolve()
@@ -43,17 +55,14 @@ define 'kryptnostic.rsa-key-generator', [
           .then (exported) ->
             publicKey = Forge.util.createBuffer(exported)
         Promise.join(p1, p2, (privateKey, publicKey) ->
-          keyPair = {}
+          keyPair            = {}
           keyPair.privateKey = privateKey
-          keyPair.publicKey = publicKey
+          keyPair.publicKey  = publicKey
           return keyPair
         )
 
     # Forge
-    # privateKeyAsn1       = Forge.pki.privateKeyToAsn1(keypair.privateKey)
-    #     privateKeyBuffer     = Forge.asn1.toDer(privateKeyAsn1)
-# publicKeyAsn1       = Forge.pki.publicKeyToAsn1(keypair.publicKey)
-#         publicKeyBuffer     = Forge.asn1.toDer(publicKeyAsn1)
+    
 
     # Generate public and private RSA keys
     # returns a Promise object with private and public keys in Forge buffer objects

@@ -86,14 +86,14 @@ define 'kryptnostic.credential-service', [
       .then =>
         @rsaKeyGenerator.generateKeypair()
       .then (keypairBuffer) =>
-        passwordCrypto = new PasswordCryptoService()
-
+        passwordCrypto       = new PasswordCryptoService()
+        
         serializedPrivateKey = keypairBuffer.privateKey.data
-        privateKey = passwordCrypto.encrypt(serializedPrivateKey, password)
-
-        serializedPublicKey = keypairBuffer.publicKey.data
-        publicKey = PublicKeyEnvelope.createFromBuffer(serializedPublicKey)
-
+        privateKey           = passwordCrypto.encrypt(serializedPrivateKey, password)
+        
+        serializedPublicKey  = keypairBuffer.publicKey.data
+        publicKey            = PublicKeyEnvelope.createFromBuffer(serializedPublicKey)
+        
         keypair              = {}
         privateKeyAsn1       = Forge.asn1.fromDer(serializedPrivateKey)
         keypair.privateKey   = Forge.pki.privateKeyFromAsn1(privateKeyAsn1)

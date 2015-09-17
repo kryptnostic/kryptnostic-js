@@ -23,7 +23,6 @@ require [
   'kryptnostic.authentication-service'
   'kryptnostic.tree-loader'
   'kryptnostic.deletion-visitor'
-  'kryptnostic.crypto-key-storage-api'
 ], (require) ->
 
   Promise                 = require 'bluebird'
@@ -37,14 +36,12 @@ require [
   DeletionVisitor         = require 'kryptnostic.deletion-visitor'
   PermissionChangeVisitor = require 'kryptnostic.permission-change-visitor'
   UserDirectoryApi        = require 'kryptnostic.user-directory-api'
-  CryptoStorageApi        = require 'kryptnostic.crypto-key-storage-api'
 
   cryptoServiceLoader = new CryptoServiceLoader()
   storageClient       = new StorageClient()
-  # sharingClient       = new SharingClient()
-  # treeLoader          = new TreeLoader()
-  # userDirectoryApi    = new UserDirectoryApi()
-  # cryptoStorageApi    = new CryptoStorageApi()
+  sharingClient       = new SharingClient()
+  treeLoader          = new TreeLoader()
+  userDirectoryApi    = new UserDirectoryApi()
 
   # configure the client
   Config.set({
@@ -73,84 +70,84 @@ require [
   #
   # authenticate using a demo account
   #
-  # setup()
-  # .then ->
-  #   AuthenticationService.authenticate(USER1)
-  # .then ->
+  setup()
+  .then ->
+    AuthenticationService.authenticate(USER1)
+  .then ->
 
-    # #
-    # # example 1
-    # # =========
-    # # encrypt an object, upload it, download it, and decrypt it.
-    # #
-    # storageRequest = new StorageRequest({ body : 'test message' })
-    # storageClient.uploadObject(storageRequest)
-    # .then (objectId) ->
-    #   loadPromises = {
-    #     kryptnosticObject : storageClient.getObject(objectId),
-    #     cryptoService     : cryptoServiceLoader.getObjectCryptoService(objectId)
-    #   }
+    #
+    # example 1
+    # =========
+    # encrypt an object, upload it, download it, and decrypt it.
+    #
+    storageRequest = new StorageRequest({ body : 'test message' })
+    storageClient.uploadObject(storageRequest)
+    .then (objectId) ->
+      loadPromises = {
+        kryptnosticObject : storageClient.getObject(objectId),
+        cryptoService     : cryptoServiceLoader.getObjectCryptoService(objectId)
+      }
 
-    #   Promise.props(loadPromises)
-    #   .then (result)  ->
-    #     cryptoService     = result.cryptoService
-    #     kryptnosticObject = result.kryptnosticObject
-    #     decrypted         = kryptnosticObject.decrypt( cryptoService )
-    #     renderObject(decrypted)
-    #   .then ->
-    #     storageClient.deleteObject(objectId)
+      Promise.props(loadPromises)
+      .then (result)  ->
+        cryptoService     = result.cryptoService
+        kryptnosticObject = result.kryptnosticObject
+        decrypted         = kryptnosticObject.decrypt( cryptoService )
+        renderObject(decrypted)
+      .then ->
+        storageClient.deleteObject(objectId)
 
-    # #
-    # # example 2
-    # # =========
-    # # create an object and share it with another user
-    # #
-    # userDirectoryApi.resolve({ email: 'test@kryptnostic.com' })
-    # .then (uuid) ->
-    #   storageRequest = new StorageRequest({
-    #     body         : 'this message will be shared'
-    #     isSearchable : true
-    #   })
-    #   shareUsers = [ uuid ]
+    #
+    # example 2
+    # =========
+    # create an object and share it with another user
+    #
+    userDirectoryApi.resolve({ email: 'test@kryptnostic.com' })
+    .then (uuid) ->
+      storageRequest = new StorageRequest({
+        body         : 'this message will be shared'
+        isSearchable : true
+      })
+      shareUsers = [ uuid ]
 
-    #   storageClient.uploadObject(storageRequest)
-    #   .then (objectId) ->
-    #     sharingClient.shareObject(objectId, shareUsers)
+      storageClient.uploadObject(storageRequest)
+      .then (objectId) ->
+        sharingClient.shareObject(objectId, shareUsers)
 
-    # #
-    # # example 3
-    # # =========
-    # # change permissions on a whole tree of objects recursively
-    # #
-    # Promise.props({
-    #   uuid      : userDirectoryApi.resolve({ email : 'demo@kryptnostic.com' })
-    #   shareUuid : userDirectoryApi.resolve({ email : 'test@kryptnostic.com' })
-    # })
-    # .then ({ uuid, shareUuid }) ->
-    #   { tree } = {}
-    #   storageRequest = new StorageRequest({ body : 'this message will be shared' })
-    #   addVisitor     = new PermissionChangeVisitor([ uuid, shareUuid ])
-    #   removeVisitor  = new PermissionChangeVisitor([ uuid ])
+    #
+    # example 3
+    # =========
+    # change permissions on a whole tree of objects recursively
+    #
+    Promise.props({
+      uuid      : userDirectoryApi.resolve({ email : 'demo@kryptnostic.com' })
+      shareUuid : userDirectoryApi.resolve({ email : 'test@kryptnostic.com' })
+    })
+    .then ({ uuid, shareUuid }) ->
+      { tree } = {}
+      storageRequest = new StorageRequest({ body : 'this message will be shared' })
+      addVisitor     = new PermissionChangeVisitor([ uuid, shareUuid ])
+      removeVisitor  = new PermissionChangeVisitor([ uuid ])
 
-    #   storageClient.uploadObject(storageRequest)
-    #   .then (objectId) ->
-    #     treeLoader.load(objectId)
-    #   .then (_tree) ->
-    #     tree = _tree
-    #   .then ->
-    #     tree.visit(addVisitor)
-    #   .then ->
-    #     tree.visit(removeVisitor)
+      storageClient.uploadObject(storageRequest)
+      .then (objectId) ->
+        treeLoader.load(objectId)
+      .then (_tree) ->
+        tree = _tree
+      .then ->
+        tree.visit(addVisitor)
+      .then ->
+        tree.visit(removeVisitor)
 
-    # #
-    # # example 4
-    # # =========
-    # # delete an object and its children recursively
-    # #
-    # storageRequest = new StorageRequest({ body : 'this object and children will be deleted' })
-    # storageClient.uploadObject(storageRequest)
-    # .then (id) ->
-    #   treeLoader.load(id)
-    # .then (tree) ->
-    #   tree.visit(new DeletionVisitor())
+    #
+    # example 4
+    # =========
+    # delete an object and its children recursively
+    #
+    storageRequest = new StorageRequest({ body : 'this object and children will be deleted' })
+    storageClient.uploadObject(storageRequest)
+    .then (id) ->
+      treeLoader.load(id)
+    .then (tree) ->
+      tree.visit(new DeletionVisitor())
 

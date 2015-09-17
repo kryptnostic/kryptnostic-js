@@ -1,9 +1,9 @@
 define 'kryptnostic.crypto-service-loader', [
-  'require',
-  'bluebird',
+  'require'
+  'bluebird'
   'kryptnostic.logger'
-  'kryptnostic.cypher',
-  'kryptnostic.rsa-crypto-service',
+  'kryptnostic.cypher'
+  'kryptnostic.rsa-crypto-service'
   'kryptnostic.aes-crypto-service'
   'kryptnostic.directory-api'
   'kryptnostic.crypto-service-marshaller'

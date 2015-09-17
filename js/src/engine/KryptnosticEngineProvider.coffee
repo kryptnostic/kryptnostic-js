@@ -7,10 +7,6 @@ define 'kryptnostic.kryptnostic-engine-provider', [
 
   log = Logger.get('KryptnosticEngineProvider')
 
-  #
-  # Wrapper around the kryptnostic client module produced by emscripten.
-  # Author: rbuckheit
-  #
   class KryptnosticEngineProvider
 
     @setEngine: (kryptnosticEngine) ->

@@ -65,12 +65,9 @@ define 'kryptnostic.search.metadata-mapper', [
         tokenUint = BinaryUtils.hexToUint(tokenHex)
 
         # compute address of token
-        indexUint   = @engine.getMetadatumAddress({
-          token : tokenUint,
-          objectAddressMatrix,
-          objectSearchKey
-        })
-        indexString = BinaryUtils.uint8ToString(indexUint)
+        objectIndexPair = @engine.generateObjectIndexPair()
+        indexUint       = @engine.calculateMetadataAddress(objectIndexPair, tokenUint)
+        indexString     = BinaryUtils.uint8ToString(indexUint)
 
         # pad occurence locations
         paddedLocations = @subListAndPad(locations, bucketLength)

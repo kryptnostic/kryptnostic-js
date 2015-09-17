@@ -44,4 +44,7 @@ cp bower_components/kryptnostic-client/index.js dist/KryptnosticClient.js;
 echo; echo 'compiling demo.coffee...';
 ./node_modules/coffee-script/bin/coffee -c demo/demo.coffee;
 
-echo; echo 'DIST BUILD SUCCESSFUL';
+echo; echo "DIST BUILD SUCCESSFUL!";
+echo ":)";
+echo;
+

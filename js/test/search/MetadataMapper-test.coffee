@@ -39,14 +39,14 @@ define [
       metadataMapper = new MetadataMapper()
       _.extend(metadataMapper, { engine, indexGenerator })
       id          = 'some-object-id'
-      documentKey = engine.getObjectSearchKey(id)
+      documentKey = 'testDocumentKey'
 
     describe '#mapToKeys', ->
 
       it 'should pad all tokens to 128 bits with murmurhash3-128 before addressing', ->
         called   = false
         metadata = [ { id, locations: [0, 9], token: 'fish' }]
-        sinon.stub(metadataMapper.engine, 'getMetadatumAddress', ({ token }) ->
+        sinon.stub(metadataMapper.engine, 'calculateMetadataAddress', (objectIndexPair, token) ->
           expect(token.length).toBe(PADDED_128_BIT_UINT8_ARRAY_LENGTH)
           expect(token instanceof Uint8Array).toBe(true)
           called = true
@@ -54,7 +54,7 @@ define [
         )
         metadataMapper.mapToKeys { metadata, documentKey }
         expect(called).toBe(true)
-        metadataMapper.engine.getMetadatumAddress.restore()
+        metadataMapper.engine.calculateMetadataAddress.restore()
 
       it 'should map metadata to their indexed locations', ->
         overwriteHashFunction(metadataMapper)

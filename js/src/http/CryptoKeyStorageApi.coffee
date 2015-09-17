@@ -28,7 +28,7 @@ define 'kryptnostic.crypto-key-storage-api', [
     #   For future use
 
     # getRsaPublicKey: ->
-    #   return Requests.getAsUint8FromUrl(rsaPublicKeyUrl())
+    #   return Requests.getBlockCiphertextFromUrl(rsaPublicKeyUrl())
 
     # setRsaPublicKey: (key) ->
     #   return Requests.postUint8ToUrl(rsaPublicKeyUrl(), key)
@@ -40,7 +40,7 @@ define 'kryptnostic.crypto-key-storage-api', [
     # =======
 
     getFhePrivateKey: ->
-      return Requests.getAsUint8FromUrl( fhePrivateKeyUrl() )
+      return Requests.getBlockCiphertextFromUrl( fhePrivateKeyUrl() )
 
     setFhePrivateKey: (key) ->
       Requests.postUint8ToUrl(fhePrivateKeyUrl(), key)
@@ -51,7 +51,7 @@ define 'kryptnostic.crypto-key-storage-api', [
     # ==========
 
     getSearchPrivateKey: ->
-      return Requests.getAsUint8FromUrl( fheSearchPrivateKeyUrl() )
+      return Requests.getBlockCiphertextFromUrl( fheSearchPrivateKeyUrl() )
 
     setSearchPrivateKey: (key) ->
       Requests.postUint8ToUrl(fheSearchPrivateKeyUrl(), key)
@@ -63,11 +63,11 @@ define 'kryptnostic.crypto-key-storage-api', [
     # ===========
 
     getClientHashFunction: ->
-      return Requests.getAsUint8FromUrl( clientHashUrl() )
+      return Requests.getBlockCiphertextFromUrl( clientHashUrl() )
 
     setClientHashFunction: (key) ->
       Requests.postUint8ToUrl(clientHashUrl(), key)
       .then (response) ->
-        log.info('uploadSharingPair')
+        log.info('setClientHashFunction')
 
   return CryptoKeyStorageApi

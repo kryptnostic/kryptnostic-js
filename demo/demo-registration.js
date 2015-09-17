@@ -25,8 +25,19 @@ require([
     password : 'kryptodoge1!',
     name     : 'Bob User'
   });
-
+  var userRegistrationRequest1 = new UserRegistrationRequest({
+    email    : 'demo@kryptnostic.com',
+    password : 'demo',
+    name     : 'Demo User'
+  });
+  var userRegistrationRequest2 = new UserRegistrationRequest({
+    email    : 'test@kryptnostic.com',
+    password : 'demo',
+    name     : 'Test User'
+  });
   registrationClient.register(userRegistrationRequest)
+  registrationClient.register(userRegistrationRequest1)
+  registrationClient.register(userRegistrationRequest2)
   .then(function(){
     console.info('user registration is complete!');
   });

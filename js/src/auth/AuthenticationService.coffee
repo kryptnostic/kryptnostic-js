@@ -8,16 +8,20 @@ define 'kryptnostic.authentication-service', [
   'kryptnostic.search-credential-service'
   'kryptnostic.authentication-stage'
   'kryptnostic.user-directory-api'
+  'kryptnostic.kryptnostic-engine'
+  'kryptnostic.kryptnostic-engine-provider'
 ], (require) ->
 
-  Promise                  = require 'bluebird'
-  Logger                   = require 'kryptnostic.logger'
-  Config                   = require 'kryptnostic.configuration'
-  CredentialProviderLoader = require 'kryptnostic.credential-provider-loader'
-  CredentialService        = require 'kryptnostic.credential-service'
-  SearchCredentialService  = require 'kryptnostic.search-credential-service'
-  AuthenticationStage      = require 'kryptnostic.authentication-stage'
-  UserDirectoryApi         = require 'kryptnostic.user-directory-api'
+  Promise                   = require 'bluebird'
+  Logger                    = require 'kryptnostic.logger'
+  Config                    = require 'kryptnostic.configuration'
+  CredentialProviderLoader  = require 'kryptnostic.credential-provider-loader'
+  CredentialService         = require 'kryptnostic.credential-service'
+  SearchCredentialService   = require 'kryptnostic.search-credential-service'
+  AuthenticationStage       = require 'kryptnostic.authentication-stage'
+  UserDirectoryApi          = require 'kryptnostic.user-directory-api'
+  KryptnosticEngine         = require 'kryptnostic.kryptnostic-engine'
+  KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
 
   log = Logger.get('AuthenticationService')
 
@@ -58,6 +62,15 @@ define 'kryptnostic.authentication-service', [
         credentialProvider.store { principal, credential, keypair }
       .then ->
         searchCredentialService.ensureCredentialsInitialized(notifier)
+      .then ->
+        searchCredentialService.getAllCredentials()
+      .then (_searchCredential) ->
+        searchCredential = _searchCredential
+        fhePrivateKey = searchCredential.FHE_PRIVATE_KEY
+        searchPrivateKey = searchCredential.SEARCH_PRIVATE_KEY
+        engine = new KryptnosticEngine({ fhePrivateKey, searchPrivateKey })
+        KryptnosticEngineProvider.setEngine(engine)
+        log.info('engine set')
       .then ->
         Promise.resolve(notifier(AuthenticationStage.COMPLETED))
       .then ->

@@ -7,10 +7,15 @@ define 'kryptnostic.search-indexing-service', [
   'kryptnostic.logger'
   'kryptnostic.metadata-api'
   'kryptnostic.metadata-request'
-  'kryptnostic.mock.kryptnostic-engine'
+  'kryptnostic.kryptnostic-engine'
   'kryptnostic.search.indexer'
   'kryptnostic.search.metadata-mapper'
   'kryptnostic.indexed-metadata'
+  # 'kryptnostic.search-credential-service' #added to load the keys stored
+  'kryptnostic.kryptnostic-engine-provider'
+  'kryptnostic.sharing-api'
+  'kryptnostic.search-key-serializer'
+  'kryptnostic.sharing-client'
 ], (require) ->
 
   # libraries
@@ -26,9 +31,11 @@ define 'kryptnostic.search-indexing-service', [
   IndexedMetadata       = require 'kryptnostic.indexed-metadata'
   KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
   MetadataRequest       = require 'kryptnostic.metadata-request'
-  MockKryptnosticEngine = require 'kryptnostic.mock.kryptnostic-engine'
   ObjectIndexer         = require 'kryptnostic.search.indexer'
   MetadataMapper        = require 'kryptnostic.search.metadata-mapper'
+  SearchKeySerializer       = require 'kryptnostic.search-key-serializer'
+  SharingClient             = require 'kryptnostic.sharing-client'
+  KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
 
   # Kryptnostic utils
   Logger                = require 'kryptnostic.logger'
@@ -44,10 +51,11 @@ define 'kryptnostic.search-indexing-service', [
     constructor : ->
       @cryptoServiceLoader = new CryptoServiceLoader()
       @sharingApi          = new SharingApi()
-      @engine              = new MockKryptnosticEngine()
       @metadataApi         = new MetadataApi()
       @metadataMapper      = new MetadataMapper()
       @objectIndexer       = new ObjectIndexer()
+      @searchKeySerializer  = new SearchKeySerializer()
+      @sharingClient        = new SharingClient()
 
     # indexes and uploads the submitted object.
     submit: ({ id, storageRequest }) ->
@@ -60,9 +68,10 @@ define 'kryptnostic.search-indexing-service', [
 
       Promise.resolve()
       .then =>
-        objectAddressMatrix = @engine.getObjectAddressMatrix()
-        objectSearchKey     = @engine.getObjectSearchKey()
-        objectIndexPair     = @engine.getObjectIndexPair({ objectSearchKey, objectAddressMatrix })
+        engine = KryptnosticEngineProvider.getEngine()
+        objectAddressMatrix = engine.getObjectAddressMatrix()
+        objectSearchKey     = engine.getObjectSearchKey()
+        objectIndexPair     = engine.getObjectIndexPair({ objectSearchKey, objectAddressMatrix })
         @sharingApi.addObjectIndexPair(id, objectIndexPair)
       .then =>
         @objectIndexer.index(id, body)

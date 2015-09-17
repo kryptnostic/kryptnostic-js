@@ -39,6 +39,17 @@ module.exports = function(config) {
       transformPath: function(path) {
         return path.replace(/\.coffee$/, '.js');
       }
+    },
+
+    customLaunchers: {
+      ChromeTravisCI: {
+        base: 'Chrome',
+        flags: ['--no-sandbox']
+      }
     }
   });
+
+  if (process.env.TRAVIS) {
+    config.browsers = ['ChromeTravisCI'];
+  }
 };

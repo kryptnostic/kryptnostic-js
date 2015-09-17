@@ -70,9 +70,9 @@ define 'kryptnostic.sharing-client', [
       { principal } = @credentialLoader.getCredentials()
 
       Promise.join(
-        @sharingApi.getObjectIndexPair(objectId),
-        @cryptoServiceLoader.getObjectCryptoService(objectId),
-        @directoryApi.batchGetRsaPublicKeys(uuids),
+        @sharingApi.getObjectIndexPair( objectId ),
+        @cryptoServiceLoader.getObjectCryptoService( objectId ),
+        @directoryApi.batchGetPublicKeys( uuids ),
         (objectIndexPair, objectCryptoService, uuidsToRsaPublicKeys) ->
 
         # transform RSA public key to Base64 seal

@@ -9,6 +9,7 @@ define [
     servicesUrl        : 'http://api.kryptnostic.com/v1'
     heraclesUrl        : 'https://api.kryptnostic.com/heracles/v1'
     credentialProvider : 'kryptnostic.credential-provider.session-storage'
+    cachingProvider    : 'kryptnostic.caching-provider.jscache'
   }
 
   OVERRIDE_URL = 'http://localhost:9000/v1'
@@ -20,6 +21,10 @@ define [
       it 'should initialize with a default services URL of production instance', ->
         expect(ConfigurationService.get('servicesUrl')).toBeDefined()
         expect(ConfigurationService.get('servicesUrl')).toBe(EXPECTED_DEFAULTS.servicesUrl)
+
+      it 'should initialize with a default caching provider implementation', ->
+        expect(ConfigurationService.get('cachingProvider')).toBeDefined()
+        expect(ConfigurationService.get('cachingProvider')).toBe(EXPECTED_DEFAULTS.cachingProvider)
 
     describe '#get', ->
 

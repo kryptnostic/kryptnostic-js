@@ -33,7 +33,7 @@ define 'kryptnostic.sharing-api', [
   addObjectIndexPairUrl   = -> sharingEndpoint() + KEYS_PATH
   getObjectIndexPairUrl   = (id) -> sharingEndpoint() + OBJECT_PATH + '/' + id + OBJECT_KEYS
 
-  logger = Logger.get('SharingApi')
+  log = Logger.get('SharingApi')
 
   #
   # HTTP calls for interacting with the /share endpoint of Kryptnostic Services.
@@ -52,7 +52,7 @@ define 'kryptnostic.sharing-api', [
           })
         )
       .then (response) ->
-        logger.debug('getIncomingShares()', response)
+        log.debug('getIncomingShares()', response)
         return response.data
 
     removeIncomingShares: ->
@@ -72,7 +72,7 @@ define 'kryptnostic.sharing-api', [
           })
         )
       .then (response) ->
-        logger.debug('shareObject()', response.data.data)
+        log.debug('shareObject()', response.data.data)
 
     # revoke access to an object
     revokeObject: (revocationRequest) ->
@@ -88,7 +88,7 @@ define 'kryptnostic.sharing-api', [
           })
         )
       .then (response) ->
-        logger.debug('revokeObject()', response.data.data)
+        log.debug('revokeObject()', response.data.data)
 
     getObjectIndexPair: (objectId) ->
       Requests

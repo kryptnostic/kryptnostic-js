@@ -2,12 +2,10 @@ define [
   'require',
   'forge',
   'kryptnostic.aes-crypto-service',
-  'kryptnostic.password-crypto-service',
   'kryptnostic.block-ciphertext'
 ], (require) ->
 
   AesCryptoService      = require 'kryptnostic.aes-crypto-service'
-  PasswordCryptoService = require 'kryptnostic.password-crypto-service'
   Forge                 = require 'forge'
   BlockCiphertext       = require 'kryptnostic.block-ciphertext'
 
@@ -16,7 +14,7 @@ define [
   cryptoService = undefined
 
   beforeEach ->
-    key           = Forge.random.getBytesSync(PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE)
+    key           = Forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
     cryptoService = new AesCryptoService(CYPHER, key)
 
   describe 'AesCryptoService', ->

@@ -6,87 +6,61 @@ define 'kryptnostic.search-credential-service', [
   'kryptnostic.authentication-stage'
   'kryptnostic.search-key-generator'
   'kryptnostic.crypto-key-storage-api'
-  'kryptnostic.credential-loader'
   'kryptnostic.crypto-service-loader'
-  'kryptnostic.block-ciphertext'
 ], (require) ->
 
   _                   = require 'lodash'
   Promise             = require 'bluebird'
   Logger              = require 'kryptnostic.logger'
   AuthenticationStage = require 'kryptnostic.authentication-stage'
-  CredentialLoader    = require 'kryptnostic.credential-loader'
   CryptoKeyStorageApi = require 'kryptnostic.crypto-key-storage-api'
   SearchKeyGenerator  = require 'kryptnostic.search-key-generator'
   CryptoServiceLoader = require 'kryptnostic.crypto-service-loader'
-  BlockCiphertext     = require 'kryptnostic.block-ciphertext'
 
   log = Logger.get('SearchCredentialService')
 
   #
-  # Enumeration of credential types which the SearchCredentialService produces.
-  # Author: rbuckheit
+  # enumeration of credential types which the SearchCredentialService produces.
   #
   CredentialType = {
     FHE_PRIVATE_KEY : {
-      generator : (clientKeys) -> clientKeys.fhePrivateKey
+      getKey    : (clientKeys) -> clientKeys.fhePrivateKey
       getter    : (api) -> api.getFhePrivateKey
       setter    : (api) -> api.setFhePrivateKey
       stage     : AuthenticationStage.FHE_KEYGEN
       encrypt   : true
+      decrypt   : true
       id        : 'KryptnosticEngine.PrivateKey'
     }
     SEARCH_PRIVATE_KEY : {
-      generator : (clientKeys) -> clientKeys.searchPrivateKey
+      getKey    : (clientKeys) -> clientKeys.searchPrivateKey
       getter    : (api) -> api.getSearchPrivateKey
       setter    : (api) -> api.setSearchPrivateKey
       stage     : AuthenticationStage.SEARCH_KEYGEN
       encrypt   : true
-      id        : 'KryptnosticEngine.PrivateKey'
+      decrypt   : true
+      id        : 'KryptnosticEngine.SearchPrivateKey'
     }
     CLIENT_HASH_FUNCTION : {
-      generator : (clientKeys) -> clientKeys.clientHashFunction
+      getKey    : (clientKeys) -> clientKeys.clientHashFunction
       getter    : (api) -> api.getClientHashFunction
       setter    : (api) -> api.setClientHashFunction
       stage     : AuthenticationStage.CLIENT_HASH_GEN
       encrypt   : false
-      id        : 'KryptnosticEngine.PrivateKey'
+      decrypt   : false
+      id        : 'KryptnosticEngine.ClientHashFunction'
     }
   }
 
-  encryptKey = ({ credentialType, uint8Key, cryptoServiceLoader }) ->
-    blockciphertext = new BlockCiphertext(uint8Key)
-    if _.isEmpty(uint8Key)
-      return uint8Key
-    else if credentialType.encrypt
-      cryptoServiceLoader.getObjectCryptoService(credentialType.id, { expectMiss : true })
-      .then (cryptoService) ->
-        return cryptoService.encryptUint8Array(blockciphertext)
-    else
-      return blockciphertext
-
-  #seems that decryptKey should take in blockciphertext instead of uint8key
-  decryptKey = ({ credentialType, blockCiphertext, cryptoServiceLoader }) ->
-    if _.isEmpty(blockCiphertext)
-      return blockCiphertext
-    else if credentialType.encrypt
-      cryptoServiceLoader.getObjectCryptoService(credentialType.id, { expectMiss : true })
-      .then (cryptoService) ->
-        return cryptoService.decryptToUint8Array(blockCiphertext)
-    else
-      uint8Key = new Uint8Array(_.map(blockCiphertext, (c) -> c.charCodeAt() ) )
-      return uint8Key
-
   #
-  # Loads or generates credentials produced by the SearchKeyGenerator, including
-  # search private key, fhe private key, and client hash function.
-  #
-  # Author: rbuckheit
+  # loads or generates credentials produced by the SearchKeyGenerator, including:
+  #   - fhe private key
+  #   - search private key
+  #   - client hash function
   #
   class SearchCredentialService
 
     constructor: ->
-      @credentialLoader    = new CredentialLoader()
       @cryptoKeyStorageApi = new CryptoKeyStorageApi()
       @searchKeyGenerator  = new SearchKeyGenerator()
       @cryptoServiceLoader = new CryptoServiceLoader()
@@ -103,11 +77,12 @@ define 'kryptnostic.search-credential-service', [
           return Promise.resolve()
 
     #
-    # returns: {
-    #  FHE_PRIVATE_KEY      : Uint8Array
-    #  SEARCH_PRIVATE_KEY   : Uint8Array
-    #  CLIENT_HASH_FUNCTION : Uint8Array
-    # }
+    # @return Object
+    #   {
+    #    FHE_PRIVATE_KEY      : Uint8Array
+    #    SEARCH_PRIVATE_KEY   : Uint8Array
+    #    CLIENT_HASH_FUNCTION : Uint8Array
+    #   }
     getAllCredentials: ->
       Promise.resolve()
       .then =>
@@ -115,25 +90,60 @@ define 'kryptnostic.search-credential-service', [
       .then =>
         @getStoredCredentials()
 
-    # private
-    # =======
-
+    #
+    # @return Object
+    #   {
+    #    FHE_PRIVATE_KEY      : Uint8Array
+    #    SEARCH_PRIVATE_KEY   : Uint8Array
+    #    CLIENT_HASH_FUNCTION : Uint8Array
+    #   }
     getStoredCredentials: ->
       Promise.resolve()
       .then =>
+
+        # create a map of CredentialType -> Promise<Credential>
         credentialPromises = _.mapValues(CredentialType, (credentialType) =>
           loadCredential = credentialType.getter(@cryptoKeyStorageApi)
-          return loadCredential()
+          result = loadCredential()
+          return result
         )
+
+        # Promise.props() returns a Promise that is fulfilled when all the properties of the object are fulfilled,
+        # so 'credentialPromises' will fulfill when all credential requests are fulfilled
         Promise.props(credentialPromises)
-      .then (credentialsByType) =>
-        return _.mapValues(credentialsByType, (credential, typeKey) =>
-          credentialType = CredentialType[typeKey]
-          blockCiphertext = credential
-          return decryptKey({ credentialType, blockCiphertext, @cryptoServiceLoader }).data
-        )
-      .catch (e) ->
-        log.error('failed to get stored credentials')
+        .then (credentials) =>
+
+          # create a map of CredentialType -> Promise<AesCryptoService>
+          cryptoServicePromises = _.mapValues(CredentialType, (credentialType) =>
+            # we expect getObjectCryptoService() to eventually return an instance of AesCryptoService
+            return @cryptoServiceLoader.getObjectCryptoService(
+              credentialType.id,
+              { expectMiss : true }
+            )
+          )
+
+          # Promise.props() returns a Promise that is fulfilled when all the properties of the object are fulfilled,
+          # so 'cryptoServicePromises' will fulfill when all crypto service requests are fulfilled
+          Promise.props(cryptoServicePromises)
+          .then (aesCryptoServices) ->
+
+            return _.mapValues(credentials, (value, key) ->
+
+              # 'type' is they key into the CredentialType enum:
+              #   - FHE_PRIVATE_KEY
+              #   - SEARCH_PRIVATE_KEY
+              #   - CLIENT_HASH_FUNCTION
+
+              type           = key
+              credential     = value
+              credentialType = CredentialType[type]
+
+              if credential? and credentialType.decrypt is true
+                aesCryptoService = aesCryptoServices[type]
+                return aesCryptoService.decryptToUint8Array(credential)
+              else
+                return credential
+            ) # end .mapValues()
 
     hasInitialized: ->
       Promise.resolve()
@@ -167,18 +177,29 @@ define 'kryptnostic.search-credential-service', [
         @initializeCredential(CredentialType.CLIENT_HASH_FUNCTION, clientKeys, notifier)
 
     initializeCredential: (credentialType, clientKeys, notifier) ->
-      { uint8Key, storeableKey } = {}
+      { keyAsUint8, storeableKey } = {}
 
       Promise.resolve()
       .then ->
         log.info('initializeCredential', credentialType.stage)
         Promise.resolve(notifier(credentialType.stage))
       .then =>
-        uint8Key        = credentialType.generator(clientKeys)
-        storeableKey    = encryptKey({ credentialType, uint8Key, @cryptoServiceLoader })
+        # we expect getObjectCryptoService() to return an instance of AesCryptoService
+        @cryptoServiceLoader.getObjectCryptoService(
+          credentialType.id,
+          { expectMiss: true }
+        )
+      .then (aesCryptoService) =>
+        keyAsUint8 = credentialType.getKey(clientKeys)
+        storeableKey = keyAsUint8
+
+        if credentialType.encrypt is true
+          storeableKey = aesCryptoService.encryptUint8Array(keyAsUint8)
+
         storeCredential = credentialType.setter(@cryptoKeyStorageApi)
         storeCredential(storeableKey)
+
       .then ->
-        return uint8Key
+        return keyAsUint8
 
   return SearchCredentialService

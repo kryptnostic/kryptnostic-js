@@ -1,9 +1,18 @@
 define 'kryptnostic.mock.mock-data-utils', [
   'require'
+  'forge'
+  'kryptnostic.block-ciphertext'
 ], (require) ->
+
+  # libraries
+  Forge = require 'forge'
+
+  # kryptnostic
+  BlockCiphertext = require 'kryptnostic.block-ciphertext'
 
   class MockDataUtils
 
+    @AES_KEY_SIZE_IN_BYTES     = 16
     @INDEX_TOKEN_SIZE          = 16
     @FHE_PRIVATE_KEY_SIZE      = 329760
     @SEARCH_PRIVATE_KEY_SIZE   = 4096
@@ -44,7 +53,33 @@ define 'kryptnostic.mock.mock-data-utils', [
       return @generateRandomUint8Array(@SEARCH_PRIVATE_KEY_SIZE)
 
     #
+    # generates a mock client hash function represented as a Uint8Array
+    #
+    @generateMockClientHashFunctionAsUint8: ->
+      return @generateRandomUint8Array(@CLIENT_HASH_FUNCTION_SIZE)
+
+    #
     # generates a mock search token represented as a Uint8Array
     #
     @generateMockIndexTokenAsUint8: ->
       return @generateRandomUint8Array(@INDEX_TOKEN_SIZE)
+
+    #
+    # generates a mock BlockCipherText object out of the given data
+    #
+    # @param Uint8Array data - the data to encrypt
+    # @param String key - a binary-encoded string of bytes
+    #
+    @generateMockBlockCipherText: (data, key) ->
+      iv = Forge.random.getBytesSync(@AES_KEY_SIZE_IN_BYTES)
+      buffer = Forge.util.createBuffer(data)
+      cipher = Forge.cipher.createCipher('AES-CTR', key)
+      cipher.start({ iv })
+      cipher.update(buffer)
+      cipher.finish()
+      ciphertext = cipher.output.data
+      return new BlockCiphertext({
+        iv       : btoa(iv),
+        salt     : btoa(Forge.random.getBytesSync(0)),
+        contents : btoa(ciphertext)
+      })

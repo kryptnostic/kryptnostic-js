@@ -22,9 +22,11 @@ module.exports = function(config) {
 
     files: [
       '../dist/kryptnostic.js',
+      '../node_modules/sinon/pkg/sinon.js',
       'test/test-main.js',
-      { pattern: 'test/engine/KryptnosticEngine-test.coffee', included: false },
-      { pattern: 'test/mocks/MockDataUtils.coffee', included: false }
+      { pattern: 'test/auth/SearchCredentialService-test.coffee', included: false },
+      { pattern: 'test/engine/KryptnosticEngine-test.coffee',     included: false },
+      { pattern: 'test/mocks/MockDataUtils.coffee',               included: false }
     ],
 
     preprocessors: {
@@ -41,6 +43,7 @@ module.exports = function(config) {
       }
     },
 
+    // we want TravisCI to actually open an instance of Chrome when running these tests
     customLaunchers: {
       ChromeTravisCI: {
         base: 'Chrome',
@@ -49,6 +52,7 @@ module.exports = function(config) {
     }
   });
 
+  // TravisCI integration when submitting a Pull Request to GitHub
   if (process.env.TRAVIS) {
     config.browsers = ['ChromeTravisCI'];
   }

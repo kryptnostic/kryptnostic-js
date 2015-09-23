@@ -22,6 +22,9 @@ module.exports = function(config) {
     // how long Karma should wait for a message from a browser before disconnecting from it
     browserNoActivityTimeout: 60000,
 
+    // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
+    browsers: ['PhantomJS'],
+
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
     frameworks: [
@@ -66,9 +69,6 @@ module.exports = function(config) {
     reporters: ['progress'],
 
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_ERROR,
-
-    // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['PhantomJS']
+    logLevel: config.LOG_ERROR
   });
 };

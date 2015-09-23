@@ -23,7 +23,7 @@ define 'kryptnostic.crypto-service-loader', [
   INT_SIZE     = 4
   EMPTY_BUFFER = ''
 
-  logger = Logger.get('CryptoServiceLoader')
+  log = Logger.get('CryptoServiceLoader')
 
   DEFAULT_OPTS = { expectMiss: false }
 
@@ -47,18 +47,18 @@ define 'kryptnostic.crypto-service-loader', [
       { expectMiss } = options
 
       Promise.props({
-        rsaCryptoService        : @getRsaCryptoService()
         serializedCryptoService : @directoryApi.getObjectCryptoService(id)
       })
-      .then ({ serializedCryptoService, rsaCryptoService }) =>
+      .then ({ serializedCryptoService }) =>
         if !serializedCryptoService && expectMiss
-          logger.info('no cryptoService exists for this object. creating one on-the-fly', { id })
+          log.info('no cryptoService exists for this object. creating one on-the-fly', { id })
           cryptoService = new AesCryptoService( Cypher.AES_CTR_128 )
           @setObjectCryptoService( id, cryptoService )
           return cryptoService
         else if !serializedCryptoService && !expectMiss
           throw new Error 'no cryptoservice exists for this object, but a miss was not expected'
         else
+          rsaCryptoService = @getRsaCryptoService()
           cryptoService = @marshaller.unmarshall(serializedCryptoService, rsaCryptoService)
           return cryptoService
 

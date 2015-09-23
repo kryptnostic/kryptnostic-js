@@ -1,6 +1,6 @@
 define 'kryptnostic.aes-crypto-service', [
-  'require',
-  'forge',
+  'require'
+  'forge'
   'kryptnostic.abstract-crypto-service'
   'kryptnostic.logger'
   'kryptnostic.block-ciphertext'
@@ -16,9 +16,6 @@ define 'kryptnostic.aes-crypto-service', [
 
   BITS_PER_BYTE         = 8
 
-  #
-  # Author: nickdhewitt, rbuckheit
-  #
   class AesCryptoService
 
     @BLOCK_CIPHER_KEY_SIZE : 16

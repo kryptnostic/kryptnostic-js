@@ -1,7 +1,6 @@
 define 'kryptnostic.sharing-client', [
   'require'
   'bluebird'
-  'kryptnostic.credential-loader'
   'kryptnostic.crypto-service-loader'
   'kryptnostic.crypto-service-marshaller'
   'kryptnostic.directory-api'
@@ -15,25 +14,24 @@ define 'kryptnostic.sharing-client', [
 ], (require) ->
 
   # libraries
-  _                       = require 'lodash'
-  Promise                 = require 'bluebird'
+  _                         = require 'lodash'
+  Promise                   = require 'bluebird'
 
   # Kryptnostic apis
-  DirectoryApi            = require 'kryptnostic.directory-api'
-  SharingApi              = require 'kryptnostic.sharing-api'
+  DirectoryApi              = require 'kryptnostic.directory-api'
+  SharingApi                = require 'kryptnostic.sharing-api'
 
   # Kryptnostic classes
-  CredentialLoader        = require 'kryptnostic.credential-loader'
-  CryptoServiceLoader     = require 'kryptnostic.crypto-service-loader'
-  CryptoServiceMarshaller = require 'kryptnostic.crypto-service-marshaller'
-  KryptnosticEngineProvider       = require 'kryptnostic.kryptnostic-engine-provider'
-  RevocationRequest       = require 'kryptnostic.revocation-request'
-  RsaCryptoService        = require 'kryptnostic.rsa-crypto-service'
-  SharingRequest          = require 'kryptnostic.sharing-request'
+  CryptoServiceLoader       = require 'kryptnostic.crypto-service-loader'
+  CryptoServiceMarshaller   = require 'kryptnostic.crypto-service-marshaller'
+  KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
+  RevocationRequest         = require 'kryptnostic.revocation-request'
+  RsaCryptoService          = require 'kryptnostic.rsa-crypto-service'
+  SharingRequest            = require 'kryptnostic.sharing-request'
 
   # Kryptnostic utils
-  Logger                  = require 'kryptnostic.logger'
-  Validators              = require 'kryptnostic.validators'
+  Logger                    = require 'kryptnostic.logger'
+  Validators                = require 'kryptnostic.validators'
 
   log = Logger.get('SharingClient')
 
@@ -51,7 +49,6 @@ define 'kryptnostic.sharing-client', [
       @directoryApi            = new DirectoryApi()
       @cryptoServiceMarshaller = new CryptoServiceMarshaller()
       @cryptoServiceLoader     = new CryptoServiceLoader()
-      @credentialLoader        = new CredentialLoader()
 
     #
     # shares an object with the given object ID with the given set of user UUIDs
@@ -66,8 +63,6 @@ define 'kryptnostic.sharing-client', [
 
       validateId(objectId)
       validateUuids(uuids)
-
-      { principal } = @credentialLoader.getCredentials()
 
       Promise.join(
         @sharingApi.getObjectIndexPair( objectId ),

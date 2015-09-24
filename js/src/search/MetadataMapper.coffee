@@ -3,17 +3,17 @@ define 'kryptnostic.search.metadata-mapper', [
   'kryptnostic.logger'
   'kryptnostic.binary-utils'
   'kryptnostic.hash-function'
-  'kryptnostic.kryptnostic-engine'
+  'kryptnostic.kryptnostic-engine-provider'
   'kryptnostic.search.random-index-generator'
   'kryptnostic.search-credential-service' #added to load the keys stored
 ], (require) ->
 
-  Logger                = require 'kryptnostic.logger'
-  BinaryUtils           = require 'kryptnostic.binary-utils'
-  HashFunction          = require 'kryptnostic.hash-function'
-  KryptnosticEngine     = require 'kryptnostic.kryptnostic-engine'
-  RandomIndexGenerator  = require 'kryptnostic.search.random-index-generator'
-  SearchCredentialService = require 'kryptnostic.search-credential-service'
+  Logger                    = require 'kryptnostic.logger'
+  BinaryUtils               = require 'kryptnostic.binary-utils'
+  HashFunction              = require 'kryptnostic.hash-function'
+  KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
+  RandomIndexGenerator      = require 'kryptnostic.search.random-index-generator'
+  SearchCredentialService   = require 'kryptnostic.search-credential-service'
 
   MINIMUM_TOKEN_LENGTH = 1
 
@@ -37,20 +37,12 @@ define 'kryptnostic.search.metadata-mapper', [
   class MetadataMapper
 
     constructor: ->
+      @engine         = KryptnosticEngineProvider.getEngine()
       @service        = new SearchCredentialService()
-      @engine         = @newKryptnosticEngine()
       @indexGenerator = new RandomIndexGenerator()
       @hashFunction   = HashFunction.MURMUR3_128
 
-    newKryptnosticEngine: ->
-      @service.getAllCredentials()
-      .then (credentials) ->
-        fhePrivateKey = credentials.FHE_PRIVATE_KEY
-        searchPrivateKey = credentials.SEARCH_PRIVATE_KEY
-        engine = new KryptnosticEngine({ fhePrivateKey, searchPrivateKey })
-        return engine
-
-    mapToKeys: ({ metadata, objectAddressMatrix, objectSearchKey }) ->
+    mapToKeys: ({ metadata }) ->
       metadataMap  = {}
       bucketLength = computeBucketSize(metadata)
 

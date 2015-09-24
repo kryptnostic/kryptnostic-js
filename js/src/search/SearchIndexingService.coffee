@@ -64,31 +64,27 @@ define 'kryptnostic.search-indexing-service', [
         return Promise.resolve()
 
       { body } = storageRequest
-      { objectAddressMatrix, objectSearchKey, objectIndexPair } = {}
+      { objectIndexPair } = {}
 
       Promise.resolve()
       .then =>
         engine = KryptnosticEngineProvider.getEngine()
-        objectAddressMatrix = engine.getObjectAddressMatrix()
-        objectSearchKey     = engine.getObjectSearchKey()
-        objectIndexPair     = engine.getObjectIndexPair({ objectSearchKey, objectAddressMatrix })
+        objectIndexPair = engine.getObjectIndexPair()
         @sharingApi.addObjectIndexPair(id, objectIndexPair)
       .then =>
         @objectIndexer.index(id, body)
       .then (metadata) =>
-        @prepareMetadataRequest({ id, metadata, objectAddressMatrix, objectSearchKey })
+        @prepareMetadataRequest({ id, metadata })
       .then (metadataRequest) =>
         @metadataApi.uploadMetadata( metadataRequest )
 
     # currently produces a single request, batch later if needed.
-    prepareMetadataRequest: ({ id, metadata, objectAddressMatrix, objectSearchKey }) ->
+    prepareMetadataRequest: ({ id, metadata }) ->
       Promise.resolve()
       .then =>
         @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss : false })
       .then (cryptoService) =>
-        keyedMetadata = @metadataMapper.mapToKeys({
-          metadata, objectAddressMatrix, objectSearchKey
-        })
+        keyedMetadata = @metadataMapper.mapToKeys({ metadata })
 
         metadataIndex = []
         for key, metadata of keyedMetadata

@@ -37,7 +37,6 @@ node_modules/karma-cli/bin/karma start js/karma.conf.js --single-run true;
 echo; echo "running browser-only tests...";
 echo; echo "TEMPORARY - inlining KryptnosticClient.js into KarmaJS context.html...";
 cp karmajs-kcjs-context.html node_modules/karma/static/context.html;
-
 echo;
 node_modules/karma-cli/bin/karma start js/karma-browser-only.conf.js --single-run true;
 

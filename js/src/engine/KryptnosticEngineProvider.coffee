@@ -1,18 +1,22 @@
 define 'kryptnostic.kryptnostic-engine-provider', [
   'require'
+  'kryptnostic.kryptnostic-engine'
   'kryptnostic.logger'
 ], (require) ->
 
-  Logger = require 'kryptnostic.logger'
+  KryptnosticEngine = require 'kryptnostic.kryptnostic-engine'
+  Logger            = require 'kryptnostic.logger'
 
-  log = Logger.get('KryptnosticEngineProvider')
+  logger = Logger.get('KryptnosticEngineProvider')
 
   class KryptnosticEngineProvider
 
-    @setEngine: (kryptnosticEngine) ->
-      @engine = kryptnosticEngine
+    _engine = null
+
+    @init: ({ @fhePrivateKey, @searchPrivateKey } = {}) ->
+      _engine ?= new KryptnosticEngine({ @fhePrivateKey, @searchPrivateKey })
 
     @getEngine: ->
-      return @engine
+      return _engine
 
   return KryptnosticEngineProvider

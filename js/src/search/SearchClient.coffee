@@ -2,18 +2,16 @@ define 'kryptnostic.search-client', [
   'require'
   'kryptnostic.binary-utils'
   'kryptnostic.crypto-service-loader'
-  'kryptnostic.kryptnostic-engine' #MOCK#
-  'kryptnostic.search-api'
-  'kryptnostic.search-credential-service' #added to load the keys stored
   'kryptnostic.kryptnostic-engine-provider'
+  'kryptnostic.kryptnostic-object'
+  'kryptnostic.search-api'
 ], (require) ->
 
   BinaryUtils               = require 'kryptnostic.binary-utils'
   CryptoServiceLoader       = require 'kryptnostic.crypto-service-loader'
-  KryptnosticObject         = require 'kryptnostic.kryptnostic-object'
-  KryptnosticEngine         = require 'kryptnostic.kryptnostic-engine' #MOCK#
-  SearchApi                 = require 'kryptnostic.search-api'
   KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
+  KryptnosticObject         = require 'kryptnostic.kryptnostic-object'
+  SearchApi                 = require 'kryptnostic.search-api'
 
   #
   # Performs encrypted searches on the user's behalf.
@@ -24,7 +22,6 @@ define 'kryptnostic.search-client', [
   class SearchClient
 
     constructor: ->
-      #@engine              = KryptnosticEngineProvider.getEngine()#new KryptnosticEngine() #MOCK#
       @cryptoServiceLoader = new CryptoServiceLoader()
       @searchApi           = new SearchApi()
 

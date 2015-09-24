@@ -1,11 +1,11 @@
 define 'kryptnostic.search-key-generator', [
   'require'
   'kryptnostic.logger'
-  'kryptnostic.kryptnostic-engine'
+  'kryptnostic.kryptnostic-engine-provider'
 ], (require) ->
 
   Logger            = require 'kryptnostic.logger'
-  KryptnosticEngine = require 'kryptnostic.kryptnostic-engine'
+  KryptnosticEngine = require 'kryptnostic.kryptnostic-engine-provider'
 
   log = Logger.get('SearchKeyGenerator')
 
@@ -14,10 +14,8 @@ define 'kryptnostic.search-key-generator', [
   #
   class SearchKeyGenerator
 
-    constructor: ->
-      @engine = new KryptnosticEngine()
-
     generateClientKeys: ->
+      engine = KryptnosticEngineProvider.getEngine()
       return {
         fhePrivateKey      : engine.getPrivateKey()
         searchPrivateKey   : engine.getSearchPrivateKey()

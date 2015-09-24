@@ -2,10 +2,10 @@ var allTestFiles  = [];
 var allBuildFiles = [];
 var allMockFiles  = [];
 
-var TEST_REGEXP   = /(.*)(spec|test)\.(js|coffee)$/i;
-var DIST_REGEXP   = /kryptnostic\.js|KryptnosticClient\.js/;
-var SINON_REGEXP  = /sinon\.js/;
-var MOCK_REGEXP   = /mock(.*)\.(js)/i;
+var TEST_REGEXP  = /(.*)(spec|test)\.(js|coffee)$/i;
+var DIST_REGEXP  = /kryptnostic\.js|KryptnosticClient\.js/;
+var SINON_REGEXP = /sinon\.js/;
+var MOCK_REGEXP  = /mock(.*)\.(js)/i;
 
 var pathToModule = function(path) {
   return path.replace(/^\/base\//, '').replace(/\.js$/, '');

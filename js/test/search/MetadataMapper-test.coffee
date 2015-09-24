@@ -3,13 +3,11 @@ define [
   'lodash'
   'kryptnostic.logger'
   'kryptnostic.binary-utils'
-  'kryptnostic.mock.kryptnostic-engine'
   'kryptnostic.search.metadata-mapper'
 ], (require) ->
 
   _                     = require 'lodash'
   BinaryUtils           = require 'kryptnostic.binary-utils'
-  MockKryptnosticEngine = require 'kryptnostic.mock.kryptnostic-engine'
   MetadataMapper        = require 'kryptnostic.search.metadata-mapper'
 
   STATIC_INDEX = 10

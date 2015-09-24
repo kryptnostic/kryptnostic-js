@@ -12,17 +12,16 @@ define 'kryptnostic.kryptnostic-engine', [
     https://github.com/kryptnostic/kryptnostic-js/issues
   '''
 
-  log = Logger.get('KryptnosticEngine')
+  logger = Logger.get('KryptnosticEngine')
 
   #
-  # Wrapper around the kryptnostic client module produced by emscripten.
-  # Author: rbuckheit
+  # wrapper around the KryptnosticClient module produced by emscripten
   #
   class KryptnosticEngine
 
     constructor: ({ @fhePrivateKey, @searchPrivateKey } = {}) ->
       unless Module? and Module.KryptnosticClient?
-        log.error(ENGINE_MISSING_ERROR)
+        logger.error(ENGINE_MISSING_ERROR)
 
       if @fhePrivateKey and @searchPrivateKey
         @krypto = new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey)

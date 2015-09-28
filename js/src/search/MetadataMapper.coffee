@@ -37,7 +37,6 @@ define 'kryptnostic.search.metadata-mapper', [
   class MetadataMapper
 
     constructor: ->
-      @engine         = KryptnosticEngineProvider.getEngine()
       @service        = new SearchCredentialService()
       @indexGenerator = new RandomIndexGenerator()
       @hashFunction   = HashFunction.MURMUR3_128
@@ -57,8 +56,9 @@ define 'kryptnostic.search.metadata-mapper', [
         tokenUint = BinaryUtils.hexToUint(tokenHex)
 
         # compute address of token
-        objectIndexPair = @engine.generateObjectIndexPair()
-        indexUint       = @engine.calculateMetadataAddress(objectIndexPair, tokenUint)
+        engine          = KryptnosticEngineProvider.getEngine()
+        objectIndexPair = engine.generateObjectIndexPair()
+        indexUint       = engine.calculateMetadataAddress(objectIndexPair, tokenUint)
         indexString     = BinaryUtils.uint8ToString(indexUint)
 
         # pad occurence locations

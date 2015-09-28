@@ -17,6 +17,9 @@ define 'kryptnostic.kryptnostic-engine-provider', [
       _engine ?= new KryptnosticEngine({ @fhePrivateKey, @searchPrivateKey })
 
     @getEngine: ->
-      return _engine
+      if _engine?
+        return _engine
+      else
+        return @init()
 
   return KryptnosticEngineProvider

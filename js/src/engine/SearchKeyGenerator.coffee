@@ -4,10 +4,13 @@ define 'kryptnostic.search-key-generator', [
   'kryptnostic.kryptnostic-engine-provider'
 ], (require) ->
 
-  Logger            = require 'kryptnostic.logger'
-  KryptnosticEngine = require 'kryptnostic.kryptnostic-engine-provider'
+  # kryptnostic
+  KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
 
-  log = Logger.get('SearchKeyGenerator')
+  # utils
+  Logger = require 'kryptnostic.logger'
+
+  logger = Logger.get('SearchKeyGenerator')
 
   #
   # Generates client keys needed for search.

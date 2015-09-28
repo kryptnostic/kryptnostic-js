@@ -29,8 +29,9 @@ define 'kryptnostic.search-client', [
       Promise.resolve()
       .then =>
         token = BinaryUtils.stringToUint8(token)
-        engine = KryptnosticEngineProvider.getEngine()
-        encryptedToken = @engine.getEncryptedSearchToken({ token })
+        encryptedToken = KryptnosticEngineProvider
+          .getEngine()
+          .getEncryptedSearchToken({ token })
         @searchApi.search(encryptedToken)
       .then (encryptedMetadata) ->
         Promise.all(_.map(encryptedMetadata, (encryptedMetadatum) =>

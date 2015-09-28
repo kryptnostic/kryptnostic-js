@@ -6,14 +6,15 @@ define 'kryptnostic.block-ciphertext', [
 ], (require) ->
   'use strict'
 
-  _         = require 'lodash'
-  validator = require 'kryptnostic.schema.validator'
-  SCHEMA    = require 'kryptnostic.schema.block-ciphertext'
+  # libraries
+  _ = require 'lodash'
 
-  #
-  # Represents a block ciphertext.
-  # Author: rbuckheit
-  #
+  # schemas
+  SCHEMA = require 'kryptnostic.schema.block-ciphertext'
+
+  # utils
+  Validator = require 'kryptnostic.schema.validator'
+
   class BlockCiphertext
 
     constructor : (raw) ->
@@ -21,6 +22,6 @@ define 'kryptnostic.block-ciphertext', [
       @validate()
 
     validate : ->
-      validator.validate(this, BlockCiphertext, SCHEMA)
+      Validator.validate(this, BlockCiphertext, SCHEMA)
 
   return BlockCiphertext

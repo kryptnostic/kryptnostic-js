@@ -6,68 +6,70 @@ define 'kryptnostic.crypto-key-storage-api', [
   'kryptnostic.configuration'
 ], (require) ->
 
-  Requests      = require 'kryptnostic.requests'
-  Logger        = require 'kryptnostic.logger'
+  # utils
   Configuration = require 'kryptnostic.configuration'
+  Logger        = require 'kryptnostic.logger'
+  Requests      = require 'kryptnostic.requests'
 
   rootKeysUrl            = -> Configuration.get('servicesUrl') + '/keys'
   clientHashUrl          = -> rootKeysUrl() + '/hash'
   fhePrivateKeyUrl       = -> rootKeysUrl() + '/private'
   fheSearchPrivateKeyUrl = -> rootKeysUrl() + '/searchprivate'
 
-  log = Logger.get('CryptoKeyStorageApi')
+  logger = Logger.get('CryptoKeyStorageApi')
 
   #
   # HTTP calls for saving and retrieving user encryption keys.
-  # Author: rbuckheit
   #
   class CryptoKeyStorageApi
 
-    # rsa public key
-    # ==========
-    #   For future use
-
-    # getRsaPublicKey: ->
-    #   return Requests.getBlockCiphertextFromUrl(rsaPublicKeyUrl())
-
-    # setRsaPublicKey: (key) ->
-    #   return Requests.postUint8ToUrl(rsaPublicKeyUrl(), key)
-    #   .then (response) ->
-    #     log.info('setSearchPrivateKey')
-    #     return response.data
-
-    # fhe key
-    # =======
+    #
+    # FHE private key
+    #
 
     getFhePrivateKey: ->
-      return Requests.getBlockCiphertextFromUrl( fhePrivateKeyUrl() )
+      return Requests.getBlockCiphertextFromUrl(
+        fhePrivateKeyUrl()
+      )
 
     setFhePrivateKey: (key) ->
-      Requests.postUint8ToUrl(fhePrivateKeyUrl(), key)
+      Requests.postUint8ToUrl(
+        fhePrivateKeyUrl(),
+        key
+      )
       .then (response) ->
-        log.info('setFhePrivateKey')
+        logger.info('setFhePrivateKey')
 
-    # search key
-    # ==========
+    #
+    # search private key
+    #
 
     getSearchPrivateKey: ->
       return Requests.getBlockCiphertextFromUrl( fheSearchPrivateKeyUrl() )
 
     setSearchPrivateKey: (key) ->
-      Requests.postUint8ToUrl(fheSearchPrivateKeyUrl(), key)
+      Requests.postUint8ToUrl(
+        fheSearchPrivateKeyUrl(),
+        key
+      )
       .then (response) ->
-        log.info('setSearchPrivateKey')
+        logger.info('setSearchPrivateKey')
 
-
-    # client hash
-    # ===========
+    #
+    # client hash function
+    #
 
     getClientHashFunction: ->
-      return Requests.getBlockCiphertextFromUrl( clientHashUrl() )
+      return Requests.getByteArrayAsUint8Array(
+        clientHashUrl()
+      )
 
-    setClientHashFunction: (key) ->
-      Requests.postUint8ToUrl(clientHashUrl(), key)
+    setClientHashFunction: (clientHashFunction) ->
+      Requests.postUint8ToUrl(
+        clientHashUrl(),
+        clientHashFunction
+      )
       .then (response) ->
-        log.info('setClientHashFunction')
+        logger.info('setClientHashFunction')
 
   return CryptoKeyStorageApi

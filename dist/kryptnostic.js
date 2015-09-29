@@ -26198,7 +26198,7 @@ define("function-name", function(){});
   define('kryptnostic.chunking.strategy.default', ['require', 'lodash'], function(require) {
     var BLOCK_LENGTH_IN_BYTES, DefaultChunkingStrategy, EMPTY_STRING, _;
     _ = require('lodash');
-    BLOCK_LENGTH_IN_BYTES = 4096;
+    BLOCK_LENGTH_IN_BYTES = 1000000;
     EMPTY_STRING = '';
     DefaultChunkingStrategy = (function() {
       function DefaultChunkingStrategy() {}

@@ -5,7 +5,7 @@ define 'kryptnostic.chunking.strategy.default', [
 
   _ = require 'lodash'
 
-  BLOCK_LENGTH_IN_BYTES = 4096
+  BLOCK_LENGTH_IN_BYTES = 1000000
 
   EMPTY_STRING = ''
 

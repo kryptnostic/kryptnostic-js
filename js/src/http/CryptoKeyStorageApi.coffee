@@ -60,7 +60,7 @@ define 'kryptnostic.crypto-key-storage-api', [
     #
 
     getClientHashFunction: ->
-      return Requests.getByteArrayAsUint8Array(
+      return Requests.getAsUint8FromUrl(
         clientHashUrl()
       )
 

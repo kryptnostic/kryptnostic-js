@@ -3,7 +3,6 @@ define 'kryptnostic.requests', [
   'axios'
   'bluebird'
   'kryptnostic.credential-loader'
-  'kryptnostic.binary-utils'
 ], (require) ->
   'use strict'
 
@@ -13,9 +12,6 @@ define 'kryptnostic.requests', [
 
   # kryptnostic
   CredentialLoader = require 'kryptnostic.credential-loader'
-
-  # utils
-  BinaryUtils = require 'kryptnostic.binary-utils'
 
   # constants
   PRINCIPAL_HEADER  = 'X-Kryptnostic-Principal'
@@ -35,7 +31,7 @@ define 'kryptnostic.requests', [
     request.headers[CREDENTIAL_HEADER] = credentials.credential
     return request
 
-  getAsUint8FromUrl = ( url ) ->
+  getAsUint8FromUrl = (url) ->
     Promise.resolve(
       axios(
         wrapCredentials({
@@ -46,7 +42,13 @@ define 'kryptnostic.requests', [
       )
     )
     .then (response) ->
-      new Uint8Array(response)
+      if (response? and
+          response.data? and
+          response.data.byteLength? and
+          response.data.byteLength > 0)
+        return new Uint8Array(response.data)
+      else
+        return null
 
   getBlockCiphertextFromUrl = (url) ->
     Promise.resolve(
@@ -78,27 +80,9 @@ define 'kryptnostic.requests', [
       )
     )
 
-  getByteArrayAsUint8Array = (url) ->
-    Promise.resolve(
-      axios(
-        wrapCredentials({
-          url          : url
-          method       : 'GET'
-          responseType : 'json'
-        })
-      )
-    )
-    .then (response) ->
-      if response? and response.data?
-        decodedData = atob(response.data)
-        return BinaryUtils.stringToUint8(decodedData)
-      else
-        return null
-
   return {
     wrapCredentials,
     getAsUint8FromUrl,
     getBlockCiphertextFromUrl,
-    postUint8ToUrl,
-    getByteArrayAsUint8Array
+    postUint8ToUrl
   }

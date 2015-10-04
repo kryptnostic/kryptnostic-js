@@ -38,8 +38,7 @@ define 'kryptnostic.sharing-client', [
   { validateId, validateUuids } = Validators
 
   #
-  # Client for granting and revoking shared access to Kryptnostic objects.
-  # Author: rbuckheit
+  # client for granting and revoking shared access to Kryptnostic objects
   #
   class SharingClient
 
@@ -64,10 +63,10 @@ define 'kryptnostic.sharing-client', [
       validateUuids(uuids)
 
       Promise.join(
-        @sharingApi.getObjectIndexPair( objectId ),
-        @cryptoServiceLoader.getObjectCryptoService( objectId ),
-        @directoryApi.getRsaPublicKeys( uuids ),
-        (objectIndexPair, objectCryptoService, uuidsToRsaPublicKeys) =>
+        @sharingApi.getObjectSearchPair(objectId),
+        @cryptoServiceLoader.getObjectCryptoService(objectId),
+        @directoryApi.getRsaPublicKeys(uuids),
+        (objectSearchPair, objectCryptoService, uuidsToRsaPublicKeys) =>
 
           # transform RSA public key to Base64 seal
           seals = _.mapValues(uuidsToRsaPublicKeys, (rsaPublicKey) =>
@@ -81,24 +80,24 @@ define 'kryptnostic.sharing-client', [
           )
           log.info('seals', seals)
 
-          if !objectIndexPair
-            # if we did not get an object index pair, we can omit it from the SharingRequest
+          if !objectSearchPair
+            # if we did not get an object search pair, we can omit it from the SharingRequest
             sharingRequest = new SharingRequest({
               id          : objectId,
               users       : seals
             })
           else
-            # create the object sharing pair from the object index pair, and encrypt it
-            objectSharingPair = KryptnosticEngineProvider
+            # create the object share pair from the object search pair, and encrypt it
+            objectSharePair = KryptnosticEngineProvider
               .getEngine()
-              .getObjectSharingPairFromObjectIndexPair(objectIndexPair)
+              .calculateObjectSharePairFromObjectSearchPair(objectSearchPair)
 
-            encryptedObjectSharingPair = objectCryptoService.encryptUint8Array(objectSharingPair)
+            encryptedObjectSharePair = objectCryptoService.encryptUint8Array(objectSharePair)
 
             sharingRequest = new SharingRequest({
               id          : objectId,
               users       : seals,
-              sharingPair : encryptedObjectSharingPair
+              sharingPair : encryptedObjectSharePair
             })
 
           # send off the object sharing request
@@ -140,14 +139,12 @@ define 'kryptnostic.sharing-client', [
               { expectMiss: false } # ObjectCryptoService should exist
             )
           .then (objectCryptoService) =>
-            encryptedSharingPair = sharedObject.encryptedSharingPair
-            decryptedSharingPair = objectCryptoService.decryptToUint8Array(encryptedSharingPair)
-
-            objectIndexPair = KryptnosticEngineProvider
+            encryptedSharePair = sharedObject.encryptedSharingPair
+            decryptedSharePair = objectCryptoService.decryptToUint8Array(encryptedSharingPair)
+            objectSearchPair = KryptnosticEngineProvider
               .getEngine()
-              .getObjectIndexPairFromObjectSharingPair(decryptedSharingPair)
-
-            @sharingApi.addObjectIndexPair(objectId, objectIndexPair)
+              .calculateObjectSearchPairFromObjectSharePair(decryptedSharePair)
+            @sharingApi.addObjectSearchPair(objectId, objectSearchPair)
         )
       # DOTO - how do we handle failure when processing incoming shares?
       # .catch (e) ->

@@ -2,20 +2,23 @@ define 'kryptnostic.sharing-api', [
   'require'
   'axios'
   'bluebird'
+  'kryptnostic.binary-utils'
   'kryptnostic.configuration'
-  'kryptnostic.requests'
   'kryptnostic.logger'
+  'kryptnostic.requests'
 ], (require) ->
 
   # libraries
-  axios    = require 'axios'
-  Promise  = require 'bluebird'
+  axios   = require 'axios'
+  Promise = require 'bluebird'
 
-  # Kryptnostic utils
-  Config   = require 'kryptnostic.configuration'
-  Logger   = require 'kryptnostic.logger'
-  Requests = require 'kryptnostic.requests'
+  # utils
+  BinaryUtils = require 'kryptnostic.binary-utils'
+  Config      = require 'kryptnostic.configuration'
+  Logger      = require 'kryptnostic.logger'
+  Requests    = require 'kryptnostic.requests'
 
+  # constants
   TYPE_PATH   = '/type'
   SHARE_PATH  = '/share'
   REVOKE_PATH = '/revoke'
@@ -30,14 +33,13 @@ define 'kryptnostic.sharing-api', [
   revokeObjectUrl         = -> sharingEndpoint() + OBJECT_PATH + REVOKE_PATH
   getIncomingSharesUrl    = -> sharingEndpoint() + OBJECT_PATH
   removeIncomingSharesUrl = (id ) -> sharingEndpoint() + OBJECT_PATH + '/' + id
-  addObjectIndexPairUrl   = -> sharingEndpoint() + KEYS_PATH
-  getObjectIndexPairUrl   = (id) -> sharingEndpoint() + OBJECT_PATH + '/' + id + OBJECT_KEYS
+  addObjectSearchPairUrl  = -> sharingEndpoint() + KEYS_PATH
+  getObjectSearchPairUrl  = (id) -> sharingEndpoint() + OBJECT_PATH + '/' + id + OBJECT_KEYS
 
-  log = Logger.get('SharingApi')
+  logger = Logger.get('SharingApi')
 
   #
   # HTTP calls for interacting with the /share endpoint of Kryptnostic Services.
-  # Author: rbuckheit
   #
   class SharingApi
 
@@ -52,7 +54,7 @@ define 'kryptnostic.sharing-api', [
           })
         )
       .then (response) ->
-        log.debug('getIncomingShares()', response)
+        logger.debug('getIncomingShares()', response)
         return response.data
 
     removeIncomingShares: ->
@@ -72,7 +74,7 @@ define 'kryptnostic.sharing-api', [
           })
         )
       .then (response) ->
-        log.debug('shareObject()', response.data.data)
+        logger.debug('shareObject()', response.data.data)
 
     # revoke access to an object
     revokeObject: (revocationRequest) ->
@@ -88,31 +90,31 @@ define 'kryptnostic.sharing-api', [
           })
         )
       .then (response) ->
-        log.debug('revokeObject()', response.data.data)
+        logger.debug('revokeObject()', response.data.data)
 
-    getObjectIndexPair: (objectId) ->
-      Requests
-      .getAsUint8FromUrl(
-        getObjectIndexPairUrl(objectId)
+    getObjectSearchPair: (objectId) ->
+      return Requests.getAsUint8FromUrl(
+        getObjectSearchPairUrl(objectId)
       )
-      .then (response) ->
-        log.debug('getObjectIndexPair()', response.data)
-        return response.data
 
-    addObjectIndexPair: (objectId, objectIndexPair) ->
+
+    addObjectSearchPair: (objectId, objectSearchPair) ->
       Promise.resolve()
       .then ->
         requestData = {}
-        requestData[objectId] = btoa(objectIndexPair)
+        objectSearchPairAsBase64 = BinaryUtils.uint8ToBase64(objectSearchPair)
+        requestData[objectId] = {
+          indexPair: objectSearchPairAsBase64
+        }
         axios(
           Requests.wrapCredentials({
-            url     : addObjectIndexPairUrl()
+            url     : addObjectSearchPairUrl()
             method  : 'PUT'
             headers : DEFAULT_HEADER
-            data    : JSON.stringify(requestData)
+            data    : requestData
           })
         )
       .then (response) ->
-        log.debug('addIndexPairs()', response.data)
+        logger.debug('addObjectSearchPair()', response.data)
 
   return SharingApi

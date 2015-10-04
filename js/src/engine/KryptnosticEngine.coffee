@@ -60,8 +60,8 @@ define 'kryptnostic.kryptnostic-engine', [
     # searching
     #
 
-    calculateEncryptedSearchToken: (token) ->
-      return new Uint8Array(@krypto.calculateEncryptedSearchToken(token))
+    calculateEncryptedSearchToken: (tokenAsUint8) ->
+      return new Uint8Array(@krypto.calculateEncryptedSearchToken(tokenAsUint8))
 
     #
     # sharing

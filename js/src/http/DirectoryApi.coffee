@@ -46,6 +46,7 @@ define 'kryptnostic.directory-api', [
 
     # returns a serialized cryptoservice for the requested object
     getObjectCryptoService: (objectId) ->
+      validateId(objectId)
       cached = Cache.get( Cache.CRYPTO_SERVICES, objectId )
       if cached?
         return Promise.resolve()
@@ -53,8 +54,6 @@ define 'kryptnostic.directory-api', [
           return cached
       Promise.resolve()
       .then ->
-        validateId(objectId)
-
         Promise.resolve(axios(Requests.wrapCredentials({
           url    : cryptoServiceUrl() + '/' + objectId
           method : 'GET'

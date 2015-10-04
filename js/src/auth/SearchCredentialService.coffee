@@ -104,14 +104,18 @@ define 'kryptnostic.search-credential-service', [
         # create a map of CredentialType -> Promise<Credential>
         credentialPromises = _.mapValues(CredentialType, (credentialType) =>
           loadCredential = credentialType.getter(@cryptoKeyStorageApi)
-          result = loadCredential()
-          return result
+          return loadCredential()
         )
 
         # Promise.props() returns a Promise that is fulfilled when all the properties of the object are fulfilled,
         # so 'credentialPromises' will fulfill when all credential requests are fulfilled
         Promise.props(credentialPromises)
         .then (credentials) =>
+
+          # we don't need to make requests for object crypto services if the credentials are falsey
+          falseyFilteredCredentials = _.compact(_.values(credentials))
+          if _.isEmpty(falseyFilteredCredentials)
+            return credentials
 
           # create a map of CredentialType -> Promise<AesCryptoService>
           cryptoServicePromises = _.mapValues(CredentialType, (credentialType) =>
@@ -177,7 +181,7 @@ define 'kryptnostic.search-credential-service', [
         @initializeCredential(CredentialType.CLIENT_HASH_FUNCTION, clientKeys, notifier)
 
     initializeCredential: (credentialType, clientKeys, notifier) ->
-      { keyAsUint8, storeableKey } = {}
+      { key, storeableKey } = {}
 
       Promise.resolve()
       .then ->
@@ -190,16 +194,16 @@ define 'kryptnostic.search-credential-service', [
           { expectMiss: true }
         )
       .then (aesCryptoService) =>
-        keyAsUint8 = credentialType.getKey(clientKeys)
-        storeableKey = keyAsUint8
+        key = credentialType.getKey(clientKeys)
+        storeableKey = key
 
         if credentialType.encrypt is true
-          storeableKey = aesCryptoService.encryptUint8Array(keyAsUint8)
+          storeableKey = aesCryptoService.encryptUint8Array(key)
 
         storeCredential = credentialType.setter(@cryptoKeyStorageApi)
         storeCredential(storeableKey)
 
       .then ->
-        return keyAsUint8
+        return key
 
   return SearchCredentialService

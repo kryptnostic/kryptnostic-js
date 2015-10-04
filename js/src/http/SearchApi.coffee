@@ -10,9 +10,9 @@ define 'kryptnostic.search-api', [
   Requests         = require 'kryptnostic.requests'
   Configuration    = require 'kryptnostic.configuration'
 
-  searchServiceUrl = -> Configuration.get('servicesUrl') + '/search/fast'
+  searchServiceUrl = -> Configuration.get('servicesUrl') + '/search'
 
-  log = Logger.get('SearchApi')
+  logger = Logger.get('SearchApi')
 
   #
   # HTTP calls for submitting encrypted search queries to the server.
@@ -21,10 +21,13 @@ define 'kryptnostic.search-api', [
   class SearchApi
 
     # returns a list of encrypted indexMetadata for matches.
-    search: (encryptedToken) ->
-      return Requests.postUint8ToUrl(searchServiceUrl(), encryptedToken)
+    search: (searchRequest) ->
+      return Requests.postUint8ToUrl(
+        searchServiceUrl(),
+        searchRequest
+      )
       .then (response) ->
-        log.info('searched')
+        logger.info('searched')
         return response.data
 
   return SearchApi

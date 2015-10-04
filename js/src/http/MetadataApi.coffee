@@ -21,7 +21,7 @@ define 'kryptnostic.metadata-api', [
   metadataUrl = -> Config.get('servicesUrl') + '/metadata'
   deleteUrl   = -> metadataUrl() + '/delete'
 
-  log = Logger.get('MetadataApi')
+  logger = Logger.get('MetadataApi')
 
   #
   # HTTP calls for submitting indexed object metadata.
@@ -38,7 +38,7 @@ define 'kryptnostic.metadata-api', [
             url     : metadataUrl()
             method  : 'POST'
             headers : DEFAULT_HEADER
-            data    : JSON.stringify(sharingRequest)
+            data    : JSON.stringify(metadataRequest)
           })
         )
       .then (response) ->

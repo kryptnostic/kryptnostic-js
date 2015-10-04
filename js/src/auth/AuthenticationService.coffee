@@ -59,8 +59,6 @@ define 'kryptnostic.authentication-service', [
         keypair = _keypair
         credentialProvider.store { principal, credential, keypair }
       .then ->
-        searchCredentialService.ensureCredentialsInitialized(notifier)
-      .then ->
         searchCredentialService.getAllCredentials()
       .then (_searchCredential) ->
         searchCredential = _searchCredential

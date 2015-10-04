@@ -37,13 +37,13 @@ define 'kryptnostic.search.metadata-mapper', [
   class MetadataMapper
 
     constructor: ->
-      @engine         = KryptnosticEngineProvider.getEngine()
       @service        = new SearchCredentialService()
       @indexGenerator = new RandomIndexGenerator()
       @hashFunction   = HashFunction.MURMUR3_128
 
-    mapToKeys: ({ metadata }) ->
+    mapToKeys: ({ metadata, objectIndexPair }) ->
       metadataMap  = {}
+      engine       = KryptnosticEngineProvider.getEngine()
       bucketLength = computeBucketSize(metadata)
 
       for metadatum in metadata
@@ -57,13 +57,11 @@ define 'kryptnostic.search.metadata-mapper', [
         tokenUint = BinaryUtils.hexToUint(tokenHex)
 
         # compute address of token
-        objectIndexPair = @engine.generateObjectIndexPair()
-        indexUint       = @engine.calculateMetadataAddress(objectIndexPair, tokenUint)
-        indexString     = BinaryUtils.uint8ToString(indexUint)
+        indexUint   = engine.calculateMetadataAddress(objectIndexPair, tokenUint)
+        indexString = BinaryUtils.uint8ToBase64(indexUint)
 
         # pad occurence locations
-        paddedLocations = @subListAndPad(locations, bucketLength)
-
+        paddedLocations   = @subListAndPad(locations, bucketLength)
         balancedMetadatum = { id, token, locations : paddedLocations }
 
         if metadataMap[indexString]

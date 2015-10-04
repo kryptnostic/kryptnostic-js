@@ -9,7 +9,7 @@ define 'kryptnostic.binary-utils', [
   _      = require 'lodash'
   Logger = require 'kryptnostic.logger'
 
-  log = Logger.get('BinaryUtils')
+  logger = Logger.get('BinaryUtils')
 
   #
   # Utility functions for working with binary data.
@@ -88,6 +88,10 @@ define 'kryptnostic.binary-utils', [
     validateUint8(arr)
     return [0...arr.length].map((i) -> String.fromCharCode(arr[i])).join(EMPTY_STRING)
 
+  uint8ToBase64 = (arr) ->
+    validateUint8(arr)
+    return btoa(uint8ToString(arr))
+
   uint16ToString = (arr) ->
     validateUint16(arr)
     return [0...arr.length].map((i) -> String.fromCharCode(arr[i])).join(EMPTY_STRING)
@@ -145,6 +149,7 @@ define 'kryptnostic.binary-utils', [
     uint16ToString
     uint16ToUint8
     uint8ToString
+    uint8ToBase64
     uint8ToUint16
     uint8ToNumeric
   }

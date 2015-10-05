@@ -1,6 +1,7 @@
 define 'kryptnostic.storage-client', [
   'require'
   'bluebird'
+  'kryptnostic.logger'
   'kryptnostic.validators'
   'kryptnostic.object-api'
   'kryptnostic.kryptnostic-object'
@@ -11,6 +12,7 @@ define 'kryptnostic.storage-client', [
   'use strict'
 
   Promise               = require 'bluebird'
+  Logger                = require 'kryptnostic.logger'
   validators            = require 'kryptnostic.validators'
   KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
   PendingObjectRequest  = require 'kryptnostic.pending-object-request'
@@ -20,6 +22,7 @@ define 'kryptnostic.storage-client', [
 
   { validateId, validateNonEmptyString } = validators
 
+  logger = Logger.get('StorageClient')
   #
   # Client for listing and loading Kryptnostic encrypted objects.
   # Author: rbuckheit
@@ -27,8 +30,9 @@ define 'kryptnostic.storage-client', [
   class StorageClient
 
     constructor : ->
+      logger.info 'storage client created'
       @objectApi             = new ObjectApi()
-      @cryptoServiceLoader   = new CryptoServiceLoader()
+      @cryptoServiceLoader   = CryptoServiceLoader.get()
       @searchIndexingService = new SearchIndexingService()
 
     getObjectIds : ->

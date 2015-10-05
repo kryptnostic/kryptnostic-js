@@ -22,7 +22,7 @@ define 'kryptnostic.search-client', [
 
     constructor: ->
       @engine              = new MockKryptnosticEngine()
-      @cryptoServiceLoader = new CryptoServiceLoader()
+      @cryptoServiceLoader = CryptoServiceLoader.get()
       @searchApi           = new SearchApi()
 
     search: (token) ->

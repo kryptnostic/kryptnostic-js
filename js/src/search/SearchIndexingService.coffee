@@ -41,7 +41,7 @@ define 'kryptnostic.search-indexing-service', [
   class SearchIndexingService
 
     constructor : ->
-      @cryptoServiceLoader  = new CryptoServiceLoader()
+      @cryptoServiceLoader  = CryptoServiceLoader.get()
       @documentSearchKeyApi = new DocumentSearchKeyApi()
       @engine               = new MockKryptnosticEngine()
       @metadataApi          = new MetadataApi()

@@ -38,7 +38,7 @@ define 'kryptnostic.sharing-client', [
       @sharingApi              = new SharingApi()
       @directoryApi            = new DirectoryApi()
       @cryptoServiceMarshaller = new CryptoServiceMarshaller()
-      @cryptoServiceLoader     = new CryptoServiceLoader()
+      @cryptoServiceLoader     = CryptoServiceLoader.get()
       @credentialLoader        = new CredentialLoader()
 
     shareObject: (id, uuids) ->

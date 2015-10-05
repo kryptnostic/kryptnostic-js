@@ -73,6 +73,10 @@ define [
 
     afterEach ->
       unmockServerKeys()
+      if service.searchKeyGenerator.generateClientKeys.restore?
+        service.searchKeyGenerator.generateClientKeys.restore()
+      if service.cryptoServiceLoader.getObjectCryptoService.restore?
+        service.cryptoServiceLoader.getObjectCryptoService.restore()
       return
 
     mockServerKeys = ({ fhePrivateKey, searchPrivateKey, clientHashFunction }) ->

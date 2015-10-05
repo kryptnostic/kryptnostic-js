@@ -2,12 +2,13 @@ define 'kryptnostic.crypto-service-loader', [
   'require'
   'bluebird'
   'kryptnostic.logger'
-  'kryptnostic.cypher'
-  'kryptnostic.rsa-crypto-service'
-  'kryptnostic.aes-crypto-service'
-  'kryptnostic.directory-api'
-  'kryptnostic.crypto-service-marshaller'
-  'kryptnostic.credential-loader'
+  'kryptnostic.cypher',
+  'kryptnostic.rsa-crypto-service',
+  'kryptnostic.aes-crypto-service',
+  'kryptnostic.directory-api',
+  'kryptnostic.crypto-service-marshaller',
+  'kryptnostic.credential-loader',
+  'kryptnostic.object-utils'
 ], (require) ->
   'use strict'
 
@@ -19,6 +20,7 @@ define 'kryptnostic.crypto-service-loader', [
   Logger                  = require 'kryptnostic.logger'
   CryptoServiceMarshaller = require 'kryptnostic.crypto-service-marshaller'
   CredentialLoader        = require 'kryptnostic.credential-loader'
+  ObjectUtils             = require 'kryptnostic.object-utils'
 
   INT_SIZE     = 4
   EMPTY_BUFFER = ''
@@ -37,6 +39,7 @@ define 'kryptnostic.crypto-service-loader', [
       @directoryApi     = new DirectoryApi()
       @marshaller       = new CryptoServiceMarshaller()
       @credentialLoader = new CredentialLoader()
+      @cache            = {}
 
     getRsaCryptoService: ->
       { keypair } = @credentialLoader.getCredentials()
@@ -46,21 +49,28 @@ define 'kryptnostic.crypto-service-loader', [
       options        = _.defaults({}, options, DEFAULT_OPTS)
       { expectMiss } = options
 
+      id = ObjectUtils.childIdToParent(id)
+
+      # Check cache for crypto service
+      if @cache[id]
+        return Promise.resolve(@cache[id])
+      # if cache miss get from network, and update cache
       Promise.props({
         serializedCryptoService : @directoryApi.getObjectCryptoService(id)
       })
       .then ({ serializedCryptoService }) =>
+        cryptoService = {}
         if !serializedCryptoService && expectMiss
           log.info('no cryptoService exists for this object. creating one on-the-fly', { id })
           cryptoService = new AesCryptoService( Cypher.AES_CTR_128 )
           @setObjectCryptoService( id, cryptoService )
-          return cryptoService
         else if !serializedCryptoService && !expectMiss
           throw new Error 'no cryptoservice exists for this object, but a miss was not expected'
         else
           rsaCryptoService = @getRsaCryptoService()
           cryptoService = @marshaller.unmarshall(serializedCryptoService, rsaCryptoService)
-          return cryptoService
+        @cache[id] = cryptoService
+        return cryptoService
 
     setObjectCryptoService: (id, cryptoService) ->
       unless cryptoService.constructor.name is 'AesCryptoService'
@@ -72,4 +82,11 @@ define 'kryptnostic.crypto-service-loader', [
 
       return @directoryApi.setObjectCryptoService(id, encryptedCryptoService)
 
-  return CryptoServiceLoader
+  cryptoServiceLoader = new CryptoServiceLoader()
+
+  get = ->
+    return cryptoServiceLoader
+
+  return {
+    get
+  }

@@ -17,7 +17,7 @@ define 'kryptnostic.search-credential-service', [
   SearchKeyGenerator  = require 'kryptnostic.search-key-generator'
   CryptoServiceLoader = require 'kryptnostic.crypto-service-loader'
 
-  log = Logger.get('SearchCredentialService')
+  logger = Logger.get('SearchCredentialService')
 
   #
   # enumeration of credential types which the SearchCredentialService produces.
@@ -162,8 +162,8 @@ define 'kryptnostic.search-credential-service', [
         else if credentials.length is expectedLength
           return true
         else
-          log.error('user account is in a partially initialized state')
-          log.error("expected #{expectedLength} credentials but got #{credentials.length}")
+          logger.error('user account is in a partially initialized state')
+          logger.error("expected #{expectedLength} credentials but got #{credentials.length}")
           throw new Error 'credentials are in a partially initialized state'
 
     initializeCredentials: (notifier) ->
@@ -171,7 +171,7 @@ define 'kryptnostic.search-credential-service', [
 
       Promise.resolve()
       .then =>
-        log.info('generating search credentials')
+        logger.info('generating search credentials')
         clientKeys = @searchKeyGenerator.generateClientKeys()
       .then =>
         @initializeCredential(CredentialType.FHE_PRIVATE_KEY, clientKeys, notifier)
@@ -185,7 +185,7 @@ define 'kryptnostic.search-credential-service', [
 
       Promise.resolve()
       .then ->
-        log.info('initializeCredential', credentialType.stage)
+        logger.info('initializeCredential', credentialType.stage)
         Promise.resolve(notifier(credentialType.stage))
       .then =>
         # we expect getObjectCryptoService() to return an instance of AesCryptoService

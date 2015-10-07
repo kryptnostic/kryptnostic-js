@@ -2,6 +2,7 @@ define 'kryptnostic.requests', [
   'require'
   'axios'
   'bluebird'
+  'kryptnostic.block-ciphertext'
   'kryptnostic.credential-loader'
 ], (require) ->
   'use strict'
@@ -11,6 +12,7 @@ define 'kryptnostic.requests', [
   Promise = require 'bluebird'
 
   # kryptnostic
+  BlockCiphertext = require 'kryptnostic.block-ciphertext'
   CredentialLoader = require 'kryptnostic.credential-loader'
 
   # constants
@@ -41,12 +43,12 @@ define 'kryptnostic.requests', [
         })
       )
     )
-    .then (response) ->
-      if (response? and
-          response.data? and
-          response.data.byteLength? and
-          response.data.byteLength > 0)
-        return new Uint8Array(response.data)
+    .then (axiosResponse) ->
+      if (axiosResponse? and
+          axiosResponse.data? and
+          axiosResponse.data.byteLength? and
+          axiosResponse.data.byteLength > 0)
+        return new Uint8Array(axiosResponse.data)
       else
         return null
 
@@ -60,29 +62,17 @@ define 'kryptnostic.requests', [
         })
       )
     )
-    .then (response) ->
-      if response? and response.data?
+    .then (axiosResponse) ->
+      if axiosResponse? and axiosResponse.data?
         try
-          return new BlockCiphertext(response.data)
+          return new BlockCiphertext(axiosResponse.data)
         catch e
           return null
       else
         return null
 
-  postUint8ToUrl = (url, data) ->
-    Promise.resolve(
-      axios(
-        wrapCredentials({
-          url    : url
-          method : 'POST'
-          data   : data
-        })
-      )
-    )
-
   return {
     wrapCredentials,
     getAsUint8FromUrl,
-    getBlockCiphertextFromUrl,
-    postUint8ToUrl
+    getBlockCiphertextFromUrl
   }

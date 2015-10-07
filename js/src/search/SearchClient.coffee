@@ -1,7 +1,9 @@
 define 'kryptnostic.search-client', [
   'require'
+  'bluebird'
   'kryptnostic.binary-utils'
   'kryptnostic.logger'
+  'kryptnostic.chunking.strategy.json'
   'kryptnostic.crypto-service-loader'
   'kryptnostic.hash-function'
   'kryptnostic.kryptnostic-engine-provider'
@@ -10,8 +12,12 @@ define 'kryptnostic.search-client', [
   'kryptnostic.search-request'
 ], (require) ->
 
+  # libraries
+  Promise = require 'bluebird'
+
   # kryptnostic
   CryptoServiceLoader       = require 'kryptnostic.crypto-service-loader'
+  JsonChunkingStrategy      = require 'kryptnostic.chunking.strategy.json'
   KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
   KryptnosticObject         = require 'kryptnostic.kryptnostic-object'
   SearchApi                 = require 'kryptnostic.search-api'
@@ -51,23 +57,58 @@ define 'kryptnostic.search-client', [
           query: [encryptedSearchTokenAsBase64]
         })
         @searchApi.search(searchRequest)
-      .then (encryptedMetadata) =>
-        Promise.all(_.map(encryptedMetadata, (encryptedMetadatum) =>
-          return @decryptMetadatum(encryptedMetadatum)
-        ))
-      .then (decryptedMetadata) ->
-        return decryptedMetadata
 
-    decryptMetadatum: (encryptedMetadatum) ->
-      Promise.resolve()
-      .then =>
-        id = encryptedMetadatum.key
-        @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss: false })
-      .then (cryptoService) ->
-        body = encryptedMetadatum
-        kryptnosticObject = KryptnosticObject.createFromEncrypted({ body })
-        kryptnosticObject.setChunkingStrategy(JsonChunkingStrategy.URI)
-        decrypted = kryptnosticObject.decrypt(cryptoService)
-        return decrypted.body
+      .then (searchResultResponse) =>
+
+        # searchResultResponse.data is a List of SearchResults
+        if searchResultResponse.data?
+          searchResults = searchResultResponse.data
+          searchResultPromises = _.map(searchResults, (searchResult) =>
+            @processSearchResult(searchResult)
+          )
+
+          # this promise will fulfill when all search result promises are fulfilled
+          Promise.all(searchResultPromises)
+          .then (processedSearchResults) ->
+            return processedSearchResults
+        else
+          return null
+
+      .catch (e) ->
+        logger.error('search failure', e)
+        return null
+
+    processSearchResult: (searchResult) ->
+
+      # searchResult.metadata is a Collection of Encryptables
+      encryptables = searchResult.metadata
+
+      # _.map() will produce an Array of Promises for each encryptable
+      encryptablePromises = _.map(encryptables, (encryptable) =>
+        Promise.resolve()
+        .then =>
+          @cryptoServiceLoader.getObjectCryptoService(
+            encryptable.key,
+            { expectMiss: false }
+          )
+        .then (objectCryptoService) =>
+          @decryptEncryptable(encryptable, objectCryptoService)
+        .catch (e) ->
+          logger.error('failure while processing search results', e)
+          return null
+      )
+
+      # this promise will fulfill when all encryptable promises are fulfilled
+      Promise.all(encryptablePromises)
+      .then (decryptedEncryptables) ->
+        return decryptedEncryptables
+
+    decryptEncryptable: (encryptable, objectCryptoService) ->
+      encryptedKryptnosticObject = KryptnosticObject.createFromEncrypted({
+        body: encryptable
+      })
+      encryptedKryptnosticObject.setChunkingStrategy(JsonChunkingStrategy.URI)
+      decryptedKryptnosticObject = encryptedKryptnosticObject.decrypt(objectCryptoService)
+      return decryptedKryptnosticObject
 
   return SearchClient

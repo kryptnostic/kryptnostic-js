@@ -33,15 +33,13 @@ define 'kryptnostic.kryptnostic-engine', [
     #
 
     getPrivateKey: ->
-      return @krypto.getPrivateKey()
+      return new Uint8Array(@krypto.getPrivateKey())
 
     getSearchPrivateKey: ->
-      return @krypto.getSearchPrivateKey()
+      return new Uint8Array(@krypto.getSearchPrivateKey())
 
     calculateClientHashFunction: ->
-      # the client hash function is never used client-side; it only needs to be calculated on the
-      # client and sent to the server. as such, we don't need to create a new Uint8Array.
-      return @krypto.calculateClientHashFunction()
+      return new Uint8Array(@krypto.calculateClientHashFunction())
 
     #
     # indexing

@@ -1,14 +1,20 @@
 define 'kryptnostic.search-api', [
   'require'
+  'axios'
   'bluebird'
   'kryptnostic.logger'
   'kryptnostic.requests'
   'kryptnostic.configuration'
 ], (require) ->
 
-  Logger           = require 'kryptnostic.logger'
-  Requests         = require 'kryptnostic.requests'
-  Configuration    = require 'kryptnostic.configuration'
+  # libraries
+  axios   = require 'axios'
+  Promise = require 'bluebird'
+
+  # utils
+  Logger        = require 'kryptnostic.logger'
+  Requests      = require 'kryptnostic.requests'
+  Configuration = require 'kryptnostic.configuration'
 
   searchServiceUrl = -> Configuration.get('servicesUrl') + '/search'
 
@@ -16,18 +22,26 @@ define 'kryptnostic.search-api', [
 
   #
   # HTTP calls for submitting encrypted search queries to the server.
-  # Author: rbuckheit
   #
   class SearchApi
 
-    # returns a list of encrypted indexMetadata for matches.
     search: (searchRequest) ->
-      return Requests.postUint8ToUrl(
-        searchServiceUrl(),
-        searchRequest
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            url    : searchServiceUrl()
+            method : 'POST'
+            data   : searchRequest
+          })
+        )
       )
-      .then (response) ->
-        logger.info('searched')
-        return response.data
+      .then (axiosResponse) ->
+        if axiosResponse? and axiosResponse.data?
+          # axiosResponse.data == com.kryptnostic.search.v1.models.response.SearchResultResponse
+          return axiosResponse.data
+        else
+          return null
+      .catch (e) ->
+        return null
 
   return SearchApi

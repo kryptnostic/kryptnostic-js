@@ -11,11 +11,8 @@ define 'kryptnostic.search-indexing-service', [
   'kryptnostic.search.indexer'
   'kryptnostic.search.metadata-mapper'
   'kryptnostic.indexed-metadata'
-  # 'kryptnostic.search-credential-service' #added to load the keys stored
   'kryptnostic.kryptnostic-engine-provider'
   'kryptnostic.sharing-api'
-  'kryptnostic.search-key-serializer'
-  'kryptnostic.sharing-client'
 ], (require) ->
 
   # libraries
@@ -31,9 +28,7 @@ define 'kryptnostic.search-indexing-service', [
   MetadataMapper            = require 'kryptnostic.search.metadata-mapper'
   MetadataRequest           = require 'kryptnostic.metadata-request'
   ObjectIndexer             = require 'kryptnostic.search.indexer'
-  SearchKeySerializer       = require 'kryptnostic.search-key-serializer'
   SharingApi                = require 'kryptnostic.sharing-api'
-  SharingClient             = require 'kryptnostic.sharing-client'
 
   # utils
   Logger = require 'kryptnostic.logger'
@@ -41,20 +36,16 @@ define 'kryptnostic.search-indexing-service', [
   log = Logger.get('SearchIndexingService')
 
   #
-  # Handles indexing and submission of indexed metadata for StorageRequests.
-  # Author: rbuckheit
+  # Handles indexing and submission of indexed metadata for StorageRequests
   #
   class SearchIndexingService
 
     constructor : ->
       @cryptoServiceLoader  = CryptoServiceLoader.get()
-      @documentSearchKeyApi = new DocumentSearchKeyApi()
       @sharingApi           = new SharingApi()
       @metadataApi          = new MetadataApi()
       @metadataMapper       = new MetadataMapper()
       @objectIndexer        = new ObjectIndexer()
-      @searchKeySerializer  = new SearchKeySerializer()
-      @sharingClient        = new SharingClient()
 
     # indexes and uploads the submitted object.
     submit: ({ id, storageRequest }) ->

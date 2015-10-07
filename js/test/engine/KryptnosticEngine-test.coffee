@@ -154,12 +154,12 @@ define [
 
         expect(searchPrivateKey1).toEqual(searchPrivateKey2)
 
-      it 'should calculate the same client hash function', ->
+      it 'should calculate different client hash functions', ->
 
         clientHashFunction1 = _engine1.calculateClientHashFunction()
         clientHashFunction2 = _engine2.calculateClientHashFunction()
 
-        expect(clientHashFunction1).toEqual(clientHashFunction2)
+        expect(clientHashFunction1).not.toEqual(clientHashFunction2)
 
       it 'should calculate the same metadata address', ->
 

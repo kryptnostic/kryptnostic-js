@@ -109,6 +109,8 @@ define 'kryptnostic.search-client', [
       })
       encryptedKryptnosticObject.setChunkingStrategy(JsonChunkingStrategy.URI)
       decryptedKryptnosticObject = encryptedKryptnosticObject.decrypt(objectCryptoService)
-      return decryptedKryptnosticObject
+      # DOTO - this is a hack; need to figure out a better way to return the right data
+      merged = _.merge(encryptedKryptnosticObject, decryptedKryptnosticObject)
+      return merged
 
   return SearchClient

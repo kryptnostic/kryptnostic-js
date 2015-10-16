@@ -48,11 +48,14 @@ define 'kryptnostic.kryptnostic-engine', [
     generateObjectIndexPair: ->
       return new Uint8Array(@krypto.generateObjectIndexPair())
 
+    calculateMetadataAddress: (objectIndexPair, token) ->
+      return new Uint8Array(@krypto.calculateMetadataAddress(objectIndexPair, token))
+
     calculateObjectSearchPairFromObjectIndexPair: (objectIndexPair) ->
       return new Uint8Array(@krypto.calculateObjectSearchPairFromObjectIndexPair(objectIndexPair))
 
-    calculateMetadataAddress: (objectIndexPair, token) ->
-      return new Uint8Array(@krypto.calculateMetadataAddress(objectIndexPair, token))
+    calculateObjectIndexPairFromObjectSearchPair: (objectSearchPair) ->
+      return new Uint8Array(@krypto.calculateObjectIndexPairFromObjectSearchPair(objectSearchPair))
 
     #
     # searching

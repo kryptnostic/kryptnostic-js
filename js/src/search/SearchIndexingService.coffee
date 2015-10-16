@@ -48,9 +48,10 @@ define 'kryptnostic.search-indexing-service', [
       @objectIndexer        = new ObjectIndexer()
 
     # indexes and uploads the submitted object.
-    submit: ({ id, storageRequest }) ->
+    submit: ({ storageRequest, objectIdPair, objectSearchPair }) ->
+
       unless storageRequest.isSearchable
-        log.info('skipping non-searchable object', { id })
+        log.info('skipping non-searchable object')
         return Promise.resolve()
 
       { body } = storageRequest
@@ -58,39 +59,62 @@ define 'kryptnostic.search-indexing-service', [
 
       Promise.resolve()
       .then =>
-        engine           = KryptnosticEngineProvider.getEngine()
-        objectIndexPair  = engine.generateObjectIndexPair()
-        objectSearchPair = engine.calculateObjectSearchPairFromObjectIndexPair(objectIndexPair)
-        @sharingApi.addObjectSearchPair(id, objectSearchPair)
-      .then =>
-        @objectIndexer.index(id, body)
-      .then (metadata) =>
-        @prepareMetadataRequest({ id, metadata, objectIndexPair })
-      .then (metadataRequest) =>
-        @metadataApi.uploadMetadata( metadataRequest )
+        engine = KryptnosticEngineProvider.getEngine()
+        if not objectSearchPair?
+          objectIndexPair  = engine.generateObjectIndexPair()
+          objectSearchPair = engine.calculateObjectSearchPairFromObjectIndexPair(objectIndexPair)
+          @sharingApi.addObjectSearchPair(objectIdPair.parentObjectId, objectSearchPair)
+        else
+          objectIndexPair = engine.calculateObjectIndexPairFromObjectSearchPair(objectSearchPair)
+
+        Promise.resolve()
+        .then =>
+          @objectIndexer.index(objectIdPair.parentObjectId, body)
+        .then (metadata) =>
+          @prepareMetadataRequest({ objectIdPair, metadata, objectIndexPair })
+        .then (metadataRequest) =>
+          @metadataApi.uploadMetadata( metadataRequest )
+        .then ->
+          return objectSearchPair
 
     # currently produces a single request, batch later if needed.
-    prepareMetadataRequest: ({ id, metadata, objectIndexPair }) ->
+    prepareMetadataRequest: ({ objectIdPair, metadata, objectIndexPair }) ->
       Promise.resolve()
       .then =>
-        @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss : false })
+        @cryptoServiceLoader.getObjectCryptoService(
+          objectIdPair.parentObjectId,
+          { expectMiss : false }
+        )
       .then (cryptoService) =>
         keyedMetadata = @metadataMapper.mapToKeys({ metadata, objectIndexPair })
 
         metadataIndex = []
         for key, metadata of keyedMetadata
-          body = metadata
 
           # encrypt metadata
-          kryptnosticObject = KryptnosticObject.createFromDecrypted({ id, body })
+          kryptnosticObject = KryptnosticObject.createFromDecrypted({
+            id: objectIdPair.objectId,
+            body: metadata
+          })
           kryptnosticObject.setChunkingStrategy(JsonChunkingStrategy.URI)
           encrypted = kryptnosticObject.encrypt(cryptoService)
           encrypted.validateEncrypted()
 
           # format request
           data = encrypted.body
-          _.extend(data, { key: id, strategy: { '@class': JsonChunkingStrategy.URI } })
-          indexedMetadata = new IndexedMetadata { key, data , id }
+          _.extend(
+            data,
+            {
+              key: objectIdPair.objectId,
+              strategy: { '@class': JsonChunkingStrategy.URI }
+            }
+          )
+
+          indexedMetadata = new IndexedMetadata({
+            key: key,
+            data: data,
+            id: objectIdPair.parentObjectId
+          })
           metadataIndex.push(indexedMetadata)
 
         return new MetadataRequest { metadata : metadataIndex }

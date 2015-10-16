@@ -33,7 +33,7 @@ define 'kryptnostic.sharing-client', [
   Logger                    = require 'kryptnostic.logger'
   Validators                = require 'kryptnostic.validators'
 
-  log = Logger.get('SharingClient')
+  logger = Logger.get('SharingClient')
 
   { validateId, validateUuids } = Validators
 
@@ -54,7 +54,7 @@ define 'kryptnostic.sharing-client', [
     # @param {String} objectId
     # @param {Array<String>} uuids
     #
-    shareObject: (objectId, uuids) ->
+    shareObject: (objectId, uuids, objectSearchPair) ->
 
       if _.isEmpty(uuids)
         return Promise.resolve()
@@ -62,8 +62,14 @@ define 'kryptnostic.sharing-client', [
       validateId(objectId)
       validateUuids(uuids)
 
+      objectSearchPairPromise = undefined
+      if objectSearchPair?
+        objectSearchPairPromise = Promise.resolve(objectSearchPair)
+      else
+        objectSearchPairPromise = @sharingApi.getObjectSearchPair(objectId)
+
       Promise.join(
-        @sharingApi.getObjectSearchPair(objectId),
+        objectSearchPairPromise,
         @cryptoServiceLoader.getObjectCryptoService(objectId),
         @directoryApi.getRsaPublicKeys(uuids),
         (objectSearchPair, objectCryptoService, uuidsToRsaPublicKeys) =>
@@ -78,7 +84,7 @@ define 'kryptnostic.sharing-client', [
             sealBase64       = btoa(seal)
             return sealBase64
           )
-          log.info('seals', seals)
+          logger.info('seals', seals)
 
           if !objectSearchPair
             # if we did not get an object search pair, we can omit it from the SharingRequest
@@ -88,8 +94,7 @@ define 'kryptnostic.sharing-client', [
             })
           else
             # create the object share pair from the object search pair, and encrypt it
-            objectSharePair = KryptnosticEngineProvider
-              .getEngine()
+            objectSharePair = KryptnosticEngineProvider.getEngine()
               .calculateObjectSharePairFromObjectSearchPair(objectSearchPair)
 
             encryptedObjectSharePair = objectCryptoService.encryptUint8Array(objectSharePair)
@@ -103,10 +108,9 @@ define 'kryptnostic.sharing-client', [
           # send off the object sharing request
           @sharingApi.shareObject(sharingRequest)
       )
-      # DOTO - how do we handle failure when sharing an object?
-      # .catch (e) ->
-      #   log.error('failed to share object', e)
-      #   return undefined
+      .catch (e) ->
+        logger.error('failed to share object', e)
+        return null
 
     revokeObject: (id, uuids) ->
       { revocationRequest } = {}
@@ -122,7 +126,7 @@ define 'kryptnostic.sharing-client', [
         revocationRequest = new RevocationRequest { id, users: uuids }
         @sharingApi.revokeObject(revocationRequest)
       .then ->
-        log.info('revoked access', { id, uuids })
+        logger.info('revoked access', { id, uuids })
 
     processIncomingShares: ->
       Promise
@@ -139,17 +143,16 @@ define 'kryptnostic.sharing-client', [
               { expectMiss: false } # ObjectCryptoService should exist
             )
           .then (objectCryptoService) =>
-            encryptedSharePair = sharedObject.encryptedSharingPair
-            decryptedSharePair = objectCryptoService.decryptToUint8Array(encryptedSharingPair)
-            objectSearchPair = KryptnosticEngineProvider
-              .getEngine()
-              .calculateObjectSearchPairFromObjectSharePair(decryptedSharePair)
-            @sharingApi.addObjectSearchPair(objectId, objectSearchPair)
+            if sharedObject? and sharedObject.sharingPair?
+              encryptedSharePair = sharedObject.sharingPair
+              decryptedSharePair = objectCryptoService.decryptToUint8Array(encryptedSharePair)
+              objectSearchPair = KryptnosticEngineProvider.getEngine()
+                .calculateObjectSearchPairFromObjectSharePair(decryptedSharePair)
+              @sharingApi.addObjectSearchPair(objectId, objectSearchPair)
         )
-      # DOTO - how do we handle failure when processing incoming shares?
-      # .catch (e) ->
-      #   log.error('failed to process incoming shares', e)
-      #   return undefined
+      .catch (e) ->
+        # DOTO - how do we handle failure when processing incoming shares?
+        logger.error('failed to process incoming shares', e)
 
 
 

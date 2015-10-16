@@ -6,26 +6,33 @@ define 'kryptnostic.storage-client', [
   'kryptnostic.object-api'
   'kryptnostic.kryptnostic-object'
   'kryptnostic.crypto-service-loader'
+  'kryptnostic.object-utils'
   'kryptnostic.pending-object-request'
   'kryptnostic.search-indexing-service'
 ], (require) ->
   'use strict'
 
-  Promise               = require 'bluebird'
-  Logger                = require 'kryptnostic.logger'
-  validators            = require 'kryptnostic.validators'
-  KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
-  PendingObjectRequest  = require 'kryptnostic.pending-object-request'
+  # libraries
+  Promise = require 'bluebird'
+
+  # kryptnostic
   CryptoServiceLoader   = require 'kryptnostic.crypto-service-loader'
+  KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
   ObjectApi             = require 'kryptnostic.object-api'
+  PendingObjectRequest  = require 'kryptnostic.pending-object-request'
   SearchIndexingService = require 'kryptnostic.search-indexing-service'
+
+  # utils
+  Logger      = require 'kryptnostic.logger'
+  ObjectUtils = require 'kryptnostic.object-utils'
+  validators  = require 'kryptnostic.validators'
 
   { validateId, validateNonEmptyString } = validators
 
   logger = Logger.get('StorageClient')
+
   #
   # Client for listing and loading Kryptnostic encrypted objects.
-  # Author: rbuckheit
   #
   class StorageClient
 
@@ -66,29 +73,39 @@ define 'kryptnostic.storage-client', [
       .then ->
         return id
 
-    uploadObject : (storageRequest) ->
-      { id, sharingKey } = {}
+    uploadObject : (storageRequest, objectSearchPair) ->
+      { objectIdPair } = {}
 
       Promise.resolve()
       .then ->
         storageRequest.validate()
       .then =>
         @createPending(storageRequest)
-      .then (_id) =>
-        id = _id
-        @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss : true })
+      .then (ids) =>
+        objectIdPair = ids
+        @cryptoServiceLoader.getObjectCryptoService(
+          objectIdPair.parentObjectId,
+          { expectMiss : true }
+        )
       .then (cryptoService) =>
         { body } = storageRequest
-        @encrypt({ id, body, cryptoService })
+        objectId = objectIdPair.objectId
+        @encrypt({ objectId, body, cryptoService })
       .then (encrypted) =>
         @submitObjectBlocks(encrypted)
       .then =>
-        @searchIndexingService.submit({ id, storageRequest })
-      .then ->
-        return id
+        @searchIndexingService.submit({ storageRequest, objectIdPair, objectSearchPair })
+      .then (objectSearchPair) ->
+        return {
+          objectIdPair     : objectIdPair,
+          objectSearchPair : objectSearchPair
+        }
 
-    encrypt : ({ id, body, cryptoService }) ->
-      kryptnosticObject = KryptnosticObject.createFromDecrypted({ id, body })
+    encrypt : ({ objectId, body, cryptoService }) ->
+      kryptnosticObject = KryptnosticObject.createFromDecrypted({
+        id: objectId,
+        body: body
+      })
       return kryptnosticObject.encrypt(cryptoService)
 
     createPending : (storageRequest = {}) ->
@@ -97,7 +114,14 @@ define 'kryptnostic.storage-client', [
       else
         { type, parentObjectId } = storageRequest
         pendingRequest = new PendingObjectRequest { type, parentObjectId }
-        return @objectApi.createPendingObject(pendingRequest)
+        Promise.resolve()
+        .then =>
+          @objectApi.createPendingObject(pendingRequest)
+        .then (objectId) ->
+          return {
+            objectId: objectId,
+            parentObjectId: ObjectUtils.childIdToParent(objectId)
+          }
 
     submitObjectBlocks : (kryptnosticObject) ->
       Promise.resolve()

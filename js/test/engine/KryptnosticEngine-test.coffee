@@ -118,6 +118,22 @@ define [
       objIndexPair2 = engine2.generateObjectIndexPair()
       expect(objIndexPair2).toBeUint8ArrayOfSize(MockDataUtils.OBJECT_INDEX_PAIR_SIZE)
 
+    it 'should calculate the same object index pair from the object search pair', ->
+
+      engine1 = new KryptnosticEngine()
+      engine2 = new KryptnosticEngine()
+
+      objIndexPair  = engine1.generateObjectIndexPair()
+      objSearchPair = engine1.calculateObjectSearchPairFromObjectIndexPair(objIndexPair)
+      recover       = engine1.calculateObjectIndexPairFromObjectSearchPair(objSearchPair)
+
+      expect(recover).toEqual(objIndexPair)
+
+      objSearchPair2 = engine2.calculateObjectSearchPairFromObjectIndexPair(objIndexPair)
+      recover2       = engine2.calculateObjectIndexPairFromObjectSearchPair(objSearchPair2)
+      expect(recover2).toEqual(objIndexPair)
+
+
     describe 'calculations should be consistent :', ->
 
       _engine1        = undefined

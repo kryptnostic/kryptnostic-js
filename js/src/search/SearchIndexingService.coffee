@@ -93,7 +93,7 @@ define 'kryptnostic.search-indexing-service', [
 
           # encrypt metadata
           kryptnosticObject = KryptnosticObject.createFromDecrypted({
-            id: objectIdPair.parentObjectId,
+            id: objectIdPair.objectId,
             body: metadata
           })
           kryptnosticObject.setChunkingStrategy(JsonChunkingStrategy.URI)
@@ -105,7 +105,7 @@ define 'kryptnostic.search-indexing-service', [
           _.extend(
             data,
             {
-              key: objectIdPair.parentObjectId,
+              key: objectIdPair.objectId,
               strategy: { '@class': JsonChunkingStrategy.URI }
             }
           )

@@ -1,53 +1,116 @@
 define 'kryptnostic.search-client', [
   'require'
+  'bluebird'
   'kryptnostic.binary-utils'
+  'kryptnostic.logger'
+  'kryptnostic.chunking.strategy.json'
   'kryptnostic.crypto-service-loader'
-  'kryptnostic.mock.kryptnostic-engine'
+  'kryptnostic.hash-function'
+  'kryptnostic.kryptnostic-engine-provider'
+  'kryptnostic.kryptnostic-object'
   'kryptnostic.search-api'
+  'kryptnostic.search-request'
 ], (require) ->
 
-  BinaryUtils           = require 'kryptnostic.binary-utils'
-  CryptoServiceLoader   = require 'kryptnostic.crypto-service-loader'
-  KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
-  MockKryptnosticEngine = require 'kryptnostic.mock.kryptnostic-engine'
-  SearchApi             = require 'kryptnostic.search-api'
+  # libraries
+  Promise = require 'bluebird'
+
+  # kryptnostic
+  CryptoServiceLoader       = require 'kryptnostic.crypto-service-loader'
+  JsonChunkingStrategy      = require 'kryptnostic.chunking.strategy.json'
+  KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
+  KryptnosticObject         = require 'kryptnostic.kryptnostic-object'
+  SearchApi                 = require 'kryptnostic.search-api'
+  SearchRequest             = require 'kryptnostic.search-request'
+
+  # utils
+  BinaryUtils  = require 'kryptnostic.binary-utils'
+  HashFunction = require 'kryptnostic.hash-function'
+  Logger       = require 'kryptnostic.logger'
+
+  logger = Logger.get('SearchClient')
 
   #
   # Performs encrypted searches on the user's behalf.
   # Search takes in a plaintext token and returns a set of results.
   #
-  # Author: rbuckheit
-  #
   class SearchClient
 
     constructor: ->
-      @engine              = new MockKryptnosticEngine()
       @cryptoServiceLoader = CryptoServiceLoader.get()
       @searchApi           = new SearchApi()
+      @hashFunction        = HashFunction.MURMUR3_128
 
-    search: (token) ->
+    search: (searchTerm) ->
       Promise.resolve()
       .then =>
-        token = BinaryUtils.stringToUint8(token)
-        encryptedToken = @engine.getEncryptedSearchToken({ token })
-        @searchApi.search(encryptedToken)
-      .then (encryptedMetadata) ->
-        Promise.all(_.map(encryptedMetadata, (encryptedMetadatum) =>
-          return @decryptMetadatum(encryptedMetadatum)
-        ))
-      .then (decryptedMetadata) ->
-        return decryptedMetadata
 
-    decryptMetadatum: (encryptedMetadatum) ->
-      Promise.resolve()
-      .then =>
-        id = encryptedMetadatum.key
-        @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss: false })
-      .then (cryptoService) ->
-        body = encryptedMetadatum
-        kryptnosticObject = KryptnosticObject.createFromEncrypted({ body })
-        kryptnosticObject.setChunkingStrategy(JsonChunkingStrategy.URI)
-        decrypted = kryptnosticObject.decrypt(cryptoService)
-        return decrypted.body
+        # token -> 128 bit hex -> Uint8Array
+        tokenHex  = @hashFunction(searchTerm)
+        tokenUint = BinaryUtils.hexToUint(tokenHex)
+
+        encryptedSearchToken = KryptnosticEngineProvider
+          .getEngine()
+          .calculateEncryptedSearchToken(tokenUint)
+        encryptedSearchTokenAsBase64 = BinaryUtils.uint8ToBase64(encryptedSearchToken)
+        searchRequest = new SearchRequest({
+          query: [encryptedSearchTokenAsBase64]
+        })
+        @searchApi.search(searchRequest)
+
+      .then (searchResultResponse) =>
+
+        # searchResultResponse.data is a List of SearchResults
+        if searchResultResponse.data?
+          searchResults = searchResultResponse.data
+          searchResultPromises = _.map(searchResults, (searchResult) =>
+            @processSearchResult(searchResult)
+          )
+
+          # this promise will fulfill when all search result promises are fulfilled
+          Promise.all(searchResultPromises)
+          .then (processedSearchResults) ->
+            return processedSearchResults
+        else
+          return null
+
+      .catch (e) ->
+        logger.error('search failure', e)
+        return null
+
+    processSearchResult: (searchResult) ->
+
+      # searchResult.metadata is a Collection of Encryptables
+      encryptables = searchResult.metadata
+
+      # _.map() will produce an Array of Promises for each encryptable
+      encryptablePromises = _.map(encryptables, (encryptable) =>
+        Promise.resolve()
+        .then =>
+          @cryptoServiceLoader.getObjectCryptoService(
+            encryptable.key,
+            { expectMiss: false }
+          )
+        .then (objectCryptoService) =>
+          @decryptEncryptable(encryptable, objectCryptoService)
+        .catch (e) ->
+          logger.error('failure while processing search results', e)
+          return null
+      )
+
+      # this promise will fulfill when all encryptable promises are fulfilled
+      Promise.all(encryptablePromises)
+      .then (decryptedEncryptables) ->
+        return decryptedEncryptables
+
+    decryptEncryptable: (encryptable, objectCryptoService) ->
+      encryptedKryptnosticObject = KryptnosticObject.createFromEncrypted({
+        body: encryptable
+      })
+      encryptedKryptnosticObject.setChunkingStrategy(JsonChunkingStrategy.URI)
+      decryptedKryptnosticObject = encryptedKryptnosticObject.decrypt(objectCryptoService)
+      # DOTO - this is a hack; need to figure out a better way to return the right data
+      merged = _.merge(encryptedKryptnosticObject, decryptedKryptnosticObject)
+      return merged
 
   return SearchClient

@@ -3,103 +3,118 @@ define 'kryptnostic.search-indexing-service', [
   'bluebird'
   'kryptnostic.chunking.strategy.json'
   'kryptnostic.crypto-service-loader'
-  'kryptnostic.document-search-key-api'
   'kryptnostic.kryptnostic-object'
   'kryptnostic.logger'
   'kryptnostic.metadata-api'
   'kryptnostic.metadata-request'
-  'kryptnostic.mock.kryptnostic-engine'
-  'kryptnostic.search-key-serializer'
+  'kryptnostic.kryptnostic-engine'
   'kryptnostic.search.indexer'
   'kryptnostic.search.metadata-mapper'
-  'kryptnostic.sharing-client'
   'kryptnostic.indexed-metadata'
+  'kryptnostic.kryptnostic-engine-provider'
+  'kryptnostic.sharing-api'
 ], (require) ->
 
-  Promise               = require 'bluebird'
+  # libraries
+  Promise = require 'bluebird'
 
-  CryptoServiceLoader   = require 'kryptnostic.crypto-service-loader'
-  DocumentSearchKeyApi  = require 'kryptnostic.document-search-key-api'
-  IndexedMetadata       = require 'kryptnostic.indexed-metadata'
-  JsonChunkingStrategy  = require 'kryptnostic.chunking.strategy.json'
-  KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
-  Logger                = require 'kryptnostic.logger'
-  MetadataApi           = require 'kryptnostic.metadata-api'
-  MetadataMapper        = require 'kryptnostic.search.metadata-mapper'
-  MetadataRequest       = require 'kryptnostic.metadata-request'
-  MockKryptnosticEngine = require 'kryptnostic.mock.kryptnostic-engine'
-  ObjectIndexer         = require 'kryptnostic.search.indexer'
-  SearchKeySerializer   = require 'kryptnostic.search-key-serializer'
-  SharingClient         = require 'kryptnostic.sharing-client'
+  # kryptnostic
+  CryptoServiceLoader       = require 'kryptnostic.crypto-service-loader'
+  IndexedMetadata           = require 'kryptnostic.indexed-metadata'
+  JsonChunkingStrategy      = require 'kryptnostic.chunking.strategy.json'
+  KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
+  KryptnosticObject         = require 'kryptnostic.kryptnostic-object'
+  MetadataApi               = require 'kryptnostic.metadata-api'
+  MetadataMapper            = require 'kryptnostic.search.metadata-mapper'
+  MetadataRequest           = require 'kryptnostic.metadata-request'
+  ObjectIndexer             = require 'kryptnostic.search.indexer'
+  SharingApi                = require 'kryptnostic.sharing-api'
+
+  # utils
+  Logger = require 'kryptnostic.logger'
 
   log = Logger.get('SearchIndexingService')
 
   #
-  # Handles indexing and submission of indexed metadata for StorageRequests.
-  # Author: rbuckheit
+  # Handles indexing and submission of indexed metadata for StorageRequests
   #
   class SearchIndexingService
 
     constructor : ->
       @cryptoServiceLoader  = CryptoServiceLoader.get()
-      @documentSearchKeyApi = new DocumentSearchKeyApi()
-      @engine               = new MockKryptnosticEngine()
+      @sharingApi           = new SharingApi()
       @metadataApi          = new MetadataApi()
       @metadataMapper       = new MetadataMapper()
       @objectIndexer        = new ObjectIndexer()
-      @searchKeySerializer  = new SearchKeySerializer()
-      @sharingClient        = new SharingClient()
 
     # indexes and uploads the submitted object.
-    submit: ({ id, storageRequest }) ->
+    submit: ({ storageRequest, objectIdPair, objectSearchPair }) ->
+
       unless storageRequest.isSearchable
-        log.info('skipping non-searchable object', { id })
+        log.info('skipping non-searchable object')
         return Promise.resolve()
 
       { body } = storageRequest
-      { objectAddressMatrix, objectSearchKey, objectIndexPair } = {}
+      { objectIndexPair } = {}
 
       Promise.resolve()
       .then =>
-        objectAddressMatrix = @engine.getObjectAddressMatrix()
-        objectSearchKey     = @engine.getObjectSearchKey()
-        objectIndexPair     = @engine.getObjectIndexPair({ objectSearchKey, objectAddressMatrix })
+        engine = KryptnosticEngineProvider.getEngine()
+        if not objectSearchPair?
+          objectIndexPair  = engine.generateObjectIndexPair()
+          objectSearchPair = engine.calculateObjectSearchPairFromObjectIndexPair(objectIndexPair)
+          @sharingApi.addObjectSearchPair(objectIdPair.parentObjectId, objectSearchPair)
+        else
+          objectIndexPair = engine.calculateObjectIndexPairFromObjectSearchPair(objectSearchPair)
 
-        encryptedAddressFunction = @searchKeySerializer.encrypt(objectAddressMatrix)
-        @documentSearchKeyApi.uploadAddressFunction(id, encryptedAddressFunction)
-      .then =>
-        @documentSearchKeyApi.uploadSharingPair(id, objectIndexPair)
-      .then =>
-        @objectIndexer.index(id, body)
-      .then (metadata) =>
-        @prepareMetadataRequest({ id, metadata, objectAddressMatrix, objectSearchKey })
-      .then (metadataRequest) =>
-        @metadataApi.uploadMetadata( metadataRequest )
+        Promise.resolve()
+        .then =>
+          @objectIndexer.index(objectIdPair.parentObjectId, body)
+        .then (metadata) =>
+          @prepareMetadataRequest({ objectIdPair, metadata, objectIndexPair })
+        .then (metadataRequest) =>
+          @metadataApi.uploadMetadata( metadataRequest )
+        .then ->
+          return objectSearchPair
 
     # currently produces a single request, batch later if needed.
-    prepareMetadataRequest: ({ id, metadata, objectAddressMatrix, objectSearchKey }) ->
+    prepareMetadataRequest: ({ objectIdPair, metadata, objectIndexPair }) ->
       Promise.resolve()
       .then =>
-        @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss : false })
+        @cryptoServiceLoader.getObjectCryptoService(
+          objectIdPair.parentObjectId,
+          { expectMiss : false }
+        )
       .then (cryptoService) =>
-        keyedMetadata = @metadataMapper.mapToKeys({
-          metadata, objectAddressMatrix, objectSearchKey
-        })
+        keyedMetadata = @metadataMapper.mapToKeys({ metadata, objectIndexPair })
 
         metadataIndex = []
         for key, metadata of keyedMetadata
-          body = metadata
 
           # encrypt metadata
-          kryptnosticObject = KryptnosticObject.createFromDecrypted({ id, body })
+          kryptnosticObject = KryptnosticObject.createFromDecrypted({
+            id: objectIdPair.objectId,
+            body: metadata
+          })
           kryptnosticObject.setChunkingStrategy(JsonChunkingStrategy.URI)
           encrypted = kryptnosticObject.encrypt(cryptoService)
           encrypted.validateEncrypted()
 
           # format request
           data = encrypted.body
-          _.extend(data, { key: id, strategy: { '@class': JsonChunkingStrategy.URI } })
-          indexedMetadata = new IndexedMetadata { key, data , id }
+          _.extend(
+            data,
+            {
+              key: objectIdPair.objectId,
+              strategy: { '@class': JsonChunkingStrategy.URI }
+            }
+          )
+
+          indexedMetadata = new IndexedMetadata({
+            key: key,
+            data: data,
+            id: objectIdPair.parentObjectId
+          })
           metadataIndex.push(indexedMetadata)
 
         return new MetadataRequest { metadata : metadataIndex }

@@ -8,17 +8,30 @@ define 'kryptnostic.object-utils', [
     return "#{id}#{CHILD_SEPARATOR}#{index}"
 
   isChildId = (id) ->
-    return id.indexOf(CHILD_SEPARATOR) >= 0
+    if id?
+      return id.indexOf(CHILD_SEPARATOR) >= 0
+    else
+      return false
 
   childIdToParent = (id) ->
-    index = id.indexOf(CHILD_SEPARATOR)
-    if (index >= 0)
-      return id.slice(0, index)
+    if id?
+      index = id.indexOf(CHILD_SEPARATOR)
+      if (index >= 0)
+        return id.slice(0, index)
+      else
+        return id
     else
-      return id
+      return null
 
   getChildIndex = (id) ->
-    return _.parseInt(_.last(id.split(CHILD_SEPARATOR)))
+    if id?
+      splitArray = id.split(CHILD_SEPARATOR)
+      if splitArray.length > 1
+        return _.parseInt(_.last(splitArray))
+      else
+        return null
+    else
+      return null
 
   return {
     isChildId,

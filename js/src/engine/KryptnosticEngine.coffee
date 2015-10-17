@@ -12,49 +12,66 @@ define 'kryptnostic.kryptnostic-engine', [
     https://github.com/kryptnostic/kryptnostic-js/issues
   '''
 
-  log = Logger.get('KryptnosticEngine')
+  logger = Logger.get('KryptnosticEngine')
 
   #
-  # Wrapper around the kryptnostic client module produced by emscripten.
-  # Author: rbuckheit
+  # wrapper around the KryptnosticClient module produced by emscripten
   #
   class KryptnosticEngine
 
-    constructor: ({ @fhePrivateKey, @searchPrivateKey }) ->
+    constructor: ({ @fhePrivateKey, @searchPrivateKey } = {}) ->
       unless Module? and Module.KryptnosticClient?
-        log.error(ENGINE_MISSING_ERROR)
+        logger.error(ENGINE_MISSING_ERROR)
 
-    createClient: ->
-      return new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey)
+      if @fhePrivateKey and @searchPrivateKey
+        @krypto = new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey)
+      else
+        @krypto = new Module.KryptnosticClient()
 
+    #
+    # registration
+    #
+
+    getPrivateKey: ->
+      return new Uint8Array(@krypto.getPrivateKey())
+
+    getSearchPrivateKey: ->
+      return new Uint8Array(@krypto.getSearchPrivateKey())
+
+    calculateClientHashFunction: ->
+      return new Uint8Array(@krypto.calculateClientHashFunction())
+
+    #
     # indexing
-    # ========
+    #
 
-    getObjectSearchKey: ->
-      return @createClient().getObjectSearchKey()
+    generateObjectIndexPair: ->
+      return new Uint8Array(@krypto.generateObjectIndexPair())
 
-    getObjectAddressMatrix: ->
-      return @createClient().getObjectAddressMatrix()
+    calculateMetadataAddress: (objectIndexPair, token) ->
+      return new Uint8Array(@krypto.calculateMetadataAddress(objectIndexPair, token))
 
-    getObjectIndexPair: ({ objectSearchKey, objectAddressMatrix }) ->
-      return @createClient().getObjectIndexPair(objectSearchKey, objectAddressMatrix)
+    calculateObjectSearchPairFromObjectIndexPair: (objectIndexPair) ->
+      return new Uint8Array(@krypto.calculateObjectSearchPairFromObjectIndexPair(objectIndexPair))
 
-    getMetadatumAddress: ({ objectAddressFunction, token, objectSearchKey }) ->
-      return @createClient().getMetadatumAddress(objectAddressFunction, objectSearchKey, token)
+    calculateObjectIndexPairFromObjectSearchPair: (objectSearchPair) ->
+      return new Uint8Array(@krypto.calculateObjectIndexPairFromObjectSearchPair(objectSearchPair))
 
-    # search
-    # ======
+    #
+    # searching
+    #
 
-    getEncryptedSearchToken: ({ token }) ->
-      return @createClient().getEncryptedSearchToken(token)
+    calculateEncryptedSearchToken: (tokenAsUint8) ->
+      return new Uint8Array(@krypto.calculateEncryptedSearchToken(tokenAsUint8))
 
+    #
     # sharing
-    # =======
+    #
 
-    getObjectSharingPairFromObjectIndexPair: ({ objectIndexPair }) ->
-      return @createClient().getObjectSharingPairFromObjectIndexPair(objectIndexPair)
+    calculateObjectSharePairFromObjectSearchPair: (objectSearchPair) ->
+      return new Uint8Array(@krypto.calculateObjectSharePairFromObjectSearchPair(objectSearchPair))
 
-    getObjectIndexPairFromObjectSharingPair: ({ objectSharingPair }) ->
-      return @createClient().getObjectIndexPairFromObjectSharingPair(objectSharingPair)
+    calculateObjectSearchPairFromObjectSharePair: (objectSharePair) ->
+      return new Uint8Array(@krypto.calculateObjectSearchPairFromObjectSharePair(objectSharePair))
 
   return KryptnosticEngine

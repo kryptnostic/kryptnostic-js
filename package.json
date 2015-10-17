@@ -5,27 +5,28 @@
   "main"        : "dist/kryptnostic.js",
   "homepage"    : "https://github.com/kryptnostic/kryptnostic-js",
   "license"     : "Apache-2.0",
-  "repository" : {
+  "repository": {
     "type" : "git",
     "url"  : "https://github.com/kryptnostic/kryptnostic-js.git"
   },
-  "contributors" : [
+  "contributors": [
     "Nick Hewitt <nick@kryptnostic.com>",
     "Ryan Buckheit <ryan@kryptnostic.com>",
-    "Stephanie A. Higa <stephanie@kryptnostic.com>"
+    "Stephanie A. Higa <stephanie@kryptnostic.com>",
+    "Hristo Oskov <hristo@kryptnostic.com>"
   ],
-  "scripts" : {
+  "scripts": {
     "build" : "./build.sh",
     "test"  : "./test.sh"
   },
   "bugs": {
     "url" : "https://github.com/kryptnostic/kryptnostic-js/issues"
   },
-  "dependencies" : {
+  "dependencies": {
     "node-forge"  : "0.6.31",
     "revalidator" : "0.3.1"
   },
-  "devDependencies" : {
+  "devDependencies": {
     "coffee-script"             : "1.9.3",
     "coffeelint"                : "1.11.1",
     "jasmine-core"              : "2.3.4",
@@ -39,6 +40,7 @@
     "karma-phantomjs-launcher"  : "0.2.1",
     "karma-requirejs"           : "0.2.2",
     "karma-safari-launcher"     : "0.1.1",
-    "phantomjs"                 : "1.9.18"
+    "phantomjs"                 : "1.9.18",
+    "sinon"                     : "1.16.1"
   }
 }

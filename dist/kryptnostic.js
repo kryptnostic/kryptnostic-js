@@ -18,7 +18,7 @@ define("axios",[],function(){return function(t){function e(r){if(n[r])return n[r
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * furnished to do so, subject to the following conditions:</p>
  * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
@@ -33,7 +33,7 @@ define("axios",[],function(){return function(t){function e(r){if(n[r])return n[r
  * 
  */
 /**
- * bluebird build version 2.9.34
+ * bluebird build version 2.9.32
  * Features enabled: core, race, call_get, generators, map, nodeify, promisify, props, reduce, settle, some, cancel, using, filter, any, each, timers
 */
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define('bluebird',[],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Promise=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
@@ -224,6 +224,7 @@ var targetRejected = function(e, context) {
 };
 
 var bindingResolved = function(thisArg, context) {
+    this._setBoundTo(thisArg);
     if (this._isPending()) {
         this._resolveCallback(context.target);
     }
@@ -238,8 +239,6 @@ Promise.prototype.bind = function (thisArg) {
     var ret = new Promise(INTERNAL);
     ret._propagateFrom(this, 1);
     var target = this._target();
-
-    ret._setBoundTo(maybePromise);
     if (maybePromise instanceof Promise) {
         var context = {
             promiseRejectionQueued: false,
@@ -251,6 +250,7 @@ Promise.prototype.bind = function (thisArg) {
         maybePromise._then(
             bindingResolved, bindingRejected, ret._progress, ret, context);
     } else {
+        ret._setBoundTo(thisArg);
         ret._resolveCallback(target);
     }
     return ret;
@@ -273,12 +273,13 @@ Promise.bind = function (thisArg, value) {
     var maybePromise = tryConvertToPromise(thisArg);
     var ret = new Promise(INTERNAL);
 
-    ret._setBoundTo(maybePromise);
     if (maybePromise instanceof Promise) {
-        maybePromise._then(function() {
+        maybePromise._then(function(thisArg) {
+            ret._setBoundTo(thisArg);
             ret._resolveCallback(value);
         }, ret._reject, ret._progress, ret, null);
     } else {
+        ret._setBoundTo(thisArg);
         ret._resolveCallback(value);
     }
     return ret;
@@ -858,8 +859,7 @@ var captureStackTrace = (function stackDetection() {
     catch(e) {
         hasStackAfterThrow = ("stack" in e);
     }
-    if (!("stack" in err) && hasStackAfterThrow &&
-        typeof Error.stackTraceLimit === "number") {
+    if (!("stack" in err) && hasStackAfterThrow) {
         stackFramePattern = v8stackFramePattern;
         formatStack = v8stackFormatter;
         return function captureStackTrace(o) {
@@ -1001,7 +1001,7 @@ function safePredicate(predicate, e) {
 CatchFilter.prototype.doFilter = function (e) {
     var cb = this._callback;
     var promise = this._promise;
-    var boundTo = promise._boundValue();
+    var boundTo = promise._boundTo;
     for (var i = 0, len = this._instances.length; i < len; ++i) {
         var item = this._instances[i];
         var itemIsErrorType = item === Error ||
@@ -1562,7 +1562,7 @@ function finallyHandler(reasonOrValue) {
     var handler = this.handler;
 
     var ret = promise._isBound()
-                    ? handler.call(promise._boundValue())
+                    ? handler.call(promise._boundTo)
                     : handler();
 
     if (ret !== undefined) {
@@ -1587,7 +1587,7 @@ function tapHandler(value) {
     var handler = this.handler;
 
     var ret = promise._isBound()
-                    ? handler.call(promise._boundValue(), value)
+                    ? handler.call(promise._boundTo, value)
                     : handler(value);
 
     if (ret !== undefined) {
@@ -1878,7 +1878,6 @@ module.exports = function(Promise,
                           apiRejection,
                           tryConvertToPromise,
                           INTERNAL) {
-var getDomain = Promise._getDomain;
 var async = _dereq_("./async.js");
 var util = _dereq_("./util.js");
 var tryCatch = util.tryCatch;
@@ -1889,8 +1888,7 @@ var EMPTY_ARRAY = [];
 function MappingPromiseArray(promises, fn, limit, _filter) {
     this.constructor$(promises);
     this._promise._captureStackTrace();
-    var domain = getDomain();
-    this._callback = domain === null ? fn : domain.bind(fn);
+    this._callback = fn;
     this._preservedValues = _filter === INTERNAL
         ? new Array(this.length())
         : null;
@@ -1925,7 +1923,7 @@ MappingPromiseArray.prototype._promiseFulfilled = function (value, index) {
         if (preservedValues !== null) preservedValues[index] = value;
 
         var callback = this._callback;
-        var receiver = this._promise._boundValue();
+        var receiver = this._promise._boundTo;
         this._promise._pushContext();
         var ret = tryCatch(callback).call(receiver, value, index, length);
         this._promise._popContext();
@@ -2063,8 +2061,7 @@ var errorObj = util.errorObj;
 function spreadAdapter(val, nodeback) {
     var promise = this;
     if (!util.isArray(val)) return successAdapter.call(promise, val, nodeback);
-    var ret =
-        tryCatch(nodeback).apply(promise._boundValue(), [null].concat(val));
+    var ret = tryCatch(nodeback).apply(promise._boundTo, [null].concat(val));
     if (ret === errorObj) {
         async.throwLater(ret.e);
     }
@@ -2072,7 +2069,7 @@ function spreadAdapter(val, nodeback) {
 
 function successAdapter(val, nodeback) {
     var promise = this;
-    var receiver = promise._boundValue();
+    var receiver = promise._boundTo;
     var ret = val === undefined
         ? tryCatch(nodeback).call(receiver, null)
         : tryCatch(nodeback).call(receiver, null, val);
@@ -2088,13 +2085,13 @@ function errorAdapter(reason, nodeback) {
         newReason.cause = reason;
         reason = newReason;
     }
-    var ret = tryCatch(nodeback).call(promise._boundValue(), reason);
+    var ret = tryCatch(nodeback).call(promise._boundTo, reason);
     if (ret === errorObj) {
         async.throwLater(ret.e);
     }
 }
 
-Promise.prototype.asCallback =
+Promise.prototype.asCallback = 
 Promise.prototype.nodeify = function (nodeback, options) {
     if (typeof nodeback == "function") {
         var adapter = successAdapter;
@@ -2505,7 +2502,7 @@ Promise.prototype._receiverAt = function (index) {
         : this[
             index * 5 - 5 + 4];
     if (ret === undefined && this._isBound()) {
-        return this._boundValue();
+        return this._boundTo;
     }
     return ret;
 };
@@ -2526,20 +2523,6 @@ Promise.prototype._rejectionHandlerAt = function (index) {
     return index === 0
         ? this._rejectionHandler0
         : this[index * 5 - 5 + 1];
-};
-
-Promise.prototype._boundValue = function() {
-    var ret = this._boundTo;
-    if (ret !== undefined) {
-        if (ret instanceof Promise) {
-            if (ret.isFulfilled()) {
-                return ret.value();
-            } else {
-                return undefined;
-            }
-        }
-    }
-    return ret;
 };
 
 Promise.prototype._migrateCallbacks = function (follower, index) {
@@ -2692,7 +2675,7 @@ Promise.prototype._settlePromiseFromHandler = function (
     promise._pushContext();
     var x;
     if (receiver === APPLY && !this._isRejected()) {
-        x = tryCatch(handler).apply(this._boundValue(), value);
+        x = tryCatch(handler).apply(this._boundTo, value);
     } else {
         x = tryCatch(handler).call(receiver, value);
     }
@@ -2762,6 +2745,8 @@ Promise.prototype._settlePromiseAt = function (index) {
         this._isCarryingStackTrace() ? this._getCarriedStackTrace() : undefined;
     var value = this._settledValue;
     var receiver = this._receiverAt(index);
+
+
     this._clearCallbackDataAtIndex(index);
 
     if (typeof handler === "function") {
@@ -3225,17 +3210,8 @@ var canEvaluate = util.canEvaluate;
 var TypeError = _dereq_("./errors").TypeError;
 var defaultSuffix = "Async";
 var defaultPromisified = {__isPromisified__: true};
-var noCopyProps = [
-    "arity",    "length",
-    "name",
-    "arguments",
-    "caller",
-    "callee",
-    "prototype",
-    "__isPromisified__"
-];
-var noCopyPropsPattern = new RegExp("^(?:" + noCopyProps.join("|") + ")$");
-
+var noCopyPropsPattern =
+    /^(?:length|name|arguments|caller|callee|prototype|__isPromisified__)$/;
 var defaultFilter = function(name) {
     return util.isIdentifier(name) &&
         name.charAt(0) !== "_" &&
@@ -3284,6 +3260,7 @@ function promisifiableMethods(obj, suffix, suffixRegexp, filter) {
         var passesDefaultFilter = filter === defaultFilter
             ? true : defaultFilter(key, value, obj);
         if (typeof value === "function" &&
+            !util.isNativeFunctionMethod(value) &&
             !isPromisified(value) &&
             !hasPromisified(obj, key, suffix) &&
             filter(key, value, obj, passesDefaultFilter)) {
@@ -3745,7 +3722,6 @@ module.exports = function(Promise,
                           apiRejection,
                           tryConvertToPromise,
                           INTERNAL) {
-var getDomain = Promise._getDomain;
 var async = _dereq_("./async.js");
 var util = _dereq_("./util.js");
 var tryCatch = util.tryCatch;
@@ -3774,8 +3750,7 @@ function ReductionPromiseArray(promises, fn, accum, _each) {
         }
     }
     if (!(isPromise || this._zerothIsAccum)) this._gotAccum = true;
-    var domain = getDomain();
-    this._callback = domain === null ? fn : domain.bind(fn);
+    this._callback = fn;
     this._accum = accum;
     if (!rejected) async.invoke(init, this, undefined);
 }
@@ -3829,7 +3804,7 @@ ReductionPromiseArray.prototype._promiseFulfilled = function (value, index) {
     if (!gotAccum) return;
 
     var callback = this._callback;
-    var receiver = this._promise._boundValue();
+    var receiver = this._promise._boundTo;
     var ret;
 
     for (var i = this._reducingIndex; i < length; ++i) {
@@ -4564,9 +4539,7 @@ var errorObj = {e: {}};
 var tryCatchTarget;
 function tryCatcher() {
     try {
-        var target = tryCatchTarget;
-        tryCatchTarget = null;
-        return target.apply(this, arguments);
+        return tryCatchTarget.apply(this, arguments);
     } catch (e) {
         errorObj.e = e;
         return errorObj;
@@ -4627,7 +4600,6 @@ function withAppended(target, appendee) {
 function getDataPropertyOrDefault(obj, key, defaultValue) {
     if (es5.isES5) {
         var desc = Object.getOwnPropertyDescriptor(obj, key);
-
         if (desc != null) {
             return desc.get == null && desc.set == null
                     ? desc.value
@@ -4655,27 +4627,13 @@ function thrower(r) {
 }
 
 var inheritedDataKeys = (function() {
-    var excludedPrototypes = [
-        Array.prototype,
-        Object.prototype,
-        Function.prototype
-    ];
-
-    var isExcludedProto = function(val) {
-        for (var i = 0; i < excludedPrototypes.length; ++i) {
-            if (excludedPrototypes[i] === val) {
-                return true;
-            }
-        }
-        return false;
-    };
-
     if (es5.isES5) {
+        var oProto = Object.prototype;
         var getKeys = Object.getOwnPropertyNames;
         return function(obj) {
             var ret = [];
             var visitedKeys = Object.create(null);
-            while (obj != null && !isExcludedProto(obj)) {
+            while (obj != null && obj !== oProto) {
                 var keys;
                 try {
                     keys = getKeys(obj);
@@ -4696,23 +4654,11 @@ var inheritedDataKeys = (function() {
             return ret;
         };
     } else {
-        var hasProp = {}.hasOwnProperty;
         return function(obj) {
-            if (isExcludedProto(obj)) return [];
             var ret = [];
-
             /*jshint forin:false */
-            enumeration: for (var key in obj) {
-                if (hasProp.call(obj, key)) {
-                    ret.push(key);
-                } else {
-                    for (var i = 0; i < excludedPrototypes.length; ++i) {
-                        if (hasProp.call(excludedPrototypes[i], key)) {
-                            continue enumeration;
-                        }
-                    }
-                    ret.push(key);
-                }
+            for (var key in obj) {
+                ret.push(key);
             }
             return ret;
         };
@@ -4725,15 +4671,10 @@ function isClass(fn) {
     try {
         if (typeof fn === "function") {
             var keys = es5.names(fn.prototype);
-
-            var hasMethods = es5.isES5 && keys.length > 1;
-            var hasMethodsOtherThanConstructor = keys.length > 0 &&
-                !(keys.length === 1 && keys[0] === "constructor");
-            var hasThisAssignmentAndStaticMethods =
-                thisAssignmentPattern.test(fn + "") && es5.names(fn).length > 0;
-
-            if (hasMethods || hasMethodsOtherThanConstructor ||
-                hasThisAssignmentAndStaticMethods) {
+            if (((es5.isES5 && keys.length > 1) ||
+                (keys.length > 0 &&
+                !(keys.length === 1 && keys[0] === "constructor"))) ||
+                thisAssignmentPattern.test(fn + "")) {
                 return true;
             }
         }
@@ -4815,11 +4756,16 @@ function copyDescriptors(from, to, filter) {
     for (var i = 0; i < keys.length; ++i) {
         var key = keys[i];
         if (filter(key)) {
-            try {
-                es5.defineProperty(to, key, es5.getDescriptor(from, key));
-            } catch (ignore) {}
+            es5.defineProperty(to, key, es5.getDescriptor(from, key));
         }
     }
+}
+
+function isNativeFunctionMethod(fn) {
+    return fn === fn.call ||
+           fn === fn.toString ||
+           fn === fn.bind ||
+           fn === fn.apply;
 }
 
 var ret = {
@@ -4851,7 +4797,8 @@ var ret = {
     hasDevTools: typeof chrome !== "undefined" && chrome &&
                  typeof chrome.loadTimes === "function",
     isNode: typeof process !== "undefined" &&
-        classString(process).toLowerCase() === "[object process]"
+        classString(process).toLowerCase() === "[object process]",
+    isNativeFunctionMethod: isNativeFunctionMethod
 };
 ret.isRecentNode = ret.isNode && (function() {
     var version = process.versions.node.split(".").map(Number);
@@ -25544,22 +25491,19 @@ define("function-name", function(){});
           return Promise.resolve(notifier(AuthenticationStage.RSA_KEYGEN));
         }).then((function(_this) {
           return function() {
-            return _this.rsaKeyGenerator.generateKeypair();
+            var passwordCrypto, privateKeyAsn1, privateKeyBuffer, publicKeyAsn1, publicKeyBuffer, serializedPrivateKey, serializedPublicKey;
+            keypair = _this.rsaKeyGenerator.generateKeypair();
+            passwordCrypto = new PasswordCryptoService();
+            privateKeyAsn1 = Forge.pki.privateKeyToAsn1(keypair.privateKey);
+            privateKeyBuffer = Forge.asn1.toDer(privateKeyAsn1);
+            serializedPrivateKey = privateKeyBuffer.data;
+            privateKey = passwordCrypto.encrypt(serializedPrivateKey, password);
+            publicKeyAsn1 = Forge.pki.publicKeyToAsn1(keypair.publicKey);
+            publicKeyBuffer = Forge.asn1.toDer(publicKeyAsn1);
+            serializedPublicKey = publicKeyBuffer.data;
+            return publicKey = PublicKeyEnvelope.createFromBuffer(serializedPublicKey);
           };
-        })(this)).then(function(keypairBuffer) {
-          var passwordCrypto, privateKeyAsn1, publicKeyAsn1, serializedPrivateKey, serializedPublicKey;
-          passwordCrypto = new PasswordCryptoService();
-          serializedPrivateKey = keypairBuffer.privateKey.data;
-          privateKey = passwordCrypto.encrypt(serializedPrivateKey, password);
-          serializedPublicKey = keypairBuffer.publicKey.data;
-          publicKey = PublicKeyEnvelope.createFromBuffer(serializedPublicKey);
-          keypair = {};
-          privateKeyAsn1 = Forge.asn1.fromDer(serializedPrivateKey);
-          keypair.privateKey = Forge.pki.privateKeyFromAsn1(privateKeyAsn1);
-          publicKeyAsn1 = Forge.asn1.fromDer(serializedPublicKey);
-          keypair.publicKey = Forge.pki.publicKeyFromAsn1(publicKeyAsn1);
-          return keypair;
-        }).then((function(_this) {
+        })(this)).then((function(_this) {
           return function() {
             return _this.directoryApi.setPrivateKey(privateKey);
           };
@@ -26198,7 +26142,7 @@ define("function-name", function(){});
   define('kryptnostic.chunking.strategy.default', ['require', 'lodash'], function(require) {
     var BLOCK_LENGTH_IN_BYTES, DefaultChunkingStrategy, EMPTY_STRING, _;
     _ = require('lodash');
-    BLOCK_LENGTH_IN_BYTES = 1000000;
+    BLOCK_LENGTH_IN_BYTES = 4096;
     EMPTY_STRING = '';
     DefaultChunkingStrategy = (function() {
       function DefaultChunkingStrategy() {}
@@ -26372,9 +26316,9 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.crypto-service-loader', ['require', 'bluebird', 'kryptnostic.logger', 'kryptnostic.cypher', 'kryptnostic.rsa-crypto-service', 'kryptnostic.aes-crypto-service', 'kryptnostic.directory-api', 'kryptnostic.crypto-service-marshaller', 'kryptnostic.credential-loader', 'kryptnostic.object-utils'], function(require) {
+  define('kryptnostic.crypto-service-loader', ['require', 'bluebird', 'kryptnostic.logger', 'kryptnostic.cypher', 'kryptnostic.rsa-crypto-service', 'kryptnostic.aes-crypto-service', 'kryptnostic.directory-api', 'kryptnostic.crypto-service-marshaller', 'kryptnostic.credential-loader'], function(require) {
     'use strict';
-    var AesCryptoService, CredentialLoader, CryptoServiceLoader, CryptoServiceMarshaller, Cypher, DEFAULT_OPTS, DirectoryApi, EMPTY_BUFFER, INT_SIZE, Logger, ObjectUtils, Promise, RsaCryptoService, cryptoServiceLoader, get, logger;
+    var AesCryptoService, CredentialLoader, CryptoServiceLoader, CryptoServiceMarshaller, Cypher, DEFAULT_OPTS, DirectoryApi, EMPTY_BUFFER, INT_SIZE, Logger, Promise, RsaCryptoService, logger;
     Promise = require('bluebird');
     RsaCryptoService = require('kryptnostic.rsa-crypto-service');
     AesCryptoService = require('kryptnostic.aes-crypto-service');
@@ -26383,7 +26327,6 @@ define("function-name", function(){});
     Logger = require('kryptnostic.logger');
     CryptoServiceMarshaller = require('kryptnostic.crypto-service-marshaller');
     CredentialLoader = require('kryptnostic.credential-loader');
-    ObjectUtils = require('kryptnostic.object-utils');
     INT_SIZE = 4;
     EMPTY_BUFFER = '';
     logger = Logger.get('CryptoServiceLoader');
@@ -26395,7 +26338,6 @@ define("function-name", function(){});
         this.directoryApi = new DirectoryApi();
         this.marshaller = new CryptoServiceMarshaller();
         this.credentialLoader = new CredentialLoader();
-        this.cache = {};
       }
 
       CryptoServiceLoader.prototype.getRsaCryptoService = function() {
@@ -26408,10 +26350,6 @@ define("function-name", function(){});
         var expectMiss;
         options = _.defaults({}, options, DEFAULT_OPTS);
         expectMiss = options.expectMiss;
-        id = ObjectUtils.childIdToParent(id);
-        if (this.cache[id]) {
-          return Promise.resolve(this.cache[id]);
-        }
         return Promise.props({
           rsaCryptoService: this.getRsaCryptoService(),
           serializedCryptoService: this.directoryApi.getObjectCryptoService(id)
@@ -26419,20 +26357,19 @@ define("function-name", function(){});
           return function(_arg) {
             var cryptoService, rsaCryptoService, serializedCryptoService;
             serializedCryptoService = _arg.serializedCryptoService, rsaCryptoService = _arg.rsaCryptoService;
-            cryptoService = {};
             if (!serializedCryptoService && expectMiss) {
               logger.info('no cryptoService exists for this object. creating one on-the-fly', {
                 id: id
               });
               cryptoService = new AesCryptoService(Cypher.AES_CTR_128);
               _this.setObjectCryptoService(id, cryptoService);
+              return cryptoService;
             } else if (!serializedCryptoService && !expectMiss) {
               throw new Error('no cryptoservice exists for this object, but a miss was not expected');
             } else {
               cryptoService = _this.marshaller.unmarshall(serializedCryptoService, rsaCryptoService);
+              return cryptoService;
             }
-            _this.cache[id] = cryptoService;
-            return cryptoService;
           };
         })(this));
       };
@@ -26451,13 +26388,7 @@ define("function-name", function(){});
       return CryptoServiceLoader;
 
     })();
-    cryptoServiceLoader = new CryptoServiceLoader();
-    get = function() {
-      return cryptoServiceLoader;
-    };
-    return {
-      get: get
-    };
+    return CryptoServiceLoader;
   });
 
 }).call(this);
@@ -26706,139 +26637,28 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.rsa-key-generator', ['require', 'forge', 'kryptnostic.logger', 'bluebird'], function(require) {
-    var EXPONENT_BIG_INT, EXPONENT_NUM, Forge, Logger, Promise, RSA_KEY_SIZE, RsaKeyGenerator, log;
+  define('kryptnostic.rsa-key-generator', ['require', 'forge', 'kryptnostic.logger'], function(require) {
+    var EXPONENT, Forge, Logger, RSA_KEY_SIZE, RsaKeyGenerator, log;
     Forge = require('forge');
     Logger = require('kryptnostic.logger');
-    Promise = require('bluebird');
     log = Logger.get('RsaKeyGenerator');
     RSA_KEY_SIZE = 4096;
-    EXPONENT_NUM = 0x10001;
-    EXPONENT_BIG_INT = new Uint8Array([1, 0, 1]);
+    EXPONENT = 0x10001;
     RsaKeyGenerator = (function() {
       function RsaKeyGenerator() {}
 
-      RsaKeyGenerator.prototype.forgeGenerate = function(params) {
-        return Promise.resolve().then(function() {
-          var forgeKeys, keypair, privateKeyAsn1, publicKeyAsn1;
-          keypair = {};
-          forgeKeys = Forge.rsa.generateKeyPair(params);
-          privateKeyAsn1 = Forge.pki.privateKeyToAsn1(forgeKeys.privateKey);
-          publicKeyAsn1 = Forge.pki.publicKeyToAsn1(forgeKeys.publicKey);
-          keypair.privateKey = Forge.asn1.toDer(privateKeyAsn1);
-          keypair.publicKey = Forge.asn1.toDer(publicKeyAsn1);
-          return keypair;
-        });
-      };
-
-      RsaKeyGenerator.prototype.webCryptoGenerate = function(params) {
-        return Promise.resolve().then(function() {
-          return window.crypto.subtle.generateKey({
-            name: 'RSA-OAEP',
-            modulusLength: params.bits,
-            publicExponent: params.e,
-            hash: {
-              name: 'SHA-256'
-            }
-          }, true, ['encrypt', 'decrypt']);
-        }).then(function(keys) {
-          var p1, p2;
-          p1 = window.crypto.subtle.exportKey('pkcs8', keys.privateKey).then(function(exported) {
-            var privateKey;
-            return privateKey = Forge.util.createBuffer(exported);
-          });
-          p2 = window.crypto.subtle.exportKey('spki', keys.publicKey).then(function(exported) {
-            var publicKey;
-            return publicKey = Forge.util.createBuffer(exported);
-          });
-          return Promise.join(p1, p2, function(privateKey, publicKey) {
-            var keyPair;
-            keyPair = {};
-            keyPair.privateKey = privateKey;
-            keyPair.publicKey = publicKey;
-            return keyPair;
-          });
-        });
-      };
-
-      RsaKeyGenerator.prototype.ieWebCryptoGenerate = function(params) {
-        return Promise.resolve().then(function() {
-          var deferred, keyOperation;
-          deferred = Promise.defer();
-          keyOperation = window.msCrypto.subtle.generateKey({
-            name: 'RSA-OAEP',
-            modulusLength: params.bits,
-            publicExponent: params.e,
-            hash: {
-              name: 'SHA-256'
-            }
-          }, true, ['encrypt', 'decrypt']);
-          keyOperation.onerror = function() {
-            return log.error('Failed to generate RSA keys using IE web crypto');
-          };
-          keyOperation.oncomplete = function() {
-            var keyPair;
-            keyPair = keyOperation.result;
-            return deferred.resolve(keyPair);
-          };
-          return deferred.promise;
-        }).then(function(keys) {
-          var deferred1, deferred2, keyOpPrivate, keyOpPublic, privateKeyPromise, publicKeyPromise;
-          deferred1 = Promise.defer();
-          keyOpPrivate = window.msCrypto.subtle.exportKey('pkcs8', keys.privateKey);
-          keyOpPrivate.onerror = function() {
-            return log.error('Failed to export RSA private key using IE web crypto');
-          };
-          keyOpPrivate.oncomplete = function() {
-            return deferred1.resolve(Forge.util.createBuffer(keyOpPrivate.result));
-          };
-          privateKeyPromise = deferred1.promise;
-          deferred2 = Promise.defer();
-          keyOpPublic = window.msCrypto.subtle.exportKey('spki', keys.publicKey);
-          keyOpPublic.onerror = function() {
-            return log.error('Failed to export RSA public key using IE web crypto');
-          };
-          keyOpPublic.oncomplete = function() {
-            return deferred2.resolve(Forge.util.createBuffer(keyOpPublic.result));
-          };
-          publicKeyPromise = deferred2.promise;
-          return Promise.join(privateKeyPromise, publicKeyPromise, function(privateKey, publicKey) {
-            var keyPair;
-            keyPair = {};
-            keyPair.privateKey = privateKey;
-            keyPair.publicKey = publicKey;
-            return keyPair;
-          });
-        });
+      RsaKeyGenerator.prototype.generate = function(params) {
+        return Forge.rsa.generateKeyPair(params);
       };
 
       RsaKeyGenerator.prototype.generateKeypair = function() {
-        var params, _ref, _ref1;
-        if (((_ref = window.crypto) != null ? _ref.subtle : void 0) != null) {
-          params = {
-            bits: RSA_KEY_SIZE,
-            e: EXPONENT_BIG_INT
-          };
-          log.info('generating keypair', params);
-          log.debug('using web crypto API to generate keypair');
-          return this.webCryptoGenerate(params);
-        } else if (((_ref1 = window.msCrypto) != null ? _ref1.subtle : void 0) != null) {
-          params = {
-            bits: RSA_KEY_SIZE,
-            e: EXPONENT_BIG_INT
-          };
-          log.info('generating keypair', params);
-          log.debug('using IE 11 web crypto API to generate keypair');
-          return this.ieWebCryptoGenerate(params);
-        } else {
-          params = {
-            bits: RSA_KEY_SIZE,
-            e: EXPONENT_NUM
-          };
-          log.info('generating keypair', params);
-          log.debug('using Forge to generate keypair');
-          return this.forgeGenerate(params);
-        }
+        var params;
+        params = {
+          bits: RSA_KEY_SIZE,
+          e: EXPONENT
+        };
+        log.info('generating keypair', params);
+        return this.generate(params);
       };
 
       return RsaKeyGenerator;
@@ -26895,16 +26715,16 @@ define("function-name", function(){});
         return this.createClient().getEncryptedSearchToken(token);
       };
 
-      KryptnosticEngine.prototype.getObjectSharingPairFromObjectIndexPair = function(_arg) {
+      KryptnosticEngine.prototype.getObjectSharingPair = function(_arg) {
         var objectIndexPair;
         objectIndexPair = _arg.objectIndexPair;
-        return this.createClient().getObjectSharingPairFromObjectIndexPair(objectIndexPair);
+        return this.createClient().getObjectSharingPair(objectIndexPair);
       };
 
-      KryptnosticEngine.prototype.getObjectIndexPairFromObjectSharingPair = function(_arg) {
+      KryptnosticEngine.prototype.getObjectIndexPairFromSharing = function(_arg) {
         var objectSharingPair;
         objectSharingPair = _arg.objectSharingPair;
-        return this.createClient().getObjectIndexPairFromObjectSharingPair(objectSharingPair);
+        return this.createClient().getObjectUploadPair(objectSharingPair);
       };
 
       return KryptnosticEngine;
@@ -26961,13 +26781,13 @@ define("function-name", function(){});
         return BinaryUtils.stringToUint8(pad('search.token.' + BinaryUtils.uint8ToString(token)));
       };
 
-      MockKryptnosticEngine.prototype.getObjectSharingPairFromObjectIndexPair = function(_arg) {
+      MockKryptnosticEngine.prototype.getObjectSharingPair = function(_arg) {
         var objectIndexPair;
         objectIndexPair = _arg.objectIndexPair;
         return BinaryUtils.stringToUint8('doc.sharing.' + BinaryUtils.uint8ToString(objectIndexPair));
       };
 
-      MockKryptnosticEngine.prototype.getObjectIndexPairFromObjectSharingPair = function(_arg) {
+      MockKryptnosticEngine.prototype.getObjectIndexPairFromSharing = function(_arg) {
         var objectSharingPair;
         objectSharingPair = _arg.objectSharingPair;
         return BinaryUtils.stringToUint8('doc.upload.' + BinaryUtils.uint8ToString(objectUploadPair));
@@ -27098,8 +26918,8 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.directory-api', ['require', 'axios', 'bluebird', 'kryptnostic.configuration', 'kryptnostic.logger', 'kryptnostic.public-key-envelope', 'kryptnostic.requests', 'kryptnostic.block-ciphertext', 'kryptnostic.validators', 'kryptnostic.caching-service'], function(require) {
-    var BlockCiphertext, Cache, Configuration, DEFAULT_HEADERS, DirectoryApi, Logger, Promise, PublicKeyEnvelope, Requests, axios, cryptoServiceUrl, log, privateKeyUrl, publicKeyUrl, saltUrl, usersInRealmUrl, validateCrytpoServiceByteBuffer, validateId, validators;
+  define('kryptnostic.directory-api', ['require', 'axios', 'bluebird', 'kryptnostic.configuration', 'kryptnostic.logger', 'kryptnostic.public-key-envelope', 'kryptnostic.requests', 'kryptnostic.block-ciphertext', 'kryptnostic.validators'], function(require) {
+    var BlockCiphertext, Configuration, DEFAULT_HEADERS, DirectoryApi, Logger, Promise, PublicKeyEnvelope, Requests, axios, cryptoServiceUrl, log, privateKeyUrl, publicKeyUrl, saltUrl, usersInRealmUrl, validateCrytpoServiceByteBuffer, validateId, validators;
     axios = require('axios');
     Requests = require('kryptnostic.requests');
     Logger = require('kryptnostic.logger');
@@ -27108,7 +26928,6 @@ define("function-name", function(){});
     BlockCiphertext = require('kryptnostic.block-ciphertext');
     Promise = require('bluebird');
     validators = require('kryptnostic.validators');
-    Cache = require('kryptnostic.caching-service');
     validateId = validators.validateId;
     cryptoServiceUrl = function() {
       return Configuration.get('servicesUrl') + '/directory/object';
@@ -27138,13 +26957,6 @@ define("function-name", function(){});
       function DirectoryApi() {}
 
       DirectoryApi.prototype.getObjectCryptoService = function(objectId) {
-        var cached;
-        cached = Cache.get(Cache.CRYPTO_SERVICES, objectId);
-        if (cached != null) {
-          return Promise.resolve().then(function() {
-            return cached;
-          });
-        }
         return Promise.resolve().then(function() {
           validateId(objectId);
           return Promise.resolve(axios(Requests.wrapCredentials({
@@ -27154,10 +26966,7 @@ define("function-name", function(){});
         }).then(function(response) {
           var serializedCryptoService;
           serializedCryptoService = response.data.data;
-          if (serializedCryptoService) {
-            Cache.store(Cache.CRYPTO_SERVICES, objectId, serializedCryptoService);
-          }
-          log.debug('getObjectCryptoService', {
+          log.info('getObjectCryptoService', {
             objectId: objectId
           });
           return serializedCryptoService;
@@ -27177,7 +26986,7 @@ define("function-name", function(){});
             headers: _.cloneDeep(DEFAULT_HEADERS)
           })));
         }).then(function(response) {
-          log.debug('setObjectCryptoService', {
+          log.info('setObjectCryptoService', {
             objectId: objectId
           });
           return response.data;
@@ -27233,73 +27042,33 @@ define("function-name", function(){});
       };
 
       DirectoryApi.prototype.getPublicKey = function(uuid) {
-        var cached;
-        cached = Cache.get(Cache.PUBLIC_KEYS, uuid);
-        if (cached != null) {
-          return Promise.resolve().then(function() {
-            return cached;
-          });
-        }
         return Promise.resolve(axios(Requests.wrapCredentials({
           url: publicKeyUrl() + '/' + uuid,
           method: 'GET'
         }))).then(function(response) {
-          var envelope, keyEnv;
+          var envelope;
           envelope = response.data;
           log.debug('getPublicKey', {
             envelope: envelope
           });
-          keyEnv = new PublicKeyEnvelope(envelope);
-          Cache.store(Cache.PUBLIC_KEYS, uuid, keyEnv);
-          return keyEnv;
-        })["catch"](function(e) {
-          return void 0;
-        });
-      };
-
-      DirectoryApi.prototype.getPublicKeys = function(uuids) {
-        return Promise.resolve(axios(Requests.wrapCredentials({
-          url: publicKeyUrl(),
-          data: uuids,
-          method: 'POST'
-        }))).then(function(response) {
-          var key, result, uuid, uuidsToKeysMap;
-          uuidsToKeysMap = response.data;
-          log.debug('getPublicKeys', {
-            uuidsToKeysMap: uuidsToKeysMap
-          });
-          result = {};
-          for (uuid in uuidsToKeysMap) {
-            key = uuidsToKeysMap[uuid];
-            result[uuid] = new PublicKeyEnvelope(key);
-          }
-          return result;
+          return new PublicKeyEnvelope(envelope);
         })["catch"](function(e) {
           return void 0;
         });
       };
 
       DirectoryApi.prototype.getSalt = function(uuid) {
-        var cached;
-        cached = Cache.get(Cache.SALTS, uuid);
-        if (cached != null) {
-          return Promise.resolve().then(function() {
-            return cached;
-          });
-        }
         return Promise.resolve(axios({
           url: saltUrl() + '/' + uuid,
           method: 'GET'
         })).then(function(response) {
           var ciphertext;
           ciphertext = response.data;
-          log.debug('ciphertext', ciphertext);
+          log.info('ciphertext', ciphertext);
           if (_.isEmpty(ciphertext)) {
             throw new Error('incorrect credentials');
           } else {
-            ciphertext = new BlockCiphertext(ciphertext);
-            Cache.store(Cache.SALTS, uuid, ciphertext);
-            return ciphertext;
+            return new BlockCiphertext(ciphertext);
           }
         });
       };
@@ -27702,18 +27471,12 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-
-  define('kryptnostic.user-directory-api', ['require', 'axios', 'bluebird', 'kryptnostic.logger', 'kryptnostic.configuration', 'kryptnostic.caching-service'], function(require) {
-    var Cache, Configuration, DEFAULT_HEADER, Logger, Promise, UserDirectoryApi, axios, getUserUrl, getUsersUrl, log, validateEmail, validateUuid;
+  define('kryptnostic.user-directory-api', ['require', 'axios', 'bluebird', 'kryptnostic.configuration', 'kryptnostic.logger'], function(require) {
+    var Configuration, DEFAULT_HEADER, Logger, Promise, UserDirectoryApi, axios, getUsersUrl, log, validateEmail, validateUuid;
     axios = require('axios');
     Promise = require('bluebird');
     Logger = require('kryptnostic.logger');
     Configuration = require('kryptnostic.configuration');
-    Cache = require('kryptnostic.caching-service');
-    getUserUrl = function() {
-      return Configuration.get('heraclesUrl') + '/directory/user';
-    };
     getUsersUrl = function() {
       return Configuration.get('heraclesUrl') + '/directory/users';
     };
@@ -27734,15 +27497,7 @@ define("function-name", function(){});
       }
     };
     UserDirectoryApi = (function() {
-      function UserDirectoryApi() {
-        this.getUserName = __bind(this.getUserName, this);
-      }
-
-      UserDirectoryApi.prototype.getUserName = function(uuid) {
-        return this.getUser(uuid).then(function(user) {
-          return user.name;
-        });
-      };
+      function UserDirectoryApi() {}
 
       UserDirectoryApi.prototype.resolve = function(_arg) {
         var email;
@@ -27750,7 +27505,7 @@ define("function-name", function(){});
         return Promise.resolve().then(function() {
           validateEmail(email);
           return axios({
-            url: getUserUrl() + '/email/' + email,
+            url: getUsersUrl() + '/email/' + email,
             method: 'GET'
           });
         }).then(function(response) {
@@ -27766,17 +27521,10 @@ define("function-name", function(){});
       };
 
       UserDirectoryApi.prototype.getUser = function(uuid) {
-        var cached;
-        cached = Cache.get(Cache.USERS, uuid);
-        if (cached != null) {
-          return Promise.resolve().then(function() {
-            return cached;
-          });
-        }
         return Promise.resolve().then(function() {
           validateUuid(uuid);
           return axios({
-            url: getUserUrl() + '/' + uuid,
+            url: getUsersUrl() + '/' + uuid,
             method: 'GET'
           });
         }).then(function(response) {
@@ -27786,45 +27534,8 @@ define("function-name", function(){});
           if (user === 'null' || !user) {
             return void 0;
           } else {
-            Cache.store(Cache.USERS, uuid, user);
             return user;
           }
-        });
-      };
-
-      UserDirectoryApi.prototype.getUsers = function(initialUUIDs) {
-        var cached, searchResults, uuids;
-        searchResults = Cache.search(Cache.USERS, initialUUIDs);
-        uuids = searchResults['uncached'];
-        cached = searchResults['cached'];
-        if (uuids.length === 0) {
-          return Promise.resolve().then(function() {
-            return cached;
-          });
-        }
-        return Promise.resolve().then(function() {
-          var uuid, _i, _len;
-          for (_i = 0, _len = uuids.length; _i < _len; _i++) {
-            uuid = uuids[_i];
-            validateUuid(uuid);
-          }
-          return axios({
-            url: getUsersUrl(),
-            method: 'POST',
-            data: uuids
-          });
-        }).then(function(response) {
-          var user, users, _i, _len;
-          users = response.data;
-          log.info('getUsers', users);
-          if (users === 'null' || !users) {
-            return void 0;
-          }
-          for (_i = 0, _len = users.length; _i < _len; _i++) {
-            user = users[_i];
-            Cache.store(Cache.USERS, user.id, user);
-          }
-          return cached.concat(users);
         });
       };
 
@@ -28968,7 +28679,7 @@ define("function-name", function(){});
     SearchClient = (function() {
       function SearchClient() {
         this.engine = new MockKryptnosticEngine();
-        this.cryptoServiceLoader = CryptoServiceLoader.get();
+        this.cryptoServiceLoader = new CryptoServiceLoader();
         this.searchApi = new SearchApi();
       }
 
@@ -29044,7 +28755,7 @@ define("function-name", function(){});
     log = Logger.get('SearchIndexingService');
     SearchIndexingService = (function() {
       function SearchIndexingService() {
-        this.cryptoServiceLoader = CryptoServiceLoader.get();
+        this.cryptoServiceLoader = new CryptoServiceLoader();
         this.documentSearchKeyApi = new DocumentSearchKeyApi();
         this.engine = new MockKryptnosticEngine();
         this.metadataApi = new MetadataApi();
@@ -29245,8 +28956,7 @@ define("function-name", function(){});
     DEFAULTS = {
       servicesUrl: 'http://api.kryptnostic.com/v1',
       heraclesUrl: 'https://api.kryptnostic.com/heracles/v1',
-      credentialProvider: 'kryptnostic.credential-provider.session-storage',
-      cachingProvider: 'kryptnostic.caching-provider.jscache'
+      credentialProvider: 'kryptnostic.credential-provider.session-storage'
     };
     ConfigurationService = (function() {
       function ConfigurationService() {}
@@ -29355,7 +29065,7 @@ define("function-name", function(){});
         this.sharingApi = new SharingApi();
         this.directoryApi = new DirectoryApi();
         this.cryptoServiceMarshaller = new CryptoServiceMarshaller();
-        this.cryptoServiceLoader = CryptoServiceLoader.get();
+        this.cryptoServiceLoader = new CryptoServiceLoader();
         this.credentialLoader = new CredentialLoader();
       }
 
@@ -29375,7 +29085,9 @@ define("function-name", function(){});
         })(this)).then((function(_this) {
           return function(cryptoService) {
             var promiseMap;
-            promiseMap = _this.directoryApi.getPublicKeys(uuids);
+            promiseMap = _.mapValues(_.object(uuids), function(empty, uuid) {
+              return _this.directoryApi.getPublicKey(uuid);
+            });
             return Promise.props(promiseMap).then(function(uuidsToKeyEnvelopes) {
               var seals, sharingRequest;
               seals = _.chain(uuidsToKeyEnvelopes).mapValues(function(keyEnvelope, uuid) {
@@ -29441,11 +29153,10 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.storage-client', ['require', 'bluebird', 'kryptnostic.logger', 'kryptnostic.validators', 'kryptnostic.object-api', 'kryptnostic.kryptnostic-object', 'kryptnostic.crypto-service-loader', 'kryptnostic.pending-object-request', 'kryptnostic.search-indexing-service'], function(require) {
+  define('kryptnostic.storage-client', ['require', 'bluebird', 'kryptnostic.validators', 'kryptnostic.object-api', 'kryptnostic.kryptnostic-object', 'kryptnostic.crypto-service-loader', 'kryptnostic.pending-object-request', 'kryptnostic.search-indexing-service'], function(require) {
     'use strict';
-    var CryptoServiceLoader, KryptnosticObject, Logger, ObjectApi, PendingObjectRequest, Promise, SearchIndexingService, StorageClient, logger, validateId, validateNonEmptyString, validators;
+    var CryptoServiceLoader, KryptnosticObject, ObjectApi, PendingObjectRequest, Promise, SearchIndexingService, StorageClient, validateId, validateNonEmptyString, validators;
     Promise = require('bluebird');
-    Logger = require('kryptnostic.logger');
     validators = require('kryptnostic.validators');
     KryptnosticObject = require('kryptnostic.kryptnostic-object');
     PendingObjectRequest = require('kryptnostic.pending-object-request');
@@ -29453,12 +29164,10 @@ define("function-name", function(){});
     ObjectApi = require('kryptnostic.object-api');
     SearchIndexingService = require('kryptnostic.search-indexing-service');
     validateId = validators.validateId, validateNonEmptyString = validators.validateNonEmptyString;
-    logger = Logger.get('StorageClient');
     StorageClient = (function() {
       function StorageClient() {
-        logger.info('storage client created');
         this.objectApi = new ObjectApi();
-        this.cryptoServiceLoader = CryptoServiceLoader.get();
+        this.cryptoServiceLoader = new CryptoServiceLoader();
         this.searchIndexingService = new SearchIndexingService();
       }
 
@@ -29609,167 +29318,14 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.caching-provider-loader', ['require', 'kryptnostic.logger', 'kryptnostic.caching-provider.jscache', 'kryptnostic.caching-provider.memory'], function(require) {
-    var CachingProviderLoader, Logger, log;
-    Logger = require('kryptnostic.logger');
-    log = Logger.get('CachingProviderLoader');
-    return CachingProviderLoader = (function() {
-      function CachingProviderLoader() {}
-
-      CachingProviderLoader.load = function(uri) {
-        var module;
-        module = require(uri);
-        if (module != null) {
-          return module;
-        } else {
-          throw new Error('failed to load caching provider for URI ' + uri);
-        }
-      };
-
-      return CachingProviderLoader;
-
-    })();
-  });
-
-}).call(this);
-
-
-// Generated by CoffeeScript 1.7.1
-(function() {
-  define('kryptnostic.caching-service', ['require', 'lodash', 'kryptnostic.configuration', 'kryptnostic.caching-provider-loader', 'kryptnostic.logger'], function(require) {
-    var CachingProviderLoader, CachingService, Config, Logger, log;
-    Logger = require('kryptnostic.logger');
-    Config = require('kryptnostic.configuration');
-    CachingProviderLoader = require('kryptnostic.caching-provider-loader');
-    log = Logger.get('CachingService');
-    CachingService = (function() {
-      function CachingService() {}
-
-      CachingService.USERS = 'users';
-
-      CachingService.UUIDS = 'uuids';
-
-      CachingService.SALTS = 'user_salts';
-
-      CachingService.OBJECTS = 'objects';
-
-      CachingService.PUBLIC_KEYS = 'public_keys';
-
-      CachingService.DEFAULT_GROUP = 'default_group';
-
-      CachingService.CRYPTO_SERVICES = 'object_crypto_services';
-
-      CachingService.store = function(group, key, value) {
-        var cache;
-        if ((group == null) || (key == null) || (value == null)) {
-          throw new Error('Bad arguments to store cache!' + group + ', ' + key + ', ' + value);
-        }
-        cache = CachingProviderLoader.load(Config.get('cachingProvider'));
-        log.debug('Cached ' + group + ': ' + key + ', ' + JSON.stringify(value));
-        return cache.store(group, key, value);
-      };
-
-      CachingService.get = function(group, key) {
-        var cache, cached;
-        cache = CachingProviderLoader.load(Config.get('cachingProvider'));
-        cached = cache.get(group, key);
-        if (cached != null) {
-          log.debug('Cache hit: ' + group + ', ' + key + ': ' + JSON.stringify(cached));
-        } else {
-          log.debug('Cache miss: ' + group + ', ' + key);
-        }
-        return cached;
-      };
-
-      CachingService.search = function(group, keys) {
-        var cache, cached, key, list, results, uncached, _i, _len;
-        cache = CachingProviderLoader.load(Config.get('cachingProvider'));
-        results = {};
-        results['uncached'] = [];
-        results['cached'] = [];
-        for (_i = 0, _len = keys.length; _i < _len; _i++) {
-          key = keys[_i];
-          cached = cache.get(group, key);
-          if (cached != null) {
-            list = results['cached'];
-            list.push(cached);
-            results['cached'] = list;
-            log.debug('search hit: ' + group + ', ' + key);
-          } else {
-            uncached = results['uncached'];
-            uncached.push(key);
-            results['uncached'] = uncached;
-            log.debug('search miss: ' + group + ', ' + key);
-          }
-        }
-        return results;
-      };
-
-      CachingService.destroy = function() {
-        var cache;
-        cache = CachingProviderLoader.load(Config.get('cachingProvider'));
-        return cache.destroy();
-      };
-
-      return CachingService;
-
-    })();
-    return CachingService;
-  });
-
-}).call(this);
-
-
-// Generated by CoffeeScript 1.7.1
-(function() {
-  define('kryptnostic.caching-provider.memory', ['require', 'kryptnostic.logger'], function(require) {
-    var InMemoryCachingProvider, Logger, log;
-    Logger = require('kryptnostic.logger');
-    log = Logger.get('InMemoryCachingProvider');
-    InMemoryCachingProvider = (function() {
-      function InMemoryCachingProvider() {}
-
-      InMemoryCachingProvider.cache = {};
-
-      InMemoryCachingProvider.store = function(group, key, value) {
-        if (this.cache[group] == null) {
-          this.cache[group] = {};
-        }
-        return this.cache[group][key] = value;
-      };
-
-      InMemoryCachingProvider.get = function(group, key) {
-        var value;
-        if (this.cache[group] != null) {
-          value = this.cache[group][key];
-        }
-        if (value != null) {
-          return value;
-        }
-        return null;
-      };
-
-      InMemoryCachingProvider.destroy = function() {
-        return this.cache = {};
-      };
-
-      return InMemoryCachingProvider;
-
-    })();
-    return InMemoryCachingProvider;
-  });
-
-}).call(this);
-
-
-// Generated by CoffeeScript 1.7.1
-(function() {
-  define('kryptnostic.caching-provider.jscache', ['require', 'jscache', 'kryptnostic.logger'], function(require) {
-    var CACHE_TIMEOUT_MILLIS, Cache, JscacheCachingProvider, Logger, MAX_CACHED_OBJECTS, getCacheOpts, log;
-    Logger = require('kryptnostic.logger');
+  define('kryptnostic.user-client', ['require', 'bluebird', 'jscache', 'kryptnostic.logger', 'kryptnostic.user-directory-api'], function(require) {
+    var CACHE_TIMEOUT_MILLIS, Cache, Logger, MAX_CACHED_USERS, Promise, UserClient, UserDirectoryApi, getCacheOpts, log;
     Cache = require('jscache');
-    log = Logger.get('JsCacheCachingProvider');
-    MAX_CACHED_OBJECTS = 500;
+    Promise = require('bluebird');
+    Logger = require('kryptnostic.logger');
+    UserDirectoryApi = require('kryptnostic.user-directory-api');
+    log = Logger.get('UserClient');
+    MAX_CACHED_USERS = 500;
     CACHE_TIMEOUT_MILLIS = 1000 * 60 * 60 * 8;
     getCacheOpts = function() {
       return {
@@ -29781,75 +29337,48 @@ define("function-name", function(){});
         }
       };
     };
-    JscacheCachingProvider = (function() {
-      function JscacheCachingProvider() {}
+    UserClient = (function() {
+      function UserClient() {
+        this.userDirectoryApi = new UserDirectoryApi();
+        this.cache = new Cache(MAX_CACHED_USERS);
+      }
 
-      JscacheCachingProvider.cache = {};
-
-      JscacheCachingProvider.store = function(group, key, value) {
-        if (this.cache[group] == null) {
-          this.cache[group] = new Cache(MAX_CACHED_OBJECTS);
-        }
-        return this.cache[group].setItem(key, value, getCacheOpts());
+      UserClient.prototype.loadUser = function(uuid) {
+        return Promise.resolve().then((function(_this) {
+          return function() {
+            var cacheItem, promise;
+            cacheItem = _this.cache.getItem(uuid);
+            if (cacheItem != null) {
+              log.info('hit: returning cached user', {
+                uuid: uuid
+              });
+              return cacheItem;
+            } else {
+              log.info('miss: loading user', {
+                uuid: uuid
+              });
+              promise = _this.userDirectoryApi.getUser(uuid);
+              _this.cache.setItem(uuid, promise, getCacheOpts());
+              return promise;
+            }
+          };
+        })(this));
       };
 
-      JscacheCachingProvider.get = function(group, key) {
-        var value;
-        if (this.cache[group] != null) {
-          value = this.cache[group].getItem(key);
-          return value;
-        }
-        return null;
+      UserClient.prototype.loadName = function(uuid) {
+        return Promise.resolve().then((function(_this) {
+          return function() {
+            return _this.loadUser(uuid);
+          };
+        })(this)).then(function(user) {
+          return user.name;
+        });
       };
 
-      JscacheCachingProvider.destroy = function() {
-        var k, v, _ref;
-        _ref = this.cache;
-        for (k in _ref) {
-          v = _ref[k];
-          v.clear();
-        }
-        return this.cache = {};
-      };
-
-      return JscacheCachingProvider;
+      return UserClient;
 
     })();
-    return JscacheCachingProvider;
-  });
-
-}).call(this);
-
-
-// Generated by CoffeeScript 1.7.1
-(function() {
-  define('kryptnostic.caching-provider.locache', ['require', 'locache', 'kryptnostic.logger'], function(require) {
-    var Cache, LocacheCachingProvider, Logger, log;
-    Logger = require('kryptnostic.logger');
-    Cache = require('locache');
-    log = Logger.get('LocacheCachingProvider');
-    LocacheCachingProvider = (function() {
-      function LocacheCachingProvider() {}
-
-      LocacheCachingProvider.cache = Cache;
-
-      LocacheCachingProvider.get = function(key) {
-        return this.cache.get(key);
-      };
-
-      LocacheCachingProvider.store = function(key, value) {
-        return this.cache.set(key, value);
-      };
-
-      LocacheCachingProvider.destroy = function() {
-        this.cache.flush();
-        return this.cache.cleanup();
-      };
-
-      return LocacheCachingProvider;
-
-    })();
-    return LocacheCachingProvider;
+    return UserClient;
   });
 
 }).call(this);
@@ -30133,7 +29662,7 @@ define("function-name", function(){});
     log = require('loglevel');
     _ = require('lodash');
     PERSIST = true;
-    log.setLevel('info', PERSIST);
+    log.setLevel('trace', PERSIST);
     format = function(message, args) {
       if (_.isArray(args) && args.length) {
         return "" + message + " " + (args.map(JSON.stringify));
@@ -30370,7 +29899,7 @@ define("function-name", function(){});
 // Generated by CoffeeScript 1.7.1
 (function() {
   define('kryptnostic.object-utils', ['require'], function(require) {
-    var CHILD_SEPARATOR, childIdToParent, createChildId, getChildIndex, isChildId;
+    var CHILD_SEPARATOR, createChildId, getChildIndex, isChildId;
     CHILD_SEPARATOR = '~';
     createChildId = function(id, index) {
       return "" + id + CHILD_SEPARATOR + index;
@@ -30378,23 +29907,13 @@ define("function-name", function(){});
     isChildId = function(id) {
       return id.indexOf(CHILD_SEPARATOR) >= 0;
     };
-    childIdToParent = function(id) {
-      var index;
-      index = id.indexOf(CHILD_SEPARATOR);
-      if (index >= 0) {
-        return id.slice(0, index);
-      } else {
-        return id;
-      }
-    };
     getChildIndex = function(id) {
       return _.parseInt(_.last(id.split(CHILD_SEPARATOR)));
     };
     return {
       isChildId: isChildId,
       createChildId: createChildId,
-      getChildIndex: getChildIndex,
-      childIdToParent: childIdToParent
+      getChildIndex: getChildIndex
     };
   });
 
@@ -30491,7 +30010,7 @@ define("function-name", function(){});
 (function() {
   var EXPORTED_MODULES;
 
-  EXPORTED_MODULES = ['axios', 'bluebird', 'forge', 'jscache', 'lodash', 'loglevel', 'murmurhash3', 'pako', 'revalidator', 'function-name', 'cs!auth/AuthenticationService', 'cs!auth/AuthenticationStage', 'cs!auth/CredentialLoader', 'cs!auth/CredentialProviderLoader', 'cs!auth/CredentialService', 'cs!auth/SaltGenerator', 'cs!auth/SearchCredentialService', 'cs!auth/SearchKeySerializer', 'cs!auth/credential-provider/InMemoryCredentialProvider', 'cs!auth/credential-provider/KeyValueCredentialProvider', 'cs!auth/credential-provider/LocalStorageCredentialProvider', 'cs!auth/credential-provider/SessionStorageCredentialProvider', 'cs!chunking/ChunkingStrategyRegistry', 'cs!chunking/DefaultChunkingStrategy', 'cs!chunking/JsonChunkingStrategy', 'cs!crypto/AbstractCryptoService', 'cs!crypto/AesCryptoService', 'cs!crypto/CryptoAlgorithm', 'cs!crypto/CryptoServiceLoader', 'cs!crypto/CryptoServiceMarshaller', 'cs!crypto/Cypher', 'cs!crypto/HashFunction', 'cs!crypto/KeypairSerializer', 'cs!crypto/PasswordCryptoService', 'cs!crypto/RsaCryptoService', 'cs!crypto/RsaKeyGenerator', 'cs!engine/KryptnosticEngine', 'cs!engine/MockKryptnosticEngine', 'cs!engine/MockSearchKeyGenerator', 'cs!engine/SearchKeyGenerator', 'cs!http/CryptoKeyStorageApi', 'cs!http/DirectoryApi', 'cs!http/DocumentSearchKeyApi', 'cs!http/MetadataApi', 'cs!http/ObjectApi', 'cs!http/RegistrationApi', 'cs!http/SearchApi', 'cs!http/SharingApi', 'cs!http/UserDirectoryApi', 'cs!marshalling/DeflatingMarshaller', 'cs!model/crypto/PublicKeyEnvelope', 'cs!model/object/BlockCiphertext', 'cs!model/object/EncryptedBlock', 'cs!model/object/KryptnosticObject', 'cs!model/object/ObjectMetadata', 'cs!model/request/MetadataRequest', 'cs!model/request/PendingObjectRequest', 'cs!model/request/RevocationRequest', 'cs!model/request/SharingRequest', 'cs!model/request/StorageRequest', 'cs!model/request/UserRegistrationRequest', 'cs!model/schema/block-ciphertext', 'cs!model/schema/encryptable', 'cs!model/schema/encrypted-block', 'cs!model/schema/indexed-metadata', 'cs!model/schema/kryptnostic-object', 'cs!model/schema/object-metadata', 'cs!model/schema/pending-object-request', 'cs!model/schema/revocation-request', 'cs!model/schema/sharing-request', 'cs!model/schema/storage-request', 'cs!model/schema/user-registration-request', 'cs!model/schema/validator', 'cs!model/search/IndexedMetadata', 'cs!search/MetadataMapper', 'cs!search/ObjectIndexer', 'cs!search/ObjectTokenizer', 'cs!search/RandomIndexGenerator', 'cs!search/SearchClient', 'cs!search/SearchIndexingService', 'cs!service/BlockEncryptionService', 'cs!service/ConfigurationService', 'cs!service/RegistrationClient', 'cs!service/SharingClient', 'cs!service/StorageClient', 'cs!service/caching-provider/CachingProviderLoader', 'cs!service/caching-provider/CachingService', 'cs!service/caching-provider/InMemoryCachingProvider', 'cs!service/caching-provider/JscacheCachingProvider', 'cs!service/caching-provider/LocacheCachingProvider', 'cs!tree/DeletionVisitor', 'cs!tree/PermissionChangeVisitor', 'cs!tree/TreeLoader', 'cs!tree/TreeNode', 'cs!util/Logger', 'cs!util/binary-utils', 'cs!util/object-utils', 'cs!util/requests', 'cs!util/validators'];
+  EXPORTED_MODULES = ['axios', 'bluebird', 'forge', 'jscache', 'lodash', 'loglevel', 'murmurhash3', 'pako', 'revalidator', 'function-name', 'cs!auth/AuthenticationService', 'cs!auth/AuthenticationStage', 'cs!auth/CredentialLoader', 'cs!auth/CredentialProviderLoader', 'cs!auth/CredentialService', 'cs!auth/SaltGenerator', 'cs!auth/SearchCredentialService', 'cs!auth/SearchKeySerializer', 'cs!auth/credential-provider/InMemoryCredentialProvider', 'cs!auth/credential-provider/KeyValueCredentialProvider', 'cs!auth/credential-provider/LocalStorageCredentialProvider', 'cs!auth/credential-provider/SessionStorageCredentialProvider', 'cs!chunking/ChunkingStrategyRegistry', 'cs!chunking/DefaultChunkingStrategy', 'cs!chunking/JsonChunkingStrategy', 'cs!crypto/AbstractCryptoService', 'cs!crypto/AesCryptoService', 'cs!crypto/CryptoAlgorithm', 'cs!crypto/CryptoServiceLoader', 'cs!crypto/CryptoServiceMarshaller', 'cs!crypto/Cypher', 'cs!crypto/HashFunction', 'cs!crypto/KeypairSerializer', 'cs!crypto/PasswordCryptoService', 'cs!crypto/RsaCryptoService', 'cs!crypto/RsaKeyGenerator', 'cs!engine/KryptnosticEngine', 'cs!engine/MockKryptnosticEngine', 'cs!engine/MockSearchKeyGenerator', 'cs!engine/SearchKeyGenerator', 'cs!http/CryptoKeyStorageApi', 'cs!http/DirectoryApi', 'cs!http/DocumentSearchKeyApi', 'cs!http/MetadataApi', 'cs!http/ObjectApi', 'cs!http/RegistrationApi', 'cs!http/SearchApi', 'cs!http/SharingApi', 'cs!http/UserDirectoryApi', 'cs!marshalling/DeflatingMarshaller', 'cs!model/crypto/PublicKeyEnvelope', 'cs!model/object/BlockCiphertext', 'cs!model/object/EncryptedBlock', 'cs!model/object/KryptnosticObject', 'cs!model/object/ObjectMetadata', 'cs!model/request/MetadataRequest', 'cs!model/request/PendingObjectRequest', 'cs!model/request/RevocationRequest', 'cs!model/request/SharingRequest', 'cs!model/request/StorageRequest', 'cs!model/request/UserRegistrationRequest', 'cs!model/schema/block-ciphertext', 'cs!model/schema/encryptable', 'cs!model/schema/encrypted-block', 'cs!model/schema/indexed-metadata', 'cs!model/schema/kryptnostic-object', 'cs!model/schema/object-metadata', 'cs!model/schema/pending-object-request', 'cs!model/schema/revocation-request', 'cs!model/schema/sharing-request', 'cs!model/schema/storage-request', 'cs!model/schema/user-registration-request', 'cs!model/schema/validator', 'cs!model/search/IndexedMetadata', 'cs!search/MetadataMapper', 'cs!search/ObjectIndexer', 'cs!search/ObjectTokenizer', 'cs!search/RandomIndexGenerator', 'cs!search/SearchClient', 'cs!search/SearchIndexingService', 'cs!service/BlockEncryptionService', 'cs!service/ConfigurationService', 'cs!service/RegistrationClient', 'cs!service/SharingClient', 'cs!service/StorageClient', 'cs!service/UserClient', 'cs!tree/DeletionVisitor', 'cs!tree/PermissionChangeVisitor', 'cs!tree/TreeLoader', 'cs!tree/TreeNode', 'cs!util/Logger', 'cs!util/binary-utils', 'cs!util/object-utils', 'cs!util/requests', 'cs!util/validators'];
 
   define('kryptnostic', EXPORTED_MODULES, function(require) {
     'use strict';

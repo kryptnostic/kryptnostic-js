@@ -3,15 +3,17 @@ define 'kryptnostic.search.metadata-mapper', [
   'kryptnostic.logger'
   'kryptnostic.binary-utils'
   'kryptnostic.hash-function'
-  'kryptnostic.mock.kryptnostic-engine'
+  'kryptnostic.kryptnostic-engine-provider'
   'kryptnostic.search.random-index-generator'
+  'kryptnostic.search-credential-service' #added to load the keys stored
 ], (require) ->
 
-  Logger                = require 'kryptnostic.logger'
-  BinaryUtils           = require 'kryptnostic.binary-utils'
-  HashFunction          = require 'kryptnostic.hash-function'
-  MockKryptnosticEngine = require 'kryptnostic.mock.kryptnostic-engine'
-  RandomIndexGenerator  = require 'kryptnostic.search.random-index-generator'
+  Logger                    = require 'kryptnostic.logger'
+  BinaryUtils               = require 'kryptnostic.binary-utils'
+  HashFunction              = require 'kryptnostic.hash-function'
+  KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
+  RandomIndexGenerator      = require 'kryptnostic.search.random-index-generator'
+  SearchCredentialService   = require 'kryptnostic.search-credential-service'
 
   MINIMUM_TOKEN_LENGTH = 1
 
@@ -35,12 +37,13 @@ define 'kryptnostic.search.metadata-mapper', [
   class MetadataMapper
 
     constructor: ->
-      @engine         = new MockKryptnosticEngine()
+      @service        = new SearchCredentialService()
       @indexGenerator = new RandomIndexGenerator()
       @hashFunction   = HashFunction.MURMUR3_128
 
-    mapToKeys: ({ metadata, objectAddressMatrix, objectSearchKey }) ->
+    mapToKeys: ({ metadata, objectIndexPair }) ->
       metadataMap  = {}
+      engine       = KryptnosticEngineProvider.getEngine()
       bucketLength = computeBucketSize(metadata)
 
       for metadatum in metadata
@@ -54,16 +57,11 @@ define 'kryptnostic.search.metadata-mapper', [
         tokenUint = BinaryUtils.hexToUint(tokenHex)
 
         # compute address of token
-        indexUint   = @engine.getMetadatumAddress({
-          token : tokenUint,
-          objectAddressMatrix,
-          objectSearchKey
-        })
-        indexString = BinaryUtils.uint8ToString(indexUint)
+        indexUint   = engine.calculateMetadataAddress(objectIndexPair, tokenUint)
+        indexString = BinaryUtils.uint8ToBase64(indexUint)
 
         # pad occurence locations
-        paddedLocations = @subListAndPad(locations, bucketLength)
-
+        paddedLocations   = @subListAndPad(locations, bucketLength)
         balancedMetadatum = { id, token, locations : paddedLocations }
 
         if metadataMap[indexString]

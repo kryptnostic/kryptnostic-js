@@ -1,51 +1,104 @@
 define 'kryptnostic.crypto-key-storage-api', [
   'require'
+  'axios'
   'bluebird'
   'kryptnostic.logger'
+  'kryptnostic.requests'
+  'kryptnostic.configuration'
 ], (require) ->
 
+  # libraries
+  axios   = require 'axios'
   Promise = require 'bluebird'
-  Logger  = require 'kryptnostic.logger'
 
-  log = Logger.get('CryptoKeyStorageApi')
+  # utils
+  Configuration = require 'kryptnostic.configuration'
+  Logger        = require 'kryptnostic.logger'
+  Requests      = require 'kryptnostic.requests'
+
+  # constants
+  CONTENT_TYPE_APPLICATION_JSON         = { 'Content-Type': 'application/json' }
+  CONTENT_TYPE_APPLICATION_OCTET_STREAM = { 'Content-Type': 'application/octet-stream' }
+
+  rootKeysUrl            = -> Configuration.get('servicesUrl') + '/keys'
+  clientHashUrl          = -> rootKeysUrl() + '/hash'
+  fhePrivateKeyUrl       = -> rootKeysUrl() + '/private'
+  fheSearchPrivateKeyUrl = -> rootKeysUrl() + '/searchprivate'
+
+  logger = Logger.get('CryptoKeyStorageApi')
 
   #
-  # HTTP calls for saving and retrieving user encryption keys.
-  # Author: rbuckheit
+  # HTTP calls for saving and retrieving user encryption keys
   #
   class CryptoKeyStorageApi
 
-    # fhe key
-    # =======
+    #
+    # FHE private key
+    #
 
     getFhePrivateKey: ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+      return Requests.getBlockCiphertextFromUrl(
+        fhePrivateKeyUrl()
+      )
 
-    setFhePrivateKey: (key) ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+    setFhePrivateKey: (fhePrivateKey) ->
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method  : 'POST'
+            url     : fhePrivateKeyUrl()
+            data    : fhePrivateKey
+            headers : CONTENT_TYPE_APPLICATION_JSON
+          })
+        )
+      )
+      .then (response) ->
+        logger.info('setFhePrivateKey')
 
-    # search key
-    # ==========
+    #
+    # search private key
+    #
 
     getSearchPrivateKey: ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+      return Requests.getBlockCiphertextFromUrl(
+        fheSearchPrivateKeyUrl()
+      )
 
-    setSearchPrivateKey: (key) ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+    setSearchPrivateKey: (fheSearchPrivateKey) ->
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method  : 'POST'
+            url     : fheSearchPrivateKeyUrl()
+            data    : fheSearchPrivateKey
+            headers : CONTENT_TYPE_APPLICATION_JSON
+          })
+        )
+      )
+      .then (response) ->
+        logger.info('setSearchPrivateKey')
 
-    # client hash
-    # ===========
+    #
+    # client hash function
+    #
 
     getClientHashFunction: ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+      return Requests.getAsUint8FromUrl(
+        clientHashUrl()
+      )
 
-    setClientHashFunction: (key) ->
-      log.warn('CryptoKeyStorageApi not implemented!')
-      return Promise.resolve()
+    setClientHashFunction: (clientHashFunction) ->
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method  : 'POST'
+            url     : clientHashUrl()
+            data    : clientHashFunction
+            headers : CONTENT_TYPE_APPLICATION_OCTET_STREAM
+          })
+        )
+      )
+      .then (response) ->
+        logger.info('setClientHashFunction')
 
   return CryptoKeyStorageApi

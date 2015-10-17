@@ -1,34 +1,28 @@
 define 'kryptnostic.search-key-generator', [
   'require'
   'kryptnostic.logger'
+  'kryptnostic.kryptnostic-engine-provider'
 ], (require) ->
 
+  # kryptnostic
+  KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
+
+  # utils
   Logger = require 'kryptnostic.logger'
 
-  ENGINE_MISSING_ERROR = '''
-    KryptnosticClient is unavailable. This component must be included separately.
-    It is not built as a part of the kryptnostic.js binary. Please see the krytpnostic.js
-    documentation for more information and/or file an issue on the kryptnostic-js github project:
-    https://github.com/kryptnostic/kryptnostic-js/issues
-  '''
-
-  log = Logger.get('SearchKeyGenerator')
+  logger = Logger.get('SearchKeyGenerator')
 
   #
   # Generates client keys needed for search.
   #
   class SearchKeyGenerator
 
-    constructor: ->
-      unless Module? and Module.KryptnosticClient?
-        log.error(ENGINE_MISSING_ERROR)
-
     generateClientKeys: ->
-      engine = new Module.KryptnosticClient()
+      engine = KryptnosticEngineProvider.getEngine()
       return {
         fhePrivateKey      : engine.getPrivateKey()
         searchPrivateKey   : engine.getSearchPrivateKey()
-        clientHashFunction : engine.getClientHashFunction()
+        clientHashFunction : engine.calculateClientHashFunction()
       }
 
   return SearchKeyGenerator

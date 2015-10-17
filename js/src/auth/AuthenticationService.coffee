@@ -8,18 +8,20 @@ define 'kryptnostic.authentication-service', [
   'kryptnostic.search-credential-service'
   'kryptnostic.authentication-stage'
   'kryptnostic.user-directory-api'
+  'kryptnostic.kryptnostic-engine-provider'
 ], (require) ->
 
-  Promise                  = require 'bluebird'
-  Logger                   = require 'kryptnostic.logger'
-  Config                   = require 'kryptnostic.configuration'
-  CredentialProviderLoader = require 'kryptnostic.credential-provider-loader'
-  CredentialService        = require 'kryptnostic.credential-service'
-  SearchCredentialService  = require 'kryptnostic.search-credential-service'
-  AuthenticationStage      = require 'kryptnostic.authentication-stage'
-  UserDirectoryApi         = require 'kryptnostic.user-directory-api'
+  Promise                   = require 'bluebird'
+  Logger                    = require 'kryptnostic.logger'
+  Config                    = require 'kryptnostic.configuration'
+  CredentialProviderLoader  = require 'kryptnostic.credential-provider-loader'
+  CredentialService         = require 'kryptnostic.credential-service'
+  SearchCredentialService   = require 'kryptnostic.search-credential-service'
+  AuthenticationStage       = require 'kryptnostic.authentication-stage'
+  UserDirectoryApi          = require 'kryptnostic.user-directory-api'
+  KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
 
-  log = Logger.get('AuthenticationService')
+  logger = Logger.get('AuthenticationService')
 
   LOGIN_FAILURE_MESSAGE = 'invalid credentials'
 
@@ -46,22 +48,28 @@ define 'kryptnostic.authentication-service', [
         if _.isEmpty(uuid)
           throw new Error LOGIN_FAILURE_MESSAGE
         principal = uuid
-        log.info('authenticating', email)
+        logger.info('authenticating', email)
         credentialService.deriveCredential({ principal, password }, notifier)
       .then (_credential) ->
         credential = _credential
-        log.info('derived credential')
+        logger.info('derived credential')
         credentialProvider.store { principal, credential }
         credentialService.deriveKeypair({ password }, notifier)
       .then (_keypair) ->
         keypair = _keypair
         credentialProvider.store { principal, credential, keypair }
       .then ->
-        searchCredentialService.ensureCredentialsInitialized(notifier)
+        searchCredentialService.getAllCredentials()
+      .then (_searchCredential) ->
+        searchCredential = _searchCredential
+        fhePrivateKey = searchCredential.FHE_PRIVATE_KEY
+        searchPrivateKey = searchCredential.SEARCH_PRIVATE_KEY
+        KryptnosticEngineProvider.init({ fhePrivateKey, searchPrivateKey })
+        logger.info('KryptnosticEngine initialized')
       .then ->
         Promise.resolve(notifier(AuthenticationStage.COMPLETED))
       .then ->
-        log.info('authentication complete')
+        logger.info('authentication complete')
 
     @destroy: ->
       credentialProvider = CredentialProviderLoader.load(Config.get('credentialProvider'))

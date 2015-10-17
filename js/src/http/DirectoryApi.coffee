@@ -46,6 +46,7 @@ define 'kryptnostic.directory-api', [
 
     # returns a serialized cryptoservice for the requested object
     getObjectCryptoService: (objectId) ->
+      validateId(objectId)
       cached = Cache.get( Cache.CRYPTO_SERVICES, objectId )
       if cached?
         return Promise.resolve()
@@ -53,8 +54,6 @@ define 'kryptnostic.directory-api', [
           return cached
       Promise.resolve()
       .then ->
-        validateId(objectId)
-
         Promise.resolve(axios(Requests.wrapCredentials({
           url    : cryptoServiceUrl() + '/' + objectId
           method : 'GET'
@@ -125,42 +124,33 @@ define 'kryptnostic.directory-api', [
       .then (response) ->
         log.debug('setPublicKey', { response })
 
-    # gets the public key of a user in the same realm as the caller.
-    getPublicKey: (uuid) ->
-      cached = Cache.get(Cache.PUBLIC_KEYS, uuid )
-      if cached?
-        return Promise.resolve()
-        .then ->
-          return cached
-      Promise.resolve(axios(Requests.wrapCredentials({
-        url    : publicKeyUrl() + '/' + uuid
-        method : 'GET'
-      })))
+    #
+    # gets a set of public keys for the given user UUIDs in the form of PublicKeyEnvelope, where
+    # each public key will become an RSA public key via PublicKeyEnvelope.toRsaPublicKey()
+    #
+    # @param {Array.<UUID>} - a set user UUIDs for which to get public keys
+    # @return {Object.<UUID, RsaPublicKey>} - a map of UUIDs to RSA public keys
+    #
+    getRsaPublicKeys: (uuids) ->
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            url    : publicKeyUrl()
+            data   : uuids
+            method : 'POST'
+          })
+        )
+      )
       .then (response) ->
-        envelope = response.data
-        log.debug('getPublicKey', { envelope })
-        keyEnv = new PublicKeyEnvelope(envelope)
-        Cache.store( Cache.PUBLIC_KEYS, uuid, keyEnv )
-        return keyEnv
+        uuidToPublicKeyMap = response.data
+        log.debug('getRsaPublicKeys', { uuidToPublicKeyMap })
+        # transform public keys to RSA public keys
+        uuidToRsaPublicKeyMap = _.mapValues(uuidToPublicKeyMap, (publicKey) ->
+          return new PublicKeyEnvelope(publicKey).toRsaPublicKey()
+        )
+        return uuidToRsaPublicKeyMap
       .catch (e) ->
         return undefined
-
-    getPublicKeys: ( uuids ) ->
-      Promise.resolve(axios(Requests.wrapCredentials({
-        url    : publicKeyUrl()
-        data   : uuids
-        method : 'POST'
-      })))
-      .then (response) ->
-        uuidsToKeysMap = response.data
-        log.debug('getPublicKeys', { uuidsToKeysMap })
-        result = {}
-        for uuid, key of uuidsToKeysMap
-          result[uuid] = new PublicKeyEnvelope( key )
-        return result
-      .catch (e) ->
-        return undefined
-
 
     # gets the user's encrypted salt.
     # request is not wrapped because the user has not auth'ed yet.

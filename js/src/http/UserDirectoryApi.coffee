@@ -70,14 +70,14 @@ define 'kryptnostic.user-directory-api', [
           url    : getUserUrl() + '/' + uuid
           method : 'GET'
         })
-      .then (response) ->
-        user = response.data
-        log.info('getUser', user)
-        if user is 'null' or !user
-          return undefined
-        else
-          Cache.store( Cache.USERS, uuid, user )
+      .then (axiosResponse) ->
+        if axiosResponse? and axiosResponse.data?
+          user = axiosResponse.data
+          log.info('getUser', user)
+          Cache.store(Cache.USERS, uuid, user)
           return user
+        else
+          return null
 
     getUsers: ( initialUUIDs ) ->
       searchResults = Cache.search( Cache.USERS, initialUUIDs )

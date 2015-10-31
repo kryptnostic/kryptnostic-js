@@ -27796,7 +27796,7 @@ define("function-name", function(){});
           requestData = {};
           objectSearchPairAsBase64 = BinaryUtils.uint8ToBase64(objectSearchPair);
           requestData[objectId] = {
-            indexPair: objectSearchPairAsBase64
+            searchPair: objectSearchPairAsBase64
           };
           return axios(Requests.wrapCredentials({
             url: addObjectSearchPairUrl(),
@@ -27897,15 +27897,15 @@ define("function-name", function(){});
             url: getUserUrl() + '/' + uuid,
             method: 'GET'
           });
-        }).then(function(response) {
+        }).then(function(axiosResponse) {
           var user;
-          user = response.data;
-          log.info('getUser', user);
-          if (user === 'null' || !user) {
-            return void 0;
-          } else {
+          if ((axiosResponse != null) && (axiosResponse.data != null)) {
+            user = axiosResponse.data;
+            log.info('getUser', user);
             Cache.store(Cache.USERS, uuid, user);
             return user;
+          } else {
+            return null;
           }
         });
       };
@@ -28986,7 +28986,7 @@ define("function-name", function(){});
       }
 
       MetadataMapper.prototype.mapToKeys = function(_arg) {
-        var balancedMetadatum, bucketLength, engine, id, indexString, indexUint, locations, metadata, metadataMap, metadatum, objectIndexPair, paddedLocations, token, tokenHex, tokenUint, _i, _len;
+        var balancedMetadatum, bucketLength, engine, id, indexString, indexUint, length, locations, metadata, metadataMap, metadatum, objectIndexPair, paddedLocations, token, tokenHex, tokenUint, _i, _len;
         metadata = _arg.metadata, objectIndexPair = _arg.objectIndexPair;
         metadataMap = {};
         engine = KryptnosticEngineProvider.getEngine();
@@ -29001,10 +29001,12 @@ define("function-name", function(){});
           tokenUint = BinaryUtils.hexToUint(tokenHex);
           indexUint = engine.calculateMetadataAddress(objectIndexPair, tokenUint);
           indexString = BinaryUtils.uint8ToBase64(indexUint);
+          length = locations.length;
           paddedLocations = this.subListAndPad(locations, bucketLength);
           balancedMetadatum = {
             id: id,
             token: token,
+            length: length,
             locations: paddedLocations
           };
           if (metadataMap[indexString]) {
@@ -30638,10 +30640,10 @@ define("function-name", function(){});
         if (splitArray.length > 1) {
           return _.parseInt(_.last(splitArray));
         } else {
-          return null;
+          return -1;
         }
       } else {
-        return null;
+        return -1;
       }
     };
     return {

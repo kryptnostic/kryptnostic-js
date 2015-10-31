@@ -32,8 +32,6 @@ define 'kryptnostic.search.metadata-mapper', [
   # Pads locations of the token so that all lists of locations are of equal length.
   # Hashes and pads tokens using MurmurHash3-128 so that all tokens are 128 bits.
   #
-  # Author: rbuckheit
-  #
   class MetadataMapper
 
     constructor: ->
@@ -61,8 +59,15 @@ define 'kryptnostic.search.metadata-mapper', [
         indexString = BinaryUtils.uint8ToBase64(indexUint)
 
         # pad occurence locations
-        paddedLocations   = @subListAndPad(locations, bucketLength)
-        balancedMetadatum = { id, token, locations : paddedLocations }
+        length = locations.length
+        paddedLocations = @subListAndPad(locations, bucketLength)
+
+        balancedMetadatum = {
+          id,
+          token,
+          length,
+          locations : paddedLocations
+        }
 
         if metadataMap[indexString]
           metadataMap[indexString].push(balancedMetadatum)
@@ -80,4 +85,3 @@ define 'kryptnostic.search.metadata-mapper', [
       return locations.concat(falseIndices)
 
   return MetadataMapper
-

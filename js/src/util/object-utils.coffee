@@ -29,9 +29,9 @@ define 'kryptnostic.object-utils', [
       if splitArray.length > 1
         return _.parseInt(_.last(splitArray))
       else
-        return null
+        return -1
     else
-      return null
+      return -1
 
   return {
     isChildId,

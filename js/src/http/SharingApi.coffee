@@ -104,7 +104,7 @@ define 'kryptnostic.sharing-api', [
         requestData = {}
         objectSearchPairAsBase64 = BinaryUtils.uint8ToBase64(objectSearchPair)
         requestData[objectId] = {
-          indexPair: objectSearchPairAsBase64
+          searchPair: objectSearchPairAsBase64
         }
         axios(
           Requests.wrapCredentials({

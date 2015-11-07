@@ -14,12 +14,14 @@ define 'kryptnostic.kryptnostic-engine-provider', [
     _engine = null
 
     @init: ({ @fhePrivateKey, @searchPrivateKey } = {}) ->
+      logger.debug('initializing KryptnosticEngine with keys')
       _engine ?= new KryptnosticEngine({ @fhePrivateKey, @searchPrivateKey })
 
     @getEngine: ->
       if _engine?
         return _engine
       else
+        logger.debug('initializing a new KryptnosticEngine without keys...')
         return @init()
 
   return KryptnosticEngineProvider

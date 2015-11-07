@@ -25306,7 +25306,7 @@ define("function-name", function(){});
       function AuthenticationService() {}
 
       AuthenticationService.authenticate = function(_arg, notifier) {
-        var credential, credentialProvider, credentialService, email, keypair, password, principal, searchCredentialService, userDirectoryApi, _ref;
+        var credential, credentialProvider, credentialService, email, keypair, password, principal, userDirectoryApi, _ref;
         email = _arg.email, password = _arg.password;
         if (notifier == null) {
           notifier = function() {};
@@ -25314,7 +25314,6 @@ define("function-name", function(){});
         _ref = {}, principal = _ref.principal, credential = _ref.credential, keypair = _ref.keypair;
         credentialService = new CredentialService();
         userDirectoryApi = new UserDirectoryApi();
-        searchCredentialService = new SearchCredentialService();
         credentialProvider = CredentialProviderLoader.load(Config.get('credentialProvider'));
         return Promise.resolve().then(function() {
           return userDirectoryApi.resolve({
@@ -25348,6 +25347,18 @@ define("function-name", function(){});
             keypair: keypair
           });
         }).then(function() {
+          return AuthenticationService.initializeEngine();
+        }).then(function() {
+          return Promise.resolve(notifier(AuthenticationStage.COMPLETED));
+        }).then(function() {
+          return logger.info('authentication complete');
+        });
+      };
+
+      AuthenticationService.initializeEngine = function() {
+        var searchCredentialService;
+        searchCredentialService = new SearchCredentialService();
+        return Promise.resolve().then(function() {
           return searchCredentialService.getAllCredentials();
         }).then(function(_searchCredential) {
           var fhePrivateKey, searchCredential, searchPrivateKey;
@@ -25359,10 +25370,6 @@ define("function-name", function(){});
             searchPrivateKey: searchPrivateKey
           });
           return logger.info('KryptnosticEngine initialized');
-        }).then(function() {
-          return Promise.resolve(notifier(AuthenticationStage.COMPLETED));
-        }).then(function() {
-          return logger.info('authentication complete');
         });
       };
 
@@ -26986,6 +26993,7 @@ define("function-name", function(){});
       KryptnosticEngineProvider.init = function(_arg) {
         var _ref;
         _ref = _arg != null ? _arg : {}, this.fhePrivateKey = _ref.fhePrivateKey, this.searchPrivateKey = _ref.searchPrivateKey;
+        logger.debug('initializing KryptnosticEngine with keys');
         return _engine != null ? _engine : _engine = new KryptnosticEngine({
           fhePrivateKey: this.fhePrivateKey,
           searchPrivateKey: this.searchPrivateKey
@@ -26996,6 +27004,7 @@ define("function-name", function(){});
         if (_engine != null) {
           return _engine;
         } else {
+          logger.debug('initializing a new KryptnosticEngine without keys...');
           return this.init();
         }
       };

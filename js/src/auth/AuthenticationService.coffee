@@ -37,7 +37,6 @@ define 'kryptnostic.authentication-service', [
 
       credentialService       = new CredentialService()
       userDirectoryApi        = new UserDirectoryApi()
-      searchCredentialService = new SearchCredentialService()
 
       credentialProvider = CredentialProviderLoader.load(Config.get('credentialProvider'))
 
@@ -59,6 +58,18 @@ define 'kryptnostic.authentication-service', [
         keypair = _keypair
         credentialProvider.store { principal, credential, keypair }
       .then ->
+        AuthenticationService.initializeEngine()
+      .then ->
+        Promise.resolve(notifier(AuthenticationStage.COMPLETED))
+      .then ->
+        logger.info('authentication complete')
+
+    @initializeEngine: ->
+
+      searchCredentialService = new SearchCredentialService()
+
+      Promise.resolve()
+      .then ->
         searchCredentialService.getAllCredentials()
       .then (_searchCredential) ->
         searchCredential = _searchCredential
@@ -66,10 +77,6 @@ define 'kryptnostic.authentication-service', [
         searchPrivateKey = searchCredential.SEARCH_PRIVATE_KEY
         KryptnosticEngineProvider.init({ fhePrivateKey, searchPrivateKey })
         logger.info('KryptnosticEngine initialized')
-      .then ->
-        Promise.resolve(notifier(AuthenticationStage.COMPLETED))
-      .then ->
-        logger.info('authentication complete')
 
     @destroy: ->
       credentialProvider = CredentialProviderLoader.load(Config.get('credentialProvider'))

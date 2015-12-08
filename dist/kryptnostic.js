@@ -29441,7 +29441,7 @@ define("function-name", function(){});
     DEFAULTS = {
       servicesUrl: 'http://api.kryptnostic.com/v1',
       heraclesUrl: 'https://api.kryptnostic.com/heracles/v1',
-      credentialProvider: 'kryptnostic.credential-provider.session-storage',
+      credentialProvider: 'kryptnostic.credential-provider.local-storage',
       cachingProvider: 'kryptnostic.caching-provider.jscache'
     };
     ConfigurationService = (function() {

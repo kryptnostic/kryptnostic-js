@@ -1,0 +1,25 @@
+{
+  "name": "kryptnostic-js",
+  "version": "1.0.0",
+  "homepage": "https://github.com/kryptnostic/kryptnostic-js",
+  "description": "Kryptnostic's JavaScript library for storing, sharing, and searching FHE-encrypted data.",
+  "repository": {
+    "type" : "git",
+    "url"  : "https://github.com/kryptnostic/kryptnostic-js.git"
+  },
+  "contributors": [
+    "Hristo Oskov <hristo@kryptnostic.com>",
+    "Nick Hewitt <nick@kryptnostic.com>"
+  ],
+  "bugs": {
+    "url" : "https://github.com/kryptnostic/kryptnostic-js/issues"
+  },
+  "license": "Apache-2.0",
+  "main": "",
+  "scripts": {
+    "build": "",
+    "test": ""
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

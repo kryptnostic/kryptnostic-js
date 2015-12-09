@@ -1,9 +1,19 @@
+#
+# Travis CI
+# A distributed continuous integration service used to build and test projects hosted at GitHub.
+#
+# https://docs.travis-ci.com/
+# https://docs.travis-ci.com/user/getting-started
+# https://docs.travis-ci.com/user/languages/javascript-with-nodejs
+#
 language: node_js
 node_js:
-  - "0.10"
-before_script:
-  - npm install -g bower
-  - bower install
+  - "0.12"
+
+#
+# install Google Chrome
+# we need an actual browser for running some unit tests which are not compatible with PhantomJS
+#
 before_install:
   - wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
   - sudo sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'

@@ -9,6 +9,7 @@ define 'kryptnostic.configuration', [
 
   DEFAULTS = {
     servicesUrl        : 'http://api.kryptnostic.com/v1'
+    servicesUrlV2      : 'http://api.kryptnostic.com/v2'
     heraclesUrl        : 'https://api.kryptnostic.com/heracles/v1'
     credentialProvider : 'kryptnostic.credential-provider.local-storage'
     cachingProvider    : 'kryptnostic.caching-provider.jscache'

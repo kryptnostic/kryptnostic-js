@@ -20,10 +20,11 @@ define 'kryptnostic.crypto-key-storage-api', [
   CONTENT_TYPE_APPLICATION_JSON         = { 'Content-Type': 'application/json' }
   CONTENT_TYPE_APPLICATION_OCTET_STREAM = { 'Content-Type': 'application/octet-stream' }
 
-  rootKeysUrl            = -> Configuration.get('servicesUrl') + '/keys'
-  clientHashUrl          = -> rootKeysUrl() + '/hash'
-  fhePrivateKeyUrl       = -> rootKeysUrl() + '/private'
-  fheSearchPrivateKeyUrl = -> rootKeysUrl() + '/searchprivate'
+  keyStorageApi          = -> Configuration.get('servicesUrlV2') + '/keys'
+  fheKeysUrl             = -> keyStorageApi() + '/fhe'
+  clientHashUrl          = -> fheKeysUrl() + '/hash'
+  fhePrivateKeyUrl       = -> fheKeysUrl() + '/private'
+  fheSearchPrivateKeyUrl = -> fheKeysUrl() + '/searchprivate'
 
   logger = Logger.get('CryptoKeyStorageApi')
 

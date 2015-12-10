@@ -21,9 +21,9 @@ define 'kryptnostic.object-api', [
 
   { validateId, validateObjectType } = validators
 
-  objectUrl         = -> Config.get('servicesUrl') + '/object'
+  objectUrl = -> Config.get('servicesUrlV2') + '/object'
 
-  log            = Logger.get('ObjectApi')
+  logger = Logger.get('ObjectApi')
 
   DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
 
@@ -94,7 +94,7 @@ define 'kryptnostic.object-api', [
       })))
       .then (response) ->
         id = response.data.data
-        log.debug('created pending', { id })
+        logger.debug('created pending', { id })
         return id
 
     # create a pending object for an object which already exists
@@ -106,7 +106,7 @@ define 'kryptnostic.object-api', [
         method : 'PUT'
       })))
       .then (response) ->
-        log.debug('created pending from existing', { id })
+        logger.debug('created pending from existing', { id })
         return response.data
 
     # adds an encrypted block to a pending object
@@ -120,7 +120,7 @@ define 'kryptnostic.object-api', [
         data        : JSON.stringify(encryptableBlock)
       })))
       .then (response) ->
-        log.debug('submitted block', { id })
+        logger.debug('submitted block', { id })
 
     # deletes an object
     deleteObject : (id) ->
@@ -131,6 +131,6 @@ define 'kryptnostic.object-api', [
         method      : 'DELETE'
       })))
       .then (response) ->
-        log.debug('deleted object', { id })
+        logger.debug('deleted object', { id })
 
   return ObjectApi

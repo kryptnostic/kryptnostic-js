@@ -26,8 +26,9 @@ define 'kryptnostic.directory-api', [
   cryptoServiceUrl   = -> Configuration.get('servicesUrl') + '/directory/object'
   privateKeyUrl      = -> Configuration.get('servicesUrl') + '/directory/private'
   publicKeyUrl       = -> Configuration.get('servicesUrl') + '/directory/public'
-  saltUrl            = -> Configuration.get('servicesUrl') + '/directory/salt'
   usersInRealmUrl    = -> Configuration.get('servicesUrl') + '/directory'
+
+  saltUrl            = -> Configuration.get('servicesUrlV2') + '/keys/salt'
 
   log             = Logger.get('DirectoryApi')
 
@@ -183,8 +184,8 @@ define 'kryptnostic.directory-api', [
       .then ->
         principal = uuid
         request    = {
-          url     : saltUrl()
-          method  : 'PUT'
+          url     : saltUrl() + '/' + uuid
+          method  : 'POST'
           headers : _.cloneDeep(DEFAULT_HEADERS)
           data    : JSON.stringify(blockCiphertext)
         }

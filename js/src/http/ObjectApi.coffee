@@ -2,6 +2,7 @@ define 'kryptnostic.object-api', [
   'require'
   'axios'
   'bluebird'
+  'kryptnostic.block-ciphertext'
   'kryptnostic.configuration'
   'kryptnostic.kryptnostic-object'
   'kryptnostic.logger'
@@ -11,6 +12,7 @@ define 'kryptnostic.object-api', [
 ], (require) ->
 
   axios             = require 'axios'
+  BlockCiphertext   = require 'kryptnostic.block-ciphertext'
   Requests          = require 'kryptnostic.requests'
   KryptnosticObject = require 'kryptnostic.kryptnostic-object'
   Logger            = require 'kryptnostic.logger'
@@ -21,7 +23,10 @@ define 'kryptnostic.object-api', [
 
   { validateId, validateObjectType } = validators
 
-  objectUrl = -> Config.get('servicesUrlV2') + '/object'
+  objectUrl         = -> Config.get('servicesUrlV2') + '/object'
+  objectIdUrl       = (objectId) -> objectUrl() + '/id/' + objectId
+  objectMetadataUrl = (objectId) -> objectIdUrl(objectId) + '/metadata'
+  objectVersionUrl  = (objectId, objectVersion) -> objectIdUrl(objectId) + '/' + objectVersion
 
   logger = Logger.get('ObjectApi')
 
@@ -49,75 +54,117 @@ define 'kryptnostic.object-api', [
     # load a kryptnosticObject in encrypted form
     getObject : (id) ->
       validateId(id)
-
-      Promise.resolve(axios(@wrapCredentials({
-        url    : objectUrl() + '/' + id
-        method : 'GET'
-      })))
+      Promise.resolve(
+        axios(
+          @wrapCredentials({
+            url    : objectIdUrl(id)
+            method : 'GET'
+          })
+        )
+      )
       .then (response) ->
         raw = response.data
         return KryptnosticObject.createFromEncrypted(raw)
 
+    getVersionedObjectKey: (objectId) ->
+      # TODO: validate versionedObjectKey
+      Promise.resolve(
+        axios(
+          @wrapCredentials({
+            url    : objectIdUrl(objectId)
+            method : 'GET'
+          })
+        )
+      )
+      .then (axiosResponse) ->
+        if axiosResponse? and axiosResponse.data?
+          # axiosResponse.data == com.kryptnostic.v2.storage.models.VersionedObjectKey
+          return axiosResponse.data;
+        else
+          return null
+
+    getObjectAsBlockCiphertext: (versionedObjectKey) ->
+      # TODO: validate versionedObjectKey
+      Promise.resolve(
+        axios(
+          @wrapCredentials({
+            url    : objectVersionUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
+            method : 'GET'
+          })
+        )
+      )
+      .then (axiosResponse) ->
+        if axiosResponse? and axiosResponse.data?
+          # axiosResponse.data == com.kryptnostic.kodex.v1.crypto.ciphers.BlockCiphertext
+          try
+            return new BlockCiphertext(axiosResponse.data)
+          catch e
+            return null
+        else
+          return null
+
     # load object metadata only without contents
-    getObjectMetadata: (id) ->
-      validateId(id)
+    getObjectMetadata: (objectId) ->
+      validateId(objectId)
+      Promise.resolve(
+        axios(
+          @wrapCredentials({
+            url    : objectMetadataUrl(objectId)
+            method : 'GET'
+          })
+        )
+      )
+      .then (axiosResponse) ->
+        if axiosResponse? and axiosResponse.data?
+          # axiosResponse.data == com.kryptnostic.v2.storage.models.ObjectMetadata
+          return new ObjectMetadata(axiosResponse.data)
+        else
+          return null
 
-      Promise.resolve(axios(@wrapCredentials({
-        url    : objectUrl() + '/' + id + '/metadata'
-        method : 'GET'
-      })))
-      .then (response) ->
-        raw = response.data
-        return new ObjectMetadata(raw)
+    createObject: (createObjectRequest) ->
+      Promise.resolve(
+        axios(
+          @wrapCredentials({
+            url     : objectUrl()
+            method  : 'POST'
+            headers : _.clone(DEFAULT_HEADER)
+            data    : JSON.stringify(createObjectRequest)
+          })
+        )
+      )
+      .then (axiosResponse) ->
+        if axiosResponse? and axiosResponse.data?
+          # axiosResponse.data == com.kryptnostic.v2.storage.models.VersionedObjectKey
+          return axiosResponse.data
+        else
+          return null
 
-    # get all object ids of a particular type
-    getObjectIdsByType: (type) ->
-      validateObjectType(type)
-
-      Promise.resolve(axios(@wrapCredentials({
-        url    : objectUrl() + '/type/' + type
-        method : 'GET'
-      })))
-      .then (response) ->
-        objectIds = response.data.data
-        return objectIds
-
-    # create a pending object for a new object and return an id
-    createPendingObject : (pendingRequest) ->
-      pendingRequest.validate()
-
-      Promise.resolve(axios(@wrapCredentials({
-        url         : objectUrl() + '/'
-        method      : 'PUT'
-        headers     : _.clone(DEFAULT_HEADER)
-        data        : JSON.stringify(pendingRequest)
-      })))
-      .then (response) ->
-        id = response.data.data
-        logger.debug('created pending', { id })
-        return id
-
-    # create a pending object for an object which already exists
-    createPendingObjectFromExisting : (id) ->
-      validateId(id)
-
-      Promise.resolve(axios(@wrapCredentials({
-        url    : objectUrl() + '/' + id
-        method : 'PUT'
-      })))
-      .then (response) ->
-        logger.debug('created pending from existing', { id })
-        return response.data
+    setObjectFromBlockCiphertext: (versionedObjectKey, blockCiphertext) ->
+      Promise.resolve(
+        axios(
+          @wrapCredentials({
+            url     : objectVersionUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
+            method  : 'PUT'
+            headers : _.clone(DEFAULT_HEADER)
+            data    : JSON.stringify(blockCiphertext)
+          })
+        )
+      )
+      .then (axiosResponse) ->
+        if axiosResponse? and axiosResponse.data?
+          return axiosResponse.data
+        else
+          return null
 
     # adds an encrypted block to a pending object
     updateObject : (id, encryptableBlock) ->
       validateId(id)
 
       Promise.resolve(axios(@wrapCredentials({
-        url         : objectUrl() + '/' + id
-        method      : 'POST'
-        headers     : _.clone(DEFAULT_HEADER)
-        data        : JSON.stringify(encryptableBlock)
+        url     : objectUrl() + '/' + id
+        method  : 'POST'
+        headers : _.clone(DEFAULT_HEADER)
+        data    : JSON.stringify(encryptableBlock)
       })))
       .then (response) ->
         logger.debug('submitted block', { id })
@@ -127,8 +174,8 @@ define 'kryptnostic.object-api', [
       validateId(id)
 
       Promise.resolve(axios(@wrapCredentials({
-        url         : objectUrl() + '/' + id
-        method      : 'DELETE'
+        url    : objectUrl() + '/' + id
+        method : 'DELETE'
       })))
       .then (response) ->
         logger.debug('deleted object', { id })

@@ -4,11 +4,13 @@ define 'kryptnostic.storage-client', [
   'kryptnostic.logger'
   'kryptnostic.validators'
   'kryptnostic.object-api'
+  'kryptnostic.object-listing-api'
   'kryptnostic.kryptnostic-object'
   'kryptnostic.crypto-service-loader'
   'kryptnostic.object-utils'
-  'kryptnostic.pending-object-request'
   'kryptnostic.search-indexing-service'
+  'kryptnostic.create-object-request'
+  'kryptnostic.credential-loader'
 ], (require) ->
   'use strict'
 
@@ -16,11 +18,13 @@ define 'kryptnostic.storage-client', [
   Promise = require 'bluebird'
 
   # kryptnostic
+  CreateObjectRequest   = require 'kryptnostic.create-object-request'
   CryptoServiceLoader   = require 'kryptnostic.crypto-service-loader'
   KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
   ObjectApi             = require 'kryptnostic.object-api'
-  PendingObjectRequest  = require 'kryptnostic.pending-object-request'
+  ObjectListingApi      = require 'kryptnostic.object-listing-api'
   SearchIndexingService = require 'kryptnostic.search-indexing-service'
+  CredentialLoader      = require 'kryptnostic.credential-loader'
 
   # utils
   Logger      = require 'kryptnostic.logger'
@@ -39,8 +43,13 @@ define 'kryptnostic.storage-client', [
     constructor : ->
       logger.info 'storage client created'
       @objectApi             = new ObjectApi()
+      @objectListingApi      = new ObjectListingApi()
       @cryptoServiceLoader   = CryptoServiceLoader.get()
       @searchIndexingService = new SearchIndexingService()
+      @credentialLoader      = new CredentialLoader()
+
+    getOwnUuid : ->
+      return @credentialLoader.getCredentials().principal
 
     getObjectIds : ->
       return @objectApi.getObjectIds()
@@ -48,8 +57,21 @@ define 'kryptnostic.storage-client', [
     getObject : (id) ->
       return @objectApi.getObject(id)
 
+    getVersionedObjectKey: (objectId) ->
+      return @objectApi.getVersionedObjectKey(objectId)
+
     getObjectIdsByType : (type) ->
-      return @objectApi.getObjectIdsByType(type)
+      { userId } = {}
+      Promise.resolve()
+      .then =>
+        @getOwnUuid()
+      .then (id) =>
+        userId = id
+        @objectListingApi.getTypeForName(type)
+      .then (typeId) =>
+        @objectListingApi.getObjectIdsByType(userId, typeId)
+      .then (ids) ->
+        return ids
 
     getObjectMetadata : (id) ->
       return @objectApi.getObjectMetadata(id)
@@ -57,32 +79,29 @@ define 'kryptnostic.storage-client', [
     deleteObject : (id) ->
       return @objectApi.deleteObject(id)
 
-    appendObject : (id, body) ->
-      Promise.resolve()
-      .then ->
-        validateId(id)
-        validateNonEmptyString(body)
-      .then =>
-        @objectApi.createPendingObjectFromExisting(id)
-      .then =>
-        @cryptoServiceLoader.getObjectCryptoService(id, { expectMiss : false })
-      .then (cryptoService) =>
-        @encrypt({ id, body, cryptoService })
-      .then (encrypted) =>
-        @submitObjectBlocks(encrypted)
-      .then ->
-        return id
+    getObjectAsBlockCiphertext: (versionedObjectKey) ->
+      return @objectApi.getObjectAsBlockCiphertext(versionedObjectKey)
 
     uploadObject : (storageRequest, objectSearchPair) ->
-      { objectIdPair } = {}
+      { objectIdPair, versionedObjectKey } = {}
 
       Promise.resolve()
       .then ->
         storageRequest.validate()
       .then =>
-        @createPending(storageRequest)
-      .then (ids) =>
-        objectIdPair = ids
+        @objectListingApi.getTypeForName(storageRequest.type)
+      .then (typeUuid) =>
+        createObjectRequest = new CreateObjectRequest({
+          type: typeUuid
+          requiredCryptoMats: [ 'IV', 'CONTENTS' ]
+        })
+        @objectApi.createObject(createObjectRequest)
+      .then (obj) =>
+        versionedObjectKey = obj
+        objectIdPair = {
+          objectId       : versionedObjectKey.objectId
+          parentObjectId : if storageRequest.parentObjectId then storageRequest.parentObjectId else versionedObjectKey.objectId
+        }
         @cryptoServiceLoader.getObjectCryptoService(
           objectIdPair.parentObjectId,
           { expectMiss : true }
@@ -92,13 +111,16 @@ define 'kryptnostic.storage-client', [
         objectId = objectIdPair.objectId
         @encrypt({ objectId, body, cryptoService })
       .then (encrypted) =>
-        @submitObjectBlocks(encrypted)
+        # @submitObjectBlocks(encrypted)
+        blockCiphertext = encrypted.body.data[0].block
+        @objectApi.setObjectFromBlockCiphertext(versionedObjectKey, blockCiphertext)
       .then =>
         @searchIndexingService.submit({ storageRequest, objectIdPair, objectSearchPair })
       .then (objectSearchPair) ->
         return {
-          objectIdPair     : objectIdPair,
-          objectSearchPair : objectSearchPair
+          objectIdPair
+          objectSearchPair
+          versionedObjectKey
         }
 
     encrypt : ({ objectId, body, cryptoService }) ->
@@ -108,32 +130,17 @@ define 'kryptnostic.storage-client', [
       })
       return kryptnosticObject.encrypt(cryptoService)
 
-    createPending : (storageRequest = {}) ->
-      if storageRequest.objectId?
-        return @objectApi.createPendingObjectFromExisting(objectId)
-      else
-        { type, parentObjectId } = storageRequest
-        pendingRequest = new PendingObjectRequest { type, parentObjectId }
-        Promise.resolve()
-        .then =>
-          @objectApi.createPendingObject(pendingRequest)
-        .then (objectId) ->
-          return {
-            objectId: objectId,
-            parentObjectId: ObjectUtils.childIdToParent(objectId)
-          }
-
-    submitObjectBlocks : (kryptnosticObject) ->
-      Promise.resolve()
-      .then =>
-        kryptnosticObject.validateEncrypted()
-
-        objectId        = kryptnosticObject.metadata.id
-        encryptedBlocks = kryptnosticObject.body.data
-
-        Promise.reduce(encryptedBlocks, (chain, nextEncryptableBlock) =>
-          return Promise.resolve(chain)
-            .then => @objectApi.updateObject(objectId, nextEncryptableBlock)
-        , Promise.resolve())
+    # submitObjectBlocks : (kryptnosticObject) ->
+    #   Promise.resolve()
+    #   .then =>
+    #     kryptnosticObject.validateEncrypted()
+    #
+    #     objectId        = kryptnosticObject.metadata.id
+    #     encryptedBlocks = kryptnosticObject.body.data
+    #
+    #     Promise.reduce(encryptedBlocks, (chain, nextEncryptableBlock) =>
+    #       return Promise.resolve(chain)
+    #         .then => @objectApi.updateObject(objectId, nextEncryptableBlock)
+    #     , Promise.resolve())
 
   return StorageClient

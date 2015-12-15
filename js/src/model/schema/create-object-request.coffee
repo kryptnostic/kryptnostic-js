@@ -8,7 +8,7 @@ define 'kryptnostic.schema.create-object-request', [], ->
         allowEmpty : false
       }
       parentObjectId : {
-        type       : 'string'
+        type       : 'object'
         required   : false
         allowEmpty : false
       }

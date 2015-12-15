@@ -14,9 +14,9 @@ define 'kryptnostic.schema.storage-request', [], ->
         required    : false
         allowEmpty  : false
       },
-      parentObjectId : {
-        description : 'id of the parent object if creating a child object'
-        type        : 'string'
+      parent : {
+        description : 'VersionedObjectKey of the parent object if creating a child object'
+        type        : 'object'
         required    : false
         allowEmpty  : false
       }

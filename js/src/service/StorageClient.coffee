@@ -83,7 +83,7 @@ define 'kryptnostic.storage-client', [
       return @objectApi.getObjectAsBlockCiphertext(versionedObjectKey)
 
     uploadObject : (storageRequest, objectSearchPair) ->
-      { objectIdPair, versionedObjectKey } = {}
+      { objectIdPair, objectKey } = {}
 
       Promise.resolve()
       .then ->
@@ -95,12 +95,14 @@ define 'kryptnostic.storage-client', [
           type: typeUuid
           requiredCryptoMats: [ 'IV', 'CONTENTS' ]
         })
+        if storageRequest.parent?
+          createObjectRequest.parentObjectId = storageRequest.parent
         @objectApi.createObject(createObjectRequest)
-      .then (obj) =>
-        versionedObjectKey = obj
+      .then (versionedObjectKey) =>
+        objectKey = versionedObjectKey
         objectIdPair = {
-          objectId       : versionedObjectKey.objectId
-          parentObjectId : if storageRequest.parentObjectId then storageRequest.parentObjectId else versionedObjectKey.objectId
+          objectId       : objectKey.objectId
+          parentObjectId : if storageRequest.parent then storageRequest.parent.objectId else objectKey.objectId
         }
         @cryptoServiceLoader.getObjectCryptoService(
           objectIdPair.parentObjectId,
@@ -113,14 +115,14 @@ define 'kryptnostic.storage-client', [
       .then (encrypted) =>
         # @submitObjectBlocks(encrypted)
         blockCiphertext = encrypted.body.data[0].block
-        @objectApi.setObjectFromBlockCiphertext(versionedObjectKey, blockCiphertext)
+        @objectApi.setObjectFromBlockCiphertext(objectKey, blockCiphertext)
       .then =>
         @searchIndexingService.submit({ storageRequest, objectIdPair, objectSearchPair })
       .then (objectSearchPair) ->
         return {
+          objectKey
           objectIdPair
           objectSearchPair
-          versionedObjectKey
         }
 
     encrypt : ({ objectId, body, cryptoService }) ->

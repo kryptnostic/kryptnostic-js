@@ -70,7 +70,7 @@ define 'kryptnostic.sharing-client', [
 
       Promise.join(
         objectSearchPairPromise,
-        @cryptoServiceLoader.getObjectCryptoService(objectId),
+        @cryptoServiceLoader.getObjectCryptoServiceV2(objectId),
         @directoryApi.getRsaPublicKeys(uuids),
         (objectSearchPair, objectCryptoService, uuidsToRsaPublicKeys) =>
 
@@ -138,7 +138,7 @@ define 'kryptnostic.sharing-client', [
           objectId = sharedObject.id
           Promise.resolve()
           .then =>
-            @cryptoServiceLoader.getObjectCryptoService(
+            @cryptoServiceLoader.getObjectCryptoServiceV2(
               objectId,
               { expectMiss: false } # ObjectCryptoService should exist
             )

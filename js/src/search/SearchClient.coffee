@@ -87,7 +87,7 @@ define 'kryptnostic.search-client', [
       encryptablePromises = _.map(encryptables, (encryptable) =>
         Promise.resolve()
         .then =>
-          @cryptoServiceLoader.getObjectCryptoService(
+          @cryptoServiceLoader.getObjectCryptoServiceV2(
             encryptable.key,
             { expectMiss: false }
           )

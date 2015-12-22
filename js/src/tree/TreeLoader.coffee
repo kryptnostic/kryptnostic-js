@@ -24,9 +24,38 @@ define 'kryptnostic.tree-loader', [
     constructor: ->
       @objectApi = new ObjectApi()
 
+    loadTree: (objectIds, typeLoadLevels, loadDepth) ->
+      console.log('TreeLoader:loadTree() - typeLoadLevels: ')
+      console.log(typeLoadLevels)
+      Promise.resolve()
+      .then =>
+        @objectApi.getObjectsByTypeAndLoadLevel(
+          objectIds,
+          typeLoadLevels,
+          loadDepth
+        )
+      .then (objectMetadataTrees) ->
+        # objectMetadataTrees == Map<java.util.UUID, com.kryptnostic.v2.storage.models.ObjectMetadataEncryptedNode>
+        objectTreeNodes = {}
+        _.map(objectMetadataTrees, (node, objectId) =>
+          if _.isObject(node)
+
+            # sort children by timestamp
+            sortedChildren = _.sortBy(node.children, (child) =>
+              return child.metadata.timeCreated
+            )
+            _.map(sortedChildren, (child, index) =>
+              parentObjectId = node.metadata.id
+              nodeId = ObjectUtils.createChildId(parentObjectId, index)
+              child.metadata.nodeId = nodeId
+            )
+            objectTreeNodes[objectId] = new TreeNode(node)
+        )
+        return objectTreeNodes
+
     load: (id, { depth } = {}) ->
       { recurse } = {}
-
+      throw new Error('deprecated - TreeLoader:load()')
       return Promise.resolve()
       .then ->
         depth = depth - 1

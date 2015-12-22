@@ -9,17 +9,20 @@ define 'kryptnostic.object-api', [
   'kryptnostic.requests'
   'kryptnostic.object-metadata'
   'kryptnostic.validators'
+  'kryptnostic.object-tree-load-request'
 ], (require) ->
 
-  axios             = require 'axios'
-  BlockCiphertext   = require 'kryptnostic.block-ciphertext'
-  Requests          = require 'kryptnostic.requests'
-  KryptnosticObject = require 'kryptnostic.kryptnostic-object'
-  Logger            = require 'kryptnostic.logger'
-  Config            = require 'kryptnostic.configuration'
-  Promise           = require 'bluebird'
-  ObjectMetadata    = require 'kryptnostic.object-metadata'
-  validators        = require 'kryptnostic.validators'
+  axios                 = require 'axios'
+  BlockCiphertext       = require 'kryptnostic.block-ciphertext'
+  Requests              = require 'kryptnostic.requests'
+  KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
+  Logger                = require 'kryptnostic.logger'
+  Config                = require 'kryptnostic.configuration'
+  Promise               = require 'bluebird'
+  ObjectMetadata        = require 'kryptnostic.object-metadata'
+  ObjectMetadataTree    = require 'kryptnostic.object-metadata-tree'
+  ObjectTreeLoadRequest = require 'kryptnostic.object-tree-load-request'
+  validators            = require 'kryptnostic.validators'
 
   { validateId, validateObjectType } = validators
 
@@ -27,6 +30,7 @@ define 'kryptnostic.object-api', [
   objectIdUrl       = (objectId) -> objectUrl() + '/id/' + objectId
   objectMetadataUrl = (objectId) -> objectIdUrl(objectId) + '/metadata'
   objectVersionUrl  = (objectId, objectVersion) -> objectIdUrl(objectId) + '/' + objectVersion
+  objectLevelsUrl   = -> objectUrl() + '/levels'
 
   logger = Logger.get('ObjectApi')
 
@@ -118,6 +122,32 @@ define 'kryptnostic.object-api', [
         if axiosResponse? and axiosResponse.data?
           # axiosResponse.data == com.kryptnostic.v2.storage.models.ObjectMetadata
           return new ObjectMetadata(axiosResponse.data)
+        else
+          return null
+
+    getObjectsByTypeAndLoadLevel: (objectIds, typeLoadLevels, loadDepth) ->
+
+      objectTreeLoadRequest = new ObjectTreeLoadRequest({
+        objectIds  : objectIds
+        loadLevels : typeLoadLevels
+        depth      : loadDepth
+      })
+
+      Promise.resolve(
+        axios(
+          @wrapCredentials({
+            method  : 'POST'
+            url     : objectLevelsUrl()
+            headers : _.clone(DEFAULT_HEADER)
+            data    : JSON.stringify(objectTreeLoadRequest)
+          })
+        )
+      )
+      .then (axiosResponse) ->
+        if axiosResponse? and axiosResponse.data?
+          # axiosResponse.data == Map<java.util.UUID, com.kryptnostic.v2.storage.models.ObjectMetadataEncryptedNode>
+          # return new ObjectMetadataTree(axiosResponse.data)
+          return axiosResponse.data
         else
           return null
 

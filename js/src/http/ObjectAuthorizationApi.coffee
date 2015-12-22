@@ -1,4 +1,4 @@
-define 'kryptnostic.object-listing-api', [
+define 'kryptnostic.object-authorization-api', [
   'require'
   'axios'
   'bluebird'
@@ -22,48 +22,64 @@ define 'kryptnostic.object-listing-api', [
   # constants
   DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
 
-  objectUrl   = -> Config.get('servicesUrlV2') + '/objects'
-  typeNameUrl = (name) -> objectUrl() + '/typename/' + name
+  accessUrl  = -> Config.get('servicesUrlV2') + '/access'
+  ownersUrl  = (objectId) -> accessUrl() + '/owners/' + objectId
+  readersUrl = (objectId) -> accessUrl() + '/readers/' + objectId
+  writersUrl = (objectId) -> accessUrl() + '/writers/' + objectId
 
-  objectIdsByTypeUrl = (userId, typeId) -> objectUrl() + '/' + userId + '/type/' + typeId
+  logger = Logger.get('ObjectAuthorizationApi')
 
-  logger = Logger.get('ObjectListingApi')
-
-  class ObjectListingApi
+  class ObjectAuthorizationApi
 
     wrapCredentials : (request, credentials) ->
       return Requests.wrapCredentials(request, credentials)
 
-    getObjectIdsByType: (userId, typeId) ->
+    getUsersWithOwnerAccess: (objectId) ->
       Promise.resolve(
         axios(
           @wrapCredentials({
-            url    : objectIdsByTypeUrl(userId, typeId)
             method : 'GET'
+            url    : ownersUrl(objectId)
           })
         )
       )
       .then (axiosResponse) ->
         if axiosResponse? and axiosResponse.data?
-          # axiosResponse.data == Set<java.util.UUID>
+          # axiosResponse.data == Iterable<java.util.UUID>
           return axiosResponse.data
         else
           return null
 
-    getTypeIdForType: (type) ->
+    getUsersWithReadAccess: (objectId) ->
       Promise.resolve(
         axios(
           @wrapCredentials({
             method : 'GET'
-            url    : typeNameUrl(type)
+            url    : readersUrl(objectId)
           })
         )
       )
       .then (axiosResponse) ->
         if axiosResponse? and axiosResponse.data?
-          # axiosResponse.data == java.util.UUID
+          # axiosResponse.data == Iterable<java.util.UUID>
           return axiosResponse.data
         else
           return null
 
-  return ObjectListingApi
+    getUsersWithWriteAccess: (objectId) ->
+      Promise.resolve(
+        axios(
+          @wrapCredentials({
+            method : 'GET'
+            url    : writersUrl(objectId)
+          })
+        )
+      )
+      .then (axiosResponse) ->
+        if axiosResponse? and axiosResponse.data?
+          # axiosResponse.data == Iterable<java.util.UUID>
+          return axiosResponse.data
+        else
+          return null
+
+  return ObjectAuthorizationApi

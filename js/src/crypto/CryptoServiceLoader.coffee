@@ -72,6 +72,36 @@ define 'kryptnostic.crypto-service-loader', [
         @cache[id] = cryptoService
         return cryptoService
 
+    getObjectCryptoServiceV2: (id, options) ->
+      console.log('CryptoServiceLoader:getObjectCryptoServiceV2()')
+      options        = _.defaults({}, options, DEFAULT_OPTS)
+      { expectMiss } = options
+
+      id = ObjectUtils.childIdToParent(id)
+
+      # Check cache for crypto service
+      if @cache[id]
+        return Promise.resolve(@cache[id])
+      # if cache miss get from network, and update cache
+      Promise.props({
+        serializedCryptoService : @directoryApi.getObjectCryptoServiceV2(id)
+      })
+      .then ({ serializedCryptoService }) =>
+        cryptoService = {}
+        if !serializedCryptoService && expectMiss
+          log.info('no cryptoService exists for this object. creating one on-the-fly', { id })
+          cryptoService = new AesCryptoService( Cypher.AES_CTR_128 )
+          @setObjectCryptoServiceV2( id, cryptoService )
+        else if !serializedCryptoService && !expectMiss
+          console.log('CryptoServiceLoader:getObjectCryptoServiceV2()')
+          console.log(id)
+          throw new Error 'no cryptoservice exists for this object, but a miss was not expected'
+        else
+          rsaCryptoService = @getRsaCryptoService()
+          cryptoService = @marshaller.unmarshall(serializedCryptoService, rsaCryptoService)
+        @cache[id] = cryptoService
+        return cryptoService
+
     setObjectCryptoService: (id, cryptoService) ->
       unless cryptoService.constructor.name is 'AesCryptoService'
         throw new Error('serialization only implemented for AesCryptoService')
@@ -81,6 +111,17 @@ define 'kryptnostic.crypto-service-loader', [
       encryptedCryptoService = rsaCryptoService.encrypt(marshalled)
 
       return @directoryApi.setObjectCryptoService(id, encryptedCryptoService)
+
+    setObjectCryptoServiceV2: (id, cryptoService) ->
+      console.log('CryptoServiceLoader:setObjectCryptoServiceV2()')
+      unless cryptoService.constructor.name is 'AesCryptoService'
+        throw new Error('serialization only implemented for AesCryptoService')
+
+      marshalled             = @marshaller.marshall(cryptoService)
+      rsaCryptoService       = @getRsaCryptoService()
+      encryptedCryptoService = rsaCryptoService.encrypt(marshalled)
+
+      return @directoryApi.setObjectCryptoServiceV2(id, encryptedCryptoService)
 
   cryptoServiceLoader = new CryptoServiceLoader()
 

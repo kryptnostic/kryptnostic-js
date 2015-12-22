@@ -81,7 +81,7 @@ define 'kryptnostic.search-indexing-service', [
     prepareMetadataRequest: ({ objectIdPair, metadata, objectIndexPair }) ->
       Promise.resolve()
       .then =>
-        @cryptoServiceLoader.getObjectCryptoService(
+        @cryptoServiceLoader.getObjectCryptoServiceV2(
           objectIdPair.parentObjectId,
           { expectMiss : false }
         )

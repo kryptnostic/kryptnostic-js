@@ -67,7 +67,7 @@ define 'kryptnostic.storage-client', [
         @getOwnUuid()
       .then (id) =>
         userId = id
-        @objectListingApi.getTypeForName(type)
+        @objectListingApi.getTypeIdForType(type)
       .then (typeId) =>
         @objectListingApi.getObjectIdsByType(userId, typeId)
       .then (ids) ->
@@ -83,19 +83,25 @@ define 'kryptnostic.storage-client', [
       return @objectApi.getObjectAsBlockCiphertext(versionedObjectKey)
 
     uploadObject : (storageRequest, objectSearchPair) ->
+      console.trace()
+      console.log('StorageClient:uploadObject()')
       { objectIdPair, objectKey } = {}
+      storageResponse = {}
 
       Promise.resolve()
       .then ->
         storageRequest.validate()
       .then =>
-        @objectListingApi.getTypeForName(storageRequest.type)
-      .then (typeUuid) =>
+        @objectListingApi.getTypeIdForType(storageRequest.type)
+      .then (typeId) =>
+        storageResponse.typeId = typeId
         createObjectRequest = new CreateObjectRequest({
-          type: typeUuid
+          type: typeId
           requiredCryptoMats: [ 'IV', 'CONTENTS' ]
         })
         if storageRequest.parent?
+          console.log('StorageClient:uploadObject() - storageRequest.parent')
+          console.log(storageRequest.parent)
           createObjectRequest.parentObjectId = storageRequest.parent
         @objectApi.createObject(createObjectRequest)
       .then (versionedObjectKey) =>
@@ -104,7 +110,9 @@ define 'kryptnostic.storage-client', [
           objectId       : objectKey.objectId
           parentObjectId : if storageRequest.parent then storageRequest.parent.objectId else objectKey.objectId
         }
-        @cryptoServiceLoader.getObjectCryptoService(
+        storageResponse.objectKey = objectKey
+        storageResponse.objectIdPair = objectIdPair
+        @cryptoServiceLoader.getObjectCryptoServiceV2(
           objectIdPair.parentObjectId,
           { expectMiss : true }
         )
@@ -119,11 +127,8 @@ define 'kryptnostic.storage-client', [
       .then =>
         @searchIndexingService.submit({ storageRequest, objectIdPair, objectSearchPair })
       .then (objectSearchPair) ->
-        return {
-          objectKey
-          objectIdPair
-          objectSearchPair
-        }
+        storageResponse.objectSearchPair = objectSearchPair
+        return storageResponse
 
     encrypt : ({ objectId, body, cryptoService }) ->
       kryptnosticObject = KryptnosticObject.createFromDecrypted({

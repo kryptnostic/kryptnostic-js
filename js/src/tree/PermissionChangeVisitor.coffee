@@ -10,8 +10,9 @@ define 'kryptnostic.permission-change-visitor', [
   Promise       = require 'bluebird'
   Logger        = require 'kryptnostic.logger'
   validators    = require 'kryptnostic.validators'
-  StorageClient = require 'kryptnostic.storage-client'
   SharingClient = require 'kryptnostic.sharing-client'
+
+  ObjectAuthorizationApi = require 'kryptnostic.object-authorization-api'
 
   log = Logger.get('PermissionChangeVisitor')
 
@@ -24,7 +25,7 @@ define 'kryptnostic.permission-change-visitor', [
   class PermissionChangeVisitor
 
     constructor: (@uuids) ->
-      @storageClient = new StorageClient()
+      @objectAuthApi = new ObjectAuthorizationApi()
       @sharingClient = new SharingClient()
       @changed       = []
       @failed        = []
@@ -60,15 +61,18 @@ define 'kryptnostic.permission-change-visitor', [
       .then =>
         @changedUsers[id] = { added: uuidsAdd, removed: uuidsRemove }
 
-    getParticipants: (id) ->
+    getParticipants: (objectId) ->
       Promise.resolve()
       .then =>
-        validateId(id)
-        @storageClient.getObjectMetadata(id)
-      .then (metadata) ->
-        uuids = _.chain([metadata.owners, metadata.readers, metadata.writers])
+        validateId(objectId)
+        Promise.props({
+          owners  : @objectAuthApi.getUsersWithOwnerAccess(objectId)
+          readers : @objectAuthApi.getUsersWithReadAccess(objectId)
+          writers : @objectAuthApi.getUsersWithWriteAccess(objectId)
+        })
+      .then ({ owners, readers, writers }) =>
+        uuids = _.chain([owners, readers, writers])
           .flatten()
           .unique()
           .value()
-
         return uuids

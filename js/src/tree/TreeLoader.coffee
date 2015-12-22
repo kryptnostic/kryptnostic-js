@@ -13,12 +13,8 @@ define 'kryptnostic.tree-loader', [
   Logger      = require 'kryptnostic.logger'
   Promise     = require 'bluebird'
 
-  log = Logger.get('TreeLoader')
+  logger = Logger.get('TreeLoader')
 
-  #
-  # Loads the ID's in a Kryptnostic object tree.
-  # Author: rbuckheit
-  #
   class TreeLoader
 
     constructor: ->
@@ -54,12 +50,12 @@ define 'kryptnostic.tree-loader', [
         return objectTreeNodes
 
     load: (id, { depth } = {}) ->
+      throw new Error('TreeLoader:load() is deprecated')
       { recurse } = {}
-      throw new Error('deprecated - TreeLoader:load()')
       return Promise.resolve()
       .then ->
         depth = depth - 1
-        log.info('load', id)
+        logger.info('load', id)
         recurse = _.isNaN(depth) or depth > 0
       .then =>
         @objectApi.getObjectMetadata(id)
@@ -68,7 +64,6 @@ define 'kryptnostic.tree-loader', [
         childIndices         = [0...childObjectCount]
         return Promise.all(_.map(childIndices, (index) =>
           childId = ObjectUtils.createChildId(id, index)
-
           if recurse
             return @load(childId, { depth })
           else
@@ -79,7 +74,7 @@ define 'kryptnostic.tree-loader', [
         return new TreeNode(id, children)
       .catch (e) ->
         { message, stack } = e
-        log.error('failed to load', { e, message, stack })
+        logger.error('failed to load', { e, message, stack })
         return undefined
 
   return TreeLoader

@@ -36,47 +36,23 @@ define 'kryptnostic.object-api', [
 
   DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
 
-  #
-  # HTTP calls for interacting with the /object endpoint of Kryptnostic Services.
-  # Author: rbuckheit
-  #
   class ObjectApi
 
     wrapCredentials : (request, credentials) ->
       return Requests.wrapCredentials(request, credentials)
 
-    # get all object ids accessible to the user
-    getObjectIds : ->
-      Promise.resolve(axios(@wrapCredentials({
-        url    : objectUrl()
-        method : 'GET'
-      })))
-      .then (response) ->
-        objectIds = response.data.data
-        return objectIds
-
-    # load a kryptnosticObject in encrypted form
     getObject : (id) ->
-      validateId(id)
-      Promise.resolve(
-        axios(
-          @wrapCredentials({
-            url    : objectIdUrl(id)
-            method : 'GET'
-          })
-        )
-      )
-      .then (response) ->
-        raw = response.data
-        return KryptnosticObject.createFromEncrypted(raw)
+      throw new Error('ObjectApi:getObject() is not implemented')
+
+    getObjectIds : ->
+      throw new Error('ObjectApi:getObjectIds() is not implemented')
 
     getVersionedObjectKey: (objectId) ->
-      # TODO: validate versionedObjectKey
       Promise.resolve(
         axios(
           @wrapCredentials({
-            url    : objectIdUrl(objectId)
             method : 'GET'
+            url    : objectIdUrl(objectId)
           })
         )
       )
@@ -87,34 +63,13 @@ define 'kryptnostic.object-api', [
         else
           return null
 
-    getObjectAsBlockCiphertext: (versionedObjectKey) ->
-      # TODO: validate versionedObjectKey
-      Promise.resolve(
-        axios(
-          @wrapCredentials({
-            url    : objectVersionUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
-            method : 'GET'
-          })
-        )
-      )
-      .then (axiosResponse) ->
-        if axiosResponse? and axiosResponse.data?
-          # axiosResponse.data == com.kryptnostic.kodex.v1.crypto.ciphers.BlockCiphertext
-          try
-            return new BlockCiphertext(axiosResponse.data)
-          catch e
-            return null
-        else
-          return null
-
-    # load object metadata only without contents
     getObjectMetadata: (objectId) ->
       validateId(objectId)
       Promise.resolve(
         axios(
           @wrapCredentials({
-            url    : objectMetadataUrl(objectId)
             method : 'GET'
+            url    : objectMetadataUrl(objectId)
           })
         )
       )
@@ -155,8 +110,8 @@ define 'kryptnostic.object-api', [
       Promise.resolve(
         axios(
           @wrapCredentials({
-            url     : objectUrl()
             method  : 'POST'
+            url     : objectUrl()
             headers : _.clone(DEFAULT_HEADER)
             data    : JSON.stringify(createObjectRequest)
           })
@@ -169,12 +124,32 @@ define 'kryptnostic.object-api', [
         else
           return null
 
+    getObjectAsBlockCiphertext: (versionedObjectKey) ->
+      # TODO: validate versionedObjectKey
+      Promise.resolve(
+        axios(
+          @wrapCredentials({
+            method : 'GET'
+            url    : objectVersionUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
+          })
+        )
+      )
+      .then (axiosResponse) ->
+        if axiosResponse? and axiosResponse.data?
+          # axiosResponse.data == com.kryptnostic.kodex.v1.crypto.ciphers.BlockCiphertext
+          try
+            return new BlockCiphertext(axiosResponse.data)
+          catch e
+            return null
+        else
+          return null
+
     setObjectFromBlockCiphertext: (versionedObjectKey, blockCiphertext) ->
       Promise.resolve(
         axios(
           @wrapCredentials({
-            url     : objectVersionUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
             method  : 'PUT'
+            url     : objectVersionUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
             headers : _.clone(DEFAULT_HEADER)
             data    : JSON.stringify(blockCiphertext)
           })
@@ -191,23 +166,25 @@ define 'kryptnostic.object-api', [
       validateId(id)
 
       Promise.resolve(axios(@wrapCredentials({
-        url     : objectUrl() + '/' + id
         method  : 'POST'
+        url     : objectUrl() + '/' + id
         headers : _.clone(DEFAULT_HEADER)
         data    : JSON.stringify(encryptableBlock)
       })))
       .then (response) ->
         logger.debug('submitted block', { id })
 
-    # deletes an object
-    deleteObject : (id) ->
-      validateId(id)
-
-      Promise.resolve(axios(@wrapCredentials({
-        url    : objectUrl() + '/' + id
-        method : 'DELETE'
-      })))
-      .then (response) ->
-        logger.debug('deleted object', { id })
+    deleteObject : (objectId) ->
+      validateId(objectId)
+      Promise.resolve(
+        axios(
+          @wrapCredentials({
+            method : 'DELETE'
+            url    : objectIdUrl(objectId)
+          })
+        )
+      )
+      .then (axiosResponse) ->
+        logger.debug('deleted object', { objectId })
 
   return ObjectApi

@@ -7,25 +7,21 @@ define 'kryptnostic.deletion-visitor', [
 
   Promise       = require 'bluebird'
   Logger        = require 'kryptnostic.logger'
-  StorageClient = require 'kryptnostic.storage-client'
+  ObjectApi     = require 'kryptnostic.object-api'
 
   log = Logger.get('DeletionVisitor')
 
-  #
-  # Permanently deletes all objects in a tree.
-  # Author: rbuckheit
-  #
   class DeletionVisitor
 
     constructor: ->
-      @storageClient = new StorageClient()
+      @objectApi     = new ObjectApi()
       @deleted       = []
 
     visit: (id) ->
       log.info('visit', id)
       Promise.resolve()
       .then =>
-        @storageClient.deleteObject(id)
+        @objectApi.deleteObject(id)
       .then =>
         @deleted.push(id)
 

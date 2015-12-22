@@ -34,12 +34,12 @@ define 'kryptnostic.object-listing-api', [
     wrapCredentials : (request, credentials) ->
       return Requests.wrapCredentials(request, credentials)
 
-    getObjectIdsByType: (userId, typeId) ->
+    getObjectIdsByTypeId: (userId, typeId) ->
       Promise.resolve(
         axios(
           @wrapCredentials({
-            url    : objectIdsByTypeUrl(userId, typeId)
             method : 'GET'
+            url    : objectIdsByTypeUrl(userId, typeId)
           })
         )
       )
@@ -50,7 +50,7 @@ define 'kryptnostic.object-listing-api', [
         else
           return null
 
-    getTypeIdForType: (type) ->
+    getTypeIdForTypeName: (type) ->
       Promise.resolve(
         axios(
           @wrapCredentials({

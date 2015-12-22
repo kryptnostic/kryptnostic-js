@@ -48,39 +48,18 @@ define 'kryptnostic.storage-client', [
       @searchIndexingService = new SearchIndexingService()
       @credentialLoader      = new CredentialLoader()
 
-    getOwnUuid : ->
-      return @credentialLoader.getCredentials().principal
-
-    getObjectIds : ->
-      return @objectApi.getObjectIds()
 
     getObject : (id) ->
-      return @objectApi.getObject(id)
+      throw new Error('StorageClient:getObject() is deprecated')
 
-    getVersionedObjectKey: (objectId) ->
-      return @objectApi.getVersionedObjectKey(objectId)
-
-    getObjectIdsByType : (type) ->
-      { userId } = {}
-      Promise.resolve()
-      .then =>
-        @getOwnUuid()
-      .then (id) =>
-        userId = id
-        @objectListingApi.getTypeIdForType(type)
-      .then (typeId) =>
-        @objectListingApi.getObjectIdsByType(userId, typeId)
-      .then (ids) ->
-        return ids
+    getObjectIds : ->
+      throw new Error('StorageClient:getObjectIds() is deprecated')
 
     getObjectMetadata : (id) ->
-      return @objectApi.getObjectMetadata(id)
+      throw new Error('StorageClient:getObjectMetadata() is deprecated')
 
     deleteObject : (id) ->
-      return @objectApi.deleteObject(id)
-
-    getObjectAsBlockCiphertext: (versionedObjectKey) ->
-      return @objectApi.getObjectAsBlockCiphertext(versionedObjectKey)
+      throw new Error('StorageClient:deleteObject() is deprecated')
 
     uploadObject : (storageRequest, objectSearchPair) ->
       console.trace()
@@ -92,7 +71,7 @@ define 'kryptnostic.storage-client', [
       .then ->
         storageRequest.validate()
       .then =>
-        @objectListingApi.getTypeIdForType(storageRequest.type)
+        @objectListingApi.getTypeIdForTypeName(storageRequest.type)
       .then (typeId) =>
         storageResponse.typeId = typeId
         createObjectRequest = new CreateObjectRequest({

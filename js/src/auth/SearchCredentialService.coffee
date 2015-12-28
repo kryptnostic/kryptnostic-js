@@ -5,7 +5,7 @@ define 'kryptnostic.search-credential-service', [
   'kryptnostic.logger'
   'kryptnostic.authentication-stage'
   'kryptnostic.search-key-generator'
-  'kryptnostic.crypto-key-storage-api'
+  'kryptnostic.key-storage-api'
   'kryptnostic.crypto-service-loader'
 ], (require) ->
 
@@ -13,7 +13,7 @@ define 'kryptnostic.search-credential-service', [
   Promise             = require 'bluebird'
   Logger              = require 'kryptnostic.logger'
   AuthenticationStage = require 'kryptnostic.authentication-stage'
-  CryptoKeyStorageApi = require 'kryptnostic.crypto-key-storage-api'
+  KeyStorageApi       = require 'kryptnostic.key-storage-api'
   SearchKeyGenerator  = require 'kryptnostic.search-key-generator'
   CryptoServiceLoader = require 'kryptnostic.crypto-service-loader'
 
@@ -25,8 +25,8 @@ define 'kryptnostic.search-credential-service', [
   CredentialType = {
     FHE_PRIVATE_KEY : {
       getKey    : (clientKeys) -> clientKeys.fhePrivateKey
-      getter    : (api) -> api.getFhePrivateKey
-      setter    : (api) -> api.setFhePrivateKey
+      getter    : (api) -> api.getFHEPrivateKey
+      setter    : (api) -> api.setFHEPrivateKey
       stage     : AuthenticationStage.FHE_KEYGEN
       encrypt   : true
       decrypt   : true
@@ -34,8 +34,8 @@ define 'kryptnostic.search-credential-service', [
     }
     SEARCH_PRIVATE_KEY : {
       getKey    : (clientKeys) -> clientKeys.searchPrivateKey
-      getter    : (api) -> api.getSearchPrivateKey
-      setter    : (api) -> api.setSearchPrivateKey
+      getter    : (api) -> api.getFHESearchPrivateKey
+      setter    : (api) -> api.setFHESearchPrivateKey
       stage     : AuthenticationStage.SEARCH_KEYGEN
       encrypt   : true
       decrypt   : true
@@ -43,8 +43,8 @@ define 'kryptnostic.search-credential-service', [
     }
     CLIENT_HASH_FUNCTION : {
       getKey    : (clientKeys) -> clientKeys.clientHashFunction
-      getter    : (api) -> api.getClientHashFunction
-      setter    : (api) -> api.setClientHashFunction
+      getter    : (api) -> api.getFHEHashFunction
+      setter    : (api) -> api.setFHEHashFunction
       stage     : AuthenticationStage.CLIENT_HASH_GEN
       encrypt   : false
       decrypt   : false
@@ -61,7 +61,7 @@ define 'kryptnostic.search-credential-service', [
   class SearchCredentialService
 
     constructor: ->
-      @cryptoKeyStorageApi = new CryptoKeyStorageApi()
+      @keyStorageApi       = new KeyStorageApi()
       @searchKeyGenerator  = new SearchKeyGenerator()
       @cryptoServiceLoader = CryptoServiceLoader.get()
 
@@ -103,7 +103,7 @@ define 'kryptnostic.search-credential-service', [
 
         # create a map of CredentialType -> Promise<Credential>
         credentialPromises = _.mapValues(CredentialType, (credentialType) =>
-          loadCredential = credentialType.getter(@cryptoKeyStorageApi)
+          loadCredential = credentialType.getter(@keyStorageApi)
           return loadCredential()
         )
 
@@ -200,7 +200,7 @@ define 'kryptnostic.search-credential-service', [
         if credentialType.encrypt is true
           storeableKey = aesCryptoService.encryptUint8Array(key)
 
-        storeCredential = credentialType.setter(@cryptoKeyStorageApi)
+        storeCredential = credentialType.setter(@keyStorageApi)
         storeCredential(storeableKey)
 
       .then ->

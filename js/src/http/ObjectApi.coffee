@@ -26,20 +26,16 @@ define 'kryptnostic.object-api', [
 
   { validateId, validateObjectType } = validators
 
+  logger = Logger.get('ObjectApi')
+
   objectUrl         = -> Config.get('servicesUrlV2') + '/object'
+  objectsUrl        = -> objectUrl() + '/bulk'
   objectIdUrl       = (objectId) -> objectUrl() + '/id/' + objectId
   objectMetadataUrl = (objectId) -> objectIdUrl(objectId) + '/metadata'
   objectVersionUrl  = (objectId, objectVersion) -> objectIdUrl(objectId) + '/' + objectVersion
   objectLevelsUrl   = -> objectUrl() + '/levels'
 
-  logger = Logger.get('ObjectApi')
-
-  DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
-
   class ObjectApi
-
-    wrapCredentials : (request, credentials) ->
-      return Requests.wrapCredentials(request, credentials)
 
     getObject : (id) ->
       throw new Error('ObjectApi:getObject() is not implemented')
@@ -47,10 +43,27 @@ define 'kryptnostic.object-api', [
     getObjectIds : ->
       throw new Error('ObjectApi:getObjectIds() is not implemented')
 
+    getObjects: (objectIds) ->
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method  : 'POST'
+            url     : objectsUrl()
+            data    : JSON.stringify(objectIds)
+          })
+        )
+      )
+      .then (axiosResponse) ->
+        if axiosResponse? and axiosResponse.data?
+          # axiosResponse.data == Map<java.util.UUID, com.kryptnostic.kodex.v1.crypto.ciphers.BlockCiphertext>
+          return axiosResponse.data;
+        else
+          return null
+
     getVersionedObjectKey: (objectId) ->
       Promise.resolve(
         axios(
-          @wrapCredentials({
+          Requests.wrapCredentials({
             method : 'GET'
             url    : objectIdUrl(objectId)
           })
@@ -67,7 +80,7 @@ define 'kryptnostic.object-api', [
       validateId(objectId)
       Promise.resolve(
         axios(
-          @wrapCredentials({
+          Requests.wrapCredentials({
             method : 'GET'
             url    : objectMetadataUrl(objectId)
           })
@@ -90,10 +103,9 @@ define 'kryptnostic.object-api', [
 
       Promise.resolve(
         axios(
-          @wrapCredentials({
+          Requests.wrapCredentials({
             method  : 'POST'
             url     : objectLevelsUrl()
-            headers : _.clone(DEFAULT_HEADER)
             data    : JSON.stringify(objectTreeLoadRequest)
           })
         )
@@ -109,10 +121,9 @@ define 'kryptnostic.object-api', [
     createObject: (createObjectRequest) ->
       Promise.resolve(
         axios(
-          @wrapCredentials({
+          Requests.wrapCredentials({
             method  : 'POST'
             url     : objectUrl()
-            headers : _.clone(DEFAULT_HEADER)
             data    : JSON.stringify(createObjectRequest)
           })
         )
@@ -128,7 +139,7 @@ define 'kryptnostic.object-api', [
       # TODO: validate versionedObjectKey
       Promise.resolve(
         axios(
-          @wrapCredentials({
+          Requests.wrapCredentials({
             method : 'GET'
             url    : objectVersionUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
           })
@@ -147,10 +158,9 @@ define 'kryptnostic.object-api', [
     setObjectFromBlockCiphertext: (versionedObjectKey, blockCiphertext) ->
       Promise.resolve(
         axios(
-          @wrapCredentials({
+          Requests.wrapCredentials({
             method  : 'PUT'
             url     : objectVersionUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
-            headers : _.clone(DEFAULT_HEADER)
             data    : JSON.stringify(blockCiphertext)
           })
         )
@@ -165,10 +175,9 @@ define 'kryptnostic.object-api', [
     updateObject : (id, encryptableBlock) ->
       validateId(id)
 
-      Promise.resolve(axios(@wrapCredentials({
+      Promise.resolve(axios(Requests.wrapCredentials({
         method  : 'POST'
         url     : objectUrl() + '/' + id
-        headers : _.clone(DEFAULT_HEADER)
         data    : JSON.stringify(encryptableBlock)
       })))
       .then (response) ->
@@ -178,7 +187,7 @@ define 'kryptnostic.object-api', [
       validateId(objectId)
       Promise.resolve(
         axios(
-          @wrapCredentials({
+          Requests.wrapCredentials({
             method : 'DELETE'
             url    : objectIdUrl(objectId)
           })

@@ -26,6 +26,8 @@ define 'kryptnostic.object-api', [
 
   { validateId, validateObjectType } = validators
 
+  DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
+
   logger = Logger.get('ObjectApi')
 
   objectUrl         = -> Config.get('servicesUrlV2') + '/object'
@@ -50,6 +52,7 @@ define 'kryptnostic.object-api', [
             method  : 'POST'
             url     : objectsUrl()
             data    : JSON.stringify(objectIds)
+            headers : _.clone(DEFAULT_HEADER)
           })
         )
       )
@@ -107,6 +110,7 @@ define 'kryptnostic.object-api', [
             method  : 'POST'
             url     : objectLevelsUrl()
             data    : JSON.stringify(objectTreeLoadRequest)
+            headers : _.clone(DEFAULT_HEADER)
           })
         )
       )
@@ -125,6 +129,7 @@ define 'kryptnostic.object-api', [
             method  : 'POST'
             url     : objectUrl()
             data    : JSON.stringify(createObjectRequest)
+            headers : _.clone(DEFAULT_HEADER)
           })
         )
       )
@@ -162,6 +167,7 @@ define 'kryptnostic.object-api', [
             method  : 'PUT'
             url     : objectVersionUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
             data    : JSON.stringify(blockCiphertext)
+            headers : _.clone(DEFAULT_HEADER)
           })
         )
       )
@@ -179,6 +185,7 @@ define 'kryptnostic.object-api', [
         method  : 'POST'
         url     : objectUrl() + '/' + id
         data    : JSON.stringify(encryptableBlock)
+        headers : _.clone(DEFAULT_HEADER)
       })))
       .then (response) ->
         logger.debug('submitted block', { id })
@@ -188,8 +195,9 @@ define 'kryptnostic.object-api', [
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
-            method : 'DELETE'
-            url    : objectIdUrl(objectId)
+            method  : 'DELETE'
+            url     : objectIdUrl(objectId)
+            headers : _.clone(DEFAULT_HEADER)
           })
         )
       )

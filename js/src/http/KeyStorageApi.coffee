@@ -21,7 +21,10 @@ define 'kryptnostic.key-storage-api', [
 
   logger = Logger.get('KeyStorageApi')
 
+  DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
+
   keyStorageApi = -> Config.get('servicesUrlV2') + '/keys'
+  saltUrl       = (userId) -> keyStorageApi() + '/salt/' + userId
 
   #
   # FHE endpoints
@@ -58,6 +61,7 @@ define 'kryptnostic.key-storage-api', [
             method  : 'POST'
             url     : fhePrivateKeyUrl()
             data    : fhePrivateKey
+            headers : _.clone(DEFAULT_HEADER)
           })
         )
       )
@@ -78,6 +82,7 @@ define 'kryptnostic.key-storage-api', [
             method  : 'POST'
             url     : fheSearchPrivateKeyUrl()
             data    : fheSearchPrivateKey
+            headers : _.clone(DEFAULT_HEADER)
           })
         )
       )
@@ -98,8 +103,20 @@ define 'kryptnostic.key-storage-api', [
             method  : 'POST'
             url     : fheHashUrl()
             data    : fheHashFunction
+            headers : _.clone(DEFAULT_HEADER)
           })
         )
       )
+
+  #
+  # encrypted salt
+  #
+
+  getEncryptedSalt: (userId) ->
+    throw new Error('not yet implemented')
+
+  setEncryptedSalt: (userId, blockCiphertext) ->
+    throw new Error('not yet implemented')
+
 
   return KeyStorageApi

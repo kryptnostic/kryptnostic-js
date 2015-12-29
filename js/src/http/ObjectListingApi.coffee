@@ -26,13 +26,12 @@ define 'kryptnostic.object-listing-api', [
 
   objectIdsByTypeUrl = (userId, typeId) -> objectUrl() + '/' + userId + '/type/' + typeId
 
-
   class ObjectListingApi
 
     getObjectIdsByTypeId: (userId, typeId) ->
       Promise.resolve(
         axios(
-          Requests.wrapCredentials(
+          Requests.wrapCredentials({
             method : 'GET'
             url    : objectIdsByTypeUrl(userId, typeId)
           })
@@ -48,7 +47,7 @@ define 'kryptnostic.object-listing-api', [
     getTypeIdForTypeName: (type) ->
       Promise.resolve(
         axios(
-          Requests.wrapCredentials(
+          Requests.wrapCredentials({
             method : 'GET'
             url    : typeNameUrl(type)
           })

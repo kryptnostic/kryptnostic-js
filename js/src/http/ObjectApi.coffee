@@ -204,4 +204,16 @@ define 'kryptnostic.object-api', [
       .then (axiosResponse) ->
         logger.debug('deleted object', { objectId })
 
+    deleteObjectTrees: (objectIds) ->
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method  : 'DELETE'
+            url     : objectUrl()
+            data    : JSON.stringify(objectIds)
+            headers : _.clone(DEFAULT_HEADER)
+          })
+        )
+      )
+
   return ObjectApi

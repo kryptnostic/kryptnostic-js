@@ -51,30 +51,5 @@ define 'kryptnostic.tree-loader', [
 
     load: (id, { depth } = {}) ->
       throw new Error('TreeLoader:load() is deprecated')
-      { recurse } = {}
-      return Promise.resolve()
-      .then ->
-        depth = depth - 1
-        logger.info('load', id)
-        recurse = _.isNaN(depth) or depth > 0
-      .then =>
-        @objectApi.getObjectMetadata(id)
-      .then (metadata) =>
-        { childObjectCount } = metadata
-        childIndices         = [0...childObjectCount]
-        return Promise.all(_.map(childIndices, (index) =>
-          childId = ObjectUtils.createChildId(id, index)
-          if recurse
-            return @load(childId, { depth })
-          else
-            return new TreeNode(childId, [])
-        ))
-      .then (children) ->
-        children = _.compact(children)
-        return new TreeNode(id, children)
-      .catch (e) ->
-        { message, stack } = e
-        logger.error('failed to load', { e, message, stack })
-        return undefined
 
   return TreeLoader

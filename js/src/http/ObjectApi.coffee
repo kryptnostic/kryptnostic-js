@@ -15,7 +15,6 @@ define 'kryptnostic.object-api', [
   axios                 = require 'axios'
   BlockCiphertext       = require 'kryptnostic.block-ciphertext'
   Requests              = require 'kryptnostic.requests'
-  KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
   Logger                = require 'kryptnostic.logger'
   Config                = require 'kryptnostic.configuration'
   Promise               = require 'bluebird'
@@ -24,7 +23,7 @@ define 'kryptnostic.object-api', [
   ObjectTreeLoadRequest = require 'kryptnostic.object-tree-load-request'
   validators            = require 'kryptnostic.validators'
 
-  { validateId, validateObjectType } = validators
+  { validateId, validateUuid } = validators
 
   DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
 
@@ -39,11 +38,19 @@ define 'kryptnostic.object-api', [
 
   class ObjectApi
 
-    getObject : (id) ->
-      throw new Error('ObjectApi:getObject() is not implemented')
-
     getObjectIds : ->
       throw new Error('ObjectApi:getObjectIds() is not implemented')
+
+    getObject: (objectId) ->
+
+      if not validateUuid(objectId)
+        Promise.resolve(null)
+
+      Promise.resolve(
+        @getObjects([objectId])
+      )
+      .then (objects) ->
+        return objects[objectId]
 
     getObjects: (objectIds) ->
       Promise.resolve(
@@ -59,11 +66,20 @@ define 'kryptnostic.object-api', [
       .then (axiosResponse) ->
         if axiosResponse? and axiosResponse.data?
           # axiosResponse.data == Map<java.util.UUID, com.kryptnostic.kodex.v1.crypto.ciphers.BlockCiphertext>
-          return axiosResponse.data;
+          return _.mapValues(axiosResponse.data, (blockCiphertext) ->
+            try
+              return new BlockCiphertext(blockCiphertext)
+            catch e
+              return null
+          )
         else
           return null
 
     getVersionedObjectKey: (objectId) ->
+
+      if not validateUuid(objectId)
+        Promise.resolve(null)
+
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
@@ -80,7 +96,10 @@ define 'kryptnostic.object-api', [
           return null
 
     getObjectMetadata: (objectId) ->
-      validateId(objectId)
+
+      if not validateUuid(objectId)
+        Promise.resolve(null)
+
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
@@ -141,24 +160,9 @@ define 'kryptnostic.object-api', [
           return null
 
     getObjectAsBlockCiphertext: (versionedObjectKey) ->
-      # TODO: validate versionedObjectKey
-      Promise.resolve(
-        axios(
-          Requests.wrapCredentials({
-            method : 'GET'
-            url    : objectVersionUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
-          })
-        )
+      Requests.getBlockCiphertextFromUrl(
+        objectVersionUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
       )
-      .then (axiosResponse) ->
-        if axiosResponse? and axiosResponse.data?
-          # axiosResponse.data == com.kryptnostic.kodex.v1.crypto.ciphers.BlockCiphertext
-          try
-            return new BlockCiphertext(axiosResponse.data)
-          catch e
-            return null
-        else
-          return null
 
     setObjectFromBlockCiphertext: (versionedObjectKey, blockCiphertext) ->
       Promise.resolve(

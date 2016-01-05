@@ -8,7 +8,7 @@ define 'kryptnostic.object-tree-load-request', [
   SCHEMA       = require 'kryptnostic.schema.object-tree-load-request'
   validator    = require 'kryptnostic.schema.validator'
 
-  DEFAULT_OPTS = { }
+  DEFAULT_OPTS = {}
 
   class ObjectTreeLoadRequest
 

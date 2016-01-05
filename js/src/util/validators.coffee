@@ -9,11 +9,6 @@ define 'kryptnostic.validators', [
 
   log = Logger.get('validators')
 
-  #
-  # Utility class containing shared validation functions for models.
-  # Author: rbuckheit
-  #
-
   validateNonEmptyString = (value, desc = 'value') ->
     if not _.isString(value)
       log.error("#{desc} is not a string", value)
@@ -23,7 +18,8 @@ define 'kryptnostic.validators', [
       throw new Error "#{desc} is empty"
 
   validateUuid = (uuid) ->
-    validateNonEmptyString(uuid, 'uuid')
+    regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-4][0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+    return regex.test(uuid)
 
   validateId = (id) ->
     validateNonEmptyString(id, 'id')
@@ -35,12 +31,15 @@ define 'kryptnostic.validators', [
     validateNonEmptyString(type, 'object type')
 
   validateUuids = (uuids) ->
-    unless _.isArray(uuids)
-      log.error('uuid list is not an array', { uuids })
-      throw new Error 'uuid list is not an array'
 
-    uuids.forEach (uuid) ->
-      validateUuid(uuid)
+    if not _.isArray(uuids)
+      return false
+
+    _.forEach(uuids, (uuid) ->
+      if not validateUuid(uuid)
+        return false
+    )
+    return true
 
   return {
     validateId

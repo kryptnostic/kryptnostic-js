@@ -70,7 +70,7 @@ define 'kryptnostic.permission-change-visitor', [
           readers : @objectAuthApi.getUsersWithReadAccess(objectId)
           writers : @objectAuthApi.getUsersWithWriteAccess(objectId)
         })
-      .then ({ owners, readers, writers }) =>
+      .then ({ owners, readers, writers }) ->
         uuids = _.chain([owners, readers, writers])
           .flatten()
           .unique()

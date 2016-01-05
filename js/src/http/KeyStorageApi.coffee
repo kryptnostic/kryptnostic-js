@@ -3,10 +3,8 @@ define 'kryptnostic.key-storage-api', [
   'axios'
   'bluebird'
   'kryptnostic.configuration'
-  'kryptnostic.kryptnostic-object'
   'kryptnostic.logger'
   'kryptnostic.requests'
-  'kryptnostic.object-metadata'
   'kryptnostic.validators'
 ], (require) ->
 
@@ -15,13 +13,16 @@ define 'kryptnostic.key-storage-api', [
   Promise = require 'bluebird'
 
   # utils
-  Config   = require 'kryptnostic.configuration'
-  Logger   = require 'kryptnostic.logger'
-  Requests = require 'kryptnostic.requests'
+  Config     = require 'kryptnostic.configuration'
+  Logger     = require 'kryptnostic.logger'
+  Requests   = require 'kryptnostic.requests'
+  Validators = require 'kryptnostic.validators'
 
-  logger = Logger.get('KeyStorageApi')
+  { validateUuid, validateUuids } = Validators
 
   DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
+
+  logger = Logger.get('KeyStorageApi')
 
   keyStorageApi = -> Config.get('servicesUrlV2') + '/keys'
   saltUrl       = (userId) -> keyStorageApi() + '/salt/' + userId
@@ -42,6 +43,13 @@ define 'kryptnostic.key-storage-api', [
   rsaKeysUrl       = -> keyStorageApi() + '/rsa'
   rsaPublicKeyUrl  = -> rsaKeysUrl() + '/public'
   rsaPrivateKeyUrl = -> rsaKeysUrl() + '/private'
+
+  #
+  # crypto service endpoints
+  #
+
+  cryptoServiceUrl  = -> keyStorageApi() + '/cryptoservice'
+  cryptoServicesUrl = -> keyStorageApi() + '/cryptoservices'
 
   class KeyStorageApi
 
@@ -108,15 +116,43 @@ define 'kryptnostic.key-storage-api', [
         )
       )
 
-  #
-  # encrypted salt
-  #
+    #
+    # encrypted salt
+    #
 
-  getEncryptedSalt: (userId) ->
-    throw new Error('not yet implemented')
+    getEncryptedSalt: (userId) ->
+      throw new Error('not yet implemented')
 
-  setEncryptedSalt: (userId, blockCiphertext) ->
-    throw new Error('not yet implemented')
+    setEncryptedSalt: (userId, blockCiphertext) ->
+      throw new Error('not yet implemented')
 
+    #
+    # crypto services
+    #
+
+    getObjectCryptoService: (objectId) ->
+      throw new Error('not yet implemented')
+
+    getObjectCryptoServices: (objectIds) ->
+
+      if not validateUuids(objectIds)
+        Promise.resolve(null)
+
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method  : 'POST'
+            url     : cryptoServicesUrl()
+            data    : JSON.stringify(objectIds)
+            headers : _.clone(DEFAULT_HEADER)
+          })
+        )
+      )
+      .then (axiosResponse) ->
+        if axiosResponse? and axiosResponse.data?
+          # axiosResponse.data == Map<java.util.UUID, byte[]>
+          return axiosResponse.data
+        else
+          return null
 
   return KeyStorageApi

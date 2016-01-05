@@ -21,8 +21,6 @@ define 'kryptnostic.tree-loader', [
       @objectApi = new ObjectApi()
 
     loadTree: (objectIds, typeLoadLevels, loadDepth) ->
-      console.log('TreeLoader:loadTree() - typeLoadLevels: ')
-      console.log(typeLoadLevels)
       Promise.resolve()
       .then =>
         @objectApi.getObjectsByTypeAndLoadLevel(
@@ -33,17 +31,18 @@ define 'kryptnostic.tree-loader', [
       .then (objectMetadataTrees) ->
         # objectMetadataTrees == Map<java.util.UUID, com.kryptnostic.v2.storage.models.ObjectMetadataEncryptedNode>
         objectTreeNodes = {}
-        _.map(objectMetadataTrees, (node, objectId) =>
+        _.map(objectMetadataTrees, (node, objectId) ->
           if _.isObject(node)
 
             # sort children by timestamp
-            sortedChildren = _.sortBy(node.children, (child) =>
+            sortedChildren = _.sortBy(node.children, (child) ->
               return child.metadata.timeCreated
             )
-            _.map(sortedChildren, (child, index) =>
+            _.map(sortedChildren, (child, index) ->
               parentObjectId = node.metadata.id
               nodeId = ObjectUtils.createChildId(parentObjectId, index)
               child.metadata.nodeId = nodeId
+              return
             )
             objectTreeNodes[objectId] = new TreeNode(node)
         )

@@ -41,9 +41,9 @@ define 'kryptnostic.search-credential-service', [
       decrypt   : true
       id        : 'KryptnosticEngine.SearchPrivateKey'
     }
+    # the client FHE hash function never needs to be downloaded from the server, so we don't need a getter
     CLIENT_HASH_FUNCTION : {
       getKey    : (clientKeys) -> clientKeys.clientHashFunction
-      getter    : (api) -> api.getFHEHashFunction
       setter    : (api) -> api.setFHEHashFunction
       stage     : AuthenticationStage.CLIENT_HASH_GEN
       encrypt   : false
@@ -103,8 +103,11 @@ define 'kryptnostic.search-credential-service', [
 
         # create a map of CredentialType -> Promise<Credential>
         credentialPromises = _.mapValues(CredentialType, (credentialType) =>
-          loadCredential = credentialType.getter(@keyStorageApi)
-          return loadCredential()
+          if credentialType.getter?
+            loadCredential = credentialType.getter(@keyStorageApi)
+            return loadCredential()
+          else
+            return Promise.resolve()
         )
 
         # Promise.props() returns a Promise that is fulfilled when all the properties of the object are fulfilled,
@@ -136,7 +139,6 @@ define 'kryptnostic.search-credential-service', [
               # 'type' is they key into the CredentialType enum:
               #   - FHE_PRIVATE_KEY
               #   - SEARCH_PRIVATE_KEY
-              #   - CLIENT_HASH_FUNCTION
 
               type           = key
               credential     = value
@@ -155,16 +157,14 @@ define 'kryptnostic.search-credential-service', [
         @getStoredCredentials()
       .then (credentials) ->
         credentials    = _.compact(_.values(credentials))
-        expectedLength = _.size(_.values(CredentialType))
+        expectedLength = 2
 
         if _.isEmpty(credentials)
           return false
         else if credentials.length is expectedLength
           return true
         else
-          logger.error('user account is in a partially initialized state')
-          logger.error("expected #{expectedLength} credentials but got #{credentials.length}")
-          throw new Error 'credentials are in a partially initialized state'
+          return false
 
     initializeCredentials: (notifier) ->
       { clientKeys } = {}

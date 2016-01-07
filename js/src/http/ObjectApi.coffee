@@ -44,7 +44,7 @@ define 'kryptnostic.object-api', [
     getObject: (objectId) ->
 
       if not validateUuid(objectId)
-        Promise.resolve(null)
+        return Promise.resolve(null)
 
       Promise.resolve(
         @getObjects([objectId])
@@ -53,6 +53,10 @@ define 'kryptnostic.object-api', [
         return objects[objectId]
 
     getObjects: (objectIds) ->
+
+      if not validateUuids(objectIds)
+        return Promise.resolve(null)
+
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
@@ -75,10 +79,10 @@ define 'kryptnostic.object-api', [
         else
           return null
 
-    getVersionedObjectKey: (objectId) ->
+    getLatestVersionedObjectKey: (objectId) ->
 
       if not validateUuid(objectId)
-        Promise.resolve(null)
+        return Promise.resolve(null)
 
       Promise.resolve(
         axios(
@@ -98,7 +102,7 @@ define 'kryptnostic.object-api', [
     getObjectMetadata: (objectId) ->
 
       if not validateUuid(objectId)
-        Promise.resolve(null)
+        return Promise.resolve(null)
 
       Promise.resolve(
         axios(

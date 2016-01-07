@@ -39,6 +39,27 @@ define 'kryptnostic.validators', [
       if not validateUuid(uuid)
         return false
     )
+
+    return true
+
+  validateVersionedObjectKey = (versionedObjectKey) ->
+
+    if not _.isObject(versionedObjectKey)
+      return false
+
+    if not validateUuid(versionedObjectKey.objectId)
+      return false
+
+    if not _.isFinite(versionedObjectKey.objectVersion)
+      return false
+
+    return true
+
+  validateObjectCryptoService = (objectCryptoService) ->
+
+    if not _.isString(objectCryptoService) or _.isEmpty(objectCryptoService)
+      return false
+
     return true
 
   return {
@@ -48,4 +69,6 @@ define 'kryptnostic.validators', [
     validateUuids
     validateObjectType
     validateNonEmptyString
+    validateVersionedObjectKey
+    validateObjectCryptoService
   }

@@ -29,7 +29,6 @@ define 'kryptnostic.directory-api', [
   usersInRealmUrl  = -> Configuration.get('servicesUrl') + '/directory'
 
   saltUrl          = (keyId) -> Configuration.get('servicesUrlV2') + '/keys/salt/' + keyId
-  cryptoServiceUrlV2 = (objectId) -> Configuration.get('servicesUrlV2') + '/keys/cryptoservice/id/' + objectId
 
   log = Logger.get('DirectoryApi')
 
@@ -67,26 +66,6 @@ define 'kryptnostic.directory-api', [
         log.debug('getObjectCryptoService', { objectId })
         return serializedCryptoService
 
-    getObjectCryptoServiceV2: (objectId) ->
-      validateId(objectId)
-      cached = Cache.get( Cache.CRYPTO_SERVICES, objectId )
-      if cached?
-        return Promise.resolve()
-        .then ->
-          return cached
-      Promise.resolve()
-      .then ->
-        Promise.resolve(axios(Requests.wrapCredentials({
-          url    : cryptoServiceUrlV2(objectId)
-          method : 'GET'
-        })))
-      .then (response) ->
-        serializedCryptoService = response.data.data
-        if serializedCryptoService
-          Cache.store( Cache.CRYPTO_SERVICES, objectId, serializedCryptoService )
-        log.debug('getObjectCryptoServiceV2', { objectId })
-        return serializedCryptoService
-
     # stores a serialized cryptoservice for the requested object
     setObjectCryptoService: (objectId, byteBufferStr) ->
       Promise.resolve()
@@ -102,23 +81,6 @@ define 'kryptnostic.directory-api', [
         })))
       .then (response) ->
         log.debug('setObjectCryptoService', { objectId })
-        return response.data
-
-    # stores a serialized cryptoservice for the requested object
-    setObjectCryptoServiceV2: (objectId, byteBufferStr) ->
-      Promise.resolve()
-      .then ->
-        validateId(objectId)
-        validateCrytpoServiceByteBuffer(byteBufferStr)
-
-        Promise.resolve(axios(Requests.wrapCredentials({
-          url     : cryptoServiceUrlV2(objectId)
-          method  : 'POST'
-          data    : JSON.stringify({ data: btoa(byteBufferStr) })
-          headers : _.cloneDeep(DEFAULT_HEADERS)
-        })))
-      .then (response) ->
-        log.debug('setObjectCryptoServiceV2', { objectId })
         return response.data
 
     # gets encrypted RSA private keys for the current user

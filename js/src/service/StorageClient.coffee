@@ -11,6 +11,7 @@ define 'kryptnostic.storage-client', [
   'kryptnostic.search-indexing-service'
   'kryptnostic.create-object-request'
   'kryptnostic.credential-loader'
+  'kryptnostic.crypto-material'
 ], (require) ->
   'use strict'
 
@@ -18,6 +19,7 @@ define 'kryptnostic.storage-client', [
   Promise = require 'bluebird'
 
   # kryptnostic
+  CryptoMaterial        = require 'kryptnostic.crypto-material'
   CreateObjectRequest   = require 'kryptnostic.create-object-request'
   CryptoServiceLoader   = require 'kryptnostic.crypto-service-loader'
   KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
@@ -28,9 +30,9 @@ define 'kryptnostic.storage-client', [
 
   # utils
   Logger      = require 'kryptnostic.logger'
-  validators  = require 'kryptnostic.validators'
+  Validators  = require 'kryptnostic.validators'
 
-  { validateUuid } = validators
+  { validateUuid, validateUuids } = Validators
 
   logger = Logger.get('StorageClient')
 
@@ -47,18 +49,98 @@ define 'kryptnostic.storage-client', [
       @searchIndexingService = new SearchIndexingService()
       @credentialLoader      = new CredentialLoader()
 
+    getObject: (objectId, parentObjectId) ->
 
-    getObject : (id) ->
-      throw new Error('StorageClient:getObject() is deprecated')
+      if not validateUuid(objectId)
+        return Promise.resolve(null)
 
-    getObjectIds : ->
-      throw new Error('StorageClient:getObjectIds() is deprecated')
+      parentObjectKeyPromise = null
+      if parentObjectId?
+        parentObjectKeyPromise = @objectApi.getLatestVersionedObjectKey(parentObjectId)
 
-    getObjectMetadata : (id) ->
-      throw new Error('StorageClient:getObjectMetadata() is deprecated')
+      Promise.props({
+        objectKey       : @objectApi.getLatestVersionedObjectKey(objectId)
+        parentObjectKey : parentObjectKeyPromise
+      })
+      .then ({ objectKey, parentObjectKey }) =>
 
-    deleteObject : (id) ->
-      throw new Error('StorageClient:deleteObject() is deprecated')
+        cryptoServicePromise = null
+        if parentObjectKey?
+          cryptoServicePromise = @cryptoServiceLoader.getObjectCryptoServiceV2(parentObjectKey)
+        else
+          cryptoServicePromise = @cryptoServiceLoader.getObjectCryptoServiceV2(objectKey)
+
+        Promise.props({
+          blockCiphertext : @objectApi.getObjectAsBlockCiphertext(objectKey),
+          cryptoService   : cryptoServicePromise
+        })
+        .then ({ blockCiphertext, cryptoService }) ->
+          if blockCiphertext? and cryptoService?
+            decrypted = cryptoService.decrypt(blockCiphertext)
+            return decrypted
+          else
+            return null
+
+    getObjects: (objectIds) ->
+
+      objectKeyPromises = []
+      _.forEach(objectIds, (objectId) =>
+        objectKeyPromises.push(
+          @objectApi.getLatestVersionedObjectKey(objectId)
+        )
+      )
+
+      Promise.all(objectKeyPromises)
+      .then (objectKeys) =>
+
+        promises = []
+        _.forEach(objectKeys, (objectKey) =>
+          promise = Promise.props({
+            objectKey       : objectKey
+            cryptoService   : @cryptoServiceLoader.getObjectCryptoServiceV2(objectKey)
+            blockCiphertext : @objectApi.getObjectAsBlockCiphertext(objectKey)
+          })
+          promises.push(promise)
+        )
+
+        Promise.all(promises)
+        .then (resolvedPromises) =>
+
+          result = {}
+          _.forEach(resolvedPromises, (resolved) =>
+            objectKey = resolved.objectKey
+            cryptoService = resolved.cryptoService
+            blockCiphertext = resolved.blockCiphertext
+            if blockCiphertext? and cryptoService?
+              decrypted = cryptoService.decrypt(blockCiphertext)
+              result[objectKey.objectId] = decrypted
+          )
+          return result
+
+    getChildObjects: (objectIds, parentObjectId) ->
+
+      if not validateUuids(objectIds) or not validateUuid(parentObjectId)
+        return Promise.resolve(null)
+
+      Promise.resolve(
+        @objectApi.getLatestVersionedObjectKey(parentObjectId)
+      )
+      .then (parentObjectKey) =>
+
+        Promise.props({
+          cryptoService          : @cryptoServiceLoader.getObjectCryptoServiceV2(parentObjectKey)
+          objectBlockCiphertexts : @objectApi.getObjects(objectIds)
+        })
+        .then ({ cryptoService, objectBlockCiphertexts }) =>
+
+          childObjects = {}
+          _.forEach(objectIds, (objectId, index) =>
+            blockCiphertext = objectBlockCiphertexts[objectId]
+            if blockCiphertext? and cryptoService?
+              decrypted = cryptoService.decrypt(blockCiphertext)
+              childObjects[objectId] = decrypted
+          )
+          return childObjects
 
     storeObject: (storageRequest, objectSearchPair) ->
 
@@ -73,7 +155,7 @@ define 'kryptnostic.storage-client', [
 
       parentObjectKeyPromise = null
       if validateUuid(storageRequest.parentId)
-        parentObjectKeyPromise = @objectApi.getVersionedObjectKey(storageRequest.parentId)
+        parentObjectKeyPromise = @objectApi.getLatestVersionedObjectKey(storageRequest.parentId)
 
       Promise.join(
         typeIdPromise,
@@ -81,8 +163,8 @@ define 'kryptnostic.storage-client', [
         (typeId, parentObjectKey) =>
 
           createObjectRequest = new CreateObjectRequest({
-            type: typeId
-            requiredCryptoMats: [ 'IV', 'CONTENTS' ]
+            type: typeId,
+            requiredCryptoMats: CryptoMaterial.DEFAULT_REQUIRED_CRYPTO_MATERIAL
           })
 
           if parentObjectKey?
@@ -91,31 +173,31 @@ define 'kryptnostic.storage-client', [
           Promise.resolve(
             @objectApi.createObject(createObjectRequest)
           )
-          .then (versionedObjectKey) =>
-            parentObjectId = if storageRequest.parentId then storageRequest.parentId else versionedObjectKey.objectId
+          .then (objectKeyForNewlyCreatedObject) =>
+            parentObjectKey = if parentObjectKey? then parentObjectKey else objectKeyForNewlyCreatedObject
             Promise.resolve(
               @cryptoServiceLoader.getObjectCryptoServiceV2(
-                parentObjectId,
+                parentObjectKey,
                 { expectMiss : true }
               )
             )
             .then (cryptoService) =>
-              @encrypt(versionedObjectKey.objectId, storageRequest.body, cryptoService)
+              @encrypt(objectKeyForNewlyCreatedObject.objectId, storageRequest.body, cryptoService)
             .then (encrypted) =>
               # for now, we'll encrypt the entire object, but we'll need to support encrypting an object in chunks
               # @submitObjectBlocks(encrypted)
               blockCiphertext = encrypted.body.data[0].block
-              @objectApi.setObjectFromBlockCiphertext(versionedObjectKey, blockCiphertext)
+              @objectApi.setObjectFromBlockCiphertext(objectKeyForNewlyCreatedObject, blockCiphertext)
             .then =>
-              objectIdPair = {
-                objectId       : versionedObjectKey.objectId,
-                parentObjectId : parentObjectId
-              }
-              @searchIndexingService.submit({ storageRequest, objectIdPair, objectSearchPair })
+              @searchIndexingService.submit(
+                storageRequest,
+                objectKeyForNewlyCreatedObject,
+                parentObjectKey,
+                objectSearchPair
+              )
             .then (objectSearchPair) ->
-              storageResponse.objectKey = versionedObjectKey
+              storageResponse.objectKey = objectKeyForNewlyCreatedObject
               storageResponse.objectSearchPair = objectSearchPair
-              storageResponse.parentObjectId = parentObjectId
               return storageResponse
       )
 

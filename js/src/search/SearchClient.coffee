@@ -85,10 +85,12 @@ define 'kryptnostic.search-client', [
 
       # _.map() will produce an Array of Promises for each encryptable
       encryptablePromises = _.map(encryptables, (encryptable) =>
-        Promise.resolve()
-        .then =>
+        Promise.resolve(
+          @objectApi.getLatestVersionedObjectKey(encryptable.key)
+        )
+        .then (versionedObjectKey) =>
           @cryptoServiceLoader.getObjectCryptoServiceV2(
-            encryptable.key,
+            versionedObjectKey,
             { expectMiss: false }
           )
         .then (objectCryptoService) =>

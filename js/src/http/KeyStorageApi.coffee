@@ -1,11 +1,12 @@
 define 'kryptnostic.key-storage-api', [
-  'require'
-  'axios'
-  'bluebird'
-  'kryptnostic.configuration'
-  'kryptnostic.logger'
-  'kryptnostic.requests'
-  'kryptnostic.validators'
+  'require',
+  'axios',
+  'bluebird',
+  'kryptnostic.caching-service',
+  'kryptnostic.configuration',
+  'kryptnostic.logger',
+  'kryptnostic.requests',
+  'kryptnostic.validators',
 ], (require) ->
 
   # libraries
@@ -13,14 +14,20 @@ define 'kryptnostic.key-storage-api', [
   Promise = require 'bluebird'
 
   # utils
+  Cache      = require 'kryptnostic.caching-service'
   Config     = require 'kryptnostic.configuration'
   Logger     = require 'kryptnostic.logger'
   Requests   = require 'kryptnostic.requests'
   Validators = require 'kryptnostic.validators'
 
-  { validateUuid, validateUuids } = Validators
+  {
+    validateUuid,
+    validateUuids,
+    validateVersionedObjectKey,
+    validateObjectCryptoService
+  } = Validators
 
-  DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
+  DEFAULT_HEADERS = { 'Content-Type' : 'application/json' }
 
   logger = Logger.get('KeyStorageApi')
 
@@ -48,8 +55,15 @@ define 'kryptnostic.key-storage-api', [
   # crypto service endpoints
   #
 
-  cryptoServiceUrl  = -> keyStorageApi() + '/cryptoservice'
-  cryptoServicesUrl = -> keyStorageApi() + '/cryptoservices'
+  cryptoServiceUrl  = (objectId, objectVersion) ->
+    keyStorageApi() + '/cryptoservice/id/' + objectId + '/' + objectVersion
+
+  #
+  # helper functions
+  #
+
+  toCacheId = (versionedObjectKey) ->
+    return versionedObjectKey.objectId + '/' + versionedObjectKey.objectVersion
 
   class KeyStorageApi
 
@@ -66,10 +80,10 @@ define 'kryptnostic.key-storage-api', [
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
-            method  : 'POST'
-            url     : fhePrivateKeyUrl()
-            data    : fhePrivateKey
-            headers : _.clone(DEFAULT_HEADER)
+            method  : 'POST',
+            url     : fhePrivateKeyUrl(),
+            data    : fhePrivateKey,
+            headers : DEFAULT_HEADERS,
           })
         )
       )
@@ -87,10 +101,10 @@ define 'kryptnostic.key-storage-api', [
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
-            method  : 'POST'
-            url     : fheSearchPrivateKeyUrl()
-            data    : fheSearchPrivateKey
-            headers : _.clone(DEFAULT_HEADER)
+            method  : 'POST',
+            url     : fheSearchPrivateKeyUrl(),
+            data    : fheSearchPrivateKey,
+            headers : DEFAULT_HEADERS
           })
         )
       )
@@ -108,10 +122,10 @@ define 'kryptnostic.key-storage-api', [
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
-            method  : 'POST'
-            url     : fheHashUrl()
-            data    : fheHashFunction
-            headers : _.clone(DEFAULT_HEADER)
+            method  : 'POST',
+            url     : fheHashUrl(),
+            data    : fheHashFunction,
+            headers : DEFAULT_HEADERS
           })
         )
       )
@@ -130,29 +144,67 @@ define 'kryptnostic.key-storage-api', [
     # crypto services
     #
 
-    getObjectCryptoService: (objectId) ->
+    getAesEncryptedObjectCryptoService: (versionedObjectKey) ->
       throw new Error('not yet implemented')
 
-    getObjectCryptoServices: (objectIds) ->
+    setAesEncryptedObjectCryptoService: (versionedObjectKey, serializedObjectCryptoService) ->
+      throw new Error('not yet implemented')
 
-      if not validateUuids(objectIds)
-        Promise.resolve(null)
+    #
+    # @deprecated - use getAesEncryptedObjectCryptoService() instead
+    #
+    getObjectCryptoService: (versionedObjectKey) ->
+
+      if not validateVersionedObjectKey(versionedObjectKey)
+        return Promise.resolve(null)
+
+      objectCacheId = toCacheId(versionedObjectKey)
+      cachedObjectCryptoService = Cache.get(Cache.CRYPTO_SERVICES, objectCacheId)
+
+      if cachedObjectCryptoService?
+        return Promise.resolve(cachedObjectCryptoService)
 
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
-            method  : 'POST'
-            url     : cryptoServicesUrl()
-            data    : JSON.stringify(objectIds)
-            headers : _.clone(DEFAULT_HEADER)
+            method : 'GET',
+            url    : cryptoServiceUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
           })
         )
       )
       .then (axiosResponse) ->
         if axiosResponse? and axiosResponse.data?
-          # axiosResponse.data == Map<java.util.UUID, byte[]>
-          return axiosResponse.data
+          # axiosResponse.data == Base64 encoded byte[]
+          encodedObjectCryptoService = axiosResponse.data
+          Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, encodedObjectCryptoService)
+          return encodedObjectCryptoService
         else
           return null
+
+    #
+    # @deprecated - use setAesEncryptedObjectCryptoService() instead
+    #
+    setObjectCryptoService: (versionedObjectKey, objectCryptoService) ->
+
+      if not validateVersionedObjectKey(versionedObjectKey) or
+          not validateObjectCryptoService(objectCryptoService)
+        return Promise.resolve(null)
+
+      encodedObjectCryptoService = btoa(objectCryptoService)
+
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method  : 'PUT',
+            url     : cryptoServiceUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion),
+            data    : encodedObjectCryptoService,
+            headers : DEFAULT_HEADERS
+          })
+        )
+      )
+      .then ->
+        objectCacheId = toCacheId(versionedObjectKey)
+        Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, encodedObjectCryptoService)
+        return
 
   return KeyStorageApi

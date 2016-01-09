@@ -49,7 +49,7 @@ define 'kryptnostic.sharing-client', [
       @directoryApi            = new DirectoryApi()
       @objectApi               = new ObjectApi()
       @cryptoServiceMarshaller = new CryptoServiceMarshaller()
-      @cryptoServiceLoader     = CryptoServiceLoader.get()
+      @cryptoServiceLoader     = new CryptoServiceLoader()
 
     #
     # shares an object with the given object ID with the given set of user UUIDs

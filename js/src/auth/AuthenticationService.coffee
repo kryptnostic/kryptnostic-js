@@ -5,6 +5,7 @@ define 'kryptnostic.authentication-service', [
   'kryptnostic.configuration'
   'kryptnostic.credential-provider-loader'
   'kryptnostic.credential-service'
+  'kryptnostic.crypto-service-loader'
   'kryptnostic.search-credential-service'
   'kryptnostic.authentication-stage'
   'kryptnostic.user-directory-api'
@@ -16,6 +17,7 @@ define 'kryptnostic.authentication-service', [
   Config                    = require 'kryptnostic.configuration'
   CredentialProviderLoader  = require 'kryptnostic.credential-provider-loader'
   CredentialService         = require 'kryptnostic.credential-service'
+  CryptoServiceLoader       = require 'kryptnostic.crypto-service-loader'
   SearchCredentialService   = require 'kryptnostic.search-credential-service'
   AuthenticationStage       = require 'kryptnostic.authentication-stage'
   UserDirectoryApi          = require 'kryptnostic.user-directory-api'
@@ -57,6 +59,8 @@ define 'kryptnostic.authentication-service', [
       .then (_keypair) ->
         keypair = _keypair
         credentialProvider.store { principal, credential, keypair }
+      .then ->
+        CryptoServiceLoader.initializeMasterAesCryptoService()
       .then ->
         AuthenticationService.initializeEngine()
       .then ->

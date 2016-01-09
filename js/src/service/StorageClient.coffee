@@ -45,7 +45,7 @@ define 'kryptnostic.storage-client', [
       logger.info 'storage client created'
       @objectApi             = new ObjectApi()
       @objectListingApi      = new ObjectListingApi()
-      @cryptoServiceLoader   = CryptoServiceLoader.get()
+      @cryptoServiceLoader   = new CryptoServiceLoader()
       @searchIndexingService = new SearchIndexingService()
       @credentialLoader      = new CredentialLoader()
 

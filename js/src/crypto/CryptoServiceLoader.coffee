@@ -44,9 +44,37 @@ define 'kryptnostic.crypto-service-loader', [
       @credentialLoader = new CredentialLoader()
       @cache            = {}
 
+    @initializeMasterAesCryptoService: ->
+
+      Promise.resolve(
+        KeyStorageApi.getMasterAesCryptoService()
+      )
+      .then (masterAesCryptoService) =>
+
+        if not masterAesCryptoService
+
+          masterAesCryptoService = new AesCryptoService(Cypher.AES_CTR_128)
+          cryptoServiceMarshaller = new CryptoServiceMarshaller()
+          marshalledCryptoService = cryptoServiceMarshaller.marshall(masterAesCryptoService)
+
+          credentialLoader = new CredentialLoader()
+          rsaCryptoService = new RsaCryptoService(credentialLoader.getCredentials().keypair)
+          encryptedMasterAesCryptoService = rsaCryptoService.encrypt(marshalledCryptoService)
+
+          return KeyStorageApi.setMasterAesCryptoService(encryptedMasterAesCryptoService)
+
     getRsaCryptoService: ->
       { keypair } = @credentialLoader.getCredentials()
       return new RsaCryptoService(keypair)
+
+    getMasterAesCryptoService: ->
+      Promise.resolve(
+        KeyStorageApi.getMasterAesCryptoService()
+      )
+      .then (serializedCryptoService) =>
+        decryptedCryptoService = @getRsaCryptoService().decrypt(serializedCryptoService)
+        masterAesCryptoService = @marshaller.unmarshall(decryptedCryptoService)
+        return masterAesCryptoService
 
     getObjectCryptoService: (id, options) ->
       options        = _.defaults({}, options, DEFAULT_OPTS)
@@ -70,8 +98,9 @@ define 'kryptnostic.crypto-service-loader', [
         else if !serializedCryptoService && !expectMiss
           throw new Error 'no cryptoservice exists for this object, but a miss was not expected'
         else
-          rsaCryptoService = @getRsaCryptoService()
-          cryptoService = @marshaller.unmarshall(serializedCryptoService, rsaCryptoService)
+          decodedCryptoService = atob(serializedCryptoService)
+          deflatedCryptoService = @getRsaCryptoService().decrypt(decodedCryptoService)
+          cryptoService = @marshaller.unmarshall(deflatedCryptoService)
         @cache[id] = cryptoService
         return cryptoService
 
@@ -85,24 +114,25 @@ define 'kryptnostic.crypto-service-loader', [
       if @cache[objectId]
         return Promise.resolve(@cache[objectId])
 
-      Promise.resolve(
-        @keyStorageApi.getObjectCryptoService(versionedObjectKey)
-      )
-      .then (serializedCryptoService) =>
+      Promise.props({
+        masterAesCryptoService       : @getMasterAesCryptoService()
+        cryptoServiceBlockCiphertext : @keyStorageApi.getAesEncryptedObjectCryptoService(versionedObjectKey)
+      })
+      .then ({ masterAesCryptoService, cryptoServiceBlockCiphertext }) =>
         objectCryptoService = {}
-        if !serializedCryptoService && expectMiss
+        if !cryptoServiceBlockCiphertext && expectMiss
           log.info('no cryptoService exists for this object. creating one on-the-fly', { objectId })
           objectCryptoService = new AesCryptoService( Cypher.AES_CTR_128 )
-          @setObjectCryptoServiceV2(versionedObjectKey, objectCryptoService)
-        else if !serializedCryptoService && !expectMiss
+          @setObjectCryptoServiceV2(versionedObjectKey, objectCryptoService, masterAesCryptoService)
+        else if !cryptoServiceBlockCiphertext && !expectMiss
           console.log('CryptoServiceLoader:getObjectCryptoServiceV2()')
           console.log(objectId)
           console.error('no cryptoservice exists for this object, but a miss was not expected')
           return null
         else
-          rsaCryptoService = @getRsaCryptoService()
-          objectCryptoService = @marshaller.unmarshall(serializedCryptoService, rsaCryptoService)
-        @cache[objectId] = objectCryptoService
+          decryptedCryptoService = masterAesCryptoService.decrypt(cryptoServiceBlockCiphertext)
+          objectCryptoService = @marshaller.unmarshall(decryptedCryptoService, masterAesCryptoService)
+          @cache[objectId] = objectCryptoService
         return objectCryptoService
 
     setObjectCryptoService: (id, cryptoService) ->
@@ -110,27 +140,23 @@ define 'kryptnostic.crypto-service-loader', [
         throw new Error('serialization only implemented for AesCryptoService')
 
       marshalled             = @marshaller.marshall(cryptoService)
-      rsaCryptoService       = @getRsaCryptoService()
-      encryptedCryptoService = rsaCryptoService.encrypt(marshalled)
+      encryptedCryptoService = @getRsaCryptoService().encrypt(marshalled)
 
       return @directoryApi.setObjectCryptoService(id, encryptedCryptoService)
 
-    setObjectCryptoServiceV2: (versionedObjectKey, objectCryptoService) ->
+    setObjectCryptoServiceV2: (versionedObjectKey, objectCryptoService, masterAesCryptoService) ->
       console.log('CryptoServiceLoader:setObjectCryptoServiceV2()')
       unless objectCryptoService.constructor.name is 'AesCryptoService'
-        throw new Error('serialization only implemented for AesCryptoService')
+        throw new Error('support is only implemented for AesCryptoService')
 
-      marshalled             = @marshaller.marshall(objectCryptoService)
-      rsaCryptoService       = @getRsaCryptoService()
-      encryptedCryptoService = rsaCryptoService.encrypt(marshalled)
+      marshalledCryptoService = @marshaller.marshall(objectCryptoService)
+      encryptedCryptoService  = masterAesCryptoService.encrypt(marshalledCryptoService)
 
-      return @keyStorageApi.setObjectCryptoService(versionedObjectKey, encryptedCryptoService)
+      Promise.resolve(
+        @keyStorageApi.setAesEncryptedObjectCryptoService(versionedObjectKey, encryptedCryptoService)
+      )
+      .then =>
+        @cache[versionedObjectKey.objectId] = objectCryptoService
+        return
 
-  cryptoServiceLoader = new CryptoServiceLoader()
-
-  get = ->
-    return cryptoServiceLoader
-
-  return {
-    get
-  }
+  return CryptoServiceLoader

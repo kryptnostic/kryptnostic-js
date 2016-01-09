@@ -55,8 +55,12 @@ define 'kryptnostic.key-storage-api', [
   # crypto service endpoints
   #
 
-  cryptoServiceUrl  = (objectId, objectVersion) ->
-    keyStorageApi() + '/cryptoservice/id/' + objectId + '/' + objectVersion
+  # cryptoServiceUrl  = (objectId, objectVersion) ->
+  #   keyStorageApi() + '/cryptoservice/id/' + objectId + '/' + objectVersion
+
+  aesUrl = -> keyStorageApi() + '/aes'
+  aesCryptoServiceUrl = (objectId, objectVersion) ->
+    aesUrl() + '/cryptoservice/id/' + objectId + '/' + objectVersion
 
   #
   # helper functions
@@ -144,16 +148,55 @@ define 'kryptnostic.key-storage-api', [
     # crypto services
     #
 
+    @getMasterAesCryptoService: ->
+
+      objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ID
+      cachedObjectCryptoService = Cache.get(Cache.CRYPTO_SERVICES, objectCacheId)
+
+      if cachedObjectCryptoService
+        return Promise.resolve(cachedObjectCryptoService)
+
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method : 'GET'
+            url    : aesUrl()
+          })
+        )
+      )
+      .then (axiosResponse) ->
+        if axiosResponse and axiosResponse.data
+          # axiosResponse.data == Base64 encoded byte[]
+          masterAesCryptoService = atob(axiosResponse.data)
+          objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ID
+          Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, masterAesCryptoService)
+          return masterAesCryptoService
+        else
+          return null
+
+    @setMasterAesCryptoService: (masterAesCryptoService) ->
+
+      if not masterAesCryptoService
+        return Promise.resolve(null)
+
+      encodedMasterAesCryptoService = btoa(masterAesCryptoService)
+
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method  : 'PUT'
+            url     : aesUrl()
+            data    : encodedMasterAesCryptoService
+            headers : DEFAULT_HEADERS
+          })
+        )
+      )
+      .then ->
+        objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ID
+        Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, masterAesCryptoService)
+        return
+
     getAesEncryptedObjectCryptoService: (versionedObjectKey) ->
-      throw new Error('not yet implemented')
-
-    setAesEncryptedObjectCryptoService: (versionedObjectKey, serializedObjectCryptoService) ->
-      throw new Error('not yet implemented')
-
-    #
-    # @deprecated - use getAesEncryptedObjectCryptoService() instead
-    #
-    getObjectCryptoService: (versionedObjectKey) ->
 
       if not validateVersionedObjectKey(versionedObjectKey)
         return Promise.resolve(null)
@@ -161,50 +204,37 @@ define 'kryptnostic.key-storage-api', [
       objectCacheId = toCacheId(versionedObjectKey)
       cachedObjectCryptoService = Cache.get(Cache.CRYPTO_SERVICES, objectCacheId)
 
-      if cachedObjectCryptoService?
+      if cachedObjectCryptoService
         return Promise.resolve(cachedObjectCryptoService)
 
-      Promise.resolve(
-        axios(
-          Requests.wrapCredentials({
-            method : 'GET',
-            url    : cryptoServiceUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
-          })
-        )
+      Requests.getBlockCiphertextFromUrl(
+        aesCryptoServiceUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
       )
-      .then (axiosResponse) ->
-        if axiosResponse? and axiosResponse.data?
-          # axiosResponse.data == Base64 encoded byte[]
-          encodedObjectCryptoService = axiosResponse.data
-          Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, encodedObjectCryptoService)
-          return encodedObjectCryptoService
+      .then (objectCryptoServiceBlockCiphertext) ->
+        if objectCryptoServiceBlockCiphertext
+          Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, objectCryptoServiceBlockCiphertext)
+          return objectCryptoServiceBlockCiphertext
         else
           return null
 
-    #
-    # @deprecated - use setAesEncryptedObjectCryptoService() instead
-    #
-    setObjectCryptoService: (versionedObjectKey, objectCryptoService) ->
+    setAesEncryptedObjectCryptoService: (versionedObjectKey, objectCryptoServiceBlockCiphertext) ->
 
-      if not validateVersionedObjectKey(versionedObjectKey) or
-          not validateObjectCryptoService(objectCryptoService)
+      if not validateVersionedObjectKey(versionedObjectKey)
         return Promise.resolve(null)
-
-      encodedObjectCryptoService = btoa(objectCryptoService)
 
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
-            method  : 'PUT',
-            url     : cryptoServiceUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion),
-            data    : encodedObjectCryptoService,
+            method  : 'PUT'
+            url     : aesCryptoServiceUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
+            data    : JSON.stringify(objectCryptoServiceBlockCiphertext)
             headers : DEFAULT_HEADERS
           })
         )
       )
       .then ->
         objectCacheId = toCacheId(versionedObjectKey)
-        Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, encodedObjectCryptoService)
+        Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, objectCryptoServiceBlockCiphertext)
         return
 
   return KeyStorageApi

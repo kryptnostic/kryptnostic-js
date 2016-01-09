@@ -45,7 +45,7 @@ define 'kryptnostic.search-indexing-service', [
   class SearchIndexingService
 
     constructor : ->
-      @cryptoServiceLoader  = CryptoServiceLoader.get()
+      @cryptoServiceLoader  = new CryptoServiceLoader()
       @metadataApi          = new MetadataApi()
       @objectApi            = new ObjectApi()
       @sharingApi           = new SharingApi()

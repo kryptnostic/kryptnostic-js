@@ -37,7 +37,7 @@ define 'kryptnostic.search-client', [
   class SearchClient
 
     constructor: ->
-      @cryptoServiceLoader = CryptoServiceLoader.get()
+      @cryptoServiceLoader = new CryptoServiceLoader()
       @searchApi           = new SearchApi()
       @hashFunction        = HashFunction.MURMUR3_128
 

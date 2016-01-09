@@ -63,7 +63,7 @@ define 'kryptnostic.search-credential-service', [
     constructor: ->
       @keyStorageApi       = new KeyStorageApi()
       @searchKeyGenerator  = new SearchKeyGenerator()
-      @cryptoServiceLoader = CryptoServiceLoader.get()
+      @cryptoServiceLoader = new CryptoServiceLoader()
 
     # initializes keys if needed.
     ensureCredentialsInitialized: ( notifier = -> ) ->

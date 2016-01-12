@@ -5,7 +5,15 @@ define 'kryptnostic.salt-generator', [
 
   Forge = require 'forge'
 
+  # WebCrypto API
+  webCryptoApi = null
+  if window.crypto?.subtle? or window.msCrypto?.subtle?
+    webCryptoApi = window.crypto or window.msCrypto
+
   generateSalt = (byteCount) ->
-    return Forge.random.getBytesSync(byteCount)
+    if webCryptoApi
+      return webCryptoApi.getRandomValues(new Uint8Array(byteCount))
+    else
+      return Forge.random.getBytesSync(byteCount)
 
   return { generateSalt }

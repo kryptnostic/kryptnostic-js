@@ -1,5 +1,6 @@
 define 'kryptnostic.credential-service', [
   'require'
+  'bluebird'
   'forge'
   'kryptnostic.logger'
   'kryptnostic.public-key-envelope'
@@ -48,27 +49,38 @@ define 'kryptnostic.credential-service', [
       .then =>
         KeyStorageApi.getEncryptedSalt(principal)
       .then (encryptedSalt) ->
-        return CredentialService.derive({ encryptedSalt, password })
+        Promise.resolve(
+          CredentialService.derive({ encryptedSalt, password })
+        )
+        .then (credential) ->
+          return credential
 
     @derive : ({ encryptedSalt, password }) ->
       passwordCrypto = new PasswordCryptoService()
-
-      iterations = DEFAULT_ITERATIONS
-      keySize    = DEFAULT_KEY_SIZE / BITS_PER_BYTE
-      salt       = passwordCrypto.decrypt(encryptedSalt, password)
-      md         = Forge.sha1.create()
-      derived    = Forge.pkcs5.pbkdf2(password, salt, iterations, keySize, md)
-      hexDerived = Forge.util.bytesToHex(derived)
-
-      return hexDerived
+      Promise.resolve(
+        passwordCrypto.decrypt(encryptedSalt, password)
+      )
+      .then (salt) ->
+        iterations = DEFAULT_ITERATIONS
+        keySize    = DEFAULT_KEY_SIZE / BITS_PER_BYTE
+        md         = Forge.sha1.create()
+        derived    = Forge.pkcs5.pbkdf2(password, salt, iterations, keySize, md)
+        hexDerived = Forge.util.bytesToHex(derived)
+        return hexDerived
 
     @generateCredentialPair : ({ password }) ->
       log.info('generating a new credential pair')
       salt           = SaltGenerator.generateSalt(DEFAULT_KEY_SIZE / BITS_PER_BYTE)
       passwordCrypto = new PasswordCryptoService()
-      encryptedSalt  = passwordCrypto.encrypt(salt, password)
-      credential     = CredentialService.derive({ password, encryptedSalt })
-      return { credential, encryptedSalt }
+      Promise.resolve(
+        passwordCrypto.encrypt(salt, password)
+      )
+      .then (encryptedSalt) ->
+        Promise.resolve(
+          CredentialService.derive({ encryptedSalt, password })
+        )
+        .then (credential) ->
+          return { credential, encryptedSalt }
 
     initializeSalt : ({ uuid, encryptedSalt, credential }) ->
       Promise.resolve()
@@ -84,28 +96,28 @@ define 'kryptnostic.credential-service', [
         Promise.resolve(notifier(AuthenticationStage.RSA_KEYGEN))
       .then =>
         @rsaKeyGenerator.generateKeypair()
-      .then (keypairBuffer) ->
+      .then (keypairBuffer) =>
         passwordCrypto       = new PasswordCryptoService()
-
         serializedPrivateKey = keypairBuffer.privateKey.data
-        privateKey           = passwordCrypto.encrypt(serializedPrivateKey, password)
-
         serializedPublicKey  = keypairBuffer.publicKey.data
-        publicKey            = PublicKeyEnvelope.createFromBuffer(serializedPublicKey)
-
-        keypair              = {}
-        privateKeyAsn1       = Forge.asn1.fromDer(serializedPrivateKey)
-        keypair.privateKey   = Forge.pki.privateKeyFromAsn1(privateKeyAsn1)
-        publicKeyAsn1        = Forge.asn1.fromDer(serializedPublicKey)
-        keypair.publicKey    = Forge.pki.publicKeyFromAsn1(publicKeyAsn1)
-        return keypair
-      .then =>
-        KeyStorageApi.setRSAPrivateKey(privateKey)
-      .then =>
-        KeyStorageApi.setRSAPublicKey(publicKey)
-      .then ->
-        log.info('keypair initialization complete')
-        return keypair
+        Promise.resolve(
+          passwordCrypto.encrypt(serializedPrivateKey, password)
+        )
+        .then (_privateKey) =>
+          keypair            = {}
+          privateKey         = _privateKey
+          publicKey          = PublicKeyEnvelope.createFromBuffer(serializedPublicKey)
+          privateKeyAsn1     = Forge.asn1.fromDer(serializedPrivateKey)
+          keypair.privateKey = Forge.pki.privateKeyFromAsn1(privateKeyAsn1)
+          publicKeyAsn1      = Forge.asn1.fromDer(serializedPublicKey)
+          keypair.publicKey  = Forge.pki.publicKeyFromAsn1(publicKeyAsn1)
+        .then =>
+          KeyStorageApi.setRSAPrivateKey(privateKey)
+        .then =>
+          KeyStorageApi.setRSAPublicKey(publicKey)
+        .then ->
+          log.info('keypair initialization complete')
+          return keypair
       .catch (e) ->
         log.error(e)
         log.error('keypair generation failed!', e)
@@ -125,12 +137,14 @@ define 'kryptnostic.credential-service', [
         else
           log.info('using existing keypair')
           passwordCrypto   = new PasswordCryptoService()
-          privateKeyBytes  = passwordCrypto.decrypt(blockCiphertext, password)
-          privateKeyBuffer = Forge.util.createBuffer(privateKeyBytes, 'raw')
-          privateKeyAsn1   = Forge.asn1.fromDer(privateKeyBuffer)
-          privateKey       = Forge.pki.privateKeyFromAsn1(privateKeyAsn1)
-          publicKey        = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e)
-
-          return { privateKey, publicKey }
+          Promise.resolve(
+            passwordCrypto.decrypt(blockCiphertext, password)
+          )
+          .then (privateKeyBytes) ->
+            privateKeyBuffer = Forge.util.createBuffer(privateKeyBytes, 'raw')
+            privateKeyAsn1   = Forge.asn1.fromDer(privateKeyBuffer)
+            privateKey       = Forge.pki.privateKeyFromAsn1(privateKeyAsn1)
+            publicKey        = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e)
+            return { privateKey, publicKey }
 
   return CredentialService

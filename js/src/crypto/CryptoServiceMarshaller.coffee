@@ -1,16 +1,19 @@
 define 'kryptnostic.crypto-service-marshaller', [
-  'require'
+  'require',
+  'kryptnostic.aes-crypto-service',
+  'kryptnostic.binary-utils',
   'kryptnostic.deflating-marshaller'
-  'kryptnostic.aes-crypto-service'
 ], (require) ->
 
-  DeflatingMarshaller = require 'kryptnostic.deflating-marshaller'
   AesCryptoService    = require 'kryptnostic.aes-crypto-service'
+  BinaryUtils         = require 'kryptnostic.binary-utils'
+  DeflatingMarshaller = require 'kryptnostic.deflating-marshaller'
 
-  #
-  # Service for serializing and marshalling CryptoServices using the DeflatingMarshaller.
-  # Author: rbuckheit
-  #
+  # WebCrypto API
+  webCryptoApi = null
+  if window.crypto?.subtle? or window.msCrypto?.subtle?
+    webCryptoApi = window.crypto or window.msCrypto
+
   class CryptoServiceMarshaller
 
     constructor: ->
@@ -26,21 +29,53 @@ define 'kryptnostic.crypto-service-marshaller', [
       if !cypher
         throw new Error 'cypher cannot be blank'
 
-      rawCryptoService        = { cypher, key: btoa(key) }
-      serializedCryptoService = JSON.stringify(rawCryptoService)
-      return @deflatingMarshaller.marshall(serializedCryptoService)
+      Promise.resolve()
+      .then ->
+        if webCryptoApi
+          return webCryptoApi.subtle.exportKey(
+            'raw',
+            key
+          )
+          .then (rawKeyAsArrayBuffer) =>
+            rawKeyAsUint8Array = new Uint8Array(rawKeyAsArrayBuffer)
+            return BinaryUtils.uint8ToBase64(rawKeyAsUint8Array)
+        else
+          return btoa(key)
+      .then (rawKey) =>
+        rawCryptoService = {
+          cypher,
+          key: rawKey
+        }
+        serializedCryptoService = JSON.stringify(rawCryptoService)
+        return @deflatingMarshaller.marshall(serializedCryptoService)
 
     unmarshall: (deflatedCryptoService) ->
 
       inflatedCryptoService     = @deflatingMarshaller.unmarshall(deflatedCryptoService)
       decompressedCryptoService = JSON.parse(inflatedCryptoService)
 
-      objectCryptoService = new AesCryptoService(
-        decompressedCryptoService.cypher,
-        atob(decompressedCryptoService.key)
-      )
-
-      return objectCryptoService
+      Promise.resolve()
+      .then ->
+        key = atob(decompressedCryptoService.key)
+        if webCryptoApi
+          keyAsUint8Array = BinaryUtils.stringToUint8(key)
+          return Promise.resolve(
+            webCryptoApi.subtle.importKey(
+              'raw',
+              keyAsUint8Array,
+              { name: decompressedCryptoService.cypher.algorithm },
+              true,
+              ['encrypt', 'decrypt']
+            )
+          )
+        else
+          return key
+      .then (key) ->
+        objectCryptoService = new AesCryptoService(
+          decompressedCryptoService.cypher,
+          key
+        )
+        return objectCryptoService
 
 
   return CryptoServiceMarshaller

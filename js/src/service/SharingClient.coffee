@@ -76,38 +76,43 @@ define 'kryptnostic.sharing-client', [
           (objectSearchPair, objectCryptoService, uuidsToRsaPublicKeys) =>
 
             # transform RSA public key to Base64 seal
-            seals = _.mapValues(uuidsToRsaPublicKeys, (rsaPublicKey) =>
-              rsaCryptoService = new RsaCryptoService({
-                publicKey: rsaPublicKey
-              })
-              marshalledCrypto = @cryptoServiceMarshaller.marshall(objectCryptoService)
-              seal             = rsaCryptoService.encrypt(marshalledCrypto)
-              sealBase64       = btoa(seal)
-              return sealBase64
+            sealPromises = _.mapValues(uuidsToRsaPublicKeys, (rsaPublicKey) =>
+              Promise.resolve(
+                @cryptoServiceMarshaller.marshall(objectCryptoService)
+              )
+              .then (marshalledCrypto) =>
+                rsaCryptoService = new RsaCryptoService({
+                  publicKey: rsaPublicKey
+                })
+                seal       = rsaCryptoService.encrypt(marshalledCrypto)
+                sealBase64 = btoa(seal)
+                return sealBase64
             )
-            logger.info('seals', seals)
 
-            if !objectSearchPair
-              # if we did not get an object search pair, we can omit it from the SharingRequest
-              sharingRequest = new SharingRequest({
-                id          : versionedObjectKey,
-                users       : seals
-              })
-            else
-              # create the object share pair from the object search pair, and encrypt it
-              objectSharePair = KryptnosticEngineProvider.getEngine()
-                .calculateObjectSharePairFromObjectSearchPair(objectSearchPair)
+            Promise.all(sealPromises)
+            .then (seals) =>
 
-              encryptedObjectSharePair = objectCryptoService.encryptUint8Array(objectSharePair)
+              if !objectSearchPair
+                # if we did not get an object search pair, we can omit it from the SharingRequest
+                sharingRequest = new SharingRequest({
+                  id          : objectId,
+                  users       : seals
+                })
+              else
+                # create the object share pair from the object search pair, and encrypt it
+                objectSharePair = KryptnosticEngineProvider.getEngine()
+                  .calculateObjectSharePairFromObjectSearchPair(objectSearchPair)
 
-              sharingRequest = new SharingRequest({
-                id          : versionedObjectKey,
-                users       : seals,
-                sharingPair : encryptedObjectSharePair
-              })
+                encryptedObjectSharePair = objectCryptoService.encryptUint8Array(objectSharePair)
 
-            # send off the object sharing request
-            @sharingApi.shareObject(sharingRequest)
+                sharingRequest = new SharingRequest({
+                  id          : objectId,
+                  users       : seals,
+                  sharingPair : encryptedObjectSharePair
+                })
+
+              # send off the object sharing request
+              @sharingApi.shareObject(sharingRequest)
         )
 
     revokeObject: (id, uuids) ->

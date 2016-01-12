@@ -5,7 +5,6 @@ define 'kryptnostic.search.metadata-mapper', [
   'kryptnostic.hash-function'
   'kryptnostic.kryptnostic-engine-provider'
   'kryptnostic.search.random-index-generator'
-  'kryptnostic.search-credential-service' #added to load the keys stored
 ], (require) ->
 
   Logger                    = require 'kryptnostic.logger'
@@ -13,7 +12,6 @@ define 'kryptnostic.search.metadata-mapper', [
   HashFunction              = require 'kryptnostic.hash-function'
   KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
   RandomIndexGenerator      = require 'kryptnostic.search.random-index-generator'
-  SearchCredentialService   = require 'kryptnostic.search-credential-service'
 
   MINIMUM_TOKEN_LENGTH = 1
 
@@ -35,7 +33,6 @@ define 'kryptnostic.search.metadata-mapper', [
   class MetadataMapper
 
     constructor: ->
-      @service        = new SearchCredentialService()
       @indexGenerator = new RandomIndexGenerator()
       @hashFunction   = HashFunction.MURMUR3_128
 

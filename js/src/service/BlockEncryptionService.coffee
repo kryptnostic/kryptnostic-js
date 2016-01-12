@@ -1,7 +1,8 @@
 define 'kryptnostic.block-encryption-service', [
   'require'
-  'lodash'
+  'bluebird'
   'forge'
+  'lodash'
   'kryptnostic.encrypted-block'
   'kryptnostic.hash-function'
   'kryptnostic.logger'
@@ -10,6 +11,7 @@ define 'kryptnostic.block-encryption-service', [
 
   _              = require 'lodash'
   forge          = require 'forge'
+  Promise        = require 'bluebird'
   EncryptedBlock = require 'kryptnostic.encrypted-block'
   HashFunction   = require 'kryptnostic.hash-function'
   Logger         = require 'kryptnostic.logger'
@@ -38,31 +40,39 @@ define 'kryptnostic.block-encryption-service', [
 
     # convert raw data string chunks into encrypted blocks
     encrypt: (chunks, cryptoService) ->
-      return chunks.map (chunk, index) ->
-        unless chunk.constructor.name in _.keys(TYPE_MAPPINGS)
-          throw new Error 'unsupported chunk type'
+      Promise.resolve()
+      .then =>
+        return chunks.map (chunk, index) ->
+          unless chunk.constructor.name in _.keys(TYPE_MAPPINGS)
+            throw new Error 'unsupported chunk type'
 
-        className   = chunk.constructor.name
-        mappedClass = TYPE_MAPPINGS[className]
-        block       = cryptoService.encrypt(chunk)
-        name        = cryptoService.encrypt(mappedClass)
-        verify      = VERIFY_HASH_FUNCTION(block.contents)
-        last        = (index == chunks.length - 1)
-        strategy    = DEFAULT_STRATEGY
-        timeCreated = new Date().getTime()
+          className   = chunk.constructor.name
+          mappedClass = TYPE_MAPPINGS[className]
 
-        block = { block, name, verify, index, last, strategy, timeCreated }
-        log.info('created block')
-        return new EncryptedBlock(block)
+          Promise.props({
+            block : cryptoService.encrypt(chunk),
+            name  : cryptoService.encrypt(mappedClass)
+          })
+          .then ({ block, name }) =>
+            verify      = VERIFY_HASH_FUNCTION(block.contents)
+            last        = (index == chunks.length - 1)
+            strategy    = DEFAULT_STRATEGY
+            timeCreated = new Date().getTime()
+
+            block = { block, name, verify, index, last, strategy, timeCreated }
+            log.info('created block')
+            return new EncryptedBlock(block)
 
     # convert encrypted blocks into string data chunks
     decrypt : (blocks, cryptoService) ->
-      return blocks.map ({ block, verify }) ->
-        computed = VERIFY_HASH_FUNCTION(block.contents)
-        unless verify is computed
-          log.info('block verify mismatch', { verify, computed })
-          throw new Error('cannot decrypt block because verify of block contents does not match.')
-        decrypted = cryptoService.decrypt(block)
-        return decrypted
+      Promise.resolve()
+      .then =>
+        return blocks.map ({ block, verify }) ->
+          computed = VERIFY_HASH_FUNCTION(block.contents)
+          unless verify is computed
+            log.info('block verify mismatch', { verify, computed })
+            throw new Error('cannot decrypt block because verify of block contents does not match.')
+
+          return Promise.resolve(cryptoService.decrypt(block))
 
   return BlockEncryptionService

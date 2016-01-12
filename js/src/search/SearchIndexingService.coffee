@@ -102,34 +102,46 @@ define 'kryptnostic.search-indexing-service', [
         keyedMetadata = @metadataMapper.mapToKeys({ metadata, objectIndexPair })
 
         metadataIndex = []
-        for key, metadata of keyedMetadata
+        encryptedObjectPromises = []
+        _.forEach(keyedMetadata, (metadata, key) =>
 
-          # encrypt metadata
           kryptnosticObject = KryptnosticObject.createFromDecrypted({
             id: objectKey.objectId,
             body: metadata
           })
           kryptnosticObject.setChunkingStrategy(JsonChunkingStrategy.URI)
-          encrypted = kryptnosticObject.encrypt(cryptoService)
-          encrypted.validateEncrypted()
 
-          # format request
-          data = encrypted.body
-          _.extend(
-            data,
-            {
-              key: objectKey.objectId,
-              strategy: { '@class': JsonChunkingStrategy.URI }
-            }
+          encryptedObjectPromise = Promise.resolve(
+            kryptnosticObject.encrypt(cryptoService)
           )
+          .then (encryptedObject) =>
+            indexedMetadata = @createIndexedMetadata({ objectKey, key, parentObjectId, encryptedObject })
+            metadataIndex.push(indexedMetadata)
 
-          indexedMetadata = new IndexedMetadata({
-            key: key,
-            data: data,
-            id: parentObjectId
-          })
-          metadataIndex.push(indexedMetadata)
+          encryptedObjectPromises.push(encryptedObjectPromise)
+        )
 
-        return new MetadataRequest { metadata : metadataIndex }
+        Promise.all(encryptedObjectPromises)
+        .then =>
+          return new MetadataRequest { metadata : metadataIndex }
+
+    createIndexedMetadata: ({ objectKey, key, parentObjectId, encryptedObject }) ->
+
+      encryptedObject.validateEncrypted()
+
+      data = encryptedObject.body
+      _.extend(
+        data,
+        {
+          key: objectKey.objectId,
+          strategy: { '@class': JsonChunkingStrategy.URI }
+        }
+      )
+
+      return new IndexedMetadata({
+        key: key,
+        data: data,
+        id: parentObjectId
+      })
 
   return SearchIndexingService

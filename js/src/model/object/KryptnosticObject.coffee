@@ -1,5 +1,6 @@
 define 'kryptnostic.kryptnostic-object', [
   'require'
+  'bluebird'
   'lodash'
   'kryptnostic.chunking.registry'
   'kryptnostic.object-metadata'
@@ -11,6 +12,7 @@ define 'kryptnostic.kryptnostic-object', [
   'use strict'
 
   _                        = require 'lodash'
+  Promise                  = require 'bluebird'
   validator                = require 'kryptnostic.schema.validator'
   SCHEMA                   = require 'kryptnostic.schema.kryptnostic-object'
   ChunkingStrategyRegistry = require 'kryptnostic.chunking.registry'
@@ -76,30 +78,35 @@ define 'kryptnostic.kryptnostic-object', [
     decrypt : (cryptoService) ->
       if @isDecrypted()
         log.error('object is already decrypted', this)
-        return this
+        return Promise.resolve(this)
       else
         blockEncryptionService = new BlockEncryptionService()
-        chunks                 = blockEncryptionService.decrypt(@body.data, cryptoService)
-        chunkingStrategyUri    = @metadata.strategy['@class']
-        chunkingStrategyClass  = ChunkingStrategyRegistry.get(chunkingStrategyUri)
-        chunkingStrategy       = new chunkingStrategyClass()
-        data                   = chunkingStrategy.join(chunks)
-        raw                    = _.extend({}, _.cloneDeep(this), { body: { data } })
-        return new KryptnosticObject(raw)
+        chunkPromises = blockEncryptionService.decrypt(@body.data, cryptoService)
+        Promise.all(chunkPromises)
+        .then (chunks) =>
+          chunkingStrategyUri    = @metadata.strategy['@class']
+          chunkingStrategyClass  = ChunkingStrategyRegistry.get(chunkingStrategyUri)
+          chunkingStrategy       = new chunkingStrategyClass()
+          data                   = chunkingStrategy.join(chunks)
+          raw                    = _.extend({}, _.cloneDeep(this), { body: { data } })
+          return new KryptnosticObject(raw)
 
     # chunk and encrypt using a cryptoService
     encrypt : (cryptoService) ->
       if @isEncrypted()
         log.error('object is already encrypted', this)
-        return this
+        return Promise.resolve(this)
       else
         blockEncryptionService = new BlockEncryptionService()
         chunkingStrategyUri    = @metadata.strategy['@class']
         chunkingStrategyClass  = ChunkingStrategyRegistry.get(chunkingStrategyUri)
         chunkingStrategy       = new chunkingStrategyClass()
         chunks                 = chunkingStrategy.split(@body.data)
-        data                   = blockEncryptionService.encrypt(chunks, cryptoService)
-        raw                    = _.extend({}, _.cloneDeep(this), { body: { data } })
-        return new KryptnosticObject(raw)
+
+        chunkPromises = blockEncryptionService.encrypt(chunks, cryptoService)
+        Promise.all(chunkPromises)
+        .then (data) =>
+          raw =  _.extend({}, _.cloneDeep(this), { body: { data } })
+          return new KryptnosticObject(raw)
 
   return KryptnosticObject

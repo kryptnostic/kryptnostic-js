@@ -74,11 +74,11 @@ define 'kryptnostic.authentication-service', [
 
       Promise.resolve()
       .then ->
-        searchCredentialService.getAllCredentials()
-      .then (searchCredentials) ->
-        fhePrivateKey = searchCredentials.FHE_PRIVATE_KEY
-        searchPrivateKey = searchCredentials.SEARCH_PRIVATE_KEY
-        KryptnosticEngineProvider.init({ fhePrivateKey, searchPrivateKey })
+        searchCredentialService.getKeys()
+      .then (keys) ->
+        fhePrivateKey = keys.FHE_PRIVATE_KEY
+        fheSearchPrivateKey = keys.FHE_SEARCH_PRIVATE_KEY
+        KryptnosticEngineProvider.init({ fhePrivateKey, fheSearchPrivateKey })
         logger.info('KryptnosticEngine initialized')
 
     @destroy: ->

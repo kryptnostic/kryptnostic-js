@@ -5,5 +5,11 @@ define 'kryptnostic.cypher', [], (require) ->
   # Author: rbuckheit
   #
   return {
-    AES_CTR_128: { algorithm : 'AES', mode: 'CTR', padding: 'NoPadding', keySize: 128 }
+    AES_CTR_128: {
+      algorithm : 'AES-CTR',
+      cipher: 'AES',
+      mode: 'CTR',
+      keySize: 128,
+      padding: 'NoPadding'
+    }
   }

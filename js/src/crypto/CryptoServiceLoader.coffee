@@ -3,6 +3,7 @@ define 'kryptnostic.crypto-service-loader', [
   'bluebird'
   'kryptnostic.logger'
   'kryptnostic.cypher',
+  'kryptnostic.caching-service'
   'kryptnostic.rsa-crypto-service',
   'kryptnostic.aes-crypto-service',
   'kryptnostic.directory-api',
@@ -16,6 +17,7 @@ define 'kryptnostic.crypto-service-loader', [
   Promise                 = require 'bluebird'
   RsaCryptoService        = require 'kryptnostic.rsa-crypto-service'
   AesCryptoService        = require 'kryptnostic.aes-crypto-service'
+  Cache                   = require 'kryptnostic.caching-service'
   Cypher                  = require 'kryptnostic.cypher'
   DirectoryApi            = require 'kryptnostic.directory-api'
   KeyStorageApi           = require 'kryptnostic.key-storage-api'
@@ -38,11 +40,10 @@ define 'kryptnostic.crypto-service-loader', [
   class CryptoServiceLoader
 
     constructor: ->
-      @directoryApi     = new DirectoryApi()
-      @keyStorageApi    = new KeyStorageApi()
-      @marshaller       = new CryptoServiceMarshaller()
-      @credentialLoader = new CredentialLoader()
-      @cache            = {}
+      @directoryApi  = new DirectoryApi()
+      @keyStorageApi = new KeyStorageApi()
+      @marshaller    = new CryptoServiceMarshaller()
+      @cache         = {}
 
     @initializeMasterAesCryptoService: ->
 
@@ -64,16 +65,21 @@ define 'kryptnostic.crypto-service-loader', [
           return KeyStorageApi.setMasterAesCryptoService(encryptedMasterAesCryptoService)
 
     getRsaCryptoService: ->
-      { keypair } = @credentialLoader.getCredentials()
-      return new RsaCryptoService(keypair)
+      credentialLoader = new CredentialLoader()
+      return new RsaCryptoService(credentialLoader.getCredentials().keypair)
 
     getMasterAesCryptoService: ->
+
+      if @cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID]
+        return Promise.resolve(@cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID])
+
       Promise.resolve(
         KeyStorageApi.getMasterAesCryptoService()
       )
       .then (serializedCryptoService) =>
         decryptedCryptoService = @getRsaCryptoService().decrypt(serializedCryptoService)
         masterAesCryptoService = @marshaller.unmarshall(decryptedCryptoService)
+        @cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID] = masterAesCryptoService
         return masterAesCryptoService
 
     getObjectCryptoService: (id, options) ->

@@ -62,7 +62,8 @@ define 'kryptnostic.search-indexing-service', [
       { body } = storageRequest
       { objectIndexPair } = {}
 
-      parentObjectId = if parentObjectKey? then parentObjectKey.objectId else objectKey.objectId
+      if not parentObjectKey?
+        parentObjectKey = objectKey
 
       Promise.resolve()
       .then =>
@@ -70,13 +71,13 @@ define 'kryptnostic.search-indexing-service', [
         if not objectSearchPair?
           objectIndexPair  = engine.generateObjectIndexPair()
           objectSearchPair = engine.calculateObjectSearchPairFromObjectIndexPair(objectIndexPair)
-          @sharingApi.addObjectSearchPair(parentObjectId, objectSearchPair)
+          @sharingApi.addObjectSearchPair(parentObjectKey, objectSearchPair)
         else
           objectIndexPair = engine.calculateObjectIndexPairFromObjectSearchPair(objectSearchPair)
 
         Promise.resolve()
         .then =>
-          @objectIndexer.index(parentObjectId, body)
+          @objectIndexer.index(parentObjectKey.objectId, body)
         .then (metadata) =>
           @prepareMetadataRequest({ objectKey, parentObjectKey, metadata, objectIndexPair })
         .then (metadataRequest) =>

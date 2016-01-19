@@ -1,3 +1,5 @@
+# coffeelint: disable=cyclomatic_complexity
+
 define 'kryptnostic.crypto-service-loader', [
   'require'
   'bluebird'
@@ -6,7 +8,6 @@ define 'kryptnostic.crypto-service-loader', [
   'kryptnostic.caching-service'
   'kryptnostic.rsa-crypto-service',
   'kryptnostic.aes-crypto-service',
-  'kryptnostic.directory-api',
   'kryptnostic.key-storage-api',
   'kryptnostic.crypto-service-marshaller',
   'kryptnostic.credential-loader',
@@ -19,7 +20,6 @@ define 'kryptnostic.crypto-service-loader', [
   AesCryptoService        = require 'kryptnostic.aes-crypto-service'
   Cache                   = require 'kryptnostic.caching-service'
   Cypher                  = require 'kryptnostic.cypher'
-  DirectoryApi            = require 'kryptnostic.directory-api'
   KeyStorageApi           = require 'kryptnostic.key-storage-api'
   Logger                  = require 'kryptnostic.logger'
   CryptoServiceMarshaller = require 'kryptnostic.crypto-service-marshaller'
@@ -40,8 +40,6 @@ define 'kryptnostic.crypto-service-loader', [
   class CryptoServiceLoader
 
     constructor: ->
-      @directoryApi  = new DirectoryApi()
-      @keyStorageApi = new KeyStorageApi()
       @marshaller    = new CryptoServiceMarshaller()
       @cache         = {}
 
@@ -50,7 +48,7 @@ define 'kryptnostic.crypto-service-loader', [
       Promise.resolve(
         KeyStorageApi.getMasterAesCryptoService()
       )
-      .then (masterAesCryptoService) =>
+      .then (masterAesCryptoService) ->
 
         if not masterAesCryptoService
 
@@ -82,36 +80,7 @@ define 'kryptnostic.crypto-service-loader', [
         @cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID] = masterAesCryptoService
         return masterAesCryptoService
 
-    getObjectCryptoService: (id, options) ->
-      options        = _.defaults({}, options, DEFAULT_OPTS)
-      { expectMiss } = options
-
-      id = ObjectUtils.childIdToParent(id)
-
-      # Check cache for crypto service
-      if @cache[id]
-        return Promise.resolve(@cache[id])
-      # if cache miss get from network, and update cache
-      Promise.props({
-        serializedCryptoService : @directoryApi.getObjectCryptoService(id)
-      })
-      .then ({ serializedCryptoService }) =>
-        cryptoService = {}
-        if !serializedCryptoService && expectMiss
-          log.info('no cryptoService exists for this object. creating one on-the-fly', { id })
-          cryptoService = new AesCryptoService( Cypher.AES_CTR_128 )
-          @setObjectCryptoService( id, cryptoService )
-        else if !serializedCryptoService && !expectMiss
-          throw new Error 'no cryptoservice exists for this object, but a miss was not expected'
-        else
-          decodedCryptoService = atob(serializedCryptoService)
-          deflatedCryptoService = @getRsaCryptoService().decrypt(decodedCryptoService)
-          cryptoService = @marshaller.unmarshall(deflatedCryptoService)
-        @cache[id] = cryptoService
-        return cryptoService
-
     getObjectCryptoServiceV2: (versionedObjectKey, options) ->
-      console.log('CryptoServiceLoader:getObjectCryptoServiceV2()')
       options        = _.defaults({}, options, DEFAULT_OPTS)
       { expectMiss } = options
 
@@ -122,7 +91,7 @@ define 'kryptnostic.crypto-service-loader', [
 
       Promise.props({
         masterAesCryptoService       : @getMasterAesCryptoService()
-        cryptoServiceBlockCiphertext : @keyStorageApi.getAesEncryptedObjectCryptoService(versionedObjectKey)
+        cryptoServiceBlockCiphertext : KeyStorageApi.getAesEncryptedObjectCryptoService(versionedObjectKey)
       })
       .then ({ masterAesCryptoService, cryptoServiceBlockCiphertext }) =>
         objectCryptoService = {}
@@ -131,9 +100,7 @@ define 'kryptnostic.crypto-service-loader', [
           objectCryptoService = new AesCryptoService( Cypher.AES_CTR_128 )
           @setObjectCryptoServiceV2(versionedObjectKey, objectCryptoService, masterAesCryptoService)
         else if !cryptoServiceBlockCiphertext && !expectMiss
-          console.log('CryptoServiceLoader:getObjectCryptoServiceV2()')
-          console.log(objectId)
-          console.error('no cryptoservice exists for this object, but a miss was not expected')
+          log.error('no cryptoservice exists for this object, but a miss was not expected')
           return null
         else
           decryptedCryptoService = masterAesCryptoService.decrypt(cryptoServiceBlockCiphertext)
@@ -141,17 +108,7 @@ define 'kryptnostic.crypto-service-loader', [
           @cache[objectId] = objectCryptoService
         return objectCryptoService
 
-    setObjectCryptoService: (id, cryptoService) ->
-      unless cryptoService.constructor.name is 'AesCryptoService'
-        throw new Error('serialization only implemented for AesCryptoService')
-
-      marshalled             = @marshaller.marshall(cryptoService)
-      encryptedCryptoService = @getRsaCryptoService().encrypt(marshalled)
-
-      return @directoryApi.setObjectCryptoService(id, encryptedCryptoService)
-
     setObjectCryptoServiceV2: (versionedObjectKey, objectCryptoService, masterAesCryptoService) ->
-      console.log('CryptoServiceLoader:setObjectCryptoServiceV2()')
       unless objectCryptoService.constructor.name is 'AesCryptoService'
         throw new Error('support is only implemented for AesCryptoService')
 
@@ -159,7 +116,7 @@ define 'kryptnostic.crypto-service-loader', [
       encryptedCryptoService  = masterAesCryptoService.encrypt(marshalledCryptoService)
 
       Promise.resolve(
-        @keyStorageApi.setAesEncryptedObjectCryptoService(versionedObjectKey, encryptedCryptoService)
+        KeyStorageApi.setAesEncryptedObjectCryptoService(versionedObjectKey, encryptedCryptoService)
       )
       .then =>
         @cache[versionedObjectKey.objectId] = objectCryptoService

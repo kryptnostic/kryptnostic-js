@@ -25,8 +25,8 @@ define 'kryptnostic.search-credential-service', [
   CredentialType = {
     FHE_PRIVATE_KEY : {
       getKey    : (clientKeys) -> clientKeys.fhePrivateKey
-      getter    : (api) -> api.getFHEPrivateKey
-      setter    : (api) -> api.setFHEPrivateKey
+      getter    : -> KeyStorageApi.getFHEPrivateKey
+      setter    : -> KeyStorageApi.setFHEPrivateKey
       stage     : AuthenticationStage.FHE_KEYGEN
       encrypt   : true
       decrypt   : true
@@ -34,8 +34,8 @@ define 'kryptnostic.search-credential-service', [
     }
     SEARCH_PRIVATE_KEY : {
       getKey    : (clientKeys) -> clientKeys.searchPrivateKey
-      getter    : (api) -> api.getFHESearchPrivateKey
-      setter    : (api) -> api.setFHESearchPrivateKey
+      getter    : -> KeyStorageApi.getFHESearchPrivateKey
+      setter    : -> KeyStorageApi.setFHESearchPrivateKey
       stage     : AuthenticationStage.SEARCH_KEYGEN
       encrypt   : true
       decrypt   : true
@@ -44,7 +44,7 @@ define 'kryptnostic.search-credential-service', [
     # the client FHE hash function never needs to be downloaded from the server, so we don't need a getter
     CLIENT_HASH_FUNCTION : {
       getKey    : (clientKeys) -> clientKeys.clientHashFunction
-      setter    : (api) -> api.setFHEHashFunction
+      setter    : -> KeyStorageApi.setFHEHashFunction
       stage     : AuthenticationStage.CLIENT_HASH_GEN
       encrypt   : false
       decrypt   : false
@@ -61,7 +61,6 @@ define 'kryptnostic.search-credential-service', [
   class SearchCredentialService
 
     constructor: ->
-      @keyStorageApi       = new KeyStorageApi()
       @searchKeyGenerator  = new SearchKeyGenerator()
       @cryptoServiceLoader = new CryptoServiceLoader()
 
@@ -104,7 +103,7 @@ define 'kryptnostic.search-credential-service', [
         # create a map of CredentialType -> Promise<Credential>
         credentialPromises = _.mapValues(CredentialType, (credentialType) =>
           if credentialType.getter?
-            loadCredential = credentialType.getter(@keyStorageApi)
+            loadCredential = credentialType.getter()
             return loadCredential()
           else
             return Promise.resolve()
@@ -123,7 +122,7 @@ define 'kryptnostic.search-credential-service', [
           # create a map of CredentialType -> Promise<AesCryptoService>
           cryptoServicePromises = _.mapValues(CredentialType, (credentialType) =>
             # we expect getObjectCryptoService() to eventually return an instance of AesCryptoService
-            return @cryptoServiceLoader.getObjectCryptoService(
+            return @cryptoServiceLoader.getObjectCryptoServiceV2(
               credentialType.id,
               { expectMiss : true }
             )
@@ -189,7 +188,7 @@ define 'kryptnostic.search-credential-service', [
         Promise.resolve(notifier(credentialType.stage))
       .then =>
         # we expect getObjectCryptoService() to return an instance of AesCryptoService
-        @cryptoServiceLoader.getObjectCryptoService(
+        @cryptoServiceLoader.getObjectCryptoServiceV2(
           credentialType.id,
           { expectMiss: true }
         )
@@ -200,7 +199,7 @@ define 'kryptnostic.search-credential-service', [
         if credentialType.encrypt is true
           storeableKey = aesCryptoService.encryptUint8Array(key)
 
-        storeCredential = credentialType.setter(@keyStorageApi)
+        storeCredential = credentialType.setter()
         storeCredential(storeableKey)
 
       .then ->

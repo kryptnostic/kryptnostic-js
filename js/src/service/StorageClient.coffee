@@ -1,3 +1,5 @@
+# coffeelint: disable=cyclomatic_complexity
+
 define 'kryptnostic.storage-client', [
   'require'
   'bluebird'
@@ -104,10 +106,10 @@ define 'kryptnostic.storage-client', [
         )
 
         Promise.all(promises)
-        .then (resolvedPromises) =>
+        .then (resolvedPromises) ->
 
           result = {}
-          _.forEach(resolvedPromises, (resolved) =>
+          _.forEach(resolvedPromises, (resolved) ->
             objectKey = resolved.objectKey
             cryptoService = resolved.cryptoService
             blockCiphertext = resolved.blockCiphertext
@@ -131,10 +133,10 @@ define 'kryptnostic.storage-client', [
           cryptoService          : @cryptoServiceLoader.getObjectCryptoServiceV2(parentObjectKey)
           objectBlockCiphertexts : @objectApi.getObjects(objectIds)
         })
-        .then ({ cryptoService, objectBlockCiphertexts }) =>
+        .then ({ cryptoService, objectBlockCiphertexts }) ->
 
           childObjects = {}
-          _.forEach(objectIds, (objectId, index) =>
+          _.forEach(objectIds, (objectId, index) ->
             blockCiphertext = objectBlockCiphertexts[objectId]
             if blockCiphertext? and cryptoService?
               decrypted = cryptoService.decrypt(blockCiphertext)

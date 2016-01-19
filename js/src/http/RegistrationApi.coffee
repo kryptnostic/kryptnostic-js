@@ -9,7 +9,7 @@ define 'kryptnostic.registration-api', [
   Promise       = require 'bluebird'
   Configuration = require 'kryptnostic.configuration'
 
-  registrationUrl = -> Configuration.get('heraclesUrl') + '/registration/user'
+  registrationUrl = -> Configuration.get('heraclesUrlV2') + '/registration/user'
 
 
   DEFAULT_HEADERS = { 'Content-Type' : 'application/json' }

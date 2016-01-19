@@ -3,7 +3,7 @@ define 'kryptnostic.sharing-client', [
   'bluebird'
   'kryptnostic.crypto-service-loader'
   'kryptnostic.crypto-service-marshaller'
-  'kryptnostic.directory-api'
+  'kryptnostic.key-storage-api'
   'kryptnostic.kryptnostic-engine-provider'
   'kryptnostic.logger'
   'kryptnostic.object-api'
@@ -19,7 +19,7 @@ define 'kryptnostic.sharing-client', [
   Promise                   = require 'bluebird'
 
   # Kryptnostic apis
-  DirectoryApi              = require 'kryptnostic.directory-api'
+  KeyStorageApi             = require 'kryptnostic.key-storage-api'
   ObjectApi                 = require 'kryptnostic.object-api'
   SharingApi                = require 'kryptnostic.sharing-api'
 
@@ -46,7 +46,6 @@ define 'kryptnostic.sharing-client', [
 
     constructor: ->
       @sharingApi              = new SharingApi()
-      @directoryApi            = new DirectoryApi()
       @objectApi               = new ObjectApi()
       @cryptoServiceMarshaller = new CryptoServiceMarshaller()
       @cryptoServiceLoader     = new CryptoServiceLoader()
@@ -73,7 +72,7 @@ define 'kryptnostic.sharing-client', [
         Promise.join(
           objectSearchPairPromise,
           @cryptoServiceLoader.getObjectCryptoServiceV2(versionedObjectKey),
-          @directoryApi.getRsaPublicKeys(uuids),
+          KeyStorageApi.getRSAPublicKeys(uuids),
           (objectSearchPair, objectCryptoService, uuidsToRsaPublicKeys) =>
 
             # transform RSA public key to Base64 seal

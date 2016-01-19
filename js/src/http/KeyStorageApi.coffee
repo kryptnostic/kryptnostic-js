@@ -2,6 +2,7 @@ define 'kryptnostic.key-storage-api', [
   'require',
   'axios',
   'bluebird',
+  'kryptnostic.block-ciphertext',
   'kryptnostic.caching-service',
   'kryptnostic.configuration',
   'kryptnostic.logger',
@@ -12,6 +13,9 @@ define 'kryptnostic.key-storage-api', [
   # libraries
   axios   = require 'axios'
   Promise = require 'bluebird'
+
+  # Kryptnostic
+  BlockCiphertext =  require 'kryptnostic.block-ciphertext'
 
   # utils
   Cache      = require 'kryptnostic.caching-service'
@@ -32,7 +36,6 @@ define 'kryptnostic.key-storage-api', [
   logger = Logger.get('KeyStorageApi')
 
   keyStorageApi = -> Config.get('servicesUrlV2') + '/keys'
-  saltUrl       = (userId) -> keyStorageApi() + '/salt/' + userId
 
   #
   # FHE endpoints
@@ -44,12 +47,22 @@ define 'kryptnostic.key-storage-api', [
   fheSearchPrivateKeyUrl = -> fheKeysUrl() + '/searchprivate'
 
   #
+  # salt endpoints
+  #
+  saltUrl = (userId) -> keyStorageApi() + '/salt/' + userId
+
+  #
   # RSA endpoints
   #
 
-  rsaKeysUrl       = -> keyStorageApi() + '/rsa'
-  rsaPublicKeyUrl  = -> rsaKeysUrl() + '/public'
-  rsaPrivateKeyUrl = -> rsaKeysUrl() + '/private'
+  rsaKeysUrl         = -> keyStorageApi() + '/rsa'
+  rsaPrivateKeyUrl   = -> rsaKeysUrl() + '/private'
+  setRSAPublicKeyUrl = -> rsaKeysUrl() + '/public'
+  getRSAPublicKeyUrl = (userId) -> rsaKeysUrl() + '/public/' + userId
+  getRSAPublicKeyBulkUrl = -> rsaKeysUrl() + '/public/bulk'
+
+  asdfsaf = ->
+    if userId then
 
   #
   # crypto service endpoints
@@ -75,12 +88,12 @@ define 'kryptnostic.key-storage-api', [
     # FHE private key
     #
 
-    getFHEPrivateKey: ->
+    @getFHEPrivateKey: ->
       Requests.getBlockCiphertextFromUrl(
         fhePrivateKeyUrl()
       )
 
-    setFHEPrivateKey: (fhePrivateKey) ->
+    @setFHEPrivateKey: (fhePrivateKey) ->
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
@@ -96,12 +109,12 @@ define 'kryptnostic.key-storage-api', [
     # FHE search private key
     #
 
-    getFHESearchPrivateKey: ->
+    @getFHESearchPrivateKey: ->
       Requests.getBlockCiphertextFromUrl(
         fheSearchPrivateKeyUrl()
       )
 
-    setFHESearchPrivateKey: (fheSearchPrivateKey) ->
+    @setFHESearchPrivateKey: (fheSearchPrivateKey) ->
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
@@ -117,12 +130,12 @@ define 'kryptnostic.key-storage-api', [
     # FHE client hash function
     #
 
-    getFHEHashFunction: ->
+    @getFHEHashFunction: ->
       Requests.getAsUint8FromUrl(
         fheHashUrl()
       )
 
-    setFHEHashFunction: (fheHashFunction) ->
+    @setFHEHashFunction: (fheHashFunction) ->
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
@@ -138,14 +151,129 @@ define 'kryptnostic.key-storage-api', [
     # encrypted salt
     #
 
-    getEncryptedSalt: (userId) ->
-      throw new Error('not yet implemented')
+    @getEncryptedSalt: (userId) ->
 
-    setEncryptedSalt: (userId, blockCiphertext) ->
-      throw new Error('not yet implemented')
+      if not validateUuid(userId)
+        return Promise.resolve(null)
+
+      cachedSalt = Cache.get(Cache.SALTS, userId)
+      if cachedSalt
+        return Promise.resolve(cachedSalt)
+
+      Promise.resolve(
+        axios(
+          {
+            method : 'GET',
+            url    : saltUrl(userId)
+          }
+        )
+      )
+      .then (axiosResponse) ->
+        if axiosResponse and axiosResponse.data
+          # axiosResponse.data == com.kryptnostic.kodex.v1.crypto.ciphers.BlockCiphertext
+          try
+            saltBlockCiphertext = new BlockCiphertext(axiosResponse.data)
+            Cache.store(Cache.SALTS, userId, saltBlockCiphertext)
+            return saltBlockCiphertext
+          catch e
+            return null
+        else
+          return null
+
+    @setEncryptedSalt: (userId, credential, saltBlockCiphertext) ->
+
+      if not validateUuid(userId)
+        return Promise.resolve(null)
+
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials(
+            {
+              method  : 'POST',
+              url     : saltUrl(userId),
+              data    : JSON.stringify(saltBlockCiphertext),
+              headers : DEFAULT_HEADERS
+            },
+            {
+              principal  : userId,
+              credential : credential
+            }
+          )
+        )
+      )
 
     #
-    # crypto services
+    # RSA private key
+    #
+
+    @getRSAPrivateKey: ->
+      Requests.getBlockCiphertextFromUrl(
+        rsaPrivateKeyUrl()
+      )
+
+    @setRSAPrivateKey: (privateKeyBlockCiphertext) ->
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method  : 'POST',
+            url     : rsaPrivateKeyUrl(),
+            data    : JSON.stringify(privateKeyBlockCiphertext),
+            headers : DEFAULT_HEADERS
+          })
+        )
+      )
+
+    #
+    # RSA public key
+    #
+
+    @getRSAPublicKeys: (userIds) ->
+
+      if not validateUuids(userIds)
+        return Promise.resolve(null)
+
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method  : 'POST',
+            url     : getRSAPublicKeyBulkUrl(),
+            data    : JSON.stringify(userIds),
+            headers : DEFAULT_HEADERS
+          })
+        )
+      )
+      .then (axiosResponse) ->
+        if axiosResponse and axiosResponse.data
+          # axiosResponse.data == java.util.Map<java.util.UUID, byte[]>
+          try
+            # TODO -
+            uuidToPublicKeyMap = axiosResponse.data
+            uuidToRsaPublicKeyMap = _.mapValues(uuidToPublicKeyMap, (publicKey) ->
+              return new PublicKeyEnvelope(publicKey).toRsaPublicKey()
+            )
+            return uuidToRsaPublicKeyMap
+          catch e
+            return null
+        else
+          return null
+
+    @getRSAPublicKey: (userId) ->
+      throw new Error('KeyStorageApi:getRSAPublicKey() - not yet implemented!')
+
+    @setRSAPublicKey: (publicKeyEnvelope) ->
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method  : 'POST',
+            url     : setRSAPublicKeyUrl(),
+            data    : JSON.stringify(publicKeyEnvelope),
+            headers : DEFAULT_HEADERS
+          })
+        )
+      )
+
+    #
+    # master AES crypto service
     #
 
     @getMasterAesCryptoService: ->
@@ -159,7 +287,7 @@ define 'kryptnostic.key-storage-api', [
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
-            method : 'GET'
+            method : 'GET',
             url    : aesUrl()
           })
         )
@@ -184,9 +312,9 @@ define 'kryptnostic.key-storage-api', [
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
-            method  : 'PUT'
-            url     : aesUrl()
-            data    : encodedMasterAesCryptoService
+            method  : 'PUT',
+            url     : aesUrl(),
+            data    : encodedMasterAesCryptoService,
             headers : DEFAULT_HEADERS
           })
         )
@@ -196,7 +324,11 @@ define 'kryptnostic.key-storage-api', [
         Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, masterAesCryptoService)
         return
 
-    getAesEncryptedObjectCryptoService: (versionedObjectKey) ->
+    #
+    # AES crypto services
+    #
+
+    @getAesEncryptedObjectCryptoService: (versionedObjectKey) ->
 
       if not validateVersionedObjectKey(versionedObjectKey)
         return Promise.resolve(null)
@@ -217,7 +349,7 @@ define 'kryptnostic.key-storage-api', [
         else
           return null
 
-    setAesEncryptedObjectCryptoService: (versionedObjectKey, objectCryptoServiceBlockCiphertext) ->
+    @setAesEncryptedObjectCryptoService: (versionedObjectKey, objectCryptoServiceBlockCiphertext) ->
 
       if not validateVersionedObjectKey(versionedObjectKey)
         return Promise.resolve(null)
@@ -225,9 +357,9 @@ define 'kryptnostic.key-storage-api', [
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
-            method  : 'PUT'
-            url     : aesCryptoServiceUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
-            data    : JSON.stringify(objectCryptoServiceBlockCiphertext)
+            method  : 'PUT',
+            url     : aesCryptoServiceUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion),
+            data    : JSON.stringify(objectCryptoServiceBlockCiphertext),
             headers : DEFAULT_HEADERS
           })
         )

@@ -1,3 +1,5 @@
+# coffeelint: disable=cyclomatic_complexity
+
 define 'kryptnostic.object-api', [
   'require'
   'axios'

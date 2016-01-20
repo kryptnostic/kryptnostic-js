@@ -2,31 +2,33 @@ define 'kryptnostic.schema.storage-request', [], ->
 
   SCHEMA = {
     properties: {
-      type : {
-        description : 'the type of object being stored'
+      parentId: {
+        description : 'object ID of the parent object if creating a child object'
+        type        : 'string'
+        required    : false
+        allowEmpty  : false
+        pattern     : '^[0-9a-f]{8}-[0-9a-f]{4}-[1-4][0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      }
+      typeId: {
+        description : 'the type ID of object being stored'
+        type        : 'string'
+        required    : false
+        allowEmpty  : false
+        pattern     : '^[0-9a-f]{8}-[0-9a-f]{4}-[1-4][0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      },
+      typeName: {
+        description : 'the type name of object being stored'
         type        : 'string'
         required    : true
         allowEmpty  : false
       },
-      objectId : {
-        description : 'preset object id if overwriting another object'
-        type        : 'string'
-        required    : false
-        allowEmpty  : false
-      },
-      parentObjectId : {
-        description : 'id of the parent object if creating a child object'
-        type        : 'string'
-        required    : false
-        allowEmpty  : false
-      }
-      body : {
+      body: {
         description : 'content to be encrypted'
         type        : 'string'
         required    : true
         allowEmpty  : false
       }
-      isSearchable : {
+      isSearchable: {
         description : 'indicates whether the object should be indexed'
         type        : 'boolean'
         required    : false

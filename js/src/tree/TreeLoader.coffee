@@ -13,44 +13,42 @@ define 'kryptnostic.tree-loader', [
   Logger      = require 'kryptnostic.logger'
   Promise     = require 'bluebird'
 
-  log = Logger.get('TreeLoader')
+  logger = Logger.get('TreeLoader')
 
-  #
-  # Loads the ID's in a Kryptnostic object tree.
-  # Author: rbuckheit
-  #
   class TreeLoader
 
     constructor: ->
       @objectApi = new ObjectApi()
 
-    load: (id, { depth } = {}) ->
-      { recurse } = {}
-
-      return Promise.resolve()
-      .then ->
-        depth = depth - 1
-        log.info('load', id)
-        recurse = _.isNaN(depth) or depth > 0
+    loadTree: (objectIds, typeLoadLevels, loadDepth) ->
+      Promise.resolve()
       .then =>
-        @objectApi.getObjectMetadata(id)
-      .then (metadata) =>
-        { childObjectCount } = metadata
-        childIndices         = [0...childObjectCount]
-        return Promise.all(_.map(childIndices, (index) =>
-          childId = ObjectUtils.createChildId(id, index)
+        @objectApi.getObjectsByTypeAndLoadLevel(
+          objectIds,
+          typeLoadLevels,
+          loadDepth
+        )
+      .then (objectMetadataTrees) ->
+        # objectMetadataTrees == Map<java.util.UUID, com.kryptnostic.v2.storage.models.ObjectMetadataEncryptedNode>
+        objectTreeNodes = {}
+        _.map(objectMetadataTrees, (node, objectId) ->
+          if _.isObject(node)
 
-          if recurse
-            return @load(childId, { depth })
-          else
-            return new TreeNode(childId, [])
-        ))
-      .then (children) ->
-        children = _.compact(children)
-        return new TreeNode(id, children)
-      .catch (e) ->
-        { message, stack } = e
-        log.error('failed to load', { e, message, stack })
-        return undefined
+            # sort children by timestamp
+            sortedChildren = _.sortBy(node.children, (child) ->
+              return child.metadata.timeCreated
+            )
+            _.map(sortedChildren, (child, index) ->
+              parentObjectId = node.metadata.id
+              nodeId = ObjectUtils.createChildId(parentObjectId, index)
+              child.metadata.nodeId = nodeId
+              return
+            )
+            objectTreeNodes[objectId] = new TreeNode(node)
+        )
+        return objectTreeNodes
+
+    load: (id, { depth } = {}) ->
+      throw new Error('TreeLoader:load() is deprecated')
 
   return TreeLoader

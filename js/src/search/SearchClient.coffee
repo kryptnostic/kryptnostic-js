@@ -37,7 +37,7 @@ define 'kryptnostic.search-client', [
   class SearchClient
 
     constructor: ->
-      @cryptoServiceLoader = CryptoServiceLoader.get()
+      @cryptoServiceLoader = new CryptoServiceLoader()
       @searchApi           = new SearchApi()
       @hashFunction        = HashFunction.MURMUR3_128
 
@@ -85,10 +85,12 @@ define 'kryptnostic.search-client', [
 
       # _.map() will produce an Array of Promises for each encryptable
       encryptablePromises = _.map(encryptables, (encryptable) =>
-        Promise.resolve()
-        .then =>
-          @cryptoServiceLoader.getObjectCryptoService(
-            encryptable.key,
+        Promise.resolve(
+          @objectApi.getLatestVersionedObjectKey(encryptable.key)
+        )
+        .then (versionedObjectKey) =>
+          @cryptoServiceLoader.getObjectCryptoServiceV2(
+            versionedObjectKey,
             { expectMiss: false }
           )
         .then (objectCryptoService) =>

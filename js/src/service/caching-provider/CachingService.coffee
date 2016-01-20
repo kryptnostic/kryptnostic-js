@@ -25,6 +25,8 @@ define 'kryptnostic.caching-service', [
     @DEFAULT_GROUP   = 'default_group'
     @CRYPTO_SERVICES = 'object_crypto_services'
 
+    @MASTER_AES_CRYPTO_SERVICE_ID = 'master_aes_crypto_service_id'
+
     # store something in the cache
     @store: ( group, key, value ) ->
       if !group? || !key? || !value?

@@ -3,9 +3,10 @@ define 'kryptnostic.sharing-client', [
   'bluebird'
   'kryptnostic.crypto-service-loader'
   'kryptnostic.crypto-service-marshaller'
-  'kryptnostic.directory-api'
+  'kryptnostic.key-storage-api'
   'kryptnostic.kryptnostic-engine-provider'
   'kryptnostic.logger'
+  'kryptnostic.object-api'
   'kryptnostic.revocation-request'
   'kryptnostic.rsa-crypto-service'
   'kryptnostic.sharing-api'
@@ -18,7 +19,8 @@ define 'kryptnostic.sharing-client', [
   Promise                   = require 'bluebird'
 
   # Kryptnostic apis
-  DirectoryApi              = require 'kryptnostic.directory-api'
+  KeyStorageApi             = require 'kryptnostic.key-storage-api'
+  ObjectApi                 = require 'kryptnostic.object-api'
   SharingApi                = require 'kryptnostic.sharing-api'
 
   # Kryptnostic classes
@@ -35,7 +37,7 @@ define 'kryptnostic.sharing-client', [
 
   logger = Logger.get('SharingClient')
 
-  { validateId, validateUuids } = Validators
+  { validateUuid, validateUuids, validateVersionedObjectKey } = Validators
 
   #
   # client for granting and revoking shared access to Kryptnostic objects
@@ -44,73 +46,70 @@ define 'kryptnostic.sharing-client', [
 
     constructor: ->
       @sharingApi              = new SharingApi()
-      @directoryApi            = new DirectoryApi()
+      @objectApi               = new ObjectApi()
       @cryptoServiceMarshaller = new CryptoServiceMarshaller()
-      @cryptoServiceLoader     = CryptoServiceLoader.get()
+      @cryptoServiceLoader     = new CryptoServiceLoader()
 
-    #
-    # shares an object with the given object ID with the given set of user UUIDs
-    #
-    # @param {String} objectId
-    # @param {Array<String>} uuids
-    #
     shareObject: (objectId, uuids, objectSearchPair) ->
 
-      if _.isEmpty(uuids)
+      if not validateUuid(objectId)
         return Promise.resolve()
 
-      validateId(objectId)
-      validateUuids(uuids)
+      if _.isEmpty(uuids) or not validateUuids(uuids)
+        return Promise.resolve()
 
-      objectSearchPairPromise = undefined
-      if objectSearchPair?
-        objectSearchPairPromise = Promise.resolve(objectSearchPair)
-      else
-        objectSearchPairPromise = @sharingApi.getObjectSearchPair(objectId)
-
-      Promise.join(
-        objectSearchPairPromise,
-        @cryptoServiceLoader.getObjectCryptoService(objectId),
-        @directoryApi.getRsaPublicKeys(uuids),
-        (objectSearchPair, objectCryptoService, uuidsToRsaPublicKeys) =>
-
-          # transform RSA public key to Base64 seal
-          seals = _.mapValues(uuidsToRsaPublicKeys, (rsaPublicKey) =>
-            rsaCryptoService = new RsaCryptoService({
-              publicKey: rsaPublicKey
-            })
-            marshalledCrypto = @cryptoServiceMarshaller.marshall(objectCryptoService)
-            seal             = rsaCryptoService.encrypt(marshalledCrypto)
-            sealBase64       = btoa(seal)
-            return sealBase64
-          )
-          logger.info('seals', seals)
-
-          if !objectSearchPair
-            # if we did not get an object search pair, we can omit it from the SharingRequest
-            sharingRequest = new SharingRequest({
-              id          : objectId,
-              users       : seals
-            })
-          else
-            # create the object share pair from the object search pair, and encrypt it
-            objectSharePair = KryptnosticEngineProvider.getEngine()
-              .calculateObjectSharePairFromObjectSearchPair(objectSearchPair)
-
-            encryptedObjectSharePair = objectCryptoService.encryptUint8Array(objectSharePair)
-
-            sharingRequest = new SharingRequest({
-              id          : objectId,
-              users       : seals,
-              sharingPair : encryptedObjectSharePair
-            })
-
-          # send off the object sharing request
-          @sharingApi.shareObject(sharingRequest)
+      Promise.resolve(
+        @objectApi.getLatestVersionedObjectKey(objectId)
       )
-      .catch (e) ->
-        logger.error('failed to share object', e)
-        return null
+      .then (versionedObjectKey) =>
+
+        objectSearchPairPromise = undefined
+        if objectSearchPair?
+          objectSearchPairPromise = Promise.resolve(objectSearchPair)
+        else
+          objectSearchPairPromise = @sharingApi.getObjectSearchPair(versionedObjectKey)
+
+        Promise.join(
+          objectSearchPairPromise,
+          @cryptoServiceLoader.getObjectCryptoServiceV2(versionedObjectKey),
+          KeyStorageApi.getRSAPublicKeys(uuids),
+          (objectSearchPair, objectCryptoService, uuidsToRsaPublicKeys) =>
+
+            # transform RSA public key to Base64 seal
+            seals = _.mapValues(uuidsToRsaPublicKeys, (rsaPublicKey) =>
+              if rsaPublicKey
+                rsaCryptoService = new RsaCryptoService({
+                  publicKey: rsaPublicKey
+                })
+                marshalledCrypto = @cryptoServiceMarshaller.marshall(objectCryptoService)
+                seal             = rsaCryptoService.encrypt(marshalledCrypto)
+                sealBase64       = btoa(seal)
+                return sealBase64
+            )
+            logger.info('seals', seals)
+
+            if !objectSearchPair
+              # if we did not get an object search pair, we can omit it from the SharingRequest
+              sharingRequest = new SharingRequest({
+                id          : versionedObjectKey,
+                users       : seals
+              })
+            else
+              # create the object share pair from the object search pair, and encrypt it
+              objectSharePair = KryptnosticEngineProvider.getEngine()
+                .calculateObjectSharePairFromObjectSearchPair(objectSearchPair)
+
+              encryptedObjectSharePair = objectCryptoService.encryptUint8Array(objectSharePair)
+
+              sharingRequest = new SharingRequest({
+                id          : versionedObjectKey,
+                users       : seals,
+                sharingPair : encryptedObjectSharePair
+              })
+
+            # send off the object sharing request
+            @sharingApi.shareObject(sharingRequest)
+        )
 
     revokeObject: (id, uuids) ->
       { revocationRequest } = {}
@@ -121,7 +120,7 @@ define 'kryptnostic.sharing-client', [
       Promise
       .resolve()
       .then =>
-        validateId(id)
+        validateUuid(id)
         validateUuids(uuids)
         revocationRequest = new RevocationRequest { id, users: uuids }
         @sharingApi.revokeObject(revocationRequest)
@@ -129,31 +128,41 @@ define 'kryptnostic.sharing-client', [
         logger.info('revoked access', { id, uuids })
 
     processIncomingShares: ->
-      Promise
-      .resolve()
-      .then =>
-        @sharingApi.getIncomingShares()
-      .then (incomingShares) =>
+      Promise.props({
+        incomingShares         : @sharingApi.getIncomingShares()
+        masterAesCryptoService : @cryptoServiceLoader.getMasterAesCryptoService()
+      })
+      .then ({ incomingShares, masterAesCryptoService }) =>
+        rsaCryptoService = @cryptoServiceLoader.getRsaCryptoService()
         _.forEach(incomingShares, (sharedObject) =>
-          objectId = sharedObject.id
-          Promise.resolve()
-          .then =>
-            @cryptoServiceLoader.getObjectCryptoService(
-              objectId,
-              { expectMiss: false } # ObjectCryptoService should exist
-            )
-          .then (objectCryptoService) =>
-            if sharedObject? and sharedObject.sharingPair?
+          try
+            if sharedObject.sharingPair
+              encodedEncryptedMarshalledCryptoService = sharedObject.publicKeyEncryptedCryptoService
+              encryptedMarshalledCryptoService = atob(encodedEncryptedMarshalledCryptoService)
+              marshalledCryptoService = rsaCryptoService.decrypt(encryptedMarshalledCryptoService)
+              objectCryptoService = @cryptoServiceMarshaller.unmarshall(marshalledCryptoService)
+
               encryptedSharePair = sharedObject.sharingPair
               decryptedSharePair = objectCryptoService.decryptToUint8Array(encryptedSharePair)
               objectSearchPair = KryptnosticEngineProvider.getEngine()
                 .calculateObjectSearchPairFromObjectSharePair(decryptedSharePair)
-              @sharingApi.addObjectSearchPair(objectId, objectSearchPair)
+
+              objectKey = sharedObject.id
+              @sharingApi.addObjectSearchPair(objectKey, objectSearchPair)
+              @cryptoServiceLoader.setObjectCryptoServiceV2(objectKey, objectCryptoService, masterAesCryptoService)
+          catch e
+            logger.error('failed to process incoming share')
+            logger.error(e)
         )
       .catch (e) ->
         # DOTO - how do we handle failure when processing incoming shares?
         logger.error('failed to process incoming shares', e)
 
-
+    getObjectSearchPair: (objectId) ->
+      Promise.resolve(
+        @objectApi.getLatestVersionedObjectKey(objectId)
+      )
+      .then (versionedObjectKey) =>
+        @sharingApi.getObjectSearchPair(versionedObjectKey)
 
   return SharingClient

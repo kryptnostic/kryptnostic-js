@@ -30,11 +30,12 @@ define 'kryptnostic.crypto-service-marshaller', [
       serializedCryptoService = JSON.stringify(rawCryptoService)
       return @deflatingMarshaller.marshall(serializedCryptoService)
 
-    unmarshall: (serializedCryptoService, rsaCryptoService) ->
-      deflatedCryptoService     = rsaCryptoService.decrypt(atob(serializedCryptoService))
+    unmarshall: (deflatedCryptoService) ->
+
       inflatedCryptoService     = @deflatingMarshaller.unmarshall(deflatedCryptoService)
       decompressedCryptoService = JSON.parse(inflatedCryptoService)
-      objectCryptoService       = new AesCryptoService(
+
+      objectCryptoService = new AesCryptoService(
         decompressedCryptoService.cypher,
         atob(decompressedCryptoService.key)
       )

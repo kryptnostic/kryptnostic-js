@@ -44,9 +44,9 @@ define 'kryptnostic.requests', [
       )
     )
     .then (axiosResponse) ->
-      if (axiosResponse? and
-          axiosResponse.data? and
-          axiosResponse.data.byteLength? and
+      if (axiosResponse and
+          axiosResponse.data and
+          axiosResponse.data.byteLength and
           axiosResponse.data.byteLength > 0)
         return new Uint8Array(axiosResponse.data)
       else
@@ -63,7 +63,7 @@ define 'kryptnostic.requests', [
       )
     )
     .then (axiosResponse) ->
-      if axiosResponse? and axiosResponse.data?
+      if axiosResponse and axiosResponse.data
         try
           return new BlockCiphertext(axiosResponse.data)
         catch e

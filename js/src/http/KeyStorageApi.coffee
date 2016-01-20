@@ -2,20 +2,22 @@ define 'kryptnostic.key-storage-api', [
   'require',
   'axios',
   'bluebird',
+  'forge',
   'kryptnostic.block-ciphertext',
   'kryptnostic.caching-service',
   'kryptnostic.configuration',
   'kryptnostic.logger',
   'kryptnostic.requests',
-  'kryptnostic.validators',
+  'kryptnostic.validators'
 ], (require) ->
 
   # libraries
   axios   = require 'axios'
+  Forge   = require 'forge'
   Promise = require 'bluebird'
 
   # Kryptnostic
-  BlockCiphertext =  require 'kryptnostic.block-ciphertext'
+  BlockCiphertext   = require 'kryptnostic.block-ciphertext'
 
   # utils
   Cache      = require 'kryptnostic.caching-service'
@@ -136,6 +138,7 @@ define 'kryptnostic.key-storage-api', [
       )
 
     @setFHEHashFunction: (fheHashFunction) ->
+      # TODO - validate FHE hash function is Uint8Array
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
@@ -248,8 +251,15 @@ define 'kryptnostic.key-storage-api', [
           try
             # TODO -
             uuidToPublicKeyMap = axiosResponse.data
-            uuidToRsaPublicKeyMap = _.mapValues(uuidToPublicKeyMap, (publicKey) ->
-              return new PublicKeyEnvelope(publicKey).toRsaPublicKey()
+            uuidToRsaPublicKeyMap = _.mapValues(uuidToPublicKeyMap, (encodedPublicKey) ->
+              try
+                publicKey       = atob(encodedPublicKey)
+                publicKeyBuffer = Forge.util.createBuffer(publicKey, 'raw')
+                publicKeyAsn1   = Forge.asn1.fromDer(publicKeyBuffer)
+                rsaPublicKey    = Forge.pki.publicKeyFromAsn1(publicKeyAsn1)
+                return rsaPublicKey
+              catch e
+                return null
             )
             return uuidToRsaPublicKeyMap
           catch e
@@ -260,13 +270,15 @@ define 'kryptnostic.key-storage-api', [
     @getRSAPublicKey: (userId) ->
       throw new Error('KeyStorageApi:getRSAPublicKey() - not yet implemented!')
 
-    @setRSAPublicKey: (publicKeyEnvelope) ->
+    @setRSAPublicKey: (publicKey) ->
+      # TODO - validate publicKey is Uint8Array
+      encodedPublicKey = btoa(publicKey)
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
             method  : 'POST',
             url     : setRSAPublicKeyUrl(),
-            data    : JSON.stringify(publicKeyEnvelope),
+            data    : publicKey,
             headers : DEFAULT_HEADERS
           })
         )

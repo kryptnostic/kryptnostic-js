@@ -77,13 +77,14 @@ define 'kryptnostic.sharing-client', [
 
             # transform RSA public key to Base64 seal
             seals = _.mapValues(uuidsToRsaPublicKeys, (rsaPublicKey) =>
-              rsaCryptoService = new RsaCryptoService({
-                publicKey: rsaPublicKey
-              })
-              marshalledCrypto = @cryptoServiceMarshaller.marshall(objectCryptoService)
-              seal             = rsaCryptoService.encrypt(marshalledCrypto)
-              sealBase64       = btoa(seal)
-              return sealBase64
+              if rsaPublicKey
+                rsaCryptoService = new RsaCryptoService({
+                  publicKey: rsaPublicKey
+                })
+                marshalledCrypto = @cryptoServiceMarshaller.marshall(objectCryptoService)
+                seal             = rsaCryptoService.encrypt(marshalledCrypto)
+                sealBase64       = btoa(seal)
+                return sealBase64
             )
             logger.info('seals', seals)
 

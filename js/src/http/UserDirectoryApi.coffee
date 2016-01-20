@@ -5,6 +5,7 @@ define 'kryptnostic.user-directory-api', [
   'kryptnostic.logger'
   'kryptnostic.configuration'
   'kryptnostic.caching-service'
+  'kryptnostic.requests'
 ], (require) ->
 
   axios         = require 'axios'
@@ -12,9 +13,11 @@ define 'kryptnostic.user-directory-api', [
   Logger        = require 'kryptnostic.logger'
   Configuration = require 'kryptnostic.configuration'
   Cache         = require 'kryptnostic.caching-service'
+  Requests      = require 'kryptnostic.requests'
 
-  getUserUrl   = -> Configuration.get('heraclesUrl') + '/directory/user'
-  getUsersUrl  = -> Configuration.get('heraclesUrl') + '/directory/users'
+  getUserUrl   = -> Configuration.get('heraclesUrlV2') + '/directory/user'
+  getUsersUrl  = -> Configuration.get('heraclesUrlV2') + '/directory/users'
+  usersInRealmUrl = -> Configuration.get('servicesUrl') + '/directory'
 
   log = Logger.get('UserDirectoryApi')
 
@@ -104,5 +107,14 @@ define 'kryptnostic.user-directory-api', [
         for user in users
           Cache.store( Cache.USERS, user.id, user )
         return cached.concat(users)
+
+    getInitializedUsers: ({ realm }) ->
+      Promise.resolve(axios(Requests.wrapCredentials({
+        url    : usersInRealmUrl() + '/initialized/' + realm
+        method : 'GET'
+      })))
+      .then (response) ->
+        uuids = response.data
+        return uuids
 
   return UserDirectoryApi

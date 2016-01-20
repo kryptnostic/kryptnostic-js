@@ -5,7 +5,7 @@ define 'kryptnostic.search-credential-service', [
   'kryptnostic.logger'
   'kryptnostic.authentication-stage'
   'kryptnostic.search-key-generator'
-  'kryptnostic.crypto-key-storage-api'
+  'kryptnostic.key-storage-api'
   'kryptnostic.crypto-service-loader'
 ], (require) ->
 
@@ -13,7 +13,7 @@ define 'kryptnostic.search-credential-service', [
   Promise             = require 'bluebird'
   Logger              = require 'kryptnostic.logger'
   AuthenticationStage = require 'kryptnostic.authentication-stage'
-  CryptoKeyStorageApi = require 'kryptnostic.crypto-key-storage-api'
+  KeyStorageApi       = require 'kryptnostic.key-storage-api'
   SearchKeyGenerator  = require 'kryptnostic.search-key-generator'
   CryptoServiceLoader = require 'kryptnostic.crypto-service-loader'
 
@@ -25,8 +25,8 @@ define 'kryptnostic.search-credential-service', [
   CredentialType = {
     FHE_PRIVATE_KEY : {
       getKey    : (clientKeys) -> clientKeys.fhePrivateKey
-      getter    : (api) -> api.getFhePrivateKey
-      setter    : (api) -> api.setFhePrivateKey
+      getter    : -> KeyStorageApi.getFHEPrivateKey
+      setter    : -> KeyStorageApi.setFHEPrivateKey
       stage     : AuthenticationStage.FHE_KEYGEN
       encrypt   : true
       decrypt   : true
@@ -34,17 +34,17 @@ define 'kryptnostic.search-credential-service', [
     }
     SEARCH_PRIVATE_KEY : {
       getKey    : (clientKeys) -> clientKeys.searchPrivateKey
-      getter    : (api) -> api.getSearchPrivateKey
-      setter    : (api) -> api.setSearchPrivateKey
+      getter    : -> KeyStorageApi.getFHESearchPrivateKey
+      setter    : -> KeyStorageApi.setFHESearchPrivateKey
       stage     : AuthenticationStage.SEARCH_KEYGEN
       encrypt   : true
       decrypt   : true
       id        : 'KryptnosticEngine.SearchPrivateKey'
     }
+    # the client FHE hash function never needs to be downloaded from the server, so we don't need a getter
     CLIENT_HASH_FUNCTION : {
       getKey    : (clientKeys) -> clientKeys.clientHashFunction
-      getter    : (api) -> api.getClientHashFunction
-      setter    : (api) -> api.setClientHashFunction
+      setter    : -> KeyStorageApi.setFHEHashFunction
       stage     : AuthenticationStage.CLIENT_HASH_GEN
       encrypt   : false
       decrypt   : false
@@ -61,9 +61,8 @@ define 'kryptnostic.search-credential-service', [
   class SearchCredentialService
 
     constructor: ->
-      @cryptoKeyStorageApi = new CryptoKeyStorageApi()
       @searchKeyGenerator  = new SearchKeyGenerator()
-      @cryptoServiceLoader = CryptoServiceLoader.get()
+      @cryptoServiceLoader = new CryptoServiceLoader()
 
     # initializes keys if needed.
     ensureCredentialsInitialized: ( notifier = -> ) ->
@@ -103,8 +102,11 @@ define 'kryptnostic.search-credential-service', [
 
         # create a map of CredentialType -> Promise<Credential>
         credentialPromises = _.mapValues(CredentialType, (credentialType) =>
-          loadCredential = credentialType.getter(@cryptoKeyStorageApi)
-          return loadCredential()
+          if credentialType.getter?
+            loadCredential = credentialType.getter()
+            return loadCredential()
+          else
+            return Promise.resolve()
         )
 
         # Promise.props() returns a Promise that is fulfilled when all the properties of the object are fulfilled,
@@ -120,7 +122,7 @@ define 'kryptnostic.search-credential-service', [
           # create a map of CredentialType -> Promise<AesCryptoService>
           cryptoServicePromises = _.mapValues(CredentialType, (credentialType) =>
             # we expect getObjectCryptoService() to eventually return an instance of AesCryptoService
-            return @cryptoServiceLoader.getObjectCryptoService(
+            return @cryptoServiceLoader.getObjectCryptoServiceV2(
               credentialType.id,
               { expectMiss : true }
             )
@@ -136,7 +138,6 @@ define 'kryptnostic.search-credential-service', [
               # 'type' is they key into the CredentialType enum:
               #   - FHE_PRIVATE_KEY
               #   - SEARCH_PRIVATE_KEY
-              #   - CLIENT_HASH_FUNCTION
 
               type           = key
               credential     = value
@@ -155,16 +156,14 @@ define 'kryptnostic.search-credential-service', [
         @getStoredCredentials()
       .then (credentials) ->
         credentials    = _.compact(_.values(credentials))
-        expectedLength = _.size(_.values(CredentialType))
+        expectedLength = 2
 
         if _.isEmpty(credentials)
           return false
         else if credentials.length is expectedLength
           return true
         else
-          logger.error('user account is in a partially initialized state')
-          logger.error("expected #{expectedLength} credentials but got #{credentials.length}")
-          throw new Error 'credentials are in a partially initialized state'
+          return false
 
     initializeCredentials: (notifier) ->
       { clientKeys } = {}
@@ -189,7 +188,7 @@ define 'kryptnostic.search-credential-service', [
         Promise.resolve(notifier(credentialType.stage))
       .then =>
         # we expect getObjectCryptoService() to return an instance of AesCryptoService
-        @cryptoServiceLoader.getObjectCryptoService(
+        @cryptoServiceLoader.getObjectCryptoServiceV2(
           credentialType.id,
           { expectMiss: true }
         )
@@ -200,7 +199,7 @@ define 'kryptnostic.search-credential-service', [
         if credentialType.encrypt is true
           storeableKey = aesCryptoService.encryptUint8Array(key)
 
-        storeCredential = credentialType.setter(@cryptoKeyStorageApi)
+        storeCredential = credentialType.setter()
         storeCredential(storeableKey)
 
       .then ->

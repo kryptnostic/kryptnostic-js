@@ -18,10 +18,11 @@ define 'kryptnostic.chunking.strategy.default', [
     @URI : 'com.kryptnostic.kodex.v1.serialization.crypto.DefaultChunkingStrategy'
 
     split : (data, blockBytes = BLOCK_LENGTH_IN_BYTES) ->
-      return _.chain(data)
-        .chunk(blockBytes)
-        .map((chunkArr) -> chunkArr.join(EMPTY_STRING))
-        .value()
+      # return _.chain(data)
+      #   .chunk(blockBytes)
+      #   .map((chunkArr) -> chunkArr.join(EMPTY_STRING))
+      #   .value()
+      return [ data ]
 
     join : (chunks) ->
       return chunks.join(EMPTY_STRING)

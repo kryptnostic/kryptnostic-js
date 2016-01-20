@@ -7,6 +7,7 @@ define 'kryptnostic.search-indexing-service', [
   'kryptnostic.logger'
   'kryptnostic.metadata-api'
   'kryptnostic.metadata-request'
+  'kryptnostic.object-api'
   'kryptnostic.kryptnostic-engine'
   'kryptnostic.search.indexer'
   'kryptnostic.search.metadata-mapper'
@@ -24,10 +25,13 @@ define 'kryptnostic.search-indexing-service', [
   JsonChunkingStrategy      = require 'kryptnostic.chunking.strategy.json'
   KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
   KryptnosticObject         = require 'kryptnostic.kryptnostic-object'
-  MetadataApi               = require 'kryptnostic.metadata-api'
   MetadataMapper            = require 'kryptnostic.search.metadata-mapper'
   MetadataRequest           = require 'kryptnostic.metadata-request'
   ObjectIndexer             = require 'kryptnostic.search.indexer'
+
+  # APIs
+  MetadataApi               = require 'kryptnostic.metadata-api'
+  ObjectApi                 = require 'kryptnostic.object-api'
   SharingApi                = require 'kryptnostic.sharing-api'
 
   # utils
@@ -41,14 +45,15 @@ define 'kryptnostic.search-indexing-service', [
   class SearchIndexingService
 
     constructor : ->
-      @cryptoServiceLoader  = CryptoServiceLoader.get()
-      @sharingApi           = new SharingApi()
+      @cryptoServiceLoader  = new CryptoServiceLoader()
       @metadataApi          = new MetadataApi()
+      @objectApi            = new ObjectApi()
+      @sharingApi           = new SharingApi()
       @metadataMapper       = new MetadataMapper()
       @objectIndexer        = new ObjectIndexer()
 
     # indexes and uploads the submitted object.
-    submit: ({ storageRequest, objectIdPair, objectSearchPair }) ->
+    submit: (storageRequest, objectKey, parentObjectKey, objectSearchPair) ->
 
       unless storageRequest.isSearchable
         log.info('skipping non-searchable object')
@@ -57,32 +62,40 @@ define 'kryptnostic.search-indexing-service', [
       { body } = storageRequest
       { objectIndexPair } = {}
 
+      if not parentObjectKey?
+        parentObjectKey = objectKey
+
       Promise.resolve()
       .then =>
         engine = KryptnosticEngineProvider.getEngine()
         if not objectSearchPair?
           objectIndexPair  = engine.generateObjectIndexPair()
           objectSearchPair = engine.calculateObjectSearchPairFromObjectIndexPair(objectIndexPair)
-          @sharingApi.addObjectSearchPair(objectIdPair.parentObjectId, objectSearchPair)
+          @sharingApi.addObjectSearchPair(parentObjectKey, objectSearchPair)
         else
           objectIndexPair = engine.calculateObjectIndexPairFromObjectSearchPair(objectSearchPair)
 
         Promise.resolve()
         .then =>
-          @objectIndexer.index(objectIdPair.parentObjectId, body)
+          @objectIndexer.index(parentObjectKey.objectId, body)
         .then (metadata) =>
-          @prepareMetadataRequest({ objectIdPair, metadata, objectIndexPair })
+          @prepareMetadataRequest({ objectKey, parentObjectKey, metadata, objectIndexPair })
         .then (metadataRequest) =>
           @metadataApi.uploadMetadata( metadataRequest )
         .then ->
           return objectSearchPair
 
     # currently produces a single request, batch later if needed.
-    prepareMetadataRequest: ({ objectIdPair, metadata, objectIndexPair }) ->
-      Promise.resolve()
-      .then =>
-        @cryptoServiceLoader.getObjectCryptoService(
-          objectIdPair.parentObjectId,
+    prepareMetadataRequest: ({ objectKey, parentObjectKey, metadata, objectIndexPair }) ->
+
+      parentObjectId = if parentObjectKey? then parentObjectKey.objectId else objectKey.objectId
+
+      Promise.resolve(
+        @objectApi.getLatestVersionedObjectKey(parentObjectId)
+      )
+      .then (versionedObjectKey) =>
+        @cryptoServiceLoader.getObjectCryptoServiceV2(
+          versionedObjectKey,
           { expectMiss : false }
         )
       .then (cryptoService) =>
@@ -93,7 +106,7 @@ define 'kryptnostic.search-indexing-service', [
 
           # encrypt metadata
           kryptnosticObject = KryptnosticObject.createFromDecrypted({
-            id: objectIdPair.objectId,
+            id: objectKey.objectId,
             body: metadata
           })
           kryptnosticObject.setChunkingStrategy(JsonChunkingStrategy.URI)
@@ -105,7 +118,7 @@ define 'kryptnostic.search-indexing-service', [
           _.extend(
             data,
             {
-              key: objectIdPair.objectId,
+              key: objectKey.objectId,
               strategy: { '@class': JsonChunkingStrategy.URI }
             }
           )
@@ -113,7 +126,7 @@ define 'kryptnostic.search-indexing-service', [
           indexedMetadata = new IndexedMetadata({
             key: key,
             data: data,
-            id: objectIdPair.parentObjectId
+            id: parentObjectId
           })
           metadataIndex.push(indexedMetadata)
 

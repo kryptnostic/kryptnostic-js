@@ -3,45 +3,57 @@ define 'kryptnostic.tree-node', [
   'bluebird'
   'lodash'
   'kryptnostic.logger'
+  'kryptnostic.object-utils'
 ], (require) ->
 
-  _       = require 'lodash'
-  Promise = require 'bluebird'
-  Logger  = require 'kryptnostic.logger'
+  _           = require 'lodash'
+  Promise     = require 'bluebird'
+  Logger      = require 'kryptnostic.logger'
+  ObjectUtils = require 'kryptnostic.object-utils'
 
   log = Logger.get('TreeNode')
 
   validateId = (id) ->
     if _.isEmpty(id)
-      log.error('illegal id', { id })
-      throw new Error 'no root id provided'
+      errMsg = 'illegal TreeNode - no id provided'
+      log.error(errMsg)
+      throw new Error(errMsg)
     if not _.isString(id)
-      log.error('illegal id', { id })
-      throw new Error 'id is not a string'
+      errMsg = 'illegal TreeNode - id must be a String'
+      log.error(errMsg, { id })
+      throw new Error(errMsg)
 
   validateChildren = (children) ->
-    unless _.isArray(children)
-      throw new Error 'children must be an array'
-    children.forEach (child) ->
-      unless child.constructor.name is 'TreeNode'
-        throw new Error 'child must be a tree node'
+    unless _.isObject(children)
+      errMsg = 'illegal TreeNode - children must be an Object'
+      throw new Error(errMsg)
+    # children.forEach (child) ->
+    #   unless child.constructor.name is 'TreeNode'
+    #     throw new Error 'child must be a tree node'
 
-  #
-  # Represents a node in a tree of Kryptnostic objects.
-  # Author: rbuckheit
-  #
   class TreeNode
 
-    constructor: (@id, @children = []) ->
-      validateId(@id)
-      validateChildren(@children)
+    constructor: (@objectMetadataTree = {}) ->
+      validateId(@objectMetadataTree.metadata.id)
+      validateChildren(@objectMetadataTree.children)
 
     # visits children depth-first and then the root node
     visit : (visitor) ->
-      Promise.all(_.map(@children, (child) ->
-        return child.visit(visitor)
-      ))
+
+      childPromises = _.map(@objectMetadataTree.children, (child) ->
+        childNode = new TreeNode(child)
+        return childNode.visit(visitor)
+      )
+
+      Promise.all(childPromises)
       .then =>
-        return visitor.visit(@id)
+        id = @objectMetadataTree.metadata.id
+        nodeId = @objectMetadataTree.metadata.nodeId
+        if visitor.shouldSkip(nodeId)
+          return Promise.resolve()
+        else if ObjectUtils.isChildId(nodeId)
+          return visitor.loadChild(@objectMetadataTree)
+        else
+          return visitor.loadMaster(@objectMetadataTree)
 
   return TreeNode

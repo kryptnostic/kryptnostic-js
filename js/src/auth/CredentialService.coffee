@@ -2,8 +2,8 @@ define 'kryptnostic.credential-service', [
   'require'
   'forge'
   'kryptnostic.logger'
-  'kryptnostic.public-key-envelope'
-  'kryptnostic.directory-api'
+  'kryptnostic.key-storage-api'
+  'kryptnostic.binary-utils'
   'kryptnostic.rsa-key-generator'
   'kryptnostic.password-crypto-service'
   'kryptnostic.authentication-stage'
@@ -13,10 +13,10 @@ define 'kryptnostic.credential-service', [
   Logger                = require 'kryptnostic.logger'
   Forge                 = require 'forge'
   Promise               = require 'bluebird'
-  DirectoryApi          = require 'kryptnostic.directory-api'
+  BinaryUtils           = require 'kryptnostic.binary-utils'
+  KeyStorageApi         = require 'kryptnostic.key-storage-api'
   PasswordCryptoService = require 'kryptnostic.password-crypto-service'
   RsaKeyGenerator       = require 'kryptnostic.rsa-key-generator'
-  PublicKeyEnvelope     = require 'kryptnostic.public-key-envelope'
   AuthenticationStage   = require 'kryptnostic.authentication-stage'
   SaltGenerator         = require 'kryptnostic.salt-generator'
 
@@ -37,7 +37,6 @@ define 'kryptnostic.credential-service', [
   class CredentialService
 
     constructor: ->
-      @directoryApi    = new DirectoryApi()
       @rsaKeyGenerator = new RsaKeyGenerator()
 
     deriveCredential : ({ principal, password }, notifier = -> ) ->
@@ -47,7 +46,7 @@ define 'kryptnostic.credential-service', [
       .then ->
         Promise.resolve(notifier(AuthenticationStage.DERIVE_CREDENTIAL))
       .then =>
-        @directoryApi.getSalt(principal)
+        KeyStorageApi.getEncryptedSalt(principal)
       .then (encryptedSalt) ->
         return CredentialService.derive({ encryptedSalt, password })
 
@@ -75,7 +74,8 @@ define 'kryptnostic.credential-service', [
       Promise.resolve()
       .then =>
         blockCiphertext = encryptedSalt
-        @directoryApi.setSalt({ uuid, blockCiphertext, credential })
+        KeyStorageApi.setEncryptedSalt(uuid, credential, blockCiphertext)
+        return
 
     initializeKeypair : ({ password }, notifier = -> ) ->
       { publicKey, privateKey, keypair } = {}
@@ -86,24 +86,25 @@ define 'kryptnostic.credential-service', [
       .then =>
         @rsaKeyGenerator.generateKeypair()
       .then (keypairBuffer) ->
-        passwordCrypto       = new PasswordCryptoService()
-        
-        serializedPrivateKey = keypairBuffer.privateKey.data
-        privateKey           = passwordCrypto.encrypt(serializedPrivateKey, password)
-        
-        serializedPublicKey  = keypairBuffer.publicKey.data
-        publicKey            = PublicKeyEnvelope.createFromBuffer(serializedPublicKey)
-        
-        keypair              = {}
-        privateKeyAsn1       = Forge.asn1.fromDer(serializedPrivateKey)
-        keypair.privateKey   = Forge.pki.privateKeyFromAsn1(privateKeyAsn1)
-        publicKeyAsn1        = Forge.asn1.fromDer(serializedPublicKey)
-        keypair.publicKey    = Forge.pki.publicKeyFromAsn1(publicKeyAsn1)
+
+        keypair         = {}
+        passwordCrypto  = new PasswordCryptoService()
+        publicKeyBytes  = keypairBuffer.publicKey.data
+        privateKeyBytes = keypairBuffer.privateKey.data
+
+        publicKey  = publicKeyBytes
+        privateKey = passwordCrypto.encrypt(privateKeyBytes, password)
+
+        publicKeyAsn1      = Forge.asn1.fromDer(publicKeyBytes)
+        keypair.publicKey  = Forge.pki.publicKeyFromAsn1(publicKeyAsn1)
+        privateKeyAsn1     = Forge.asn1.fromDer(privateKeyBytes)
+        keypair.privateKey = Forge.pki.privateKeyFromAsn1(privateKeyAsn1)
         return keypair
       .then =>
-        @directoryApi.setPrivateKey(privateKey)
+        KeyStorageApi.setRSAPrivateKey(privateKey)
       .then =>
-        @directoryApi.setPublicKey(publicKey)
+        publicKeyAsUint8 = BinaryUtils.stringToUint8(publicKey)
+        KeyStorageApi.setRSAPublicKey(publicKeyAsUint8)
       .then ->
         log.info('keypair initialization complete')
         return keypair
@@ -116,7 +117,7 @@ define 'kryptnostic.credential-service', [
       .then ->
         Promise.resolve(notifier(AuthenticationStage.DERIVE_KEYPAIR))
       .then =>
-        @directoryApi.getPrivateKey()
+        KeyStorageApi.getRSAPrivateKey()
       .then (blockCiphertext) =>
         if _.isEmpty(blockCiphertext)
           return Promise.resolve()

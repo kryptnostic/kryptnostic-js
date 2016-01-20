@@ -6,6 +6,7 @@ define 'kryptnostic.sharing-api', [
   'kryptnostic.configuration'
   'kryptnostic.logger'
   'kryptnostic.requests'
+  'kryptnostic.validators'
 ], (require) ->
 
   # libraries
@@ -17,104 +18,99 @@ define 'kryptnostic.sharing-api', [
   Config      = require 'kryptnostic.configuration'
   Logger      = require 'kryptnostic.logger'
   Requests    = require 'kryptnostic.requests'
+  Validators  = require 'kryptnostic.validators'
 
   # constants
-  TYPE_PATH   = '/type'
-  SHARE_PATH  = '/share'
-  REVOKE_PATH = '/revoke'
-  OBJECT_PATH = '/object'
-  KEYS_PATH   = '/keys'
-  OBJECT_KEYS = '/objectKeys'
+  DEFAULT_HEADERS = { 'Content-Type' : 'application/json' }
 
-  DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
-
-  sharingEndpoint         = -> Config.get('servicesUrl') + SHARE_PATH
-  shareObjectUrl          = -> sharingEndpoint() + OBJECT_PATH + SHARE_PATH
-  revokeObjectUrl         = -> sharingEndpoint() + OBJECT_PATH + REVOKE_PATH
-  getIncomingSharesUrl    = -> sharingEndpoint() + OBJECT_PATH
-  removeIncomingSharesUrl = (id ) -> sharingEndpoint() + OBJECT_PATH + '/' + id
-  addObjectSearchPairUrl  = -> sharingEndpoint() + KEYS_PATH
-  getObjectSearchPairUrl  = (id) -> sharingEndpoint() + OBJECT_PATH + '/' + id + OBJECT_KEYS
+  { validateVersionedObjectKey } = Validators
 
   logger = Logger.get('SharingApi')
 
-  #
-  # HTTP calls for interacting with the /share endpoint of Kryptnostic Services.
-  #
+  sharingUrl             = -> Config.get('servicesUrlV2') + '/share'
+  shareObjectUrl         = -> sharingUrl() + '/object'
+  revokeObjectUrl        = -> sharingUrl() + '/object'
+  incomingSharesUrl      = -> sharingUrl() + '/object'
+  addObjectSearchPairUrl = -> sharingUrl() + '/keys'
+  getObjectSearchPairUrl = (objectId, objectVersion) ->
+    sharingUrl() + '/object/id/' + objectId + '/' + objectVersion
+
   class SharingApi
 
     # get all incoming shares
     getIncomingShares: ->
-      Promise.resolve()
-      .then ->
+      Promise.resolve(
         axios(
           Requests.wrapCredentials({
-            url    : getIncomingSharesUrl()
             method : 'GET'
+            url    : incomingSharesUrl()
           })
         )
-      .then (response) ->
-        logger.debug('getIncomingShares()', response)
-        return response.data
-
-    removeIncomingShares: ->
-      throw new Error 'removeIncomingShares() not implemented'
+      )
+      .then (axiosResponse) ->
+        if axiosResponse? and axiosResponse.data?
+          # axiosResponse.data == java.util.Set<com.kryptnostic.v2.sharing.models.Share>
+          return axiosResponse.data;
+        else
+          return null
 
     # share an object
     shareObject: (sharingRequest) ->
-      Promise.resolve()
-      .then ->
-        sharingRequest.validate()
+      sharingRequest.validate()
+      Promise.resolve(
         axios(
           Requests.wrapCredentials({
-            url     : shareObjectUrl()
             method  : 'POST'
-            headers : DEFAULT_HEADER
+            url     : shareObjectUrl()
             data    : JSON.stringify(sharingRequest)
+            headers : DEFAULT_HEADERS
           })
         )
-      .then (response) ->
-        logger.debug('shareObject()', response.data.data)
+      )
 
     # revoke access to an object
     revokeObject: (revocationRequest) ->
-      Promise.resolve()
-      .then ->
-        revocationRequest.validate()
+      revocationRequest.validate()
+      Promise.resolve(
         axios(
           Requests.wrapCredentials({
+            method  : 'DELETE'
             url     : revokeObjectUrl()
-            method  : 'POST'
-            headers : DEFAULT_HEADER
             data    : JSON.stringify(revocationRequest)
+            headers : DEFAULT_HEADERS
           })
         )
-      .then (response) ->
-        logger.debug('revokeObject()', response.data.data)
-
-    getObjectSearchPair: (objectId) ->
-      return Requests.getAsUint8FromUrl(
-        getObjectSearchPairUrl(objectId)
       )
 
+    getObjectSearchPair: (versionedObjectKey) ->
 
-    addObjectSearchPair: (objectId, objectSearchPair) ->
-      Promise.resolve()
-      .then ->
-        requestData = {}
-        objectSearchPairAsBase64 = BinaryUtils.uint8ToBase64(objectSearchPair)
-        requestData[objectId] = {
-          searchPair: objectSearchPairAsBase64
-        }
+      if not validateVersionedObjectKey(versionedObjectKey)
+        return Promise.resolve(null)
+
+      Requests.getAsUint8FromUrl(
+        getObjectSearchPairUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
+      )
+
+    addObjectSearchPair: (versionedObjectKey, objectSearchPair) ->
+
+      if not validateVersionedObjectKey(versionedObjectKey)
+        return Promise.resolve(null)
+
+      versionedObjectSearchPair = {
+        objectKey        : versionedObjectKey
+        objectSearchPair : BinaryUtils.uint8ToBase64(objectSearchPair)
+      }
+      requestData = [versionedObjectSearchPair]
+
+      Promise.resolve(
         axios(
           Requests.wrapCredentials({
+            method  : 'POST'
             url     : addObjectSearchPairUrl()
-            method  : 'PUT'
-            headers : DEFAULT_HEADER
             data    : requestData
+            headers : DEFAULT_HEADERS
           })
         )
-      .then (response) ->
-        logger.debug('addObjectSearchPair()', response.data)
+      )
 
   return SharingApi

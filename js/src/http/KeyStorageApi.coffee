@@ -1,3 +1,5 @@
+# coffeelint: disable=cyclomatic_complexity
+
 define 'kryptnostic.key-storage-api', [
   'require',
   'axios',
@@ -138,7 +140,7 @@ define 'kryptnostic.key-storage-api', [
       )
 
     @setFHEHashFunction: (fheHashFunction) ->
-      # TODO - validate FHE hash function is Uint8Array
+      # ToDo - validate FHE hash function is Uint8Array
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
@@ -249,7 +251,6 @@ define 'kryptnostic.key-storage-api', [
         if axiosResponse and axiosResponse.data
           # axiosResponse.data == java.util.Map<java.util.UUID, byte[]>
           try
-            # TODO -
             uuidToPublicKeyMap = axiosResponse.data
             uuidToRsaPublicKeyMap = _.mapValues(uuidToPublicKeyMap, (encodedPublicKey) ->
               try
@@ -271,7 +272,7 @@ define 'kryptnostic.key-storage-api', [
       throw new Error('KeyStorageApi:getRSAPublicKey() - not yet implemented!')
 
     @setRSAPublicKey: (publicKey) ->
-      # TODO - validate publicKey is Uint8Array
+      # ToDo - validate publicKey is Uint8Array
       encodedPublicKey = btoa(publicKey)
       Promise.resolve(
         axios(

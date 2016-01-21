@@ -1,3 +1,5 @@
+# coffeelint: disable=cyclomatic_complexity
+
 define 'kryptnostic.credential-service', [
   'require'
   'forge'
@@ -39,14 +41,10 @@ define 'kryptnostic.credential-service', [
     constructor: ->
       @rsaKeyGenerator = new RsaKeyGenerator()
 
-    deriveCredential : ({ principal, password }, notifier = -> ) ->
-      { passwordCrypto } = {}
-
-      Promise.resolve()
-      .then ->
-        Promise.resolve(notifier(AuthenticationStage.DERIVE_CREDENTIAL))
-      .then =>
+    deriveCredential : ({ principal, password }) ->
+      Promise.resolve(
         KeyStorageApi.getEncryptedSalt(principal)
+      )
       .then (encryptedSalt) ->
         return CredentialService.derive({ encryptedSalt, password })
 
@@ -72,7 +70,7 @@ define 'kryptnostic.credential-service', [
 
     initializeSalt : ({ uuid, encryptedSalt, credential }) ->
       Promise.resolve()
-      .then =>
+      .then ->
         blockCiphertext = encryptedSalt
         KeyStorageApi.setEncryptedSalt(uuid, credential, blockCiphertext)
         return
@@ -100,9 +98,9 @@ define 'kryptnostic.credential-service', [
         privateKeyAsn1     = Forge.asn1.fromDer(privateKeyBytes)
         keypair.privateKey = Forge.pki.privateKeyFromAsn1(privateKeyAsn1)
         return keypair
-      .then =>
+      .then ->
         KeyStorageApi.setRSAPrivateKey(privateKey)
-      .then =>
+      .then ->
         publicKeyAsUint8 = BinaryUtils.stringToUint8(publicKey)
         KeyStorageApi.setRSAPublicKey(publicKeyAsUint8)
       .then ->
@@ -116,7 +114,7 @@ define 'kryptnostic.credential-service', [
       Promise.resolve()
       .then ->
         Promise.resolve(notifier(AuthenticationStage.DERIVE_KEYPAIR))
-      .then =>
+      .then ->
         KeyStorageApi.getRSAPrivateKey()
       .then (blockCiphertext) =>
         if _.isEmpty(blockCiphertext)

@@ -10,8 +10,7 @@ define 'kryptnostic.crypto-service-loader', [
   'kryptnostic.aes-crypto-service',
   'kryptnostic.key-storage-api',
   'kryptnostic.crypto-service-marshaller',
-  'kryptnostic.credential-loader',
-  'kryptnostic.object-utils'
+  'kryptnostic.credential-loader'
 ], (require) ->
   'use strict'
 
@@ -24,7 +23,6 @@ define 'kryptnostic.crypto-service-loader', [
   Logger                  = require 'kryptnostic.logger'
   CryptoServiceMarshaller = require 'kryptnostic.crypto-service-marshaller'
   CredentialLoader        = require 'kryptnostic.credential-loader'
-  ObjectUtils             = require 'kryptnostic.object-utils'
 
   INT_SIZE     = 4
   EMPTY_BUFFER = ''

@@ -19,12 +19,12 @@ define 'kryptnostic.kryptnostic-engine', [
   #
   class KryptnosticEngine
 
-    constructor: ({ @fhePrivateKey, @searchPrivateKey } = {}) ->
+    constructor: ({ @fhePrivateKey, @fheSearchPrivateKey } = {}) ->
       unless Module? and Module.KryptnosticClient?
         logger.error(ENGINE_MISSING_ERROR)
 
-      if @fhePrivateKey and @searchPrivateKey
-        @krypto = new Module.KryptnosticClient(@fhePrivateKey, @searchPrivateKey)
+      if @fhePrivateKey and @fheSearchPrivateKey
+        @krypto = new Module.KryptnosticClient(@fhePrivateKey, @fheSearchPrivateKey)
       else
         @krypto = new Module.KryptnosticClient()
 

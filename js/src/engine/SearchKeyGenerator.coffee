@@ -20,9 +20,9 @@ define 'kryptnostic.search-key-generator', [
     generateClientKeys: ->
       engine = KryptnosticEngineProvider.getEngine()
       return {
-        fhePrivateKey      : engine.getPrivateKey()
-        searchPrivateKey   : engine.getSearchPrivateKey()
-        clientHashFunction : engine.calculateClientHashFunction()
+        FHE_PRIVATE_KEY        : engine.getPrivateKey()
+        FHE_SEARCH_PRIVATE_KEY : engine.getSearchPrivateKey()
+        FHE_HASH_FUNCTION      : engine.calculateClientHashFunction()
       }
 
   return SearchKeyGenerator

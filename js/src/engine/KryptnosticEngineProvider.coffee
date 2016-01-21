@@ -13,9 +13,9 @@ define 'kryptnostic.kryptnostic-engine-provider', [
 
     _engine = null
 
-    @init: ({ @fhePrivateKey, @searchPrivateKey } = {}) ->
+    @init: ({ @fhePrivateKey, @fheSearchPrivateKey } = {}) ->
       logger.debug('initializing KryptnosticEngine with keys')
-      _engine ?= new KryptnosticEngine({ @fhePrivateKey, @searchPrivateKey })
+      _engine ?= new KryptnosticEngine({ @fhePrivateKey, @fheSearchPrivateKey })
 
     @getEngine: ->
       if _engine?

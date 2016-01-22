@@ -27881,7 +27881,7 @@ define("function-name", function(){});
       return sharingUrl() + '/keys';
     };
     getObjectSearchPairUrl = function(objectId, objectVersion) {
-      return sharingUrl() + '/object/id/' + objectId + '/' + objectVersion;
+      return sharingUrl() + '/keys/id/' + objectId + '/' + objectVersion;
     };
     SharingApi = (function() {
       function SharingApi() {}
@@ -29072,8 +29072,8 @@ define("function-name", function(){});
     return {
       properties: {
         id: {
-          description: 'id of the object being shared',
-          type: 'string',
+          description: 'VersionedObjectKey of the object being revoked',
+          type: 'object',
           required: true,
           allowEmpty: false
         },
@@ -29246,12 +29246,6 @@ define("function-name", function(){});
       }
       validation = revalidator.validate(object, schema);
       if (!validation.valid) {
-        logger.error('schema validation failure', {
-          className: object.constructor.name,
-          errors: validation.errors,
-          object: object,
-          callTrace: new Error().stack
-        });
         throw new Error('schema validation failed for ' + object.constructor.name);
       }
     };
@@ -29896,7 +29890,7 @@ define("function-name", function(){});
           return function(versionedObjectKey) {
             var objectSearchPairPromise;
             objectSearchPairPromise = void 0;
-            if (objectSearchPair != null) {
+            if (objectSearchPair) {
               objectSearchPairPromise = Promise.resolve(objectSearchPair);
             } else {
               objectSearchPairPromise = _this.sharingApi.getObjectSearchPair(versionedObjectKey);
@@ -29936,25 +29930,26 @@ define("function-name", function(){});
         })(this));
       };
 
-      SharingClient.prototype.revokeObject = function(id, uuids) {
+      SharingClient.prototype.revokeObject = function(objectId, uuids) {
         var revocationRequest;
         revocationRequest = {}.revocationRequest;
-        if (_.isEmpty(uuids)) {
+        if (!validateUuid(objectId)) {
           return Promise.resolve();
         }
-        return Promise.resolve().then((function(_this) {
-          return function() {
-            validateUuid(id);
-            validateUuids(uuids);
+        if (_.isEmpty(uuids) || !validateUuids(uuids)) {
+          return Promise.resolve();
+        }
+        return Promise.resolve(this.objectApi.getLatestVersionedObjectKey(objectId)).then((function(_this) {
+          return function(versionedObjectKey) {
             revocationRequest = new RevocationRequest({
-              id: id,
+              id: versionedObjectKey,
               users: uuids
             });
             return _this.sharingApi.revokeObject(revocationRequest);
           };
         })(this)).then(function() {
           return logger.info('revoked access', {
-            id: id,
+            objectId: objectId,
             uuids: uuids
           });
         });
@@ -30482,59 +30477,56 @@ define("function-name", function(){});
         this.changedUsers = {};
       }
 
-      PermissionChangeVisitor.prototype.visit = function(id) {
+      PermissionChangeVisitor.prototype.visit = function(objectMetadataTree) {
+        var objectId;
+        objectId = objectMetadataTree.metadata.id;
         return Promise.resolve().then((function(_this) {
           return function() {
-            validateId(id);
-            return _this.changePermissions(id);
+            return _this.changePermissions(objectMetadataTree);
           };
         })(this)).then((function(_this) {
           return function() {
-            return _this.changed.push(id);
+            return _this.changed.push(objectId);
           };
         })(this))["catch"]((function(_this) {
           return function(e) {
             log.error('failed to change permissions', {
-              id: id
+              objectId: objectId
             });
             log.error('error', _.extend({}, e, {
               msg: e.message,
               stack: e.stack
             }));
-            return _this.failed.push(id);
+            return _this.failed.push(objectId);
           };
         })(this));
       };
 
-      PermissionChangeVisitor.prototype.changePermissions = function(id) {
-        var uuidsAdd, uuidsRemove, _ref;
+      PermissionChangeVisitor.prototype.changePermissions = function(objectMetadataTree) {
+        var objectId, uuidsAdd, uuidsRemove, _ref;
         _ref = {}, uuidsAdd = _ref.uuidsAdd, uuidsRemove = _ref.uuidsRemove;
-        return Promise.resolve().then((function(_this) {
-          return function() {
-            validateId(id);
-            return _this.getParticipants(id);
-          };
-        })(this)).then((function(_this) {
+        objectId = objectMetadataTree.metadata.id;
+        return Promise.resolve(this.getParticipants(objectMetadataTree)).then((function(_this) {
           return function(current) {
             uuidsAdd = _.difference(_this.uuids, current);
             uuidsRemove = _.difference(current, _this.uuids);
             return log.info('changePermissions', {
-              id: id,
+              objectId: objectId,
               uuidsRemove: uuidsRemove,
               uuidsAdd: uuidsAdd
             });
           };
         })(this)).then((function(_this) {
           return function() {
-            return _this.sharingClient.revokeObject(id, uuidsRemove);
+            return _this.sharingClient.revokeObject(objectId, uuidsRemove);
           };
         })(this)).then((function(_this) {
           return function() {
-            return _this.sharingClient.shareObject(id, uuidsAdd);
+            return _this.sharingClient.shareObject(objectId, uuidsAdd);
           };
         })(this)).then((function(_this) {
           return function() {
-            return _this.changedUsers[id] = {
+            return _this.changedUsers[objectId] = {
               added: uuidsAdd,
               removed: uuidsRemove
             };
@@ -30542,17 +30534,14 @@ define("function-name", function(){});
         })(this));
       };
 
-      PermissionChangeVisitor.prototype.getParticipants = function(objectId) {
-        return Promise.resolve().then((function(_this) {
-          return function() {
-            validateId(objectId);
-            return Promise.props({
-              owners: _this.objectAuthApi.getUsersWithOwnerAccess(objectId),
-              readers: _this.objectAuthApi.getUsersWithReadAccess(objectId),
-              writers: _this.objectAuthApi.getUsersWithWriteAccess(objectId)
-            });
-          };
-        })(this)).then(function(_arg) {
+      PermissionChangeVisitor.prototype.getParticipants = function(objectMetadataTree) {
+        var objectId;
+        objectId = objectMetadataTree.metadata.id;
+        return Promise.props({
+          owners: this.objectAuthApi.getUsersWithOwnerAccess(objectId),
+          readers: this.objectAuthApi.getUsersWithReadAccess(objectId),
+          writers: this.objectAuthApi.getUsersWithWriteAccess(objectId)
+        }).then(function(_arg) {
           var owners, readers, uuids, writers;
           owners = _arg.owners, readers = _arg.readers, writers = _arg.writers;
           uuids = _.chain([owners, readers, writers]).flatten().unique().value();
@@ -30672,16 +30661,7 @@ define("function-name", function(){});
         });
         return Promise.all(childPromises).then((function(_this) {
           return function() {
-            var id, nodeId;
-            id = _this.objectMetadataTree.metadata.id;
-            nodeId = _this.objectMetadataTree.metadata.nodeId;
-            if (visitor.shouldSkip(nodeId)) {
-              return Promise.resolve();
-            } else if (ObjectUtils.isChildId(nodeId)) {
-              return visitor.loadChild(_this.objectMetadataTree);
-            } else {
-              return visitor.loadMaster(_this.objectMetadataTree);
-            }
+            return visitor.visit(_this.objectMetadataTree);
           };
         })(this));
       };

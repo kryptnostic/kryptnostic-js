@@ -33,7 +33,7 @@ define 'kryptnostic.sharing-api', [
   incomingSharesUrl      = -> sharingUrl() + '/object'
   addObjectSearchPairUrl = -> sharingUrl() + '/keys'
   getObjectSearchPairUrl = (objectId, objectVersion) ->
-    sharingUrl() + '/object/id/' + objectId + '/' + objectVersion
+    sharingUrl() + '/keys/id/' + objectId + '/' + objectVersion
 
   class SharingApi
 

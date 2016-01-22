@@ -64,7 +64,7 @@ define 'kryptnostic.sharing-client', [
       .then (versionedObjectKey) =>
 
         objectSearchPairPromise = undefined
-        if objectSearchPair?
+        if objectSearchPair
           objectSearchPairPromise = Promise.resolve(objectSearchPair)
         else
           objectSearchPairPromise = @sharingApi.getObjectSearchPair(versionedObjectKey)
@@ -111,21 +111,23 @@ define 'kryptnostic.sharing-client', [
             @sharingApi.shareObject(sharingRequest)
         )
 
-    revokeObject: (id, uuids) ->
+    revokeObject: (objectId, uuids) ->
       { revocationRequest } = {}
 
-      if _.isEmpty(uuids)
+      if not validateUuid(objectId)
         return Promise.resolve()
 
-      Promise
-      .resolve()
-      .then =>
-        validateUuid(id)
-        validateUuids(uuids)
-        revocationRequest = new RevocationRequest { id, users: uuids }
+      if _.isEmpty(uuids) or not validateUuids(uuids)
+        return Promise.resolve()
+
+      Promise.resolve(
+        @objectApi.getLatestVersionedObjectKey(objectId)
+      )
+      .then (versionedObjectKey) =>
+        revocationRequest = new RevocationRequest { id: versionedObjectKey, users: uuids }
         @sharingApi.revokeObject(revocationRequest)
       .then ->
-        logger.info('revoked access', { id, uuids })
+        logger.info('revoked access', { objectId, uuids })
 
     processIncomingShares: ->
       Promise.props({

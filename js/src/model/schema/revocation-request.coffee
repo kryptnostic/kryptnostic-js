@@ -3,8 +3,8 @@ define 'kryptnostic.schema.revocation-request', [], ->
   return {
     properties: {
       id : {
-        description : 'id of the object being shared'
-        type        : 'string'
+        description : 'VersionedObjectKey of the object being revoked'
+        type        : 'object'
         required    : true
         allowEmpty  : false
       },
@@ -16,4 +16,3 @@ define 'kryptnostic.schema.revocation-request', [], ->
       }
     }
   }
-

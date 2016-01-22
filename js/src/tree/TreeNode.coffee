@@ -47,13 +47,6 @@ define 'kryptnostic.tree-node', [
 
       Promise.all(childPromises)
       .then =>
-        id = @objectMetadataTree.metadata.id
-        nodeId = @objectMetadataTree.metadata.nodeId
-        if visitor.shouldSkip(nodeId)
-          return Promise.resolve()
-        else if ObjectUtils.isChildId(nodeId)
-          return visitor.loadChild(@objectMetadataTree)
-        else
-          return visitor.loadMaster(@objectMetadataTree)
+        return visitor.visit(@objectMetadataTree)
 
   return TreeNode

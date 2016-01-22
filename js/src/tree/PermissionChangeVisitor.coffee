@@ -31,45 +31,42 @@ define 'kryptnostic.permission-change-visitor', [
       @failed        = []
       @changedUsers  = {}
 
-    visit: (id) ->
+    visit: (objectMetadataTree) ->
+      objectId = objectMetadataTree.metadata.id
       Promise.resolve()
       .then =>
-        validateId(id)
-        @changePermissions(id)
+        @changePermissions(objectMetadataTree)
       .then =>
-        @changed.push(id)
+        @changed.push(objectId)
       .catch (e) =>
-        log.error('failed to change permissions', { id })
+        log.error('failed to change permissions', { objectId })
         log.error('error', _.extend({}, e, { msg: e.message, stack: e.stack }))
-        @failed.push(id)
+        @failed.push(objectId)
 
-    changePermissions: (id) ->
+    changePermissions: (objectMetadataTree) ->
       { uuidsAdd, uuidsRemove } = {}
-
-      Promise.resolve()
-      .then =>
-        validateId(id)
-        @getParticipants(id)
+      objectId = objectMetadataTree.metadata.id
+      Promise.resolve(
+        @getParticipants(objectMetadataTree)
+      )
       .then (current) =>
         uuidsAdd    = _.difference(@uuids, current)
         uuidsRemove = _.difference(current, @uuids)
-        log.info('changePermissions', { id, uuidsRemove, uuidsAdd })
+        log.info('changePermissions', { objectId, uuidsRemove, uuidsAdd })
       .then =>
-        @sharingClient.revokeObject(id, uuidsRemove)
+        @sharingClient.revokeObject(objectId, uuidsRemove)
       .then =>
-        @sharingClient.shareObject(id, uuidsAdd)
+        @sharingClient.shareObject(objectId, uuidsAdd)
       .then =>
-        @changedUsers[id] = { added: uuidsAdd, removed: uuidsRemove }
+        @changedUsers[objectId] = { added: uuidsAdd, removed: uuidsRemove }
 
-    getParticipants: (objectId) ->
-      Promise.resolve()
-      .then =>
-        validateId(objectId)
-        Promise.props({
-          owners  : @objectAuthApi.getUsersWithOwnerAccess(objectId)
-          readers : @objectAuthApi.getUsersWithReadAccess(objectId)
-          writers : @objectAuthApi.getUsersWithWriteAccess(objectId)
-        })
+    getParticipants: (objectMetadataTree) ->
+      objectId = objectMetadataTree.metadata.id
+      Promise.props({
+        owners  : @objectAuthApi.getUsersWithOwnerAccess(objectId)
+        readers : @objectAuthApi.getUsersWithReadAccess(objectId)
+        writers : @objectAuthApi.getUsersWithWriteAccess(objectId)
+      })
       .then ({ owners, readers, writers }) ->
         uuids = _.chain([owners, readers, writers])
           .flatten()

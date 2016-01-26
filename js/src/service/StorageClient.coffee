@@ -228,13 +228,13 @@ define 'kryptnostic.storage-client', [
       Promise.resolve(
         @objectApi.getLatestVersionedObjectKey(objectId)
       )
-      .then (versionedObjectKey) =>
+      .then (latestObjectKey) =>
         Promise.resolve(
           @cryptoServiceLoader.getObjectCryptoServiceV2(versionedObjectKey)
         )
         .then (objectCryptoService) =>
           # ToDo: for now, we encrypt the entire object, but we'll need to support encrypting an object in chunks
-          @encrypt(versionedObjectKey, content, objectCryptoService)
+          @encrypt(latestObjectKey.objectId, content, objectCryptoService)
         .then (encrypted) =>
           blockCiphertext = encrypted.body.data[0].block
           @objectApi.setObjectFromBlockCiphertext(versionedObjectKey, blockCiphertext)

@@ -34,16 +34,18 @@ define 'kryptnostic.object-api', [
   objectUrl         = -> Config.get('servicesUrlV2') + '/object'
   objectsUrl        = -> objectUrl() + '/bulk'
   objectIdUrl       = (objectId) -> objectUrl() + '/id/' + objectId
-  objectMetadataUrl = (objectId) -> objectIdUrl(objectId) + '/metadata'
+  latestObjectIdUrl = (objectId) -> objectUrl() + '/latest/id/' + objectId
+  objectMetadataUrl = (objectId) -> objectUrl() + '/objectmetadata/id/' + objectId
   objectVersionUrl  = (objectId, objectVersion) -> objectIdUrl(objectId) + '/' + objectVersion
   objectLevelsUrl   = -> objectUrl() + '/levels'
 
   class ObjectApi
 
-    getObjectIds : ->
-      throw new Error('ObjectApi:getObjectIds() is not implemented')
-
     getObject: (objectId) ->
+
+      #
+      # rethink this API. what makes more sense, a bulk GET or a regular single object GET?
+      #
 
       if not validateUuid(objectId)
         return Promise.resolve(null)
@@ -90,7 +92,7 @@ define 'kryptnostic.object-api', [
         axios(
           Requests.wrapCredentials({
             method : 'GET'
-            url    : objectIdUrl(objectId)
+            url    : latestObjectIdUrl(objectId)
           })
         )
       )
@@ -186,33 +188,6 @@ define 'kryptnostic.object-api', [
           return axiosResponse.data
         else
           return null
-
-    # adds an encrypted block to a pending object
-    updateObject : (id, encryptableBlock) ->
-      validateId(id)
-
-      Promise.resolve(axios(Requests.wrapCredentials({
-        method  : 'POST'
-        url     : objectUrl() + '/' + id
-        data    : JSON.stringify(encryptableBlock)
-        headers : _.clone(DEFAULT_HEADER)
-      })))
-      .then (response) ->
-        logger.debug('submitted block', { id })
-
-    deleteObject : (objectId) ->
-      validateId(objectId)
-      Promise.resolve(
-        axios(
-          Requests.wrapCredentials({
-            method  : 'DELETE'
-            url     : objectIdUrl(objectId)
-            headers : _.clone(DEFAULT_HEADER)
-          })
-        )
-      )
-      .then (axiosResponse) ->
-        logger.debug('deleted object', { objectId })
 
     deleteObjectTrees: (objectIds) ->
       Promise.resolve(

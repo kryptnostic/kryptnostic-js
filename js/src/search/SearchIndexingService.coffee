@@ -52,8 +52,11 @@ define 'kryptnostic.search-indexing-service', [
       @metadataMapper       = new MetadataMapper()
       @objectIndexer        = new ObjectIndexer()
 
-    # indexes and uploads the submitted object.
     submit: (storageRequest, objectKey, parentObjectKey, objectSearchPair) ->
+
+      #
+      # ToDo: PLATFORM-61 - search and indexing migration to backend v2
+      #
 
       unless storageRequest.isSearchable
         log.info('skipping non-searchable object')
@@ -85,7 +88,6 @@ define 'kryptnostic.search-indexing-service', [
         .then ->
           return objectSearchPair
 
-    # currently produces a single request, batch later if needed.
     prepareMetadataRequest: ({ objectKey, parentObjectKey, metadata, objectIndexPair }) ->
 
       parentObjectId = if parentObjectKey? then parentObjectKey.objectId else objectKey.objectId

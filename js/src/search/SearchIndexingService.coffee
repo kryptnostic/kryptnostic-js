@@ -9,7 +9,7 @@ define 'kryptnostic.search-indexing-service', [
   'kryptnostic.metadata-request'
   'kryptnostic.object-api'
   'kryptnostic.kryptnostic-engine'
-  'kryptnostic.search.indexer'
+  'kryptnostic.indexing.object-indexer'
   'kryptnostic.search.metadata-mapper'
   'kryptnostic.indexed-metadata'
   'kryptnostic.kryptnostic-engine-provider'
@@ -27,7 +27,7 @@ define 'kryptnostic.search-indexing-service', [
   KryptnosticObject         = require 'kryptnostic.kryptnostic-object'
   MetadataMapper            = require 'kryptnostic.search.metadata-mapper'
   MetadataRequest           = require 'kryptnostic.metadata-request'
-  ObjectIndexer             = require 'kryptnostic.search.indexer'
+  ObjectIndexer             = require 'kryptnostic.indexing.object-indexer'
 
   # APIs
   MetadataApi               = require 'kryptnostic.metadata-api'

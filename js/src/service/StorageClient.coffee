@@ -38,9 +38,6 @@ define 'kryptnostic.storage-client', [
 
   logger = Logger.get('StorageClient')
 
-  #
-  # Client for listing and loading Kryptnostic encrypted objects.
-  #
   class StorageClient
 
     constructor : ->
@@ -184,13 +181,13 @@ define 'kryptnostic.storage-client', [
               )
             )
             .then (cryptoService) =>
+              # ToDo: for now, we encrypt the entire object, but we'll need to support encrypting an object in chunks
               @encrypt(objectKeyForNewlyCreatedObject.objectId, storageRequest.body, cryptoService)
             .then (encrypted) =>
-              # for now, we'll encrypt the entire object, but we'll need to support encrypting an object in chunks
-              # @submitObjectBlocks(encrypted)
               blockCiphertext = encrypted.body.data[0].block
               @objectApi.setObjectFromBlockCiphertext(objectKeyForNewlyCreatedObject, blockCiphertext)
             .then =>
+              # ToDo: PLATFORM-61 - search and indexing migration to backend v2
               @searchIndexingService.submit(
                 storageRequest,
                 objectKeyForNewlyCreatedObject,
@@ -222,5 +219,35 @@ define 'kryptnostic.storage-client', [
     #       return Promise.resolve(chain)
     #         .then => @objectApi.updateObject(objectId, nextEncryptableBlock)
     #     , Promise.resolve())
+
+    updateObject: (objectId, content) ->
+
+      if not validateUuid(objectId)
+        return Promise.resolve(null)
+
+      Promise.resolve(
+        @objectApi.getLatestVersionedObjectKey(objectId)
+      )
+      .then (latestObjectKey) =>
+        Promise.resolve(
+          @cryptoServiceLoader.getObjectCryptoServiceV2(versionedObjectKey)
+        )
+        .then (objectCryptoService) =>
+          # ToDo: for now, we encrypt the entire object, but we'll need to support encrypting an object in chunks
+          @encrypt(latestObjectKey.objectId, content, objectCryptoService)
+        .then (encrypted) =>
+          blockCiphertext = encrypted.body.data[0].block
+          @objectApi.setObjectFromBlockCiphertext(versionedObjectKey, blockCiphertext)
+        # .then =>
+        #   # ToDo: PLATFORM-61 - search and indexing migration to backend v2
+        #   # ToDo: index updated object for it to be searchable
+        #   @searchIndexingService.submit(
+        #     storageRequest,
+        #     objectKeyForNewlyCreatedObject,
+        #     parentObjectKey,
+        #     objectSearchPair
+        #   )
+        .then ->
+          return
 
   return StorageClient

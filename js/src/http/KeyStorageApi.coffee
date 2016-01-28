@@ -65,9 +65,6 @@ define 'kryptnostic.key-storage-api', [
   getRSAPublicKeyUrl = (userId) -> rsaKeysUrl() + '/public/' + userId
   getRSAPublicKeyBulkUrl = -> rsaKeysUrl() + '/public/bulk'
 
-  asdfsaf = ->
-    if userId then
-
   #
   # crypto service endpoints
   #

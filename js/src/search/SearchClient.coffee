@@ -87,7 +87,7 @@ define 'kryptnostic.search-client', [
           .then (processedSearchResults) ->
             return processedSearchResults
         else
-          return null
+          return []
 
       # .catch (e) ->
       #   logger.error('search failure')

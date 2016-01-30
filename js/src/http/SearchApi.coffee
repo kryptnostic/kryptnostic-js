@@ -27,9 +27,6 @@ define 'kryptnostic.search-api', [
 
   logger = Logger.get('SearchApi')
 
-  #
-  # HTTP calls for submitting encrypted search queries to the server.
-  #
   class SearchApi
 
     search: (searchRequest) ->
@@ -44,7 +41,7 @@ define 'kryptnostic.search-api', [
         )
       )
       .then (axiosResponse) ->
-        if axiosResponse? and axiosResponse.data?
+        if axiosResponse and axiosResponse.data
           # axiosResponse.data == java.util.Map<com.kryptnostic.v2.storage.models.VersionedObjectKey, java.util.Set<java.util.UUID>>
           return axiosResponse.data
         else

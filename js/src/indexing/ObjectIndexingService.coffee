@@ -1,6 +1,7 @@
 define 'kryptnostic.indexing.object-indexing-service', [
   'require',
   'bluebird',
+  'forge',
   'kryptnostic.binary-utils',
   'kryptnostic.chunking.strategy.json',
   'kryptnostic.create-object-request',
@@ -18,6 +19,7 @@ define 'kryptnostic.indexing.object-indexing-service', [
 
   # libraries
   Promise = require 'bluebird'
+  forge = require 'forge'
 
   # APIs
   ObjectApi  = require 'kryptnostic.object-api'
@@ -169,9 +171,11 @@ define 'kryptnostic.indexing.object-indexing-service', [
       segmentAddressAsUint8.set(new Uint8Array(segmentOffsetAsUint8), addressAsUint8.byteLength)
 
       # SHA-256 hash the address
-      segmentAddressHash = HashFunction.SHA_256(addressAsUint8)
-      segmentAddressHashAsUint8 = BinaryUtils.stringToUint8(segmentAddressHash)
-      segmentAddressHashAsBase64 = BinaryUtils.uint8ToBase64(segmentAddressHashAsUint8)
+      addressAsForgeBuffer = new forge.util.ByteBuffer(segmentAddressAsUint8)
+      segmentAddressHash = HashFunction.SHA_256(addressAsForgeBuffer.getBytes())
+      # segmentAddressHashAsUint8 = BinaryUtils.stringToUint8(segmentAddressHash)
+      # segmentAddressHashAsBase64 = BinaryUtils.uint8ToBase64(segmentAddressHashAsUint8)
+      segmentAddressHashAsBase64 = btoa(segmentAddressHash)
 
       return segmentAddressHashAsBase64
 

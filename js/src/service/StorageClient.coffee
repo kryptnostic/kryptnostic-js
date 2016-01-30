@@ -238,9 +238,15 @@ define 'kryptnostic.storage-client', [
         .then (encrypted) =>
           blockCiphertext = encrypted.body.data[0].block
           @objectApi.setObjectFromBlockCiphertext(versionedObjectKey, blockCiphertext)
-        # .then =>
-        #   # ToDo: PLATFORM-61 - search and indexing migration to backend v2
-        #   # ToDo: index updated object for it to be searchable
+
+          # ToDo: PLATFORM-61 - search and indexing migration to backend v2
+          # ToDo: index updated object for it to be searchable
+          @objectIndexingService.index(
+            content,
+            objectKeyForNewlyCreatedObject,
+            parentObjectKey,
+            objectSearchPair
+          )
         .then ->
           return
 

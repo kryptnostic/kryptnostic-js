@@ -23,9 +23,13 @@ define 'kryptnostic.object-api', [
   ObjectMetadata        = require 'kryptnostic.object-metadata'
   ObjectMetadataTree    = require 'kryptnostic.object-metadata-tree'
   ObjectTreeLoadRequest = require 'kryptnostic.object-tree-load-request'
-  validators            = require 'kryptnostic.validators'
+  Validators            = require 'kryptnostic.validators'
 
-  { validateId, validateUuid } = validators
+  {
+    validateId,
+    validateUuid,
+    validateUuids
+  } = Validators
 
   DEFAULT_HEADERS = { 'Content-Type' : 'application/json' }
 

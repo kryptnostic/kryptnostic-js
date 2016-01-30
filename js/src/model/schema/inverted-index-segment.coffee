@@ -1,4 +1,4 @@
-define 'kryptnostic.schema.bucketed-metadata', [], ->
+define 'kryptnostic.schema.inverted-index-segment', [], ->
 
   SCHEMA = {
     properties: {
@@ -14,13 +14,7 @@ define 'kryptnostic.schema.bucketed-metadata', [], ->
         required    : true,
         allowEmpty  : false
       },
-      length: {
-        description : 'the size of the 2D array of indices (locations)',
-        type        : 'number',
-        required    : true,
-        allowEmpty  : false
-      },
-      index: {
+      indices: {
         description : 'the 2D array of indices (locations)',
         type        : 'array',
         required    : true,

@@ -3,7 +3,6 @@ define 'kryptnostic.block-encryption-service', [
   'lodash'
   'forge'
   'kryptnostic.encrypted-block'
-  'kryptnostic.hash-function'
   'kryptnostic.logger'
 ], (require) ->
   'use strict'
@@ -11,10 +10,7 @@ define 'kryptnostic.block-encryption-service', [
   _              = require 'lodash'
   forge          = require 'forge'
   EncryptedBlock = require 'kryptnostic.encrypted-block'
-  HashFunction   = require 'kryptnostic.hash-function'
   Logger         = require 'kryptnostic.logger'
-
-  VERIFY_HASH_FUNCTION = HashFunction.SHA_256
 
   log = Logger.get('BlockEncryptionService')
 
@@ -25,6 +21,9 @@ define 'kryptnostic.block-encryption-service', [
   DEFAULT_STRATEGY = {
     '@class': 'com.kryptnostic.kodex.v1.serialization.crypto.DefaultChunkingStrategy'
   }
+
+  verifyHashFunction = (data) ->
+    return btoa(forge.md.sha256.create().update(atob(data)).digest().data)
 
   #
   # Service for encrypting and decrypting blocks of a kryptnostic object,
@@ -46,7 +45,7 @@ define 'kryptnostic.block-encryption-service', [
         mappedClass = TYPE_MAPPINGS[className]
         block       = cryptoService.encrypt(chunk)
         name        = cryptoService.encrypt(mappedClass)
-        verify      = VERIFY_HASH_FUNCTION(block.contents)
+        verify      = verifyHashFunction(block.contents)
         last        = (index == chunks.length - 1)
         strategy    = DEFAULT_STRATEGY
         timeCreated = new Date().getTime()
@@ -58,7 +57,7 @@ define 'kryptnostic.block-encryption-service', [
     # convert encrypted blocks into string data chunks
     decrypt : (blocks, cryptoService) ->
       return blocks.map ({ block, verify }) ->
-        computed = VERIFY_HASH_FUNCTION(block.contents)
+        computed = verifyHashFunction(block.contents)
         unless verify is computed
           log.info('block verify mismatch', { verify, computed })
           throw new Error('cannot decrypt block because verify of block contents does not match.')

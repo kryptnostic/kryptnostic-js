@@ -10,7 +10,7 @@ define 'kryptnostic.storage-client', [
   'kryptnostic.kryptnostic-object'
   'kryptnostic.crypto-service-loader'
   'kryptnostic.object-utils'
-  'kryptnostic.search-indexing-service'
+  'kryptnostic.indexing.object-indexing-service'
   'kryptnostic.create-object-request'
   'kryptnostic.credential-loader'
   'kryptnostic.crypto-material'
@@ -27,7 +27,7 @@ define 'kryptnostic.storage-client', [
   KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
   ObjectApi             = require 'kryptnostic.object-api'
   ObjectListingApi      = require 'kryptnostic.object-listing-api'
-  SearchIndexingService = require 'kryptnostic.search-indexing-service'
+  ObjectIndexingService = require 'kryptnostic.indexing.object-indexing-service'
   CredentialLoader      = require 'kryptnostic.credential-loader'
 
   # utils
@@ -45,7 +45,7 @@ define 'kryptnostic.storage-client', [
       @objectApi             = new ObjectApi()
       @objectListingApi      = new ObjectListingApi()
       @cryptoServiceLoader   = new CryptoServiceLoader()
-      @searchIndexingService = new SearchIndexingService()
+      @objectIndexingService = new ObjectIndexingService()
       @credentialLoader      = new CredentialLoader()
 
     getObject: (objectId, parentObjectId) ->
@@ -188,8 +188,8 @@ define 'kryptnostic.storage-client', [
               @objectApi.setObjectFromBlockCiphertext(objectKeyForNewlyCreatedObject, blockCiphertext)
             .then =>
               # ToDo: PLATFORM-61 - search and indexing migration to backend v2
-              @searchIndexingService.submit(
-                storageRequest,
+              @objectIndexingService.index(
+                storageRequest.body,
                 objectKeyForNewlyCreatedObject,
                 parentObjectKey,
                 objectSearchPair
@@ -241,12 +241,6 @@ define 'kryptnostic.storage-client', [
         # .then =>
         #   # ToDo: PLATFORM-61 - search and indexing migration to backend v2
         #   # ToDo: index updated object for it to be searchable
-        #   @searchIndexingService.submit(
-        #     storageRequest,
-        #     objectKeyForNewlyCreatedObject,
-        #     parentObjectKey,
-        #     objectSearchPair
-        #   )
         .then ->
           return
 

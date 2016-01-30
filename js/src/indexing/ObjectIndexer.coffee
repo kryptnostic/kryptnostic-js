@@ -1,12 +1,12 @@
 define 'kryptnostic.indexing.object-indexer', [
   'require',
-  'kryptnostic.indexing.bucketed-metadata',
+  'kryptnostic.indexing.inverted-index-segment',
   'kryptnostic.indexing.object-tokenizer',
   'kryptnostic.validators'
 ], (require) ->
 
   # kryptnostic
-  BucketedMetadata = require 'kryptnostic.indexing.bucketed-metadata'
+  InvertedIndexSegment = require 'kryptnostic.indexing.inverted-index-segment'
   ObjectTokenizer  = require 'kryptnostic.indexing.object-tokenizer'
 
   # utils
@@ -19,23 +19,25 @@ define 'kryptnostic.indexing.object-indexer', [
     constructor: ->
       @objectTokenizer = new ObjectTokenizer()
 
-    index: (objectKey, data) ->
+    buildInvertedIndexSegments: (data, objectKey) ->
 
       if not validateVersionedObjectKey(objectKey)
         return []
 
-      invertedIndex = @objectTokenizer.analyze(data)
+      paddedInvertedIndex = @objectTokenizer.buildPaddedInvertedIndex(data)
 
-      metadata = _.map(invertedIndex, (indices, token) ->
-        bucketedMetadata = new BucketedMetadata({
-          key    : objectKey,
-          token  : token,
-          index  : indices,
-          length : indices.length
-        })
-        return bucketedMetadata
+      invertedIndexSegments = []
+      _.map(paddedInvertedIndex, (indexBuckets, token) ->
+        _.forEach(indexBuckets, (bucket) ->
+          segment = new InvertedIndexSegment({
+            key    : objectKey,
+            token  : token,
+            indices : bucket
+          })
+          invertedIndexSegments.push(segment)
+        )
       )
 
-      return metadata
+      return invertedIndexSegments
 
   return ObjectIndexer

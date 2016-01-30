@@ -28,14 +28,15 @@ define 'kryptnostic.key-storage-api', [
   Requests   = require 'kryptnostic.requests'
   Validators = require 'kryptnostic.validators'
 
+  # constants
+  DEFAULT_HEADERS = { 'Content-Type' : 'application/json' }
+
   {
     validateUuid,
     validateUuids,
     validateVersionedObjectKey,
     validateObjectCryptoService
   } = Validators
-
-  DEFAULT_HEADERS = { 'Content-Type' : 'application/json' }
 
   logger = Logger.get('KeyStorageApi')
 

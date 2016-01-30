@@ -1,14 +1,14 @@
 define [
   'require',
-  'kryptnostic.indexing.bucketed-metadata',
+  'kryptnostic.indexing.inverted-index-segment',
   'kryptnostic.indexing.object-indexer'
 ], (require) ->
 
   # kryptnostic
-  BucketedMetadata = require 'kryptnostic.indexing.bucketed-metadata'
+  InvertedIndexSegment = require 'kryptnostic.indexing.inverted-index-segment'
   ObjectIndexer = require 'kryptnostic.indexing.object-indexer'
 
-  MOCK_OBJECT_KEY  = {
+  MOCK_OBJECT_KEY = {
     objectId      : 'fe9bbd2a-eddc-493b-87d8-821ad376db36',
     objectVersion : 0
   }
@@ -18,23 +18,25 @@ define [
     'Master. Master. Master. Master. Master. Master. Master. Master. Master. Master.'
 
   MOCK_DATA_METADATA = [
-    new BucketedMetadata({
-      key    : MOCK_OBJECT_KEY,
-      token  : 'master',
-      index  : [[0, 18, 36, 54, 62, 70, 78, 86, 94, 102], [110, 118, 126]],
-      length : 2
+    new InvertedIndexSegment({
+      key     : MOCK_OBJECT_KEY,
+      token   : 'master',
+      indices : [0, 18, 36, 54, 62, 70, 78, 86, 94, 102]
     }),
-    new BucketedMetadata({
-      key    : MOCK_OBJECT_KEY,
-      token  : 'of',
-      index  : [[7, 25, 43]],
-      length : 1
+    new InvertedIndexSegment({
+      key     : MOCK_OBJECT_KEY,
+      token   : 'master',
+      indices : [110, 118, 126, -1, -1, -1, -1, -1, -1, -1]
     }),
-    new BucketedMetadata({
-      key    : MOCK_OBJECT_KEY,
-      token  : 'puppets',
-      index  : [[10, 28, 46]],
-      length : 1
+    new InvertedIndexSegment({
+      key     : MOCK_OBJECT_KEY,
+      token   : 'of',
+      indices : [7, 25, 43, -1, -1, -1, -1, -1, -1, -1]
+    }),
+    new InvertedIndexSegment({
+      key     : MOCK_OBJECT_KEY,
+      token   : 'puppets',
+      indices : [10, 28, 46, -1, -1, -1, -1, -1, -1, -1]
     })
   ]
 
@@ -47,8 +49,8 @@ define [
         invalidObjectKeys = [undefined, null, [], {}, 0, '', ' ', /regex/]
         _.forEach(invalidObjectKeys, (objectKey) ->
           objectIndexer = new ObjectIndexer()
-          metadata = objectIndexer.index(objectKey, MOCK_DATA)
-          expect(metadata).toEqual([])
+          invertedIndexSegments = objectIndexer.buildInvertedIndexSegments(MOCK_DATA, objectKey)
+          expect(invertedIndexSegments).toEqual([])
         )
 
       it 'should return an empty array for invalid input', ->
@@ -56,12 +58,12 @@ define [
         invalidInput = [undefined, null, [], {}, 0, '', ' ', /regex/]
         _.forEach(invalidInput, (input) ->
           objectIndexer = new ObjectIndexer()
-          metadata = objectIndexer.index(MOCK_OBJECT_KEY, input)
-          expect(metadata).toEqual([])
+          invertedIndexSegments = objectIndexer.buildInvertedIndexSegments(input, MOCK_OBJECT_KEY)
+          expect(invertedIndexSegments).toEqual([])
         )
 
-      it 'should return an array of metadata per token', ->
+      it 'should return an array of inverted index segments', ->
 
         objectIndexer = new ObjectIndexer()
-        metadata = objectIndexer.index(MOCK_OBJECT_KEY, MOCK_DATA)
-        expect(metadata).toEqual(MOCK_DATA_METADATA)
+        invertedIndexSegments = objectIndexer.buildInvertedIndexSegments(MOCK_DATA, MOCK_OBJECT_KEY)
+        expect(invertedIndexSegments).toEqual(MOCK_DATA_METADATA)

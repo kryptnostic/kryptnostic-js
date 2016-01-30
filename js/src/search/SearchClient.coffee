@@ -39,23 +39,20 @@ define 'kryptnostic.search-client', [
     constructor: ->
       @cryptoServiceLoader = new CryptoServiceLoader()
       @searchApi           = new SearchApi()
-      @hashFunction        = HashFunction.MURMUR3_128
 
-    search: (searchTerm) ->
+    search: (searchToken) ->
       Promise.resolve()
       .then =>
 
-        # token -> 128 bit hex -> Uint8Array
-        tokenHex  = @hashFunction(searchTerm)
-        tokenUint = BinaryUtils.hexToUint(tokenHex)
+        # token -> 128-bit hash -> Uint8Array
+        tokenHash = HashFunction.SHA_256_TO_128(searchToken)
+        tokenAsUint8 = BinaryUtils.stringToUint8(tokenHash)
 
-        encryptedSearchToken = KryptnosticEngineProvider
+        encryptedSearchTokenAsUint8 = KryptnosticEngineProvider
           .getEngine()
-          .calculateEncryptedSearchToken(tokenUint)
-        encryptedSearchTokenAsBase64 = BinaryUtils.uint8ToBase64(encryptedSearchToken)
-        searchRequest = new SearchRequest({
-          query: [encryptedSearchTokenAsBase64]
-        })
+          .calculateEncryptedSearchToken(tokenAsUint8)
+        encryptedSearchTokenAsBase64 = BinaryUtils.uint8ToBase64(encryptedSearchTokenAsUint8)
+        searchRequest = [encryptedSearchTokenAsBase64]
         @searchApi.search(searchRequest)
 
       .then (searchResultResponse) =>

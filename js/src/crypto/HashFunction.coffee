@@ -7,14 +7,15 @@ define 'kryptnostic.hash-function', [
   forge       = require 'forge'
   murmurhash3 = require 'murmurhash3'
 
-  #
-  # Enumeration of hash functions utilized by kryptnostic.
-  # Author: rbuckheit
-  #
-
-  # sha 256
   SHA_256 = (data) ->
-    return btoa(forge.md.sha256.create().update(atob(data)).digest().data)
+    return forge.md.sha256.create().update(data).digest().getBytes()
+
+  SHA_256_TO_128 = (data) ->
+    sha256HashBuffer = forge.md.sha256.create().update(data).digest()
+    halfTheBytes = sha256HashBuffer.length() / 2
+    leftHalfBuffer = new forge.util.ByteBuffer(sha256HashBuffer.getBytes(halfTheBytes))
+    rightHalfBuffer = new forge.util.ByteBuffer(sha256HashBuffer.getBytes())
+    return forge.util.xorBytes(leftHalfBuffer.getBytes(), rightHalfBuffer.getBytes(), halfTheBytes)
 
   # murmur3 128 bit with seed of 0.
   MURMUR3_128 = (string) ->
@@ -22,5 +23,6 @@ define 'kryptnostic.hash-function', [
 
   return {
     SHA_256,
+    SHA_256_TO_128,
     MURMUR3_128
   }

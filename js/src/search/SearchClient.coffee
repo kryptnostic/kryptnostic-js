@@ -64,7 +64,7 @@ define 'kryptnostic.search-client', [
 
       .then (searchResults) =>
 
-        if searchResults
+        if not _.isEmpty(searchResults)
           indexSegmentPromises = _.mapValues(searchResults, (indexSegmentIds, objectId) =>
             # !!! HACK !!!
             objectKey = {

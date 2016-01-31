@@ -96,8 +96,8 @@ define 'kryptnostic.sharing-client', [
               })
             else
               # create the object share pair from the object search pair, and encrypt it
-              objectSharePair = KryptnosticEngineProvider.getEngine()
-                .calculateObjectSharePairFromObjectSearchPair(objectSearchPair)
+              engine = KryptnosticEngineProvider.getEngine()
+              objectSharePair = engine.calculateObjectSharePairFromObjectSearchPair(objectSearchPair)
 
               encryptedObjectSharePair = objectCryptoService.encryptUint8Array(objectSharePair)
 
@@ -146,8 +146,9 @@ define 'kryptnostic.sharing-client', [
 
               encryptedSharePair = sharedObject.sharingPair
               decryptedSharePair = objectCryptoService.decryptToUint8Array(encryptedSharePair)
-              objectSearchPair = KryptnosticEngineProvider.getEngine()
-                .calculateObjectSearchPairFromObjectSharePair(decryptedSharePair)
+
+              engine = KryptnosticEngineProvider.getEngine()
+              objectSearchPair = engine.calculateObjectSearchPairFromObjectSharePair(decryptedSharePair)
 
               objectKey = sharedObject.id
               @sharingApi.addObjectSearchPair(objectKey, objectSearchPair)

@@ -52,7 +52,6 @@ define 'kryptnostic.indexing.object-indexing-service', [
   class ObjectIndexingService
 
     constructor: ->
-      @engine              = KryptnosticEngineProvider.getEngine()
       @cryptoServiceLoader = new CryptoServiceLoader()
       @objectIndexer       = new ObjectIndexer()
       @objectApi           = new ObjectApi()
@@ -159,7 +158,8 @@ define 'kryptnostic.indexing.object-indexing-service', [
       tokenAsUint8 = BinaryUtils.stringToUint8(tokenHash)
 
       # compute address of token
-      addressAsUint8 = @engine.calculateMetadataAddress(objectIndexPair, tokenAsUint8)
+      engine = KryptnosticEngineProvider.getEngine()
+      addressAsUint8 = engine.calculateMetadataAddress(objectIndexPair, tokenAsUint8)
 
       # segment offset -> Uint8Array
       segmentOffset = segmentRangeStartIndex + segmentIndex
@@ -190,13 +190,14 @@ define 'kryptnostic.indexing.object-indexing-service', [
     calculateObjectIndexPairAndObjectSearchPair: (parentObjectKey, objectSearchPair) ->
 
       objectIndexPair = null
+      engine = KryptnosticEngineProvider.getEngine()
 
       if not KryptnosticEngine.isValidObjectSearchPair(objectSearchPair)
-        objectIndexPair = @engine.generateObjectIndexPair()
-        objectSearchPair = @engine.calculateObjectSearchPairFromObjectIndexPair(objectIndexPair)
+        objectIndexPair = engine.generateObjectIndexPair()
+        objectSearchPair = engine.calculateObjectSearchPairFromObjectIndexPair(objectIndexPair)
         @sharingApi.addObjectSearchPair(parentObjectKey, objectSearchPair)
       else
-        objectIndexPair = @engine.calculateObjectIndexPairFromObjectSearchPair(objectSearchPair)
+        objectIndexPair = engine.calculateObjectIndexPairFromObjectSearchPair(objectSearchPair)
 
       return { objectIndexPair, objectSearchPair }
 

@@ -54,9 +54,8 @@ define 'kryptnostic.search-client', [
         tokenHash = HashFunction.SHA_256_TO_128(searchToken)
         tokenAsUint8 = BinaryUtils.stringToUint8(tokenHash)
 
-        encryptedSearchTokenAsUint8 = KryptnosticEngineProvider
-          .getEngine()
-          .calculateEncryptedSearchToken(tokenAsUint8)
+        engine = KryptnosticEngineProvider.getEngine()
+        encryptedSearchTokenAsUint8 = engine.calculateEncryptedSearchToken(tokenAsUint8)
 
         encryptedSearchTokenAsBase64 = BinaryUtils.uint8ToBase64(encryptedSearchTokenAsUint8)
         searchRequest = [encryptedSearchTokenAsBase64]

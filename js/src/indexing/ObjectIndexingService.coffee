@@ -67,7 +67,7 @@ define 'kryptnostic.indexing.object-indexing-service', [
         parentObjectKey = objectKey
 
       # 1. tokenize the data, and build the list of inverted index segments
-      invertedIndexSegments = @objectIndexer.buildInvertedIndexSegments(data, parentObjectKey)
+      invertedIndexSegments = @objectIndexer.buildInvertedIndexSegments(data, objectKey, parentObjectKey)
 
       # 2. randomly shuffle the inverted index segments
       @shuffle(invertedIndexSegments)
@@ -171,10 +171,8 @@ define 'kryptnostic.indexing.object-indexing-service', [
       segmentAddressAsUint8.set(new Uint8Array(segmentOffsetAsUint8), addressAsUint8.byteLength)
 
       # SHA-256 hash the address
-      addressAsForgeBuffer = new forge.util.ByteBuffer(segmentAddressAsUint8)
-      segmentAddressHash = HashFunction.SHA_256(addressAsForgeBuffer.getBytes())
-      # segmentAddressHashAsUint8 = BinaryUtils.stringToUint8(segmentAddressHash)
-      # segmentAddressHashAsBase64 = BinaryUtils.uint8ToBase64(segmentAddressHashAsUint8)
+      segmentAddressAsForgeBuffer = new forge.util.ByteBuffer(segmentAddressAsUint8)
+      segmentAddressHash = HashFunction.SHA_256(segmentAddressAsForgeBuffer.getBytes())
       segmentAddressHashAsBase64 = btoa(segmentAddressHash)
 
       return segmentAddressHashAsBase64

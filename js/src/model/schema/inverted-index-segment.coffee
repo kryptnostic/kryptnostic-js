@@ -2,10 +2,16 @@ define 'kryptnostic.schema.inverted-index-segment', [], ->
 
   SCHEMA = {
     properties: {
-      key: {
+      objectKey: {
         description : 'VersionedObjectKey of the object',
         type        : 'object',
         required    : true,
+        allowEmpty  : false
+      },
+      parentObjectKey: {
+        description : 'VersionedObjectKey of the parent object',
+        type        : 'object',
+        required    : false,
         allowEmpty  : false
       },
       token: {

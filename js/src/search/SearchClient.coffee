@@ -65,12 +65,21 @@ define 'kryptnostic.search-client', [
       .then (searchResults) =>
 
         if not _.isEmpty(searchResults)
-          indexSegmentPromises = _.mapValues(searchResults, (indexSegmentIds, objectId) =>
+
+          objectIdSet = []
+          indexSegmentIdsSet = []
+
+          indexSegmentPromises = _.map(searchResults, (indexSegmentIds, objectId) =>
+
+            objectIdSet.push(objectId)
+            indexSegmentIdsSet.push(indexSegmentIds)
+
             # !!! HACK !!!
             objectKey = {
               objectId : objectId,
               objectVersion : 0
             }
+
             Promise.props({
               encryptedIndexSegments : @objectApi.getObjects(indexSegmentIds),
               objectCryptoService : @cryptoServiceLoader.getObjectCryptoServiceV2(objectKey, { expectMiss: false })
@@ -85,7 +94,12 @@ define 'kryptnostic.search-client', [
 
           Promise.all(indexSegmentPromises)
           .then (processedSearchResults) ->
-            return processedSearchResults
+            response = {}
+            _.forEach(processedSearchResults, (invertedIndexSegments, i) ->
+              objectId = objectIdSet[i]
+              response[objectId] = invertedIndexSegments
+            )
+            return response
         else
           return []
 

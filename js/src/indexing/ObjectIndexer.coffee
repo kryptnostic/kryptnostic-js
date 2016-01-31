@@ -19,7 +19,7 @@ define 'kryptnostic.indexing.object-indexer', [
     constructor: ->
       @objectTokenizer = new ObjectTokenizer()
 
-    buildInvertedIndexSegments: (data, objectKey) ->
+    buildInvertedIndexSegments: (data, objectKey, parentObjectKey) ->
 
       if not validateVersionedObjectKey(objectKey)
         return []
@@ -30,9 +30,10 @@ define 'kryptnostic.indexing.object-indexer', [
       _.map(paddedInvertedIndex, (indexBuckets, token) ->
         _.forEach(indexBuckets, (bucket) ->
           segment = new InvertedIndexSegment({
-            key    : objectKey,
-            token  : token,
-            indices : bucket
+            objectKey       : objectKey,
+            parentObjectKey : parentObjectKey,
+            token           : token,
+            indices         : bucket
           })
           invertedIndexSegments.push(segment)
         )

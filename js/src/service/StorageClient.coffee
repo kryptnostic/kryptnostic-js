@@ -127,17 +127,46 @@ define 'kryptnostic.storage-client', [
       .then (parentObjectKey) =>
 
         Promise.props({
-          cryptoService          : @cryptoServiceLoader.getObjectCryptoServiceV2(parentObjectKey)
+          objectCryptoService    : @cryptoServiceLoader.getObjectCryptoServiceV2(parentObjectKey)
           objectBlockCiphertexts : @objectApi.getObjects(objectIds)
         })
-        .then ({ cryptoService, objectBlockCiphertexts }) ->
+        .then ({ objectBlockCiphertexts, objectCryptoService }) ->
 
           childObjects = {}
           _.forEach(objectIds, (objectId, index) ->
             blockCiphertext = objectBlockCiphertexts[objectId]
-            if blockCiphertext? and cryptoService?
+            if blockCiphertext and objectCryptoService
               decrypted = cryptoService.decrypt(blockCiphertext)
               childObjects[objectId] = decrypted
+          )
+          return childObjects
+
+    getChildObjectsByTypeAndLoadLevel: (objectIds, parentObjectId, typeLoadLevels, loadDepth) ->
+
+      if not validateUuids(objectIds) or not validateUuid(parentObjectId)
+        return Promise.resolve(null)
+
+      Promise.resolve(
+        @objectApi.getLatestVersionedObjectKey(parentObjectId)
+      )
+      .then (parentObjectKey) =>
+        Promise.props({
+          objectCryptoService : @cryptoServiceLoader.getObjectCryptoServiceV2(parentObjectKey)
+          objectMetadataTrees : @objectApi.getObjectsByTypeAndLoadLevel(
+            objectIds,
+            typeLoadLevels,
+            loadDepth
+          )
+        })
+        .then ({ objectMetadataTrees, objectCryptoService }) =>
+          childObjects = {}
+          _.forEach(objectIds, (objectId, index) ->
+            result = objectMetadataTrees[objectId]
+            blockCiphertext = objectMetadataTrees[objectId].data
+            if blockCiphertext and objectCryptoService
+              decrypted = objectCryptoService.decrypt(blockCiphertext)
+              result.data = decrypted
+            childObjects[objectId] = result
           )
           return childObjects
 
@@ -187,13 +216,16 @@ define 'kryptnostic.storage-client', [
               blockCiphertext = encrypted.body.data[0].block
               @objectApi.setObjectFromBlockCiphertext(objectKeyForNewlyCreatedObject, blockCiphertext)
             .then =>
-              # ToDo: PLATFORM-61 - search and indexing migration to backend v2
-              @objectIndexingService.index(
-                storageRequest.body,
-                objectKeyForNewlyCreatedObject,
-                parentObjectKey,
-                objectSearchPair
-              )
+              if storageRequest.isSearchable
+                # ToDo: PLATFORM-61 - search and indexing migration to backend v2
+                return @objectIndexingService.index(
+                  storageRequest.body,
+                  objectKeyForNewlyCreatedObject,
+                  parentObjectKey,
+                  objectSearchPair
+                )
+              else
+                return objectSearchPair
             .then (objectSearchPair) ->
               storageResponse.objectKey = objectKeyForNewlyCreatedObject
               storageResponse.objectSearchPair = objectSearchPair

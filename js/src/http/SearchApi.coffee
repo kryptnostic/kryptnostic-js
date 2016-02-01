@@ -42,7 +42,7 @@ define 'kryptnostic.search-api', [
       )
       .then (axiosResponse) ->
         if axiosResponse and axiosResponse.data
-          # axiosResponse.data == java.util.Map<com.kryptnostic.v2.storage.models.VersionedObjectKey, java.util.Set<java.util.UUID>>
+          # axiosResponse.data == java.util.Map<java.util.UUID, java.util.Set<java.util.UUID>>
           return axiosResponse.data
         else
           return null

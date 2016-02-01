@@ -62,86 +62,75 @@ define 'kryptnostic.search-client', [
         @searchApi.search(searchRequest)
 
       .then (searchResults) =>
-
+        #
+        # searchResults is a Map of object UUIDs to a set of inverted index segment UUIDs
+        #
         if not _.isEmpty(searchResults)
-
+          #
+          # since Promise.all() doesn't support a map, only an array, we're forced to lose the key-value pair
+          # association in searchResults. as such, we'll keep track of the key, the objectId, by storing it in an
+          # array as we iterate over the searchResults map. we're guaranteed that when the Promise resolves, the
+          # data will be in the same order as given to Promise.all(), which means that we can just look up the key
+          # in our array using the iteration index
+          #
           objectIdSet = []
-          indexSegmentIdsSet = []
 
-          indexSegmentPromises = _.map(searchResults, (indexSegmentIds, objectId) =>
+          invertedIndexSegmentPromises = _.map(searchResults, (invertedIndexSegmentIds, objectId) =>
 
             objectIdSet.push(objectId)
-            indexSegmentIdsSet.push(indexSegmentIds)
-
-            # !!! HACK !!!
-            objectKey = {
-              objectId : objectId,
-              objectVersion : 0
-            }
+            invertedIndexSegmentsPromise = @objectApi.getObjects(invertedIndexSegmentIds)
+            objectCryptoServicePromise = @cryptoServiceLoader.getObjectCryptoServiceV2(
+              {
+                objectId: objectId,
+                objectVersion: 0 # !!! HACK !!! we're hardcoding version 0 for now
+              },
+              {
+                expectMiss: false
+              }
+            )
 
             Promise.props({
-              encryptedIndexSegments : @objectApi.getObjects(indexSegmentIds),
-              objectCryptoService : @cryptoServiceLoader.getObjectCryptoServiceV2(objectKey, { expectMiss: false })
+              invertedIndexSegments : invertedIndexSegmentsPromise,
+              objectCryptoService : objectCryptoServicePromise
             })
-            .then ({ encryptedIndexSegments, objectCryptoService }) =>
-              return _.map(encryptedIndexSegments, (indexSegmentBlockCipherText) ->
-                invertedIndexSegmentJSON = objectCryptoService.decrypt(indexSegmentBlockCipherText)
+            .then ({ invertedIndexSegments, objectCryptoService }) =>
+              #
+              # invertedIndexSegments is a set of encrypted inverted index segments that we must decrypt using the
+              # object crypto service for objectId
+              #
+              return _.map(invertedIndexSegments, (invertedIndexSegmentBlockCipherText) ->
+                #
+                # ToDo - we shouldn't have to do JSON.parse() here
+                #
+                invertedIndexSegmentJSON = objectCryptoService.decrypt(invertedIndexSegmentBlockCipherText)
                 invertedIndexSegment = JSON.parse(invertedIndexSegmentJSON)
                 return invertedIndexSegment
               )
+            .catch (e) ->
+              return []
           )
 
-          Promise.all(indexSegmentPromises)
-          .then (processedSearchResults) ->
-            response = {}
-            _.forEach(processedSearchResults, (invertedIndexSegments, i) ->
-              objectId = objectIdSet[i]
-              response[objectId] = invertedIndexSegments
+          Promise.all(invertedIndexSegmentPromises)
+          .then (invertedIndexSegments) ->
+            #
+            # invertedIndexSegments is a 2D array, where each element is an array of inverted index segments
+            #
+            objectIdsToSegmentsMap = {}
+            _.forEach(invertedIndexSegments, (invertedIndexSegmentsPerObject, iterationIndex) ->
+              if not _.isEmpty(invertedIndexSegmentsPerObject)
+                objectId = objectIdSet[iterationIndex]
+                objectIdsToSegmentsMap[objectId] = invertedIndexSegmentsPerObject
             )
-            return response
+            #
+            # we'll return a Map of key-value pairs, where the key is an object UUIDs and the value is a set of
+            # decrypted inverted index segments
+            #
+            return objectIdsToSegmentsMap
+          .catch (e) ->
+            return {}
         else
-          return []
-
-      # .catch (e) ->
-      #   logger.error('search failure')
-      #   logger.error(e)
-      #   return null
-
-    # processSearchResult: (searchResult) ->
-    #
-    #   # searchResult.metadata is a Collection of Encryptables
-    #   encryptables = searchResult.metadata
-    #
-    #   # _.map() will produce an Array of Promises for each encryptable
-    #   encryptablePromises = _.map(encryptables, (encryptable) =>
-    #     Promise.resolve(
-    #       @objectApi.getLatestVersionedObjectKey(encryptable.key)
-    #     )
-    #     .then (versionedObjectKey) =>
-    #       @cryptoServiceLoader.getObjectCryptoServiceV2(
-    #         versionedObjectKey,
-    #         { expectMiss: false }
-    #       )
-    #     .then (objectCryptoService) =>
-    #       @decryptEncryptable(encryptable, objectCryptoService)
-    #     .catch (e) ->
-    #       logger.error('failure while processing search results', e)
-    #       return null
-    #   )
-    #
-    #   # this promise will fulfill when all encryptable promises are fulfilled
-    #   Promise.all(encryptablePromises)
-    #   .then (decryptedEncryptables) ->
-    #     return decryptedEncryptables
-    #
-    # decryptEncryptable: (encryptable, objectCryptoService) ->
-    #   encryptedKryptnosticObject = KryptnosticObject.createFromEncrypted({
-    #     body: encryptable
-    #   })
-    #   encryptedKryptnosticObject.setChunkingStrategy(JsonChunkingStrategy.URI)
-    #   decryptedKryptnosticObject = encryptedKryptnosticObject.decrypt(objectCryptoService)
-    #   # DOTO - this is a hack; need to figure out a better way to return the right data
-    #   merged = _.merge(encryptedKryptnosticObject, decryptedKryptnosticObject)
-    #   return merged
+          return {}
+      .catch (e) ->
+        return {}
 
   return SearchClient

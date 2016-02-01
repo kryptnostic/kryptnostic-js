@@ -116,6 +116,7 @@ define 'kryptnostic.indexing.object-indexing-service', [
 
       createObjectRequest = new CreateObjectRequest({
         type: INDEX_SEGMENT_TYPE_ID,
+        parentObjectId: parentObjectKey,
         requiredCryptoMats: CryptoMaterial.DEFAULT_REQUIRED_CRYPTO_MATERIAL
       })
 

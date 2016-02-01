@@ -8,19 +8,23 @@ set -e;
 
 # lint
 # ====
-echo; echo "linting files...";
-find js -name *.coffee | xargs ./node_modules/coffeelint/bin/coffeelint;
-find demo -name *.coffee | xargs ./node_modules/coffeelint/bin/coffeelint;
+if [[ $@ != **skip-linting** ]]; then
+  echo; echo "linting files...";
+  find js -name *.coffee | xargs ./node_modules/coffeelint/bin/coffeelint;
+  find demo -name *.coffee | xargs ./node_modules/coffeelint/bin/coffeelint;
+fi
 
-# commit hooks
-# ============
-echo; echo "running commit hooks..."
-./commit-hooks.rb;
+if [[ $@ != **skip-checks** ]]; then
+  # commit hooks
+  # ============
+  echo; echo "running commit hooks..."
+  ./commit-hooks.rb;
 
-# unused imports
-# ==============
-echo; echo "checking for unused imports..."
-./check-unused-imports.rb;
+  # unused imports
+  # ==============
+  echo; echo "checking for unused imports..."
+  ./check-unused-imports.rb;
+fi
 
 # r.js build
 # ==========

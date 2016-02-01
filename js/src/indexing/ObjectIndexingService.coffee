@@ -91,12 +91,17 @@ define 'kryptnostic.indexing.object-indexing-service', [
         _.forEach(invertedIndexSegments, (segment, segmentIndex) =>
 
           # 5.1 compute the SHA-256 hash of the segment's address
-          segmentAddressHash = @computeSegmentAddressHash(segment.token, segmentRangeStartIndex, segmentIndex, objectIndexPair)
+          segmentAddressHash = @computeSegmentAddressHash(
+            segment.token,
+            segmentRangeStartIndex,
+            segmentIndex,
+            objectIndexPair
+          )
           if segmentAddressHash
 
             # 5.2 create an object in which to store the encrypted inverted index segment
             Promise.resolve(
-              @createInvertedIndexSegmentObject(segmentAddressHash)
+              @createInvertedIndexSegmentObject(segmentAddressHash, objectKey, parentObjectKey)
             )
             .then (objectKeyForNewlyCreatedObject) =>
 

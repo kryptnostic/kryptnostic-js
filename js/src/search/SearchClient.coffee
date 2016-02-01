@@ -3,14 +3,11 @@ define 'kryptnostic.search-client', [
   'bluebird'
   'kryptnostic.binary-utils'
   'kryptnostic.logger'
-  'kryptnostic.chunking.strategy.json'
   'kryptnostic.crypto-service-loader'
   'kryptnostic.hash-function'
   'kryptnostic.kryptnostic-engine-provider'
-  'kryptnostic.kryptnostic-object'
   'kryptnostic.object-api'
   'kryptnostic.search-api'
-  'kryptnostic.search-request'
 ], (require) ->
 
   # libraries
@@ -23,10 +20,7 @@ define 'kryptnostic.search-client', [
 
   # kryptnostic
   CryptoServiceLoader       = require 'kryptnostic.crypto-service-loader'
-  JsonChunkingStrategy      = require 'kryptnostic.chunking.strategy.json'
   KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
-  KryptnosticObject         = require 'kryptnostic.kryptnostic-object'
-  SearchRequest             = require 'kryptnostic.search-request'
 
   # utils
   BinaryUtils  = require 'kryptnostic.binary-utils'
@@ -93,7 +87,7 @@ define 'kryptnostic.search-client', [
               invertedIndexSegments : invertedIndexSegmentsPromise,
               objectCryptoService : objectCryptoServicePromise
             })
-            .then ({ invertedIndexSegments, objectCryptoService }) =>
+            .then ({ invertedIndexSegments, objectCryptoService }) ->
               #
               # invertedIndexSegments is a set of encrypted inverted index segments that we must decrypt using the
               # object crypto service for objectId

@@ -21,7 +21,13 @@ define 'kryptnostic.indexing.object-indexer', [
 
     buildInvertedIndexSegments: (data, objectKey, parentObjectKey) ->
 
+      # objectKey must be a valid VersionedObjectKey
       if not validateVersionedObjectKey(objectKey)
+        return []
+
+      # if parentObjectKey is specified, it must be a valid VersionedObjectKey
+      if not _.isUndefined(parentObjectKey) and not _.isNull(parentObjectKey) and
+          not validateVersionedObjectKey(parentObjectKey)
         return []
 
       paddedInvertedIndex = @objectTokenizer.buildPaddedInvertedIndex(data)

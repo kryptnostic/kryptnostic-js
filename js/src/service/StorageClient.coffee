@@ -158,7 +158,7 @@ define 'kryptnostic.storage-client', [
             loadDepth
           )
         })
-        .then ({ objectMetadataTrees, objectCryptoService }) =>
+        .then ({ objectMetadataTrees, objectCryptoService }) ->
           childObjects = {}
           _.forEach(objectIds, (objectId, index) ->
             result = objectMetadataTrees[objectId]

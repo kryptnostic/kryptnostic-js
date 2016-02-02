@@ -164,8 +164,11 @@ define 'kryptnostic.storage-client', [
             result = objectMetadataTrees[objectId]
             blockCiphertext = objectMetadataTrees[objectId].data
             if blockCiphertext and objectCryptoService
-              decrypted = objectCryptoService.decrypt(blockCiphertext)
-              result.data = decrypted
+              try
+                decrypted = objectCryptoService.decrypt(blockCiphertext)
+                result.data = decrypted
+              catch e
+                result.data = ''
             childObjects[objectId] = result
           )
           return childObjects

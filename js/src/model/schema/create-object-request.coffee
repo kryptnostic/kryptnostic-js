@@ -13,7 +13,7 @@ define 'kryptnostic.schema.create-object-request', [], ->
         allowEmpty : false
       }
       id : {
-        type       : 'string'
+        type       : 'object'
         required   : false
         allowEmpty : false
       }

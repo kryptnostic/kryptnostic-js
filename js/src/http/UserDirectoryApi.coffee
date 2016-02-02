@@ -53,7 +53,6 @@ define 'kryptnostic.user-directory-api', [
           method : 'GET'
         })
       .then (response) ->
-        log.info('response', response)
         uuid = response.data
         if uuid is 'null' or !uuid
           return undefined
@@ -76,7 +75,6 @@ define 'kryptnostic.user-directory-api', [
       .then (axiosResponse) ->
         if axiosResponse? and axiosResponse.data?
           user = axiosResponse.data
-          log.info('getUser', user)
           Cache.store(Cache.USERS, uuid, user)
           return user
         else
@@ -101,7 +99,6 @@ define 'kryptnostic.user-directory-api', [
         })
       .then (response) ->
         users = response.data
-        log.info('getUsers', users)
         if users is 'null' or !users
           return undefined
         for user in users

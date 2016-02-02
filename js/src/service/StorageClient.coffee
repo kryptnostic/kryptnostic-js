@@ -10,7 +10,7 @@ define 'kryptnostic.storage-client', [
   'kryptnostic.kryptnostic-object'
   'kryptnostic.crypto-service-loader'
   'kryptnostic.object-utils'
-  'kryptnostic.search-indexing-service'
+  'kryptnostic.indexing.object-indexing-service'
   'kryptnostic.create-object-request'
   'kryptnostic.credential-loader'
   'kryptnostic.crypto-material'
@@ -27,7 +27,7 @@ define 'kryptnostic.storage-client', [
   KryptnosticObject     = require 'kryptnostic.kryptnostic-object'
   ObjectApi             = require 'kryptnostic.object-api'
   ObjectListingApi      = require 'kryptnostic.object-listing-api'
-  SearchIndexingService = require 'kryptnostic.search-indexing-service'
+  ObjectIndexingService = require 'kryptnostic.indexing.object-indexing-service'
   CredentialLoader      = require 'kryptnostic.credential-loader'
 
   # utils
@@ -45,7 +45,7 @@ define 'kryptnostic.storage-client', [
       @objectApi             = new ObjectApi()
       @objectListingApi      = new ObjectListingApi()
       @cryptoServiceLoader   = new CryptoServiceLoader()
-      @searchIndexingService = new SearchIndexingService()
+      @objectIndexingService = new ObjectIndexingService()
       @credentialLoader      = new CredentialLoader()
 
     getObject: (objectId, parentObjectId) ->
@@ -127,17 +127,49 @@ define 'kryptnostic.storage-client', [
       .then (parentObjectKey) =>
 
         Promise.props({
-          cryptoService          : @cryptoServiceLoader.getObjectCryptoServiceV2(parentObjectKey)
+          objectCryptoService    : @cryptoServiceLoader.getObjectCryptoServiceV2(parentObjectKey)
           objectBlockCiphertexts : @objectApi.getObjects(objectIds)
         })
-        .then ({ cryptoService, objectBlockCiphertexts }) ->
+        .then ({ objectBlockCiphertexts, objectCryptoService }) ->
 
           childObjects = {}
           _.forEach(objectIds, (objectId, index) ->
             blockCiphertext = objectBlockCiphertexts[objectId]
-            if blockCiphertext? and cryptoService?
+            if blockCiphertext and objectCryptoService
               decrypted = cryptoService.decrypt(blockCiphertext)
               childObjects[objectId] = decrypted
+          )
+          return childObjects
+
+    getChildObjectsByTypeAndLoadLevel: (objectIds, parentObjectId, typeLoadLevels, loadDepth) ->
+
+      if not validateUuids(objectIds) or not validateUuid(parentObjectId)
+        return Promise.resolve(null)
+
+      Promise.resolve(
+        @objectApi.getLatestVersionedObjectKey(parentObjectId)
+      )
+      .then (parentObjectKey) =>
+        Promise.props({
+          objectCryptoService : @cryptoServiceLoader.getObjectCryptoServiceV2(parentObjectKey)
+          objectMetadataTrees : @objectApi.getObjectsByTypeAndLoadLevel(
+            objectIds,
+            typeLoadLevels,
+            loadDepth
+          )
+        })
+        .then ({ objectMetadataTrees, objectCryptoService }) ->
+          childObjects = {}
+          _.forEach(objectIds, (objectId, index) ->
+            result = objectMetadataTrees[objectId]
+            blockCiphertext = objectMetadataTrees[objectId].data
+            if blockCiphertext and objectCryptoService
+              try
+                decrypted = objectCryptoService.decrypt(blockCiphertext)
+                result.data = decrypted
+              catch e
+                result.data = ''
+            childObjects[objectId] = result
           )
           return childObjects
 
@@ -187,13 +219,16 @@ define 'kryptnostic.storage-client', [
               blockCiphertext = encrypted.body.data[0].block
               @objectApi.setObjectFromBlockCiphertext(objectKeyForNewlyCreatedObject, blockCiphertext)
             .then =>
-              # ToDo: PLATFORM-61 - search and indexing migration to backend v2
-              @searchIndexingService.submit(
-                storageRequest,
-                objectKeyForNewlyCreatedObject,
-                parentObjectKey,
-                objectSearchPair
-              )
+              if storageRequest.isSearchable
+                # ToDo: PLATFORM-61 - search and indexing migration to backend v2
+                return @objectIndexingService.index(
+                  storageRequest.body,
+                  objectKeyForNewlyCreatedObject,
+                  parentObjectKey,
+                  objectSearchPair
+                )
+              else
+                return objectSearchPair
             .then (objectSearchPair) ->
               storageResponse.objectKey = objectKeyForNewlyCreatedObject
               storageResponse.objectSearchPair = objectSearchPair
@@ -238,15 +273,15 @@ define 'kryptnostic.storage-client', [
         .then (encrypted) =>
           blockCiphertext = encrypted.body.data[0].block
           @objectApi.setObjectFromBlockCiphertext(versionedObjectKey, blockCiphertext)
-        # .then =>
-        #   # ToDo: PLATFORM-61 - search and indexing migration to backend v2
-        #   # ToDo: index updated object for it to be searchable
-        #   @searchIndexingService.submit(
-        #     storageRequest,
-        #     objectKeyForNewlyCreatedObject,
-        #     parentObjectKey,
-        #     objectSearchPair
-        #   )
+
+          # ToDo: PLATFORM-61 - search and indexing migration to backend v2
+          # ToDo: index updated object for it to be searchable
+          @objectIndexingService.index(
+            content,
+            objectKeyForNewlyCreatedObject,
+            parentObjectKey,
+            objectSearchPair
+          )
         .then ->
           return
 

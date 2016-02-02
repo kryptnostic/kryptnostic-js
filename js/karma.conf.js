@@ -38,13 +38,15 @@ module.exports = function(config) {
       '../dist/kryptnostic.js',
       '../node_modules/sinon/pkg/sinon.js',
       'test/test-main.js',
-      { pattern: 'test/**/*.js',     included: false },
-      { pattern: 'test/**/*.coffee', included: false }
+      // { pattern: 'test/**/*.js',     included: false },
+      // { pattern: 'test/**/*.coffee', included: false }
+      { pattern: 'test/indexing/ObjectIndexer-test.coffee', included: false },
+      { pattern: 'test/indexing/ObjectTokenizer-test.coffee', included: false }
     ],
 
     // list of files to exclude
     exclude: [
-      'test/auth/SearchCredentialService-test.coffee',
+      // 'test/auth/SearchCredentialService-test.coffee',
       'test/engine/KryptnosticEngine-test.coffee',
       'test/search/MetadataMapper-test.coffee'
     ],

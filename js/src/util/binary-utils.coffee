@@ -46,7 +46,7 @@ define 'kryptnostic.binary-utils', [
   HEX_CHARS_PER_BYTE = 2
   HEX_SIZE_PER_CHAR  = 16
 
-  hexToUint = (hex) ->
+  hexToUint8 = (hex) ->
     validateString(hex)
 
     bytes = []
@@ -112,6 +112,14 @@ define 'kryptnostic.binary-utils', [
     validateUint8(arr)
     return new Uint16Array(arr.buffer)
 
+  intToUint8 = (integer) ->
+    rawBytes = []
+    while integer > 0
+      nextByte = integer & 0xff
+      rawBytes.push(nextByte)
+      integer = (integer - nextByte) / 256
+    return new Uint8Array(rawBytes)
+
   joinUint8 = (arrays) ->
     targetLength = _.reduce(arrays, ((length, arr) -> length + arr.length), 0)
     buffer       = new Uint8Array(targetLength)
@@ -141,7 +149,8 @@ define 'kryptnostic.binary-utils', [
   return {
     chunkUint8
     cleanUint8Buffer
-    hexToUint
+    hexToUint8
+    intToUint8
     joinUint8
     stringToHex
     stringToUint16

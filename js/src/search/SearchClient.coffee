@@ -3,25 +3,24 @@ define 'kryptnostic.search-client', [
   'bluebird'
   'kryptnostic.binary-utils'
   'kryptnostic.logger'
-  'kryptnostic.chunking.strategy.json'
   'kryptnostic.crypto-service-loader'
   'kryptnostic.hash-function'
   'kryptnostic.kryptnostic-engine-provider'
-  'kryptnostic.kryptnostic-object'
+  'kryptnostic.object-api'
   'kryptnostic.search-api'
-  'kryptnostic.search-request'
 ], (require) ->
 
   # libraries
   Promise = require 'bluebird'
 
+  # APIs
+  ObjectApi = require 'kryptnostic.object-api'
+  SearchApi = require 'kryptnostic.search-api'
+
+
   # kryptnostic
   CryptoServiceLoader       = require 'kryptnostic.crypto-service-loader'
-  JsonChunkingStrategy      = require 'kryptnostic.chunking.strategy.json'
   KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
-  KryptnosticObject         = require 'kryptnostic.kryptnostic-object'
-  SearchApi                 = require 'kryptnostic.search-api'
-  SearchRequest             = require 'kryptnostic.search-request'
 
   # utils
   BinaryUtils  = require 'kryptnostic.binary-utils'
@@ -38,81 +37,94 @@ define 'kryptnostic.search-client', [
 
     constructor: ->
       @cryptoServiceLoader = new CryptoServiceLoader()
+      @objectApi           = new ObjectApi()
       @searchApi           = new SearchApi()
-      @hashFunction        = HashFunction.MURMUR3_128
 
-    search: (searchTerm) ->
+    search: (searchToken) ->
       Promise.resolve()
       .then =>
 
-        # token -> 128 bit hex -> Uint8Array
-        tokenHex  = @hashFunction(searchTerm)
-        tokenUint = BinaryUtils.hexToUint(tokenHex)
+        # token -> 128-bit hash -> Uint8Array
+        tokenHash = HashFunction.SHA_256_TO_128(searchToken)
+        tokenAsUint8 = BinaryUtils.stringToUint8(tokenHash)
 
-        encryptedSearchToken = KryptnosticEngineProvider
-          .getEngine()
-          .calculateEncryptedSearchToken(tokenUint)
-        encryptedSearchTokenAsBase64 = BinaryUtils.uint8ToBase64(encryptedSearchToken)
-        searchRequest = new SearchRequest({
-          query: [encryptedSearchTokenAsBase64]
-        })
+        engine = KryptnosticEngineProvider.getEngine()
+        encryptedSearchTokenAsUint8 = engine.calculateEncryptedSearchToken(tokenAsUint8)
+
+        encryptedSearchTokenAsBase64 = BinaryUtils.uint8ToBase64(encryptedSearchTokenAsUint8)
+        searchRequest = [encryptedSearchTokenAsBase64]
         @searchApi.search(searchRequest)
 
-      .then (searchResultResponse) =>
+      .then (searchResults) =>
+        #
+        # searchResults is a Map of object UUIDs to a set of inverted index segment UUIDs
+        #
+        if not _.isEmpty(searchResults)
+          #
+          # since Promise.all() doesn't support a map, only an array, we're forced to lose the key-value pair
+          # association in searchResults. as such, we'll keep track of the key, the objectId, by storing it in an
+          # array as we iterate over the searchResults map. we're guaranteed that when the Promise resolves, the
+          # data will be in the same order as given to Promise.all(), which means that we can just look up the key
+          # in our array using the iteration index
+          #
+          objectIdSet = []
 
-        # searchResultResponse.data is a List of SearchResults
-        if searchResultResponse.data?
-          searchResults = searchResultResponse.data
-          searchResultPromises = _.map(searchResults, (searchResult) =>
-            @processSearchResult(searchResult)
+          invertedIndexSegmentPromises = _.map(searchResults, (invertedIndexSegmentIds, objectId) =>
+
+            objectIdSet.push(objectId)
+            invertedIndexSegmentsPromise = @objectApi.getObjects(invertedIndexSegmentIds)
+            objectCryptoServicePromise = @cryptoServiceLoader.getObjectCryptoServiceV2(
+              {
+                objectId: objectId,
+                objectVersion: 0 # !!! HACK !!! we're hardcoding version 0 for now
+              },
+              {
+                expectMiss: false
+              }
+            )
+
+            Promise.props({
+              invertedIndexSegments : invertedIndexSegmentsPromise,
+              objectCryptoService : objectCryptoServicePromise
+            })
+            .then ({ invertedIndexSegments, objectCryptoService }) ->
+              #
+              # invertedIndexSegments is a set of encrypted inverted index segments that we must decrypt using the
+              # object crypto service for objectId
+              #
+              return _.map(invertedIndexSegments, (invertedIndexSegmentBlockCipherText) ->
+                #
+                # ToDo - we shouldn't have to do JSON.parse() here
+                #
+                invertedIndexSegmentJSON = objectCryptoService.decrypt(invertedIndexSegmentBlockCipherText)
+                invertedIndexSegment = JSON.parse(invertedIndexSegmentJSON)
+                return invertedIndexSegment
+              )
+            .catch (e) ->
+              return []
           )
 
-          # this promise will fulfill when all search result promises are fulfilled
-          Promise.all(searchResultPromises)
-          .then (processedSearchResults) ->
-            return processedSearchResults
+          Promise.all(invertedIndexSegmentPromises)
+          .then (invertedIndexSegments) ->
+            #
+            # invertedIndexSegments is a 2D array, where each element is an array of inverted index segments
+            #
+            objectIdsToSegmentsMap = {}
+            _.forEach(invertedIndexSegments, (invertedIndexSegmentsPerObject, iterationIndex) ->
+              if not _.isEmpty(invertedIndexSegmentsPerObject)
+                objectId = objectIdSet[iterationIndex]
+                objectIdsToSegmentsMap[objectId] = invertedIndexSegmentsPerObject
+            )
+            #
+            # we'll return a Map of key-value pairs, where the key is an object UUIDs and the value is a set of
+            # decrypted inverted index segments
+            #
+            return objectIdsToSegmentsMap
+          .catch (e) ->
+            return {}
         else
-          return null
-
+          return {}
       .catch (e) ->
-        logger.error('search failure', e)
-        return null
-
-    processSearchResult: (searchResult) ->
-
-      # searchResult.metadata is a Collection of Encryptables
-      encryptables = searchResult.metadata
-
-      # _.map() will produce an Array of Promises for each encryptable
-      encryptablePromises = _.map(encryptables, (encryptable) =>
-        Promise.resolve(
-          @objectApi.getLatestVersionedObjectKey(encryptable.key)
-        )
-        .then (versionedObjectKey) =>
-          @cryptoServiceLoader.getObjectCryptoServiceV2(
-            versionedObjectKey,
-            { expectMiss: false }
-          )
-        .then (objectCryptoService) =>
-          @decryptEncryptable(encryptable, objectCryptoService)
-        .catch (e) ->
-          logger.error('failure while processing search results', e)
-          return null
-      )
-
-      # this promise will fulfill when all encryptable promises are fulfilled
-      Promise.all(encryptablePromises)
-      .then (decryptedEncryptables) ->
-        return decryptedEncryptables
-
-    decryptEncryptable: (encryptable, objectCryptoService) ->
-      encryptedKryptnosticObject = KryptnosticObject.createFromEncrypted({
-        body: encryptable
-      })
-      encryptedKryptnosticObject.setChunkingStrategy(JsonChunkingStrategy.URI)
-      decryptedKryptnosticObject = encryptedKryptnosticObject.decrypt(objectCryptoService)
-      # DOTO - this is a hack; need to figure out a better way to return the right data
-      merged = _.merge(encryptedKryptnosticObject, decryptedKryptnosticObject)
-      return merged
+        return {}
 
   return SearchClient

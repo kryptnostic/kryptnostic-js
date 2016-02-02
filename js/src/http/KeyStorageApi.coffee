@@ -28,14 +28,15 @@ define 'kryptnostic.key-storage-api', [
   Requests   = require 'kryptnostic.requests'
   Validators = require 'kryptnostic.validators'
 
+  # constants
+  DEFAULT_HEADERS = { 'Content-Type' : 'application/json' }
+
   {
     validateUuid,
     validateUuids,
     validateVersionedObjectKey,
     validateObjectCryptoService
   } = Validators
-
-  DEFAULT_HEADERS = { 'Content-Type' : 'application/json' }
 
   logger = Logger.get('KeyStorageApi')
 
@@ -64,9 +65,6 @@ define 'kryptnostic.key-storage-api', [
   setRSAPublicKeyUrl = -> rsaKeysUrl() + '/public'
   getRSAPublicKeyUrl = (userId) -> rsaKeysUrl() + '/public/' + userId
   getRSAPublicKeyBulkUrl = -> rsaKeysUrl() + '/public/bulk'
-
-  asdfsaf = ->
-    if userId then
 
   #
   # crypto service endpoints

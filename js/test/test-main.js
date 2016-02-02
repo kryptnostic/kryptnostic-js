@@ -43,9 +43,8 @@ require.config({
   // we have to kickoff jasmine, as it is asynchronous
   callback: function() {
     // quiet noisy logger
-    require('kryptnostic.logger').setLevel('warn');
+    // require('kryptnostic.logger').setLevel('warn');
     // require('bluebird').longStackTraces();
     window.__karma__.start();
   }
 });
-

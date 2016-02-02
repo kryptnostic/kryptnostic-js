@@ -44,12 +44,12 @@ define 'kryptnostic.indexing.object-indexing-service', [
   # constants
   MINIMUM_TOKEN_LENGTH = 1
 
-  # defined in com.kryptnostic.v2.storage.types.TypeUUIDs
-  INDEX_SEGMENT_TYPE_ID = '00000000-0000-0000-0000-000000000007'
-
   { validateVersionedObjectKey } = Validators
 
   class ObjectIndexingService
+
+    # defined in com.kryptnostic.v2.storage.types.TypeUUIDs
+    @INDEX_SEGMENT_TYPE_ID = '00000000-0000-0000-0000-000000000007'
 
     constructor: ->
       @cryptoServiceLoader = new CryptoServiceLoader()
@@ -120,7 +120,7 @@ define 'kryptnostic.indexing.object-indexing-service', [
     createInvertedIndexSegmentObject: (segmentAddressHash, objectKey, parentObjectKey) ->
 
       createObjectRequest = new CreateObjectRequest({
-        type: INDEX_SEGMENT_TYPE_ID,
+        type: ObjectIndexingService.INDEX_SEGMENT_TYPE_ID,
         parentObjectId: parentObjectKey,
         requiredCryptoMats: CryptoMaterial.DEFAULT_REQUIRED_CRYPTO_MATERIAL
       })

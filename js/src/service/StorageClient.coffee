@@ -98,13 +98,13 @@ define 'kryptnostic.storage-client', [
             @cryptoServiceLoader.getObjectCryptoServiceV2(objectKey),
             @objectApi.getObjectAsBlockCiphertext(objectKey)
           )
-          .then (objectMaterial)->
+          .then (objectMaterial) ->
             return {
               objectKey       : objectKey,
               cryptoService   : objectMaterial[0],
               blockCiphertext : objectMaterial[1]
             }
-          .catch ( error ) ->
+          .catch (error) ->
             return {
               objectKey       : objectKey,
               cryptoService   : null,

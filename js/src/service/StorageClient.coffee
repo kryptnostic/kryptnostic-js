@@ -94,11 +94,23 @@ define 'kryptnostic.storage-client', [
 
         promises = []
         _.forEach(objectKeys, (objectKey) =>
-          promise = Promise.props({
-            objectKey       : objectKey
-            cryptoService   : @cryptoServiceLoader.getObjectCryptoServiceV2(objectKey)
-            blockCiphertext : @objectApi.getObjectAsBlockCiphertext(objectKey)
-          })
+          promise = Promise.join(
+            @cryptoServiceLoader.getObjectCryptoServiceV2(objectKey),
+            @objectApi.getObjectAsBlockCiphertext(objectKey)
+          )
+          .then (objectMaterial)->
+            return {
+              objectKey       : objectKey,
+              cryptoService   : objectMaterial[0],
+              blockCiphertext : objectMaterial[1]
+            }
+          .catch ( error ) ->
+            return {
+              objectKey       : objectKey,
+              cryptoService   : null,
+              blockCiphertext : null
+            }
+
           promises.push(promise)
         )
 
@@ -115,6 +127,8 @@ define 'kryptnostic.storage-client', [
               result[objectKey.objectId] = decrypted
           )
           return result
+        .catch (error) ->
+          logger.error( 'Failed  to get objects')
 
     getChildObjects: (objectIds, parentObjectId) ->
 

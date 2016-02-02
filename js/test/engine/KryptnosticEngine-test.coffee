@@ -66,8 +66,8 @@ define [
 
       engine1 = new KryptnosticEngine()
       engine2 = new KryptnosticEngine({
-        fhePrivateKey    : MOCK_FHE_PRIVATE_KEY
-        searchPrivateKey : MOCK_SEARCH_PRIVATE_KEY
+        fhePrivateKey       : MOCK_FHE_PRIVATE_KEY
+        fheSearchPrivateKey : MOCK_SEARCH_PRIVATE_KEY
       })
 
       fhePrivateKey1 = engine1.getPrivateKey()
@@ -80,22 +80,22 @@ define [
 
       engine1 = new KryptnosticEngine()
       engine2 = new KryptnosticEngine({
-        fhePrivateKey    : MOCK_FHE_PRIVATE_KEY
-        searchPrivateKey : MOCK_SEARCH_PRIVATE_KEY
+        fhePrivateKey       : MOCK_FHE_PRIVATE_KEY
+        fheSearchPrivateKey : MOCK_SEARCH_PRIVATE_KEY
       })
 
-      searchPrivateKey1 = engine1.getSearchPrivateKey()
-      expect(searchPrivateKey1).toBeUint8ArrayOfSize(MockDataUtils.SEARCH_PRIVATE_KEY_SIZE)
+      fheSearchPrivateKey1 = engine1.getSearchPrivateKey()
+      expect(fheSearchPrivateKey1).toBeUint8ArrayOfSize(MockDataUtils.SEARCH_PRIVATE_KEY_SIZE)
 
-      searchPrivateKey2 = engine2.getSearchPrivateKey()
-      expect(searchPrivateKey2).toBeUint8ArrayOfSize(MockDataUtils.SEARCH_PRIVATE_KEY_SIZE)
+      fheSearchPrivateKey2 = engine2.getSearchPrivateKey()
+      expect(fheSearchPrivateKey2).toBeUint8ArrayOfSize(MockDataUtils.SEARCH_PRIVATE_KEY_SIZE)
 
     it 'should generate a proper client hash function, Uint8Array of length 1060896', ->
 
       engine1 = new KryptnosticEngine()
       engine2 = new KryptnosticEngine({
-        fhePrivateKey    : MOCK_FHE_PRIVATE_KEY
-        searchPrivateKey : MOCK_SEARCH_PRIVATE_KEY
+        fhePrivateKey       : MOCK_FHE_PRIVATE_KEY
+        fheSearchPrivateKey : MOCK_SEARCH_PRIVATE_KEY
       })
 
       clientHashFn1 = engine1.calculateClientHashFunction()
@@ -108,8 +108,8 @@ define [
 
       engine1 = new KryptnosticEngine()
       engine2 = new KryptnosticEngine({
-        fhePrivateKey    : MOCK_FHE_PRIVATE_KEY
-        searchPrivateKey : MOCK_SEARCH_PRIVATE_KEY
+        fhePrivateKey       : MOCK_FHE_PRIVATE_KEY
+        fheSearchPrivateKey : MOCK_SEARCH_PRIVATE_KEY
       })
 
       objIndexPair1 = engine1.generateObjectIndexPair()
@@ -152,8 +152,8 @@ define [
       # we use .slice() because we want to initialize KryptnosticEngine with a fresh copy of
       # the two keys to avoid potential bugs due to shared memory
       _engine2 = new KryptnosticEngine({
-        fhePrivateKey    : _engine1.getPrivateKey().slice()
-        searchPrivateKey : _engine1.getSearchPrivateKey().slice()
+        fhePrivateKey       : _engine1.getPrivateKey().slice()
+        fheSearchPrivateKey : _engine1.getSearchPrivateKey().slice()
       })
 
       it 'should calculate the same private key', ->
@@ -165,10 +165,10 @@ define [
 
       it 'should calculate the same search private key', ->
 
-        searchPrivateKey1 = _engine1.getSearchPrivateKey()
-        searchPrivateKey2 = _engine2.getSearchPrivateKey()
+        fheSearchPrivateKey1 = _engine1.getSearchPrivateKey()
+        fheSearchPrivateKey2 = _engine2.getSearchPrivateKey()
 
-        expect(searchPrivateKey1).toEqual(searchPrivateKey2)
+        expect(fheSearchPrivateKey1).toEqual(fheSearchPrivateKey2)
 
       it 'should calculate different client hash functions', ->
 

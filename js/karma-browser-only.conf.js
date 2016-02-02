@@ -24,7 +24,7 @@ module.exports = function(config) {
       '../dist/kryptnostic.js',
       '../node_modules/sinon/pkg/sinon.js',
       'test/test-main.js',
-      { pattern: 'test/auth/SearchCredentialService-test.coffee', included: false },
+      // { pattern: 'test/auth/SearchCredentialService-test.coffee', included: false },
       { pattern: 'test/engine/KryptnosticEngine-test.coffee',     included: false },
       { pattern: 'test/mocks/MockDataUtils.coffee',               included: false }
     ],

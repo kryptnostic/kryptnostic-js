@@ -23,11 +23,15 @@ define 'kryptnostic.object-api', [
   ObjectMetadata        = require 'kryptnostic.object-metadata'
   ObjectMetadataTree    = require 'kryptnostic.object-metadata-tree'
   ObjectTreeLoadRequest = require 'kryptnostic.object-tree-load-request'
-  validators            = require 'kryptnostic.validators'
+  Validators            = require 'kryptnostic.validators'
 
-  { validateId, validateUuid } = validators
+  {
+    validateId,
+    validateUuid,
+    validateUuids
+  } = Validators
 
-  DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
+  DEFAULT_HEADERS = { 'Content-Type' : 'application/json' }
 
   logger = Logger.get('ObjectApi')
 
@@ -38,6 +42,7 @@ define 'kryptnostic.object-api', [
   objectMetadataUrl = (objectId) -> objectUrl() + '/objectmetadata/id/' + objectId
   objectVersionUrl  = (objectId, objectVersion) -> objectIdUrl(objectId) + '/' + objectVersion
   objectLevelsUrl   = -> objectUrl() + '/levels'
+  indexSegmentUrl   = -> objectUrl() + '/index-segment'
 
   class ObjectApi
 
@@ -67,7 +72,7 @@ define 'kryptnostic.object-api', [
             method  : 'POST'
             url     : objectsUrl()
             data    : JSON.stringify(objectIds)
-            headers : _.clone(DEFAULT_HEADER)
+            headers : DEFAULT_HEADERS
           })
         )
       )
@@ -137,7 +142,7 @@ define 'kryptnostic.object-api', [
             method  : 'POST'
             url     : objectLevelsUrl()
             data    : JSON.stringify(objectTreeLoadRequest)
-            headers : _.clone(DEFAULT_HEADER)
+            headers : DEFAULT_HEADERS
           })
         )
       )
@@ -156,7 +161,25 @@ define 'kryptnostic.object-api', [
             method  : 'POST'
             url     : objectUrl()
             data    : JSON.stringify(createObjectRequest)
-            headers : _.clone(DEFAULT_HEADER)
+            headers : DEFAULT_HEADERS
+          })
+        )
+      )
+      .then (axiosResponse) ->
+        if axiosResponse? and axiosResponse.data?
+          # axiosResponse.data == com.kryptnostic.v2.storage.models.VersionedObjectKey
+          return axiosResponse.data
+        else
+          return null
+
+    createIndexSegment: (createIndexSegmentRequest) ->
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method  : 'POST'
+            url     : indexSegmentUrl()
+            data    : JSON.stringify(createIndexSegmentRequest)
+            headers : DEFAULT_HEADERS
           })
         )
       )
@@ -179,7 +202,7 @@ define 'kryptnostic.object-api', [
             method  : 'PUT'
             url     : objectVersionUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
             data    : JSON.stringify(blockCiphertext)
-            headers : _.clone(DEFAULT_HEADER)
+            headers : DEFAULT_HEADERS
           })
         )
       )
@@ -196,7 +219,7 @@ define 'kryptnostic.object-api', [
             method  : 'DELETE'
             url     : objectUrl()
             data    : JSON.stringify(objectIds)
-            headers : _.clone(DEFAULT_HEADER)
+            headers : DEFAULT_HEADERS
           })
         )
       )

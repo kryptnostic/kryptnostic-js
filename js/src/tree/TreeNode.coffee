@@ -3,13 +3,11 @@ define 'kryptnostic.tree-node', [
   'bluebird'
   'lodash'
   'kryptnostic.logger'
-  'kryptnostic.object-utils'
 ], (require) ->
 
   _           = require 'lodash'
   Promise     = require 'bluebird'
   Logger      = require 'kryptnostic.logger'
-  ObjectUtils = require 'kryptnostic.object-utils'
 
   log = Logger.get('TreeNode')
 

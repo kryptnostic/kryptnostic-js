@@ -19,6 +19,10 @@ define 'kryptnostic.kryptnostic-engine', [
   #
   class KryptnosticEngine
 
+    @OBJECT_INDEX_PAIR_SIZE = 2064
+    @OBJECT_SHARE_PAIR_SIZE = 2064
+    @OBJECT_SEARCH_PAIR_SIZE = 2080
+
     constructor: ({ @fhePrivateKey, @fheSearchPrivateKey } = {}) ->
       unless Module? and Module.KryptnosticClient?
         logger.error(ENGINE_MISSING_ERROR)
@@ -73,5 +77,21 @@ define 'kryptnostic.kryptnostic-engine', [
 
     calculateObjectSearchPairFromObjectSharePair: (objectSharePair) ->
       return new Uint8Array(@krypto.calculateObjectSearchPairFromObjectSharePair(objectSharePair))
+
+    #
+    # helper functions
+    #
+
+    @isValidObjectIndexPair: (objectIndexPair) ->
+      return objectIndexPair instanceof Uint8Array and
+        objectIndexPair.length is KryptnosticEngine.OBJECT_INDEX_PAIR_SIZE
+
+    @isValidObjectSharePair: (objectSharePair) ->
+      return objectSharePair instanceof Uint8Array and
+        objectSharePair.length is KryptnosticEngine.OBJECT_SHARE_PAIR_SIZE
+
+    @isValidObjectSearchPair: (objectSearchPair) ->
+      return objectSearchPair instanceof Uint8Array and
+        objectSearchPair.length is KryptnosticEngine.OBJECT_SEARCH_PAIR_SIZE
 
   return KryptnosticEngine

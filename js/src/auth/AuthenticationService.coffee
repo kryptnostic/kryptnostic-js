@@ -10,6 +10,7 @@ define 'kryptnostic.authentication-service', [
   'kryptnostic.authentication-stage'
   'kryptnostic.user-directory-api'
   'kryptnostic.kryptnostic-engine-provider'
+  'kryptnostic.crypto-service-migrator'
 ], (require) ->
 
   Promise                   = require 'bluebird'
@@ -22,6 +23,7 @@ define 'kryptnostic.authentication-service', [
   AuthenticationStage       = require 'kryptnostic.authentication-stage'
   UserDirectoryApi          = require 'kryptnostic.user-directory-api'
   KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
+  CryptoServiceMigrator     = require 'kryptnostic.crypto-service-migrator'
 
   logger = Logger.get('AuthenticationService')
 
@@ -63,6 +65,9 @@ define 'kryptnostic.authentication-service', [
         CryptoServiceLoader.initializeMasterAesCryptoService()
       .then ->
         AuthenticationService.initializeEngine()
+      .then ->
+        cryptoServiceMigrator = new CryptoServiceMigrator()
+        cryptoServiceMigrator.migrateRSACryptoServices()
       .then ->
         Promise.resolve(notifier(AuthenticationStage.COMPLETED))
       .then ->

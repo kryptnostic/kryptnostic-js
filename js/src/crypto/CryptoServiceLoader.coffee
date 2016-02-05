@@ -26,7 +26,8 @@ define 'kryptnostic.crypto-service-loader', [
 
   INT_SIZE     = 4
   EMPTY_BUFFER = ''
-
+  masterAesCryptoService = null
+  rsaCryptoService = null
   log = Logger.get('CryptoServiceLoader')
 
   DEFAULT_OPTS = { expectMiss: false }
@@ -36,7 +37,6 @@ define 'kryptnostic.crypto-service-loader', [
   # Author: nickdhewitt, rbuckheit
   #
   class CryptoServiceLoader
-
     constructor: ->
       @marshaller    = new CryptoServiceMarshaller()
       @cache         = {}
@@ -61,8 +61,10 @@ define 'kryptnostic.crypto-service-loader', [
           return KeyStorageApi.setMasterAesCryptoService(encryptedMasterAesCryptoService)
 
     getRsaCryptoService: ->
-      credentialLoader = new CredentialLoader()
-      return new RsaCryptoService(credentialLoader.getCredentials().keypair)
+      if not rsaCryptoService
+        credentialLoader = new CredentialLoader()
+        rsaCryptoService = new RsaCryptoService(credentialLoader.getCredentials().keypair)
+      return rsaCryptoService
 
     getMasterAesCryptoService: ->
 
@@ -73,9 +75,10 @@ define 'kryptnostic.crypto-service-loader', [
         KeyStorageApi.getMasterAesCryptoService()
       )
       .then (serializedCryptoService) =>
-        decryptedCryptoService = @getRsaCryptoService().decrypt(serializedCryptoService)
-        masterAesCryptoService = @marshaller.unmarshall(decryptedCryptoService)
-        @cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID] = masterAesCryptoService
+        if not masterAesCryptoService
+          decryptedCryptoService = @getRsaCryptoService().decrypt(serializedCryptoService)
+          masterAesCryptoService = @marshaller.unmarshall(decryptedCryptoService)
+          @cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID] = masterAesCryptoService
         return masterAesCryptoService
 
     getObjectCryptoServiceV2: (versionedObjectKey, options) ->

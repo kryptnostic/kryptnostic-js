@@ -44,13 +44,13 @@ define 'kryptnostic.crypto-service-loader', [
       Promise.resolve(
         KeyStorageApi.getMasterAesCryptoService()
       )
-      .then (masterAesCryptoService_) ->
+      .then (_masterAesCryptoService) ->
 
-        if not masterAesCryptoService_
+        if not _masterAesCryptoService
 
-          masterAesCryptoService_ = new AesCryptoService(Cypher.AES_CTR_128)
+          _masterAesCryptoService = new AesCryptoService(Cypher.AES_CTR_128)
           cryptoServiceMarshaller = new CryptoServiceMarshaller()
-          marshalledCryptoService = cryptoServiceMarshaller.marshall(masterAesCryptoService_)
+          marshalledCryptoService = cryptoServiceMarshaller.marshall(_masterAesCryptoService)
 
           credentialLoader = new CredentialLoader()
           rsaCryptoService = new RsaCryptoService(credentialLoader.getCredentials().keypair)

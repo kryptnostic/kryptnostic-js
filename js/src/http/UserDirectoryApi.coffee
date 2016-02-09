@@ -1,3 +1,5 @@
+# coffeelint: disable=cyclomatic_complexity
+
 define 'kryptnostic.user-directory-api', [
   'require'
   'axios'
@@ -6,14 +8,15 @@ define 'kryptnostic.user-directory-api', [
   'kryptnostic.configuration'
   'kryptnostic.caching-service'
   'kryptnostic.requests'
+  'kryptnostic.validators'
 ], (require) ->
-
   axios         = require 'axios'
   Promise       = require 'bluebird'
   Logger        = require 'kryptnostic.logger'
   Configuration = require 'kryptnostic.configuration'
   Cache         = require 'kryptnostic.caching-service'
   Requests      = require 'kryptnostic.requests'
+  Validators    = require 'kryptnostic.validators'
 
   getUserUrl   = -> Configuration.get('heraclesUrlV2') + '/directory/user'
   getUsersUrl  = -> Configuration.get('heraclesUrlV2') + '/directory/users'
@@ -22,6 +25,8 @@ define 'kryptnostic.user-directory-api', [
   log = Logger.get('UserDirectoryApi')
 
   DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
+
+  { validateUuids } = Validators
 
   validateEmail = (email) ->
     if _.isEmpty(email)
@@ -81,13 +86,17 @@ define 'kryptnostic.user-directory-api', [
           return null
 
     getUsers: ( initialUUIDs ) ->
+
+      if not validateUuids(initialUUIDs)
+        return Promise.resolve([])
+
       searchResults = Cache.search( Cache.USERS, initialUUIDs )
       uuids = searchResults['uncached']
       cached = searchResults['cached']
-      if uuids.length == 0
-        return Promise.resolve()
-        .then ->
-          return cached
+
+      if uuids and uuids.length == 0
+        return Promise.resolve(cached)
+
       Promise.resolve()
       .then ->
         for uuid in uuids

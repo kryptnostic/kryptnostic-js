@@ -52,6 +52,10 @@ define 'kryptnostic.caching-service', [
       results = {}
       results['uncached'] = []
       results['cached'] = []
+
+      if _.isEmpty(keys)
+        return results
+
       for key in keys
         cached = cache.get( group, key )
         if cached?

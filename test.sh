@@ -11,7 +11,6 @@ set -e;
 if [[ $@ != **skip-linting** ]]; then
   echo; echo "linting files...";
   find js -name *.coffee | xargs ./node_modules/coffeelint/bin/coffeelint;
-  find demo -name *.coffee | xargs ./node_modules/coffeelint/bin/coffeelint;
 fi
 
 if [[ $@ != **skip-checks** ]]; then

@@ -1,6 +1,6 @@
 {
   "name"       : "kryptnostic-js",
-  "version"    : "0.5.2",
+  "version"    : "0.5.3",
   "main"       : "dist/kryptnostic.js",
   "homepage"   : "https://github.com/kryptnostic/kryptnostic-js",
   "license"    : "Apache-2.0",
@@ -26,12 +26,12 @@
     "coffeelint.json",
     "commit-hooks.rb",
     "compile-exports.rb",
-    "demo",
     "js",
     "kryptnostic.sublime-project",
     "node_modules",
     "package.json",
-    "test.sh"
+    "test.sh",
+    "webpack.config.js"
   ],
   "moduleType" : [
     "amd",

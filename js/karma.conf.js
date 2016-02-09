@@ -40,6 +40,8 @@ module.exports = function(config) {
       'test/test-main.js',
       // { pattern: 'test/**/*.js',     included: false },
       // { pattern: 'test/**/*.coffee', included: false }
+      { pattern: 'test/mocks/MockDataUtils.coffee', included: false },
+      { pattern: 'test/auth/CredentialService-test.coffee', included: false },
       { pattern: 'test/indexing/ObjectIndexer-test.coffee', included: false },
       { pattern: 'test/indexing/ObjectTokenizer-test.coffee', included: false }
     ],

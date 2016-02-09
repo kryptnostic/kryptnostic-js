@@ -26,12 +26,12 @@
     "coffeelint.json",
     "commit-hooks.rb",
     "compile-exports.rb",
-    "demo",
     "js",
     "kryptnostic.sublime-project",
     "node_modules",
     "package.json",
-    "test.sh"
+    "test.sh",
+    "webpack.config.js"
   ],
   "moduleType" : [
     "amd",

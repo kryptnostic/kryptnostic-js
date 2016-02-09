@@ -14,12 +14,6 @@ To install this project, run the following:
 bower install kryptnostic-js
 ```
 
-## usage
-
-The following demo files provide examples of how to use the `kryptnostic.js` client:
-
-* [Registering Users](demo/demo-registration.js)
-
 More coming soon!
 
 ## development

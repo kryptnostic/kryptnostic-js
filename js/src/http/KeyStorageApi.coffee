@@ -54,6 +54,7 @@ define 'kryptnostic.key-storage-api', [
   #
   # salt endpoints
   #
+
   saltUrl = (userId) -> keyStorageApi() + '/salt/' + userId
 
   #

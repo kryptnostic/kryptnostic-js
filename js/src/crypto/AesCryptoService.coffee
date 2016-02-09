@@ -34,8 +34,8 @@ define 'kryptnostic.aes-crypto-service', [
 
       if not @key
         logger.info('no key passed! generating a key.')
-        @key = Forge.random.getBytesSync(cypher.keySize / BITS_PER_BYTE)
-      @abstractCryptoService = new AbstractCryptoService(cypher)
+        @key = Forge.random.getBytesSync(@cypher.keySize / BITS_PER_BYTE)
+      @abstractCryptoService = new AbstractCryptoService(@cypher)
 
     encrypt: (plaintext) ->
 

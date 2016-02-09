@@ -1,8 +1,7 @@
 {
   "name"        : "kryptnostic-js",
-  "version"     : "0.1.9",
-  "description" : "JavaScript client for Kryptnostic services.",
-  "main"        : "dist/kryptnostic.js",
+  "version"     : "0.5.6",
+  "main"        : "dist/kryptnostic.umd.js",
   "homepage"    : "https://github.com/kryptnostic/kryptnostic-js",
   "license"     : "Apache-2.0",
   "repository": {
@@ -10,10 +9,9 @@
     "url"  : "https://github.com/kryptnostic/kryptnostic-js.git"
   },
   "contributors": [
+    "Hristo Oskov <hristo@kryptnostic.com>",
     "Nick Hewitt <nick@kryptnostic.com>",
-    "Ryan Buckheit <ryan@kryptnostic.com>",
-    "Stephanie A. Higa <stephanie@kryptnostic.com>",
-    "Hristo Oskov <hristo@kryptnostic.com>"
+    "Stephanie A. Higa <stephanie@kryptnostic.com>"
   ],
   "scripts": {
     "build" : "./build.sh",
@@ -23,10 +21,10 @@
     "url" : "https://github.com/kryptnostic/kryptnostic-js/issues"
   },
   "dependencies": {
-    "node-forge"  : "0.6.31",
     "revalidator" : "0.3.1"
   },
   "devDependencies": {
+    "coffee-loader"             : "0.7.2",
     "coffee-script"             : "1.9.3",
     "coffeelint"                : "1.11.1",
     "jasmine-core"              : "2.3.4",
@@ -41,6 +39,7 @@
     "karma-requirejs"           : "0.2.2",
     "karma-safari-launcher"     : "0.1.1",
     "phantomjs"                 : "1.9.18",
-    "sinon"                     : "1.16.1"
+    "sinon"                     : "1.16.1",
+    "webpack"                   : "1.12.13"
   }
 }

@@ -26356,7 +26356,7 @@ define("function-name", function(){});
 (function() {
   define('kryptnostic.crypto-service-loader', ['require', 'bluebird', 'kryptnostic.logger', 'kryptnostic.cypher', 'kryptnostic.caching-service', 'kryptnostic.rsa-crypto-service', 'kryptnostic.aes-crypto-service', 'kryptnostic.key-storage-api', 'kryptnostic.crypto-service-marshaller', 'kryptnostic.credential-loader'], function(require) {
     'use strict';
-    var AesCryptoService, Cache, CredentialLoader, CryptoServiceLoader, CryptoServiceMarshaller, Cypher, DEFAULT_OPTS, EMPTY_BUFFER, INT_SIZE, KeyStorageApi, Logger, Promise, RsaCryptoService, log, masterAesCryptoService, rsaCryptoService;
+    var AesCryptoService, Cache, CredentialLoader, CryptoServiceLoader, CryptoServiceMarshaller, Cypher, DEFAULT_OPTS, EMPTY_BUFFER, INT_SIZE, KeyStorageApi, Logger, Promise, RsaCryptoService, log, masterAesCryptoService;
     Promise = require('bluebird');
     RsaCryptoService = require('kryptnostic.rsa-crypto-service');
     AesCryptoService = require('kryptnostic.aes-crypto-service');
@@ -26369,7 +26369,6 @@ define("function-name", function(){});
     INT_SIZE = 4;
     EMPTY_BUFFER = '';
     masterAesCryptoService = null;
-    rsaCryptoService = null;
     log = Logger.get('CryptoServiceLoader');
     DEFAULT_OPTS = {
       expectMiss: false
@@ -26381,12 +26380,12 @@ define("function-name", function(){});
       }
 
       CryptoServiceLoader.initializeMasterAesCryptoService = function() {
-        return Promise.resolve(KeyStorageApi.getMasterAesCryptoService()).then(function(masterAesCryptoService) {
-          var credentialLoader, cryptoServiceMarshaller, encryptedMasterAesCryptoService, marshalledCryptoService;
-          if (!masterAesCryptoService) {
-            masterAesCryptoService = new AesCryptoService(Cypher.AES_CTR_128);
+        return Promise.resolve(KeyStorageApi.getMasterAesCryptoService()).then(function(masterAesCryptoService_) {
+          var credentialLoader, cryptoServiceMarshaller, encryptedMasterAesCryptoService, marshalledCryptoService, rsaCryptoService;
+          if (!masterAesCryptoService_) {
+            masterAesCryptoService_ = new AesCryptoService(Cypher.AES_CTR_128);
             cryptoServiceMarshaller = new CryptoServiceMarshaller();
-            marshalledCryptoService = cryptoServiceMarshaller.marshall(masterAesCryptoService);
+            marshalledCryptoService = cryptoServiceMarshaller.marshall(masterAesCryptoService_);
             credentialLoader = new CredentialLoader();
             rsaCryptoService = new RsaCryptoService(credentialLoader.getCredentials().keypair);
             encryptedMasterAesCryptoService = rsaCryptoService.encrypt(marshalledCryptoService);
@@ -26396,17 +26395,15 @@ define("function-name", function(){});
       };
 
       CryptoServiceLoader.prototype.getRsaCryptoService = function() {
-        var credentialLoader;
-        if (!rsaCryptoService) {
-          credentialLoader = new CredentialLoader();
-          rsaCryptoService = new RsaCryptoService(credentialLoader.getCredentials().keypair);
-        }
+        var credentialLoader, rsaCryptoService;
+        credentialLoader = new CredentialLoader();
+        rsaCryptoService = new RsaCryptoService(credentialLoader.getCredentials().keypair);
         return rsaCryptoService;
       };
 
       CryptoServiceLoader.prototype.getMasterAesCryptoService = function() {
-        if (this.cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID]) {
-          return Promise.resolve(this.cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID]);
+        if (masterAesCryptoService) {
+          return Promise.resolve(masterAesCryptoService);
         }
         return Promise.resolve(KeyStorageApi.getMasterAesCryptoService()).then((function(_this) {
           return function(serializedCryptoService) {
@@ -26414,7 +26411,6 @@ define("function-name", function(){});
             if (!masterAesCryptoService) {
               decryptedCryptoService = _this.getRsaCryptoService().decrypt(serializedCryptoService);
               masterAesCryptoService = _this.marshaller.unmarshall(decryptedCryptoService);
-              _this.cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID] = masterAesCryptoService;
             }
             return masterAesCryptoService;
           };

@@ -27,7 +27,6 @@ define 'kryptnostic.crypto-service-loader', [
   INT_SIZE     = 4
   EMPTY_BUFFER = ''
   masterAesCryptoService = null
-  rsaCryptoService = null
   log = Logger.get('CryptoServiceLoader')
 
   DEFAULT_OPTS = { expectMiss: false }
@@ -46,13 +45,13 @@ define 'kryptnostic.crypto-service-loader', [
       Promise.resolve(
         KeyStorageApi.getMasterAesCryptoService()
       )
-      .then (masterAesCryptoService) ->
+      .then (masterAesCryptoService_) ->
 
-        if not masterAesCryptoService
+        if not masterAesCryptoService_
 
-          masterAesCryptoService = new AesCryptoService(Cypher.AES_CTR_128)
+          masterAesCryptoService_ = new AesCryptoService(Cypher.AES_CTR_128)
           cryptoServiceMarshaller = new CryptoServiceMarshaller()
-          marshalledCryptoService = cryptoServiceMarshaller.marshall(masterAesCryptoService)
+          marshalledCryptoService = cryptoServiceMarshaller.marshall(masterAesCryptoService_)
 
           credentialLoader = new CredentialLoader()
           rsaCryptoService = new RsaCryptoService(credentialLoader.getCredentials().keypair)
@@ -61,15 +60,14 @@ define 'kryptnostic.crypto-service-loader', [
           return KeyStorageApi.setMasterAesCryptoService(encryptedMasterAesCryptoService)
 
     getRsaCryptoService: ->
-      if not rsaCryptoService
-        credentialLoader = new CredentialLoader()
-        rsaCryptoService = new RsaCryptoService(credentialLoader.getCredentials().keypair)
+      credentialLoader = new CredentialLoader()
+      rsaCryptoService = new RsaCryptoService(credentialLoader.getCredentials().keypair)
       return rsaCryptoService
 
     getMasterAesCryptoService: ->
 
-      if @cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID]
-        return Promise.resolve(@cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID])
+      if masterAesCryptoService
+        return Promise.resolve(masterAesCryptoService)
 
       Promise.resolve(
         KeyStorageApi.getMasterAesCryptoService()
@@ -78,7 +76,6 @@ define 'kryptnostic.crypto-service-loader', [
         if not masterAesCryptoService
           decryptedCryptoService = @getRsaCryptoService().decrypt(serializedCryptoService)
           masterAesCryptoService = @marshaller.unmarshall(decryptedCryptoService)
-          @cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID] = masterAesCryptoService
         return masterAesCryptoService
 
     getObjectCryptoServiceV2: (versionedObjectKey, options) ->

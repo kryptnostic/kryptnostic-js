@@ -10,14 +10,11 @@ define 'kryptnostic.credential-provider-loader', [
 
   log = Logger.get('CredentialProviderLoader')
 
-  #
-  # Loads credential providers by their module uri.
-  # Author: rbuckheit
-  #
   class CredentialProviderLoader
 
     @load : (uri) ->
 
+      # unfortunately, webpack gets angry if you try to require an expression, i.e., require(uri)
       if uri is 'kryptnostic.credential-provider.local-storage'
         module = require('kryptnostic.credential-provider.local-storage')
       else if uri is 'kryptnostic.credential-provider.session-storage'

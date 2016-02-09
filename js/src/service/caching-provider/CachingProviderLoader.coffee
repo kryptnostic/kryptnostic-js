@@ -9,14 +9,11 @@ define 'kryptnostic.caching-provider-loader', [
 
   log = Logger.get('CachingProviderLoader')
 
-  #
-  # Loads caching providers by their module uri.
-  # Author: dbailey
-  #
   class CachingProviderLoader
 
     @load : (uri) ->
 
+      # unfortunately, webpack gets angry if you try to require an expression, i.e., require(uri)
       if uri is 'kryptnostic.caching-provider.jscache'
         module = require('kryptnostic.caching-provider.jscache')
       else if uri is 'kryptnostic.caching-provider.memory'

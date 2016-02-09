@@ -10,19 +10,19 @@ define("axios",[],function(){return function(t){function e(r){if(n[r])return n[r
 //# sourceMappingURL=axios.amd.min.map;
 /* @preserve
  * The MIT License (MIT)
- *
+ * 
  * Copyright (c) 2014 Petka Antonov
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
@@ -30,7 +30,7 @@ define("axios",[],function(){return function(t){function e(r){if(n[r])return n[r
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- *
+ * 
  */
 /**
  * bluebird build version 2.9.34
@@ -2916,30 +2916,30 @@ _dereq_('./any.js')(Promise);
 _dereq_('./each.js')(Promise, INTERNAL);
 _dereq_('./timers.js')(Promise, INTERNAL);
 _dereq_('./filter.js')(Promise, INTERNAL);
-
-    util.toFastProperties(Promise);
-    util.toFastProperties(Promise.prototype);
-    function fillTypes(value) {
-        var p = new Promise(INTERNAL);
-        p._fulfillmentHandler0 = value;
-        p._rejectionHandler0 = value;
-        p._progressHandler0 = value;
-        p._promise0 = value;
-        p._receiver0 = value;
-        p._settledValue = value;
-    }
-    // Complete slack tracking, opt out of field-type tracking and
-    // stabilize map
-    fillTypes({a: 1});
-    fillTypes({b: 2});
-    fillTypes({c: 3});
-    fillTypes(1);
-    fillTypes(function(){});
-    fillTypes(undefined);
-    fillTypes(false);
-    fillTypes(new Promise(INTERNAL));
-    CapturedTrace.setBounds(async.firstLineError, util.lastLineError);
-    return Promise;
+                                                         
+    util.toFastProperties(Promise);                                          
+    util.toFastProperties(Promise.prototype);                                
+    function fillTypes(value) {                                              
+        var p = new Promise(INTERNAL);                                       
+        p._fulfillmentHandler0 = value;                                      
+        p._rejectionHandler0 = value;                                        
+        p._progressHandler0 = value;                                         
+        p._promise0 = value;                                                 
+        p._receiver0 = value;                                                
+        p._settledValue = value;                                             
+    }                                                                        
+    // Complete slack tracking, opt out of field-type tracking and           
+    // stabilize map                                                         
+    fillTypes({a: 1});                                                       
+    fillTypes({b: 2});                                                       
+    fillTypes({c: 3});                                                       
+    fillTypes(1);                                                            
+    fillTypes(function(){});                                                 
+    fillTypes(undefined);                                                    
+    fillTypes(false);                                                        
+    fillTypes(new Promise(INTERNAL));                                        
+    CapturedTrace.setBounds(async.firstLineError, util.lastLineError);       
+    return Promise;                                                          
 
 };
 
@@ -17744,7 +17744,7 @@ if (typeof module !== "undefined" && module.exports) {
                 storedLevel = /loglevel=([^;]+)/.exec(window.document.cookie)[1];
             } catch (ignore) {}
         }
-
+        
         if (self.levels[storedLevel] === undefined) {
             storedLevel = "WARN";
         }
@@ -17817,244 +17817,244 @@ if (typeof module !== "undefined" && module.exports) {
 
 ;(function (root, undefined) {
 	'use strict';
-
+	
 	// Create a local object that'll be exported or referenced globally.
 	var library = {
 		'version': '2.1.2',
 		'x86': {},
 		'x64': {}
 	};
-
-
-
-
+	
+	
+	
+	
 	// PRIVATE FUNCTIONS
 	// -----------------
-
+	
 	function _x86Multiply(m, n) {
 		//
 		// Given two 32bit ints, returns the two multiplied together as a
 		// 32bit int.
 		//
-
+		
 		return ((m & 0xffff) * n) + ((((m >>> 16) * n) & 0xffff) << 16);
 	}
-
-
+	
+	
 	function _x86Rotl(m, n) {
 		//
 		// Given a 32bit int and an int representing a number of bit positions,
 		// returns the 32bit int rotated left by that number of positions.
 		//
-
+		
 		return (m << n) | (m >>> (32 - n));
 	}
-
-
+	
+	
 	function _x86Fmix(h) {
 		//
 		// Given a block, returns murmurHash3's final x86 mix of that block.
 		//
-
+		
 		h ^= h >>> 16;
 		h  = _x86Multiply(h, 0x85ebca6b);
 		h ^= h >>> 13;
 		h  = _x86Multiply(h, 0xc2b2ae35);
 		h ^= h >>> 16;
-
+		
 		return h;
 	}
-
-
+	
+	
 	function _x64Add(m, n) {
 		//
 		// Given two 64bit ints (as an array of two 32bit ints) returns the two
 		// added together as a 64bit int (as an array of two 32bit ints).
 		//
-
+		
 		m = [m[0] >>> 16, m[0] & 0xffff, m[1] >>> 16, m[1] & 0xffff];
 		n = [n[0] >>> 16, n[0] & 0xffff, n[1] >>> 16, n[1] & 0xffff];
 		var o = [0, 0, 0, 0];
-
+		
 		o[3] += m[3] + n[3];
 		o[2] += o[3] >>> 16;
 		o[3] &= 0xffff;
-
+		
 		o[2] += m[2] + n[2];
 		o[1] += o[2] >>> 16;
 		o[2] &= 0xffff;
-
+		
 		o[1] += m[1] + n[1];
 		o[0] += o[1] >>> 16;
 		o[1] &= 0xffff;
-
+		
 		o[0] += m[0] + n[0];
 		o[0] &= 0xffff;
-
+		
 		return [(o[0] << 16) | o[1], (o[2] << 16) | o[3]];
 	}
-
-
+	
+	
 	function _x64Multiply(m, n) {
 		//
 		// Given two 64bit ints (as an array of two 32bit ints) returns the two
 		// multiplied together as a 64bit int (as an array of two 32bit ints).
 		//
-
+		
 		m = [m[0] >>> 16, m[0] & 0xffff, m[1] >>> 16, m[1] & 0xffff];
 		n = [n[0] >>> 16, n[0] & 0xffff, n[1] >>> 16, n[1] & 0xffff];
 		var o = [0, 0, 0, 0];
-
+		
 		o[3] += m[3] * n[3];
 		o[2] += o[3] >>> 16;
 		o[3] &= 0xffff;
-
+		
 		o[2] += m[2] * n[3];
 		o[1] += o[2] >>> 16;
 		o[2] &= 0xffff;
-
+		
 		o[2] += m[3] * n[2];
 		o[1] += o[2] >>> 16;
 		o[2] &= 0xffff;
-
+		
 		o[1] += m[1] * n[3];
 		o[0] += o[1] >>> 16;
 		o[1] &= 0xffff;
-
+		
 		o[1] += m[2] * n[2];
 		o[0] += o[1] >>> 16;
 		o[1] &= 0xffff;
-
+		
 		o[1] += m[3] * n[1];
 		o[0] += o[1] >>> 16;
 		o[1] &= 0xffff;
-
+		
 		o[0] += (m[0] * n[3]) + (m[1] * n[2]) + (m[2] * n[1]) + (m[3] * n[0]);
 		o[0] &= 0xffff;
-
+		
 		return [(o[0] << 16) | o[1], (o[2] << 16) | o[3]];
 	}
-
-
+	
+	
 	function _x64Rotl(m, n) {
 		//
 		// Given a 64bit int (as an array of two 32bit ints) and an int
 		// representing a number of bit positions, returns the 64bit int (as an
 		// array of two 32bit ints) rotated left by that number of positions.
 		//
-
+		
 		n %= 64;
-
+		
 		if (n === 32) {
 			return [m[1], m[0]];
 		}
-
+		
 		else if (n < 32) {
 			return [(m[0] << n) | (m[1] >>> (32 - n)), (m[1] << n) | (m[0] >>> (32 - n))];
 		}
-
+		
 		else {
 			n -= 32;
 			return [(m[1] << n) | (m[0] >>> (32 - n)), (m[0] << n) | (m[1] >>> (32 - n))];
 		}
 	}
-
-
+	
+	
 	function _x64LeftShift(m, n) {
 		//
 		// Given a 64bit int (as an array of two 32bit ints) and an int
 		// representing a number of bit positions, returns the 64bit int (as an
 		// array of two 32bit ints) shifted left by that number of positions.
 		//
-
+		
 		n %= 64;
-
+		
 		if (n === 0) {
 			return m;
 		}
-
+		
 		else if (n < 32) {
 			return [(m[0] << n) | (m[1] >>> (32 - n)), m[1] << n];
 		}
-
+		
 		else {
 			return [m[1] << (n - 32), 0];
 		}
 	}
-
-
+	
+	
 	function _x64Xor(m, n) {
 		//
 		// Given two 64bit ints (as an array of two 32bit ints) returns the two
 		// xored together as a 64bit int (as an array of two 32bit ints).
 		//
-
+		
 		return [m[0] ^ n[0], m[1] ^ n[1]];
 	}
-
-
+	
+	
 	function _x64Fmix(h) {
 		//
 		// Given a block, returns murmurHash3's final x64 mix of that block.
 		// (`[0, h[0] >>> 1]` is a 33 bit unsigned right shift. This is the
 		// only place where we need to right shift 64bit ints.)
 		//
-
+		
 		h = _x64Xor(h, [0, h[0] >>> 1]);
 		h = _x64Multiply(h, [0xff51afd7, 0xed558ccd]);
 		h = _x64Xor(h, [0, h[0] >>> 1]);
 		h = _x64Multiply(h, [0xc4ceb9fe, 0x1a85ec53]);
 		h = _x64Xor(h, [0, h[0] >>> 1]);
-
+		
 		return h;
 	}
-
-
-
-
+	
+	
+	
+	
 	// PUBLIC FUNCTIONS
 	// ----------------
-
+	
 	library.x86.hash32 = function (key, seed) {
 		//
 		// Given a string and an optional seed as an int, returns a 32 bit hash
 		// using the x86 flavor of MurmurHash3, as an unsigned int.
 		//
-
+		
 		key = key || '';
 		seed = seed || 0;
-
+		
 		var remainder = key.length % 4;
 		var bytes = key.length - remainder;
-
+		
 		var h1 = seed;
-
+		
 		var k1 = 0;
-
+		
 		var c1 = 0xcc9e2d51;
 		var c2 = 0x1b873593;
-
+		
 		for (var i = 0; i < bytes; i = i + 4) {
 			k1 = ((key.charCodeAt(i) & 0xff)) | ((key.charCodeAt(i + 1) & 0xff) << 8) | ((key.charCodeAt(i + 2) & 0xff) << 16) | ((key.charCodeAt(i + 3) & 0xff) << 24);
-
+			
 			k1 = _x86Multiply(k1, c1);
 			k1 = _x86Rotl(k1, 15);
 			k1 = _x86Multiply(k1, c2);
-
+			
 			h1 ^= k1;
 			h1 = _x86Rotl(h1, 13);
 			h1 = _x86Multiply(h1, 5) + 0xe6546b64;
 		}
-
+		
 		k1 = 0;
-
+		
 		switch (remainder) {
 			case 3:
 				k1 ^= (key.charCodeAt(i + 2) & 0xff) << 16;
-
+			
 			case 2:
 				k1 ^= (key.charCodeAt(i + 1) & 0xff) << 8;
-
+			
 			case 1:
 				k1 ^= (key.charCodeAt(i) & 0xff);
 				k1 = _x86Multiply(k1, c1);
@@ -18062,144 +18062,144 @@ if (typeof module !== "undefined" && module.exports) {
 				k1 = _x86Multiply(k1, c2);
 				h1 ^= k1;
 		}
-
+		
 		h1 ^= key.length;
 		h1 = _x86Fmix(h1);
-
+		
 		return h1 >>> 0;
 	};
-
-
+	
+	
 	library.x86.hash128 = function (key, seed) {
 		//
 		// Given a string and an optional seed as an int, returns a 128 bit
 		// hash using the x86 flavor of MurmurHash3, as an unsigned hex.
 		//
-
+		
 		key = key || '';
 		seed = seed || 0;
-
+		
 		var remainder = key.length % 16;
 		var bytes = key.length - remainder;
-
+		
 		var h1 = seed;
 		var h2 = seed;
 		var h3 = seed;
 		var h4 = seed;
-
+		
 		var k1 = 0;
 		var k2 = 0;
 		var k3 = 0;
 		var k4 = 0;
-
+		
 		var c1 = 0x239b961b;
 		var c2 = 0xab0e9789;
 		var c3 = 0x38b34ae5;
 		var c4 = 0xa1e38b93;
-
+		
 		for (var i = 0; i < bytes; i = i + 16) {
 			k1 = ((key.charCodeAt(i) & 0xff)) | ((key.charCodeAt(i + 1) & 0xff) << 8) | ((key.charCodeAt(i + 2) & 0xff) << 16) | ((key.charCodeAt(i + 3) & 0xff) << 24);
 			k2 = ((key.charCodeAt(i + 4) & 0xff)) | ((key.charCodeAt(i + 5) & 0xff) << 8) | ((key.charCodeAt(i + 6) & 0xff) << 16) | ((key.charCodeAt(i + 7) & 0xff) << 24);
 			k3 = ((key.charCodeAt(i + 8) & 0xff)) | ((key.charCodeAt(i + 9) & 0xff) << 8) | ((key.charCodeAt(i + 10) & 0xff) << 16) | ((key.charCodeAt(i + 11) & 0xff) << 24);
 			k4 = ((key.charCodeAt(i + 12) & 0xff)) | ((key.charCodeAt(i + 13) & 0xff) << 8) | ((key.charCodeAt(i + 14) & 0xff) << 16) | ((key.charCodeAt(i + 15) & 0xff) << 24);
-
+			
 			k1 = _x86Multiply(k1, c1);
 			k1 = _x86Rotl(k1, 15);
 			k1 = _x86Multiply(k1, c2);
 			h1 ^= k1;
-
+			
 			h1 = _x86Rotl(h1, 19);
 			h1 += h2;
 			h1 = _x86Multiply(h1, 5) + 0x561ccd1b;
-
+			
 			k2 = _x86Multiply(k2, c2);
 			k2 = _x86Rotl(k2, 16);
 			k2 = _x86Multiply(k2, c3);
 			h2 ^= k2;
-
+			
 			h2 = _x86Rotl(h2, 17);
 			h2 += h3;
 			h2 = _x86Multiply(h2, 5) + 0x0bcaa747;
-
+			
 			k3 = _x86Multiply(k3, c3);
 			k3 = _x86Rotl(k3, 17);
 			k3 = _x86Multiply(k3, c4);
 			h3 ^= k3;
-
+			
 			h3 = _x86Rotl(h3, 15);
 			h3 += h4;
 			h3 = _x86Multiply(h3, 5) + 0x96cd1c35;
-
+			
 			k4 = _x86Multiply(k4, c4);
 			k4 = _x86Rotl(k4, 18);
 			k4 = _x86Multiply(k4, c1);
 			h4 ^= k4;
-
+			
 			h4 = _x86Rotl(h4, 13);
 			h4 += h1;
 			h4 = _x86Multiply(h4, 5) + 0x32ac3b17;
 		}
-
+		
 		k1 = 0;
 		k2 = 0;
 		k3 = 0;
 		k4 = 0;
-
+		
 		switch (remainder) {
 			case 15:
 				k4 ^= key.charCodeAt(i + 14) << 16;
-
+			
 			case 14:
 				k4 ^= key.charCodeAt(i + 13) << 8;
-
+			
 			case 13:
 				k4 ^= key.charCodeAt(i + 12);
 				k4 = _x86Multiply(k4, c4);
 				k4 = _x86Rotl(k4, 18);
 				k4 = _x86Multiply(k4, c1);
 				h4 ^= k4;
-
+			
 			case 12:
 				k3 ^= key.charCodeAt(i + 11) << 24;
-
+			
 			case 11:
 				k3 ^= key.charCodeAt(i + 10) << 16;
-
+			
 			case 10:
 				k3 ^= key.charCodeAt(i + 9) << 8;
-
+			
 			case 9:
 				k3 ^= key.charCodeAt(i + 8);
 				k3 = _x86Multiply(k3, c3);
 				k3 = _x86Rotl(k3, 17);
 				k3 = _x86Multiply(k3, c4);
 				h3 ^= k3;
-
+			
 			case 8:
 				k2 ^= key.charCodeAt(i + 7) << 24;
-
+			
 			case 7:
 				k2 ^= key.charCodeAt(i + 6) << 16;
-
+			
 			case 6:
 				k2 ^= key.charCodeAt(i + 5) << 8;
-
+			
 			case 5:
 				k2 ^= key.charCodeAt(i + 4);
 				k2 = _x86Multiply(k2, c2);
 				k2 = _x86Rotl(k2, 16);
 				k2 = _x86Multiply(k2, c3);
 				h2 ^= k2;
-
+			
 			case 4:
 				k1 ^= key.charCodeAt(i + 3) << 24;
-
+			
 			case 3:
 				k1 ^= key.charCodeAt(i + 2) << 16;
-
+			
 			case 2:
 				k1 ^= key.charCodeAt(i + 1) << 8;
-
+			
 			case 1:
 				k1 ^= key.charCodeAt(i);
 				k1 = _x86Multiply(k1, c1);
@@ -18207,129 +18207,129 @@ if (typeof module !== "undefined" && module.exports) {
 				k1 = _x86Multiply(k1, c2);
 				h1 ^= k1;
 		}
-
+		
 		h1 ^= key.length;
 		h2 ^= key.length;
 		h3 ^= key.length;
 		h4 ^= key.length;
-
+		
 		h1 += h2;
 		h1 += h3;
 		h1 += h4;
 		h2 += h1;
 		h3 += h1;
 		h4 += h1;
-
+		
 		h1 = _x86Fmix(h1);
 		h2 = _x86Fmix(h2);
 		h3 = _x86Fmix(h3);
 		h4 = _x86Fmix(h4);
-
+		
 		h1 += h2;
 		h1 += h3;
 		h1 += h4;
 		h2 += h1;
 		h3 += h1;
 		h4 += h1;
-
+		
 		return ("00000000" + (h1 >>> 0).toString(16)).slice(-8) + ("00000000" + (h2 >>> 0).toString(16)).slice(-8) + ("00000000" + (h3 >>> 0).toString(16)).slice(-8) + ("00000000" + (h4 >>> 0).toString(16)).slice(-8);
 	};
-
-
+	
+	
 	library.x64.hash128 = function (key, seed) {
 		//
 		// Given a string and an optional seed as an int, returns a 128 bit
 		// hash using the x64 flavor of MurmurHash3, as an unsigned hex.
 		//
-
+		
 		key = key || '';
 		seed = seed || 0;
-
+		
 		var remainder = key.length % 16;
 		var bytes = key.length - remainder;
-
+		
 		var h1 = [0, seed];
 		var h2 = [0, seed];
-
+		
 		var k1 = [0, 0];
 		var k2 = [0, 0];
-
+		
 		var c1 = [0x87c37b91, 0x114253d5];
 		var c2 = [0x4cf5ad43, 0x2745937f];
-
+		
 		for (var i = 0; i < bytes; i = i + 16) {
 			k1 = [((key.charCodeAt(i + 4) & 0xff)) | ((key.charCodeAt(i + 5) & 0xff) << 8) | ((key.charCodeAt(i + 6) & 0xff) << 16) | ((key.charCodeAt(i + 7) & 0xff) << 24), ((key.charCodeAt(i) & 0xff)) | ((key.charCodeAt(i + 1) & 0xff) << 8) | ((key.charCodeAt(i + 2) & 0xff) << 16) | ((key.charCodeAt(i + 3) & 0xff) << 24)];
 			k2 = [((key.charCodeAt(i + 12) & 0xff)) | ((key.charCodeAt(i + 13) & 0xff) << 8) | ((key.charCodeAt(i + 14) & 0xff) << 16) | ((key.charCodeAt(i + 15) & 0xff) << 24), ((key.charCodeAt(i + 8) & 0xff)) | ((key.charCodeAt(i + 9) & 0xff) << 8) | ((key.charCodeAt(i + 10) & 0xff) << 16) | ((key.charCodeAt(i + 11) & 0xff) << 24)];
-
+			
 			k1 = _x64Multiply(k1, c1);
 			k1 = _x64Rotl(k1, 31);
 			k1 = _x64Multiply(k1, c2);
 			h1 = _x64Xor(h1, k1);
-
+			
 			h1 = _x64Rotl(h1, 27);
 			h1 = _x64Add(h1, h2);
 			h1 = _x64Add(_x64Multiply(h1, [0, 5]), [0, 0x52dce729]);
-
+			
 			k2 = _x64Multiply(k2, c2);
 			k2 = _x64Rotl(k2, 33);
 			k2 = _x64Multiply(k2, c1);
 			h2 = _x64Xor(h2, k2);
-
+			
 			h2 = _x64Rotl(h2, 31);
 			h2 = _x64Add(h2, h1);
 			h2 = _x64Add(_x64Multiply(h2, [0, 5]), [0, 0x38495ab5]);
 		}
-
+		
 		k1 = [0, 0];
 		k2 = [0, 0];
-
+		
 		switch(remainder) {
 			case 15:
 				k2 = _x64Xor(k2, _x64LeftShift([0, key.charCodeAt(i + 14)], 48));
-
+			
 			case 14:
 				k2 = _x64Xor(k2, _x64LeftShift([0, key.charCodeAt(i + 13)], 40));
-
+			
 			case 13:
 				k2 = _x64Xor(k2, _x64LeftShift([0, key.charCodeAt(i + 12)], 32));
-
+			
 			case 12:
 				k2 = _x64Xor(k2, _x64LeftShift([0, key.charCodeAt(i + 11)], 24));
-
+			
 			case 11:
 				k2 = _x64Xor(k2, _x64LeftShift([0, key.charCodeAt(i + 10)], 16));
-
+			
 			case 10:
 				k2 = _x64Xor(k2, _x64LeftShift([0, key.charCodeAt(i + 9)], 8));
-
+			
 			case 9:
 				k2 = _x64Xor(k2, [0, key.charCodeAt(i + 8)]);
 				k2 = _x64Multiply(k2, c2);
 				k2 = _x64Rotl(k2, 33);
 				k2 = _x64Multiply(k2, c1);
 				h2 = _x64Xor(h2, k2);
-
+			
 			case 8:
 				k1 = _x64Xor(k1, _x64LeftShift([0, key.charCodeAt(i + 7)], 56));
-
+			
 			case 7:
 				k1 = _x64Xor(k1, _x64LeftShift([0, key.charCodeAt(i + 6)], 48));
-
+			
 			case 6:
 				k1 = _x64Xor(k1, _x64LeftShift([0, key.charCodeAt(i + 5)], 40));
-
+			
 			case 5:
 				k1 = _x64Xor(k1, _x64LeftShift([0, key.charCodeAt(i + 4)], 32));
-
+			
 			case 4:
 				k1 = _x64Xor(k1, _x64LeftShift([0, key.charCodeAt(i + 3)], 24));
-
+			
 			case 3:
 				k1 = _x64Xor(k1, _x64LeftShift([0, key.charCodeAt(i + 2)], 16));
-
+			
 			case 2:
 				k1 = _x64Xor(k1, _x64LeftShift([0, key.charCodeAt(i + 1)], 8));
-
+			
 			case 1:
 				k1 = _x64Xor(k1, [0, key.charCodeAt(i)]);
 				k1 = _x64Multiply(k1, c1);
@@ -18337,58 +18337,58 @@ if (typeof module !== "undefined" && module.exports) {
 				k1 = _x64Multiply(k1, c2);
 				h1 = _x64Xor(h1, k1);
 		}
-
+		
 		h1 = _x64Xor(h1, [0, key.length]);
 		h2 = _x64Xor(h2, [0, key.length]);
-
+		
 		h1 = _x64Add(h1, h2);
 		h2 = _x64Add(h2, h1);
-
+		
 		h1 = _x64Fmix(h1);
 		h2 = _x64Fmix(h2);
-
+		
 		h1 = _x64Add(h1, h2);
 		h2 = _x64Add(h2, h1);
-
+		
 		return ("00000000" + (h1[0] >>> 0).toString(16)).slice(-8) + ("00000000" + (h1[1] >>> 0).toString(16)).slice(-8) + ("00000000" + (h2[0] >>> 0).toString(16)).slice(-8) + ("00000000" + (h2[1] >>> 0).toString(16)).slice(-8);
 	};
-
-
-
-
+	
+	
+	
+	
 	// INITIALIZATION
 	// --------------
-
+	
 	// Export murmurHash3 for CommonJS, either as an AMD module or just as part
 	// of the global object.
 	if (typeof exports !== 'undefined') {
 		if (typeof module !== 'undefined' && module.exports) {
 			exports = module.exports = library;
 		}
-
+		
 		exports.murmurHash3 = library;
 	}
-
+	
 	else if (typeof define === 'function' && define.amd) {
 		define('murmurhash3',[], function() {
 			return library;
 		});
 	}
-
+	
 	else {
 		// Use murmurHash3.noConflict to restore `murmurHash3` back to its
 		// original value. Returns a reference to the library object, to allow
 		// it to be used under a different name.
 		library._murmurHash3 = root.murmurHash3
-
+		
 		library.noConflict = function () {
 			root.murmurHash3 = library._murmurHash3;
 			library._murmurHash3 = undefined;
 			library.noConflict = undefined;
-
+			
 			return library;
 		};
-
+		
 		root.murmurHash3 = library;
 	}
 })(this);
@@ -21326,7 +21326,7 @@ function GZheader() {
                        // but leave for few code modifications
 
   //
-  // Setup limits is not necessary because in js we should not preallocate memory
+  // Setup limits is not necessary because in js we should not preallocate memory 
   // for inflate use constant limit in 65536 bytes
   //
 
@@ -25338,9 +25338,9 @@ define("function-name", function(){});
             principal: principal,
             credential: credential
           });
-          return credentialService.deriveKeypair({
+          return credentialService.deriveKeyPair({
             password: password
-          }, notifier);
+          });
         }).then(function(_keypair) {
           keypair = _keypair;
           return credentialProvider.store({
@@ -25452,7 +25452,13 @@ define("function-name", function(){});
 
       CredentialProviderLoader.load = function(uri) {
         var module;
-        module = require(uri);
+        if (uri === 'kryptnostic.credential-provider.local-storage') {
+          module = require('kryptnostic.credential-provider.local-storage');
+        } else if (uri === 'kryptnostic.credential-provider.session-storage') {
+          module = require('kryptnostic.credential-provider.session-storage');
+        } else if (uri === 'kryptnostic.credential-provider.memory') {
+          module = require('kryptnostic.credential-provider.memory');
+        }
         if (module != null) {
           return module;
         } else {
@@ -25470,8 +25476,8 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.credential-service', ['require', 'forge', 'kryptnostic.logger', 'kryptnostic.key-storage-api', 'kryptnostic.binary-utils', 'kryptnostic.rsa-key-generator', 'kryptnostic.password-crypto-service', 'kryptnostic.authentication-stage', 'kryptnostic.salt-generator'], function(require) {
-    var AuthenticationStage, BITS_PER_BYTE, BinaryUtils, CredentialService, DEFAULT_ITERATIONS, DEFAULT_KEY_SIZE, Forge, KeyStorageApi, Logger, PasswordCryptoService, Promise, RsaKeyGenerator, SaltGenerator, log;
+  define('kryptnostic.credential-service', ['require', 'bluebird', 'forge', 'kryptnostic.logger', 'kryptnostic.key-storage-api', 'kryptnostic.binary-utils', 'kryptnostic.rsa-key-generator', 'kryptnostic.password-crypto-service', 'kryptnostic.salt-generator', 'kryptnostic.validators'], function(require) {
+    var BITS_PER_BYTE, BinaryUtils, CredentialService, DEFAULT_ITERATIONS, DEFAULT_KEY_SIZE, Forge, KeyStorageApi, Logger, PasswordCryptoService, Promise, RsaKeyGenerator, SaltGenerator, Validators, log, validateUuid;
     Logger = require('kryptnostic.logger');
     Forge = require('forge');
     Promise = require('bluebird');
@@ -25479,11 +25485,12 @@ define("function-name", function(){});
     KeyStorageApi = require('kryptnostic.key-storage-api');
     PasswordCryptoService = require('kryptnostic.password-crypto-service');
     RsaKeyGenerator = require('kryptnostic.rsa-key-generator');
-    AuthenticationStage = require('kryptnostic.authentication-stage');
     SaltGenerator = require('kryptnostic.salt-generator');
+    Validators = require('kryptnostic.validators');
     DEFAULT_ITERATIONS = 1000;
     DEFAULT_KEY_SIZE = 256;
     BITS_PER_BYTE = 8;
+    validateUuid = Validators.validateUuid;
     log = Logger.get('CredentialService');
     CredentialService = (function() {
       function CredentialService() {
@@ -25534,27 +25541,17 @@ define("function-name", function(){});
       CredentialService.prototype.initializeSalt = function(_arg) {
         var credential, encryptedSalt, uuid;
         uuid = _arg.uuid, encryptedSalt = _arg.encryptedSalt, credential = _arg.credential;
-        return Promise.resolve().then(function() {
-          var blockCiphertext;
-          blockCiphertext = encryptedSalt;
-          KeyStorageApi.setEncryptedSalt(uuid, credential, blockCiphertext);
-        });
+        if (!validateUuid(uuid)) {
+          return Promise.resolve(null);
+        }
+        return Promise.resolve(KeyStorageApi.setEncryptedSalt(uuid, credential, encryptedSalt));
       };
 
-      CredentialService.prototype.initializeKeypair = function(_arg, notifier) {
+      CredentialService.prototype.initializeKeypair = function(_arg) {
         var keypair, password, privateKey, publicKey, _ref;
         password = _arg.password;
-        if (notifier == null) {
-          notifier = function() {};
-        }
         _ref = {}, publicKey = _ref.publicKey, privateKey = _ref.privateKey, keypair = _ref.keypair;
-        return Promise.resolve().then(function() {
-          return Promise.resolve(notifier(AuthenticationStage.RSA_KEYGEN));
-        }).then((function(_this) {
-          return function() {
-            return _this.rsaKeyGenerator.generateKeypair();
-          };
-        })(this)).then(function(keypairBuffer) {
+        return Promise.resolve(this.rsaKeyGenerator.generateKeypair()).then(function(keypairBuffer) {
           var passwordCrypto, privateKeyAsn1, privateKeyBytes, publicKeyAsn1, publicKeyBytes;
           keypair = {};
           passwordCrypto = new PasswordCryptoService();
@@ -25562,11 +25559,10 @@ define("function-name", function(){});
           privateKeyBytes = keypairBuffer.privateKey.data;
           publicKey = publicKeyBytes;
           privateKey = passwordCrypto.encrypt(privateKeyBytes, password);
-          publicKeyAsn1 = Forge.asn1.fromDer(publicKeyBytes);
+          publicKeyAsn1 = Forge.asn1.fromDer(keypairBuffer.publicKey);
           keypair.publicKey = Forge.pki.publicKeyFromAsn1(publicKeyAsn1);
-          privateKeyAsn1 = Forge.asn1.fromDer(privateKeyBytes);
-          keypair.privateKey = Forge.pki.privateKeyFromAsn1(privateKeyAsn1);
-          return keypair;
+          privateKeyAsn1 = Forge.asn1.fromDer(keypairBuffer.privateKey);
+          return keypair.privateKey = Forge.pki.privateKeyFromAsn1(privateKeyAsn1);
         }).then(function() {
           return KeyStorageApi.setRSAPrivateKey(privateKey);
         }).then(function() {
@@ -25582,26 +25578,17 @@ define("function-name", function(){});
         });
       };
 
-      CredentialService.prototype.deriveKeypair = function(_arg, notifier) {
+      CredentialService.prototype.deriveKeyPair = function(_arg) {
         var password;
         password = _arg.password;
-        if (notifier == null) {
-          notifier = function() {};
-        }
-        return Promise.resolve().then(function() {
-          return Promise.resolve(notifier(AuthenticationStage.DERIVE_KEYPAIR));
-        }).then(function() {
-          return KeyStorageApi.getRSAPrivateKey();
-        }).then((function(_this) {
+        return Promise.resolve(KeyStorageApi.getRSAPrivateKey()).then((function(_this) {
           return function(blockCiphertext) {
             var passwordCrypto, privateKey, privateKeyAsn1, privateKeyBuffer, privateKeyBytes, publicKey;
             if (_.isEmpty(blockCiphertext)) {
-              return Promise.resolve().then(function() {
-                log.info('no keypair exists, generating on-the-fly');
-                return Promise.resolve(_this.initializeKeypair({
-                  password: password
-                }, notifier));
-              });
+              log.info('no keypair exists, generating on-the-fly');
+              return Promise.resolve(_this.initializeKeypair({
+                password: password
+              }));
             } else {
               log.info('using existing keypair');
               passwordCrypto = new PasswordCryptoService();
@@ -26268,9 +26255,9 @@ define("function-name", function(){});
         this.key = key;
         if (!this.key) {
           logger.info('no key passed! generating a key.');
-          this.key = Forge.random.getBytesSync(cypher.keySize / BITS_PER_BYTE);
+          this.key = Forge.random.getBytesSync(this.cypher.keySize / BITS_PER_BYTE);
         }
-        this.abstractCryptoService = new AbstractCryptoService(cypher);
+        this.abstractCryptoService = new AbstractCryptoService(this.cypher);
       }
 
       AesCryptoService.prototype.encrypt = function(plaintext) {
@@ -26356,12 +26343,11 @@ define("function-name", function(){});
 (function() {
   define('kryptnostic.crypto-service-loader', ['require', 'bluebird', 'kryptnostic.logger', 'kryptnostic.cypher', 'kryptnostic.caching-service', 'kryptnostic.rsa-crypto-service', 'kryptnostic.aes-crypto-service', 'kryptnostic.key-storage-api', 'kryptnostic.crypto-service-marshaller', 'kryptnostic.credential-loader'], function(require) {
     'use strict';
-
-    var AesCryptoService, CredentialLoader, CryptoServiceLoader, CryptoServiceMarshaller, Cypher, DEFAULT_OPTS, EMPTY_BUFFER, INT_SIZE, KeyStorageApi, Logger, Promise, RsaCryptoService, log, masterAesCryptoService;
-
+    var AesCryptoService, Cache, CredentialLoader, CryptoServiceLoader, CryptoServiceMarshaller, Cypher, DEFAULT_OPTS, EMPTY_BUFFER, INT_SIZE, KeyStorageApi, Logger, Promise, RsaCryptoService, log;
     Promise = require('bluebird');
     RsaCryptoService = require('kryptnostic.rsa-crypto-service');
     AesCryptoService = require('kryptnostic.aes-crypto-service');
+    Cache = require('kryptnostic.caching-service');
     Cypher = require('kryptnostic.cypher');
     KeyStorageApi = require('kryptnostic.key-storage-api');
     Logger = require('kryptnostic.logger');
@@ -26369,7 +26355,6 @@ define("function-name", function(){});
     CredentialLoader = require('kryptnostic.credential-loader');
     INT_SIZE = 4;
     EMPTY_BUFFER = '';
-    masterAesCryptoService = null;
     log = Logger.get('CryptoServiceLoader');
     DEFAULT_OPTS = {
       expectMiss: false
@@ -26381,12 +26366,12 @@ define("function-name", function(){});
       }
 
       CryptoServiceLoader.initializeMasterAesCryptoService = function() {
-        return Promise.resolve(KeyStorageApi.getMasterAesCryptoService()).then(function(masterAesCryptoService_) {
+        return Promise.resolve(KeyStorageApi.getMasterAesCryptoService()).then(function(masterAesCryptoService) {
           var credentialLoader, cryptoServiceMarshaller, encryptedMasterAesCryptoService, marshalledCryptoService, rsaCryptoService;
-          if (!masterAesCryptoService_) {
-            masterAesCryptoService_ = new AesCryptoService(Cypher.AES_CTR_128);
+          if (!masterAesCryptoService) {
+            masterAesCryptoService = new AesCryptoService(Cypher.AES_CTR_128);
             cryptoServiceMarshaller = new CryptoServiceMarshaller();
-            marshalledCryptoService = cryptoServiceMarshaller.marshall(masterAesCryptoService_);
+            marshalledCryptoService = cryptoServiceMarshaller.marshall(masterAesCryptoService);
             credentialLoader = new CredentialLoader();
             rsaCryptoService = new RsaCryptoService(credentialLoader.getCredentials().keypair);
             encryptedMasterAesCryptoService = rsaCryptoService.encrypt(marshalledCryptoService);
@@ -26396,23 +26381,21 @@ define("function-name", function(){});
       };
 
       CryptoServiceLoader.prototype.getRsaCryptoService = function() {
-        var credentialLoader, rsaCryptoService;
+        var credentialLoader;
         credentialLoader = new CredentialLoader();
-        rsaCryptoService = new RsaCryptoService(credentialLoader.getCredentials().keypair);
-        return rsaCryptoService;
+        return new RsaCryptoService(credentialLoader.getCredentials().keypair);
       };
 
       CryptoServiceLoader.prototype.getMasterAesCryptoService = function() {
-        if (masterAesCryptoService) {
-          return Promise.resolve(masterAesCryptoService);
+        if (this.cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID]) {
+          return Promise.resolve(this.cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID]);
         }
         return Promise.resolve(KeyStorageApi.getMasterAesCryptoService()).then((function(_this) {
           return function(serializedCryptoService) {
-            var decryptedCryptoService;
-            if (!masterAesCryptoService) {
-              decryptedCryptoService = _this.getRsaCryptoService().decrypt(serializedCryptoService);
-              masterAesCryptoService = _this.marshaller.unmarshall(decryptedCryptoService);
-            }
+            var decryptedCryptoService, masterAesCryptoService;
+            decryptedCryptoService = _this.getRsaCryptoService().decrypt(serializedCryptoService);
+            masterAesCryptoService = _this.marshaller.unmarshall(decryptedCryptoService);
+            _this.cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID] = masterAesCryptoService;
             return masterAesCryptoService;
           };
         })(this));
@@ -26835,8 +26818,8 @@ define("function-name", function(){});
 // Generated by CoffeeScript 1.7.1
 (function() {
   define('kryptnostic.rsa-key-generator', ['require', 'forge', 'kryptnostic.logger', 'bluebird'], function(require) {
-    var EXPONENT_BIG_INT, EXPONENT_NUM, Forge, Logger, Promise, RSA_KEY_SIZE, RsaKeyGenerator, log;
-    Forge = require('forge');
+    var EXPONENT_BIG_INT, EXPONENT_NUM, Logger, Promise, RSA_KEY_SIZE, RsaKeyGenerator, forge, log;
+    forge = require('forge');
     Logger = require('kryptnostic.logger');
     Promise = require('bluebird');
     log = Logger.get('RsaKeyGenerator');
@@ -26846,38 +26829,36 @@ define("function-name", function(){});
     RsaKeyGenerator = (function() {
       function RsaKeyGenerator() {}
 
-      RsaKeyGenerator.prototype.forgeGenerate = function(params) {
+      RsaKeyGenerator.prototype.forgeGenerate = function() {
         return Promise.resolve().then(function() {
           var forgeKeys, keypair, privateKeyAsn1, publicKeyAsn1;
           keypair = {};
-          forgeKeys = Forge.rsa.generateKeyPair(params);
-          privateKeyAsn1 = Forge.pki.privateKeyToAsn1(forgeKeys.privateKey);
-          publicKeyAsn1 = Forge.pki.publicKeyToAsn1(forgeKeys.publicKey);
-          keypair.privateKey = Forge.asn1.toDer(privateKeyAsn1);
-          keypair.publicKey = Forge.asn1.toDer(publicKeyAsn1);
+          forgeKeys = forge.rsa.generateKeyPair(RSA_KEY_SIZE, EXPONENT_NUM);
+          privateKeyAsn1 = forge.pki.privateKeyToAsn1(forgeKeys.privateKey);
+          publicKeyAsn1 = forge.pki.publicKeyToAsn1(forgeKeys.publicKey);
+          keypair.privateKey = forge.asn1.toDer(privateKeyAsn1);
+          keypair.publicKey = forge.asn1.toDer(publicKeyAsn1);
           return keypair;
         });
       };
 
-      RsaKeyGenerator.prototype.webCryptoGenerate = function(params) {
-        return Promise.resolve().then(function() {
-          return window.crypto.subtle.generateKey({
-            name: 'RSA-OAEP',
-            modulusLength: params.bits,
-            publicExponent: params.e,
-            hash: {
-              name: 'SHA-256'
-            }
-          }, true, ['encrypt', 'decrypt']);
-        }).then(function(keys) {
+      RsaKeyGenerator.prototype.webCryptoGenerate = function() {
+        return Promise.resolve(window.crypto.subtle.generateKey({
+          name: 'RSA-OAEP',
+          modulusLength: RSA_KEY_SIZE,
+          publicExponent: EXPONENT_BIG_INT,
+          hash: {
+            name: 'SHA-256'
+          }
+        }, true, ['encrypt', 'decrypt'])).then(function(keys) {
           var p1, p2;
-          p1 = window.crypto.subtle.exportKey('pkcs8', keys.privateKey).then(function(exported) {
+          p1 = window.crypto.subtle.exportKey('pkcs8', keys.privateKey).then(function(exportedPrivateKey) {
             var privateKey;
-            return privateKey = Forge.util.createBuffer(exported);
+            return privateKey = new forge.util.ByteBuffer(exportedPrivateKey);
           });
-          p2 = window.crypto.subtle.exportKey('spki', keys.publicKey).then(function(exported) {
+          p2 = window.crypto.subtle.exportKey('spki', keys.publicKey).then(function(exportedPublicKey) {
             var publicKey;
-            return publicKey = Forge.util.createBuffer(exported);
+            return publicKey = new forge.util.ByteBuffer(exportedPublicKey);
           });
           return Promise.join(p1, p2, function(privateKey, publicKey) {
             var keyPair;
@@ -26889,14 +26870,14 @@ define("function-name", function(){});
         });
       };
 
-      RsaKeyGenerator.prototype.ieWebCryptoGenerate = function(params) {
+      RsaKeyGenerator.prototype.ieWebCryptoGenerate = function() {
         return Promise.resolve().then(function() {
           var deferred, keyOperation;
           deferred = Promise.defer();
           keyOperation = window.msCrypto.subtle.generateKey({
             name: 'RSA-OAEP',
-            modulusLength: params.bits,
-            publicExponent: params.e,
+            modulusLength: RSA_KEY_SIZE,
+            publicExponent: EXPONENT_BIG_INT,
             hash: {
               name: 'SHA-256'
             }
@@ -26918,7 +26899,9 @@ define("function-name", function(){});
             return log.error('Failed to export RSA private key using IE web crypto');
           };
           keyOpPrivate.oncomplete = function() {
-            return deferred1.resolve(Forge.util.createBuffer(keyOpPrivate.result));
+            var privateKey;
+            privateKey = new forge.util.ByteBuffer(keyOpPrivate.result);
+            return deferred1.resolve(privateKey);
           };
           privateKeyPromise = deferred1.promise;
           deferred2 = Promise.defer();
@@ -26927,7 +26910,9 @@ define("function-name", function(){});
             return log.error('Failed to export RSA public key using IE web crypto');
           };
           keyOpPublic.oncomplete = function() {
-            return deferred2.resolve(Forge.util.createBuffer(keyOpPublic.result));
+            var publicKey;
+            publicKey = new forge.util.ByteBuffer(keyOpPublic.result);
+            return deferred2.resolve(publicKey);
           };
           publicKeyPromise = deferred2.promise;
           return Promise.join(privateKeyPromise, publicKeyPromise, function(privateKey, publicKey) {
@@ -26941,31 +26926,13 @@ define("function-name", function(){});
       };
 
       RsaKeyGenerator.prototype.generateKeypair = function() {
-        var params, _ref, _ref1;
+        var _ref, _ref1;
         if (((_ref = window.crypto) != null ? _ref.subtle : void 0) != null) {
-          params = {
-            bits: RSA_KEY_SIZE,
-            e: EXPONENT_BIG_INT
-          };
-          log.info('generating keypair', params);
-          log.debug('using web crypto API to generate keypair');
-          return this.webCryptoGenerate(params);
+          return this.webCryptoGenerate();
         } else if (((_ref1 = window.msCrypto) != null ? _ref1.subtle : void 0) != null) {
-          params = {
-            bits: RSA_KEY_SIZE,
-            e: EXPONENT_BIG_INT
-          };
-          log.info('generating keypair', params);
-          log.debug('using IE 11 web crypto API to generate keypair');
-          return this.ieWebCryptoGenerate(params);
+          return this.ieWebCryptoGenerate();
         } else {
-          params = {
-            bits: RSA_KEY_SIZE,
-            e: EXPONENT_NUM
-          };
-          log.info('generating keypair', params);
-          log.debug('using Forge to generate keypair');
-          return this.forgeGenerate(params);
+          return this.forgeGenerate();
         }
       };
 
@@ -28116,14 +28083,15 @@ define("function-name", function(){});
 (function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  define('kryptnostic.user-directory-api', ['require', 'axios', 'bluebird', 'kryptnostic.logger', 'kryptnostic.configuration', 'kryptnostic.caching-service', 'kryptnostic.requests'], function(require) {
-    var Cache, Configuration, DEFAULT_HEADER, Logger, Promise, Requests, UserDirectoryApi, axios, getUserUrl, getUsersUrl, log, usersInRealmUrl, validateEmail, validateUuid;
+  define('kryptnostic.user-directory-api', ['require', 'axios', 'bluebird', 'kryptnostic.logger', 'kryptnostic.configuration', 'kryptnostic.caching-service', 'kryptnostic.requests', 'kryptnostic.validators'], function(require) {
+    var Cache, Configuration, DEFAULT_HEADER, Logger, Promise, Requests, UserDirectoryApi, Validators, axios, getUserUrl, getUsersUrl, log, usersInRealmUrl, validateEmail, validateUuid, validateUuids;
     axios = require('axios');
     Promise = require('bluebird');
     Logger = require('kryptnostic.logger');
     Configuration = require('kryptnostic.configuration');
     Cache = require('kryptnostic.caching-service');
     Requests = require('kryptnostic.requests');
+    Validators = require('kryptnostic.validators');
     getUserUrl = function() {
       return Configuration.get('heraclesUrlV2') + '/directory/user';
     };
@@ -28137,6 +28105,7 @@ define("function-name", function(){});
     DEFAULT_HEADER = {
       'Content-Type': 'application/json'
     };
+    validateUuids = Validators.validateUuids;
     validateEmail = function(email) {
       if (_.isEmpty(email)) {
         log.error('illegal email address', email);
@@ -28208,13 +28177,14 @@ define("function-name", function(){});
 
       UserDirectoryApi.prototype.getUsers = function(initialUUIDs) {
         var cached, searchResults, uuids;
+        if (!validateUuids(initialUUIDs)) {
+          return Promise.resolve([]);
+        }
         searchResults = Cache.search(Cache.USERS, initialUUIDs);
         uuids = searchResults['uncached'];
         cached = searchResults['cached'];
-        if (uuids.length === 0) {
-          return Promise.resolve().then(function() {
-            return cached;
-          });
+        if (uuids && uuids.length === 0) {
+          return Promise.resolve(cached);
         }
         return Promise.resolve().then(function() {
           var uuid, _i, _len;
@@ -29715,13 +29685,20 @@ define("function-name", function(){});
   define('kryptnostic.schema.validator', ['require', 'revalidator', 'kryptnostic.logger'], function(require) {
     var logger, revalidator, validate;
     logger = require('kryptnostic.logger').get('validator');
-    revalidator = window;
+    revalidator = require('revalidator');
     validate = function(object, classDef, schema) {
       var validation;
       if (!object instanceof classDef) {
         return;
       }
-      validation = revalidator.validate(object, schema);
+      validation = {};
+      if (revalidator && revalidator.validate) {
+        validation = revalidator.validate(object, schema);
+      } else if (window.validate) {
+        validation = window.validate(object, schema);
+      } else {
+        logger.error('missing dependency: revalidator');
+      }
       if (!validation.valid) {
         throw new Error('schema validation failed for ' + object.constructor.name);
       }
@@ -30488,7 +30465,11 @@ define("function-name", function(){});
 
       CachingProviderLoader.load = function(uri) {
         var module;
-        module = require(uri);
+        if (uri === 'kryptnostic.caching-provider.jscache') {
+          module = require('kryptnostic.caching-provider.jscache');
+        } else if (uri === 'kryptnostic.caching-provider.memory') {
+          module = require('kryptnostic.caching-provider.memory');
+        }
         if (module != null) {
           return module;
         } else {
@@ -30559,6 +30540,9 @@ define("function-name", function(){});
         results = {};
         results['uncached'] = [];
         results['cached'] = [];
+        if (_.isEmpty(keys)) {
+          return results;
+        }
         for (_i = 0, _len = keys.length; _i < _len; _i++) {
           key = keys[_i];
           cached = cache.get(group, key);
@@ -30688,40 +30672,6 @@ define("function-name", function(){});
 
     })();
     return JscacheCachingProvider;
-  });
-
-}).call(this);
-
-
-// Generated by CoffeeScript 1.7.1
-(function() {
-  define('kryptnostic.caching-provider.locache', ['require', 'locache', 'kryptnostic.logger'], function(require) {
-    var Cache, LocacheCachingProvider, Logger, log;
-    Logger = require('kryptnostic.logger');
-    Cache = require('locache');
-    log = Logger.get('LocacheCachingProvider');
-    LocacheCachingProvider = (function() {
-      function LocacheCachingProvider() {}
-
-      LocacheCachingProvider.cache = Cache;
-
-      LocacheCachingProvider.get = function(key) {
-        return this.cache.get(key);
-      };
-
-      LocacheCachingProvider.store = function(key, value) {
-        return this.cache.set(key, value);
-      };
-
-      LocacheCachingProvider.destroy = function() {
-        this.cache.flush();
-        return this.cache.cleanup();
-      };
-
-      return LocacheCachingProvider;
-
-    })();
-    return LocacheCachingProvider;
   });
 
 }).call(this);
@@ -31405,7 +31355,7 @@ define("function-name", function(){});
 (function() {
   var EXPORTED_MODULES;
 
-  EXPORTED_MODULES = ['axios', 'bluebird', 'forge', 'jscache', 'lodash', 'loglevel', 'murmurhash3', 'pako', 'revalidator', 'function-name', 'cs!auth/AuthenticationService', 'cs!auth/AuthenticationStage', 'cs!auth/CredentialLoader', 'cs!auth/CredentialProviderLoader', 'cs!auth/CredentialService', 'cs!auth/SaltGenerator', 'cs!auth/SearchCredentialService', 'cs!auth/SearchKeySerializer', 'cs!auth/credential-provider/InMemoryCredentialProvider', 'cs!auth/credential-provider/KeyValueCredentialProvider', 'cs!auth/credential-provider/LocalStorageCredentialProvider', 'cs!auth/credential-provider/SessionStorageCredentialProvider', 'cs!chunking/ChunkingStrategyRegistry', 'cs!chunking/DefaultChunkingStrategy', 'cs!chunking/JsonChunkingStrategy', 'cs!crypto/AbstractCryptoService', 'cs!crypto/AesCryptoService', 'cs!crypto/CryptoAlgorithm', 'cs!crypto/CryptoMaterial', 'cs!crypto/CryptoServiceLoader', 'cs!crypto/CryptoServiceMarshaller', 'cs!crypto/CryptoServiceMigrator', 'cs!crypto/Cypher', 'cs!crypto/HashFunction', 'cs!crypto/KeypairSerializer', 'cs!crypto/PasswordCryptoService', 'cs!crypto/RsaCryptoService', 'cs!crypto/RsaKeyGenerator', 'cs!engine/KryptnosticEngine', 'cs!engine/KryptnosticEngineProvider', 'cs!engine/MockKryptnosticEngine', 'cs!engine/MockSearchKeyGenerator', 'cs!engine/SearchKeyGenerator', 'cs!http/KeyStorageApi', 'cs!http/MetadataApi', 'cs!http/ObjectApi', 'cs!http/ObjectAuthorizationApi', 'cs!http/ObjectListingApi', 'cs!http/RegistrationApi', 'cs!http/SearchApi', 'cs!http/SharingApi', 'cs!http/UserDirectoryApi', 'cs!indexing/InvertedIndexSegment', 'cs!indexing/ObjectIndexer', 'cs!indexing/ObjectIndexingService', 'cs!indexing/ObjectTokenizer', 'cs!marshalling/DeflatingMarshaller', 'cs!model/object/BlockCiphertext', 'cs!model/object/EncryptedBlock', 'cs!model/object/KryptnosticObject', 'cs!model/object/ObjectMetadata', 'cs!model/object/ObjectMetadataTree', 'cs!model/request/CreateObjectRequest', 'cs!model/request/MetadataRequest', 'cs!model/request/ObjectTreeLoadRequest', 'cs!model/request/RevocationRequest', 'cs!model/request/SearchRequest', 'cs!model/request/SharingRequest', 'cs!model/request/StorageRequest', 'cs!model/request/UserRegistrationRequest', 'cs!model/schema/block-ciphertext', 'cs!model/schema/create-object-request', 'cs!model/schema/encryptable', 'cs!model/schema/encrypted-block', 'cs!model/schema/indexed-metadata', 'cs!model/schema/inverted-index-segment', 'cs!model/schema/kryptnostic-object', 'cs!model/schema/object-metadata', 'cs!model/schema/object-metadata-tree', 'cs!model/schema/object-tree-load-request', 'cs!model/schema/pending-object-request', 'cs!model/schema/revocation-request', 'cs!model/schema/search-request', 'cs!model/schema/sharing-request', 'cs!model/schema/storage-request', 'cs!model/schema/user-registration-request', 'cs!model/schema/validator', 'cs!model/search/IndexedMetadata', 'cs!search/RandomIndexGenerator', 'cs!search/SearchClient', 'cs!service/BlockEncryptionService', 'cs!service/ConfigurationService', 'cs!service/RegistrationClient', 'cs!service/SharingClient', 'cs!service/StorageClient', 'cs!service/caching-provider/CachingProviderLoader', 'cs!service/caching-provider/CachingService', 'cs!service/caching-provider/InMemoryCachingProvider', 'cs!service/caching-provider/JscacheCachingProvider', 'cs!service/caching-provider/LocacheCachingProvider', 'cs!tree/PermissionChangeVisitor', 'cs!tree/TreeLoader', 'cs!tree/TreeNode', 'cs!util/Logger', 'cs!util/binary-utils', 'cs!util/object-utils', 'cs!util/requests', 'cs!util/validators'];
+  EXPORTED_MODULES = ['axios', 'bluebird', 'forge', 'jscache', 'lodash', 'loglevel', 'murmurhash3', 'pako', 'revalidator', 'function-name', 'cs!auth/AuthenticationService', 'cs!auth/AuthenticationStage', 'cs!auth/CredentialLoader', 'cs!auth/CredentialProviderLoader', 'cs!auth/CredentialService', 'cs!auth/SaltGenerator', 'cs!auth/SearchCredentialService', 'cs!auth/SearchKeySerializer', 'cs!auth/credential-provider/InMemoryCredentialProvider', 'cs!auth/credential-provider/KeyValueCredentialProvider', 'cs!auth/credential-provider/LocalStorageCredentialProvider', 'cs!auth/credential-provider/SessionStorageCredentialProvider', 'cs!chunking/ChunkingStrategyRegistry', 'cs!chunking/DefaultChunkingStrategy', 'cs!chunking/JsonChunkingStrategy', 'cs!crypto/AbstractCryptoService', 'cs!crypto/AesCryptoService', 'cs!crypto/CryptoAlgorithm', 'cs!crypto/CryptoMaterial', 'cs!crypto/CryptoServiceLoader', 'cs!crypto/CryptoServiceMarshaller', 'cs!crypto/CryptoServiceMigrator', 'cs!crypto/Cypher', 'cs!crypto/HashFunction', 'cs!crypto/KeypairSerializer', 'cs!crypto/PasswordCryptoService', 'cs!crypto/RsaCryptoService', 'cs!crypto/RsaKeyGenerator', 'cs!engine/KryptnosticEngine', 'cs!engine/KryptnosticEngineProvider', 'cs!engine/MockKryptnosticEngine', 'cs!engine/MockSearchKeyGenerator', 'cs!engine/SearchKeyGenerator', 'cs!http/KeyStorageApi', 'cs!http/MetadataApi', 'cs!http/ObjectApi', 'cs!http/ObjectAuthorizationApi', 'cs!http/ObjectListingApi', 'cs!http/RegistrationApi', 'cs!http/SearchApi', 'cs!http/SharingApi', 'cs!http/UserDirectoryApi', 'cs!indexing/InvertedIndexSegment', 'cs!indexing/ObjectIndexer', 'cs!indexing/ObjectIndexingService', 'cs!indexing/ObjectTokenizer', 'cs!marshalling/DeflatingMarshaller', 'cs!model/object/BlockCiphertext', 'cs!model/object/EncryptedBlock', 'cs!model/object/KryptnosticObject', 'cs!model/object/ObjectMetadata', 'cs!model/object/ObjectMetadataTree', 'cs!model/request/CreateObjectRequest', 'cs!model/request/MetadataRequest', 'cs!model/request/ObjectTreeLoadRequest', 'cs!model/request/RevocationRequest', 'cs!model/request/SearchRequest', 'cs!model/request/SharingRequest', 'cs!model/request/StorageRequest', 'cs!model/request/UserRegistrationRequest', 'cs!model/schema/block-ciphertext', 'cs!model/schema/create-object-request', 'cs!model/schema/encryptable', 'cs!model/schema/encrypted-block', 'cs!model/schema/indexed-metadata', 'cs!model/schema/inverted-index-segment', 'cs!model/schema/kryptnostic-object', 'cs!model/schema/object-metadata', 'cs!model/schema/object-metadata-tree', 'cs!model/schema/object-tree-load-request', 'cs!model/schema/pending-object-request', 'cs!model/schema/revocation-request', 'cs!model/schema/search-request', 'cs!model/schema/sharing-request', 'cs!model/schema/storage-request', 'cs!model/schema/user-registration-request', 'cs!model/schema/validator', 'cs!model/search/IndexedMetadata', 'cs!search/RandomIndexGenerator', 'cs!search/SearchClient', 'cs!service/BlockEncryptionService', 'cs!service/ConfigurationService', 'cs!service/RegistrationClient', 'cs!service/SharingClient', 'cs!service/StorageClient', 'cs!service/caching-provider/CachingProviderLoader', 'cs!service/caching-provider/CachingService', 'cs!service/caching-provider/InMemoryCachingProvider', 'cs!service/caching-provider/JscacheCachingProvider', 'cs!tree/PermissionChangeVisitor', 'cs!tree/TreeLoader', 'cs!tree/TreeNode', 'cs!util/Logger', 'cs!util/binary-utils', 'cs!util/object-utils', 'cs!util/requests', 'cs!util/validators'];
 
   define('kryptnostic', EXPORTED_MODULES, function(require) {
     'use strict';

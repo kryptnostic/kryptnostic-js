@@ -16,10 +16,13 @@ define 'kryptnostic.caching-provider-loader', [
   class CachingProviderLoader
 
     @load : (uri) ->
-      module = require(uri)
+
+      if uri is 'kryptnostic.caching-provider.jscache'
+        module = require('kryptnostic.caching-provider.jscache')
+      else if uri is 'kryptnostic.caching-provider.memory'
+        module = require('kryptnostic.caching-provider.memory')
 
       if module?
         return module
       else
         throw new Error 'failed to load caching provider for URI ' + uri
-

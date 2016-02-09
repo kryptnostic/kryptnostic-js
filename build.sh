@@ -31,20 +31,20 @@ rm -rfv dist/*;
 if [[ $@ != **--release** ]]; then
   echo; echo 'running full build -> kryptnostic.js';
   ./node_modules/requirejs/bin/r.js -o build.js out=dist/kryptnostic.js optimize=none;
+  echo; echo 'running webpack build -> kryptnostic.umd.js';
+  ./node_modules/webpack/bin/webpack.js
 else
   echo; echo 'running full build -> kryptnostic.js';
   ./node_modules/requirejs/bin/r.js -o build.js out=dist/kryptnostic.js optimize=none;
   echo; echo 'running uglified build -> kryptnostic.min.js';
   ./node_modules/requirejs/bin/r.js -o build.js out=dist/kryptnostic.min.js optimize=uglify;
+  echo; echo 'running webpack build -> kryptnostic.umd.js';
+  ./node_modules/webpack/bin/webpack.js
 fi
 
 echo; echo "copying kryptnostic client";
 cp bower_components/krypto-js/KryptnosticClient.js dist/KryptnosticClient.js;
 
-echo; echo 'compiling demo.coffee...';
-./node_modules/coffee-script/bin/coffee -c demo/demo.coffee;
-
 echo; echo "DIST BUILD SUCCESSFUL!";
 echo ":)";
 echo;
-

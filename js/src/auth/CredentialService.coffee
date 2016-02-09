@@ -2,14 +2,15 @@
 
 define 'kryptnostic.credential-service', [
   'require'
+  'bluebird'
   'forge'
   'kryptnostic.logger'
   'kryptnostic.key-storage-api'
   'kryptnostic.binary-utils'
   'kryptnostic.rsa-key-generator'
   'kryptnostic.password-crypto-service'
-  'kryptnostic.authentication-stage'
   'kryptnostic.salt-generator'
+  'kryptnostic.validators'
 ], (require) ->
 
   Logger                = require 'kryptnostic.logger'
@@ -19,12 +20,16 @@ define 'kryptnostic.credential-service', [
   KeyStorageApi         = require 'kryptnostic.key-storage-api'
   PasswordCryptoService = require 'kryptnostic.password-crypto-service'
   RsaKeyGenerator       = require 'kryptnostic.rsa-key-generator'
-  AuthenticationStage   = require 'kryptnostic.authentication-stage'
   SaltGenerator         = require 'kryptnostic.salt-generator'
+  Validators            = require 'kryptnostic.validators'
 
   DEFAULT_ITERATIONS = 1000
   DEFAULT_KEY_SIZE   = 256
   BITS_PER_BYTE      = 8
+
+  {
+    validateUuid,
+  } = Validators
 
   log = Logger.get('CredentialService')
 
@@ -69,20 +74,20 @@ define 'kryptnostic.credential-service', [
       return { credential, encryptedSalt }
 
     initializeSalt : ({ uuid, encryptedSalt, credential }) ->
-      Promise.resolve()
-      .then ->
-        blockCiphertext = encryptedSalt
-        KeyStorageApi.setEncryptedSalt(uuid, credential, blockCiphertext)
-        return
 
-    initializeKeypair : ({ password }, notifier = -> ) ->
+      if not validateUuid(uuid)
+        return Promise.resolve(null)
+
+      Promise.resolve(
+        KeyStorageApi.setEncryptedSalt(uuid, credential, encryptedSalt)
+      )
+
+    initializeKeypair : ({ password }) ->
       { publicKey, privateKey, keypair } = {}
 
-      Promise.resolve()
-      .then ->
-        Promise.resolve(notifier(AuthenticationStage.RSA_KEYGEN))
-      .then =>
+      Promise.resolve(
         @rsaKeyGenerator.generateKeypair()
+      )
       .then (keypairBuffer) ->
 
         keypair         = {}
@@ -93,11 +98,10 @@ define 'kryptnostic.credential-service', [
         publicKey  = publicKeyBytes
         privateKey = passwordCrypto.encrypt(privateKeyBytes, password)
 
-        publicKeyAsn1      = Forge.asn1.fromDer(publicKeyBytes)
+        publicKeyAsn1      = Forge.asn1.fromDer(keypairBuffer.publicKey)
         keypair.publicKey  = Forge.pki.publicKeyFromAsn1(publicKeyAsn1)
-        privateKeyAsn1     = Forge.asn1.fromDer(privateKeyBytes)
+        privateKeyAsn1     = Forge.asn1.fromDer(keypairBuffer.privateKey)
         keypair.privateKey = Forge.pki.privateKeyFromAsn1(privateKeyAsn1)
-        return keypair
       .then ->
         KeyStorageApi.setRSAPrivateKey(privateKey)
       .then ->
@@ -110,18 +114,16 @@ define 'kryptnostic.credential-service', [
         log.error(e)
         log.error('keypair generation failed!', e)
 
-    deriveKeypair : ({ password }, notifier = -> ) ->
-      Promise.resolve()
-      .then ->
-        Promise.resolve(notifier(AuthenticationStage.DERIVE_KEYPAIR))
-      .then ->
+    deriveKeyPair : ({ password }) ->
+      Promise.resolve(
         KeyStorageApi.getRSAPrivateKey()
+      )
       .then (blockCiphertext) =>
         if _.isEmpty(blockCiphertext)
-          return Promise.resolve()
-          .then =>
-            log.info('no keypair exists, generating on-the-fly')
-            Promise.resolve(@initializeKeypair({ password }, notifier))
+          log.info('no keypair exists, generating on-the-fly')
+          return Promise.resolve(
+            @initializeKeypair({ password })
+          )
         else
           log.info('using existing keypair')
           passwordCrypto   = new PasswordCryptoService()

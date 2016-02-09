@@ -85,10 +85,10 @@ define [
       })
 
       fheSearchPrivateKey1 = engine1.getSearchPrivateKey()
-      expect(fheSearchPrivateKey1).toBeUint8ArrayOfSize(MockDataUtils.SEARCH_PRIVATE_KEY_SIZE)
+      expect(fheSearchPrivateKey1).toBeUint8ArrayOfSize(MockDataUtils.FHE_SEARCH_PRIVATE_KEY_SIZE)
 
       fheSearchPrivateKey2 = engine2.getSearchPrivateKey()
-      expect(fheSearchPrivateKey2).toBeUint8ArrayOfSize(MockDataUtils.SEARCH_PRIVATE_KEY_SIZE)
+      expect(fheSearchPrivateKey2).toBeUint8ArrayOfSize(MockDataUtils.FHE_SEARCH_PRIVATE_KEY_SIZE)
 
     it 'should generate a proper client hash function, Uint8Array of length 1060896', ->
 
@@ -99,10 +99,10 @@ define [
       })
 
       clientHashFn1 = engine1.calculateClientHashFunction()
-      expect(clientHashFn1).toBeUint8ArrayOfSize(MockDataUtils.CLIENT_HASH_FUNCTION_SIZE)
+      expect(clientHashFn1).toBeUint8ArrayOfSize(MockDataUtils.FHE_HASH_FUNCTION_SIZE)
 
       clientHashFn2 = engine2.calculateClientHashFunction()
-      expect(clientHashFn2).toBeUint8ArrayOfSize(MockDataUtils.CLIENT_HASH_FUNCTION_SIZE)
+      expect(clientHashFn2).toBeUint8ArrayOfSize(MockDataUtils.FHE_HASH_FUNCTION_SIZE)
 
     it 'should generate a proper object index pair, Uint8Array of length 2064', ->
 

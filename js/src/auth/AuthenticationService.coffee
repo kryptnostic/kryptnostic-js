@@ -57,7 +57,7 @@ define 'kryptnostic.authentication-service', [
         credential = _credential
         logger.info('derived credential')
         credentialProvider.store { principal, credential }
-        credentialService.deriveKeypair({ password }, notifier)
+        credentialService.deriveKeyPair({ password })
       .then (_keypair) ->
         keypair = _keypair
         credentialProvider.store { principal, credential, keypair }

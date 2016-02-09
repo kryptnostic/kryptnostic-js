@@ -147,7 +147,7 @@ define [
         expect(generateCredentialPair).toThrow()
 
         generateCredentialPair = ->
-          CredentialService.generateCredentialPair({password: null})
+          CredentialService.generateCredentialPair({ password: null })
         expect(generateCredentialPair).toThrow()
 
       it 'should generate the credential and encrypted salt from the password', ->

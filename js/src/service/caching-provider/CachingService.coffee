@@ -17,13 +17,13 @@ define 'kryptnostic.caching-service', [
   #
   class CachingService
 
-    @USERS           = 'users'
-    @UUIDS           = 'uuids'
-    @SALTS           = 'user_salts'
-    @OBJECTS         = 'objects'
-    @PUBLIC_KEYS     = 'public_keys'
-    @DEFAULT_GROUP   = 'default_group'
-    @CRYPTO_SERVICES = 'object_crypto_services'
+    @USERS                 = 'users'
+    @UUIDS                 = 'uuids'
+    @SALTS                 = 'user_salts'
+    @OBJECTS               = 'objects'
+    @PUBLIC_KEYS           = 'public_keys'
+    @DEFAULT_GROUP         = 'default_group'
+    @CRYPTO_SERVICES       = 'object_crypto_services'
     @CRYPTO_SERVICE_LOADER = 'crypto_service_loader'
 
     @MASTER_AES_CRYPTO_SERVICE_ID = 'master_aes_crypto_service_id'

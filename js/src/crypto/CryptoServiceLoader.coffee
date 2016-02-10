@@ -17,6 +17,7 @@ define 'kryptnostic.crypto-service-loader', [
   Promise                 = require 'bluebird'
   RsaCryptoService        = require 'kryptnostic.rsa-crypto-service'
   AesCryptoService        = require 'kryptnostic.aes-crypto-service'
+  Cache                   = require 'kryptnostic.caching-service'
   Cypher                  = require 'kryptnostic.cypher'
   KeyStorageApi           = require 'kryptnostic.key-storage-api'
   Logger                  = require 'kryptnostic.logger'
@@ -25,7 +26,6 @@ define 'kryptnostic.crypto-service-loader', [
 
   INT_SIZE     = 4
   EMPTY_BUFFER = ''
-  masterAesCryptoService = null
   log = Logger.get('CryptoServiceLoader')
 
   DEFAULT_OPTS = { expectMiss: false }
@@ -64,17 +64,17 @@ define 'kryptnostic.crypto-service-loader', [
       return rsaCryptoService
 
     getMasterAesCryptoService: ->
-
-      if masterAesCryptoService
-        return Promise.resolve(masterAesCryptoService)
+      cachedMasterAesCryptoService = Cache.get(Cache.CRYPTO_SERVICE_LOADER, Cache.MASTER_AES_CRYPTO_SERVICE_ID)
+      if cachedMasterAesCryptoService
+        return Promise.resolve(cachedMasterAesCryptoService)
 
       Promise.resolve(
         KeyStorageApi.getMasterAesCryptoService()
       )
       .then (serializedCryptoService) =>
-        if not masterAesCryptoService
-          decryptedCryptoService = @getRsaCryptoService().decrypt(serializedCryptoService)
-          masterAesCryptoService = @marshaller.unmarshall(decryptedCryptoService)
+        decryptedCryptoService = @getRsaCryptoService().decrypt(serializedCryptoService)
+        masterAesCryptoService = @marshaller.unmarshall(decryptedCryptoService)
+        Cache.store(Cache.CRYPTO_SERVICE_LOADER, Cache.MASTER_AES_CRYPTO_SERVICE_ID, masterAesCryptoService)
         return masterAesCryptoService
 
     getObjectCryptoServiceV2: (versionedObjectKey, options) ->

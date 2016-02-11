@@ -24,9 +24,9 @@ define 'kryptnostic.caching-service', [
     @PUBLIC_KEYS           = 'public_keys'
     @DEFAULT_GROUP         = 'default_group'
     @CRYPTO_SERVICES       = 'object_crypto_services'
-    @CRYPTO_SERVICE_LOADER = 'crypto_service_loader'
 
-    @MASTER_AES_CRYPTO_SERVICE_ID = 'master_aes_crypto_service_id'
+    @MASTER_AES_CRYPTO_SERVICE           = 'master_aes_crypto_service'
+    @MASTER_AES_CRYPTO_SERVICE_ENCRYPTED = 'master_aes_crypto_service_encrypted'
 
     # store something in the cache
     @store: ( group, key, value ) ->

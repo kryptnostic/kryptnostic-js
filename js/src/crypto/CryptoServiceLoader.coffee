@@ -49,6 +49,8 @@ define 'kryptnostic.crypto-service-loader', [
         if not _masterAesCryptoService
 
           _masterAesCryptoService = new AesCryptoService(Cypher.AES_CTR_128)
+          Cache.store(Cache.CRYPTO_SERVICES, Cache.MASTER_AES_CRYPTO_SERVICE, _masterAesCryptoService)
+
           cryptoServiceMarshaller = new CryptoServiceMarshaller()
           marshalledCryptoService = cryptoServiceMarshaller.marshall(_masterAesCryptoService)
 
@@ -64,7 +66,7 @@ define 'kryptnostic.crypto-service-loader', [
       return rsaCryptoService
 
     getMasterAesCryptoService: ->
-      cachedMasterAesCryptoService = Cache.get(Cache.CRYPTO_SERVICE_LOADER, Cache.MASTER_AES_CRYPTO_SERVICE_ID)
+      cachedMasterAesCryptoService = Cache.get(Cache.CRYPTO_SERVICES, Cache.MASTER_AES_CRYPTO_SERVICE)
       if cachedMasterAesCryptoService
         return Promise.resolve(cachedMasterAesCryptoService)
 
@@ -74,7 +76,7 @@ define 'kryptnostic.crypto-service-loader', [
       .then (serializedCryptoService) =>
         decryptedCryptoService = @getRsaCryptoService().decrypt(serializedCryptoService)
         masterAesCryptoService = @marshaller.unmarshall(decryptedCryptoService)
-        Cache.store(Cache.CRYPTO_SERVICE_LOADER, Cache.MASTER_AES_CRYPTO_SERVICE_ID, masterAesCryptoService)
+        Cache.store(Cache.CRYPTO_SERVICES, Cache.MASTER_AES_CRYPTO_SERVICE, masterAesCryptoService)
         return masterAesCryptoService
 
     getObjectCryptoServiceV2: (versionedObjectKey, options) ->

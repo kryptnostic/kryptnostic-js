@@ -290,7 +290,7 @@ define 'kryptnostic.key-storage-api', [
 
     @getMasterAesCryptoService: ->
 
-      objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ID
+      objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ENCRYPTED
       cachedObjectCryptoService = Cache.get(Cache.CRYPTO_SERVICES, objectCacheId)
 
       if cachedObjectCryptoService
@@ -308,7 +308,7 @@ define 'kryptnostic.key-storage-api', [
         if axiosResponse and axiosResponse.data
           # axiosResponse.data == Base64 encoded byte[]
           masterAesCryptoService = atob(axiosResponse.data)
-          objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ID
+          objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ENCRYPTED
           Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, masterAesCryptoService)
           return masterAesCryptoService
         else
@@ -332,7 +332,7 @@ define 'kryptnostic.key-storage-api', [
         )
       )
       .then ->
-        objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ID
+        objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ENCRYPTED
         Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, masterAesCryptoService)
         return
 

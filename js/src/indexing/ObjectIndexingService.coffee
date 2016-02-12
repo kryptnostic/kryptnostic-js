@@ -5,7 +5,6 @@ define 'kryptnostic.indexing.object-indexing-service', [
   'kryptnostic.binary-utils',
   'kryptnostic.chunking.strategy.json',
   'kryptnostic.create-object-request',
-  'kryptnostic.crypto-material',
   'kryptnostic.crypto-service-loader',
   'kryptnostic.hash-function',
   'kryptnostic.kryptnostic-engine',
@@ -28,7 +27,6 @@ define 'kryptnostic.indexing.object-indexing-service', [
 
   # kryptnostic
   CreateObjectRequest       = require 'kryptnostic.create-object-request'
-  CryptoMaterial            = require 'kryptnostic.crypto-material'
   CryptoServiceLoader       = require 'kryptnostic.crypto-service-loader'
   JsonChunkingStrategy      = require 'kryptnostic.chunking.strategy.json'
   KryptnosticEngine         = require 'kryptnostic.kryptnostic-engine'

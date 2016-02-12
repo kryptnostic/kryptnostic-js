@@ -209,7 +209,6 @@ define 'kryptnostic.storage-client', [
 
           createObjectRequest = new CreateObjectRequest({
             type: typeId,
-            requiredCryptoMats: CryptoMaterial.DEFAULT_REQUIRED_CRYPTO_MATERIAL
           })
 
           if parentObjectKey?

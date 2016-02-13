@@ -21,7 +21,6 @@ define 'kryptnostic.storage-client', [
   Promise = require 'bluebird'
 
   # kryptnostic
-  CryptoMaterial        = require 'kryptnostic.crypto-material'
   CreateObjectRequest   = require 'kryptnostic.create-object-request'
   CryptoServiceLoader   = require 'kryptnostic.crypto-service-loader'
   KryptnosticObject     = require 'kryptnostic.kryptnostic-object'

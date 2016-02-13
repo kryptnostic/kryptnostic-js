@@ -26,7 +26,6 @@ define 'kryptnostic.crypto-service-loader', [
 
   INT_SIZE     = 4
   EMPTY_BUFFER = ''
-
   log = Logger.get('CryptoServiceLoader')
 
   DEFAULT_OPTS = { expectMiss: false }
@@ -36,7 +35,6 @@ define 'kryptnostic.crypto-service-loader', [
   # Author: nickdhewitt, rbuckheit
   #
   class CryptoServiceLoader
-
     constructor: ->
       @marshaller    = new CryptoServiceMarshaller()
       @cache         = {}
@@ -46,13 +44,15 @@ define 'kryptnostic.crypto-service-loader', [
       Promise.resolve(
         KeyStorageApi.getMasterAesCryptoService()
       )
-      .then (masterAesCryptoService) ->
+      .then (_masterAesCryptoService) ->
 
-        if not masterAesCryptoService
+        if not _masterAesCryptoService
 
-          masterAesCryptoService = new AesCryptoService(Cypher.AES_CTR_128)
+          _masterAesCryptoService = new AesCryptoService(Cypher.AES_CTR_128)
+          Cache.store(Cache.CRYPTO_SERVICES, Cache.MASTER_AES_CRYPTO_SERVICE, _masterAesCryptoService)
+
           cryptoServiceMarshaller = new CryptoServiceMarshaller()
-          marshalledCryptoService = cryptoServiceMarshaller.marshall(masterAesCryptoService)
+          marshalledCryptoService = cryptoServiceMarshaller.marshall(_masterAesCryptoService)
 
           credentialLoader = new CredentialLoader()
           rsaCryptoService = new RsaCryptoService(credentialLoader.getCredentials().keypair)
@@ -62,12 +62,13 @@ define 'kryptnostic.crypto-service-loader', [
 
     getRsaCryptoService: ->
       credentialLoader = new CredentialLoader()
-      return new RsaCryptoService(credentialLoader.getCredentials().keypair)
+      rsaCryptoService = new RsaCryptoService(credentialLoader.getCredentials().keypair)
+      return rsaCryptoService
 
     getMasterAesCryptoService: ->
-
-      if @cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID]
-        return Promise.resolve(@cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID])
+      cachedMasterAesCryptoService = Cache.get(Cache.CRYPTO_SERVICES, Cache.MASTER_AES_CRYPTO_SERVICE)
+      if cachedMasterAesCryptoService
+        return Promise.resolve(cachedMasterAesCryptoService)
 
       Promise.resolve(
         KeyStorageApi.getMasterAesCryptoService()
@@ -75,7 +76,7 @@ define 'kryptnostic.crypto-service-loader', [
       .then (serializedCryptoService) =>
         decryptedCryptoService = @getRsaCryptoService().decrypt(serializedCryptoService)
         masterAesCryptoService = @marshaller.unmarshall(decryptedCryptoService)
-        @cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID] = masterAesCryptoService
+        Cache.store(Cache.CRYPTO_SERVICES, Cache.MASTER_AES_CRYPTO_SERVICE, masterAesCryptoService)
         return masterAesCryptoService
 
     getObjectCryptoServiceV2: (versionedObjectKey, options) ->

@@ -26366,12 +26366,13 @@ define("function-name", function(){});
       }
 
       CryptoServiceLoader.initializeMasterAesCryptoService = function() {
-        return Promise.resolve(KeyStorageApi.getMasterAesCryptoService()).then(function(masterAesCryptoService) {
+        return Promise.resolve(KeyStorageApi.getMasterAesCryptoService()).then(function(_masterAesCryptoService) {
           var credentialLoader, cryptoServiceMarshaller, encryptedMasterAesCryptoService, marshalledCryptoService, rsaCryptoService;
-          if (!masterAesCryptoService) {
-            masterAesCryptoService = new AesCryptoService(Cypher.AES_CTR_128);
+          if (!_masterAesCryptoService) {
+            _masterAesCryptoService = new AesCryptoService(Cypher.AES_CTR_128);
+            Cache.store(Cache.CRYPTO_SERVICES, Cache.MASTER_AES_CRYPTO_SERVICE, _masterAesCryptoService);
             cryptoServiceMarshaller = new CryptoServiceMarshaller();
-            marshalledCryptoService = cryptoServiceMarshaller.marshall(masterAesCryptoService);
+            marshalledCryptoService = cryptoServiceMarshaller.marshall(_masterAesCryptoService);
             credentialLoader = new CredentialLoader();
             rsaCryptoService = new RsaCryptoService(credentialLoader.getCredentials().keypair);
             encryptedMasterAesCryptoService = rsaCryptoService.encrypt(marshalledCryptoService);
@@ -26381,21 +26382,24 @@ define("function-name", function(){});
       };
 
       CryptoServiceLoader.prototype.getRsaCryptoService = function() {
-        var credentialLoader;
+        var credentialLoader, rsaCryptoService;
         credentialLoader = new CredentialLoader();
-        return new RsaCryptoService(credentialLoader.getCredentials().keypair);
+        rsaCryptoService = new RsaCryptoService(credentialLoader.getCredentials().keypair);
+        return rsaCryptoService;
       };
 
       CryptoServiceLoader.prototype.getMasterAesCryptoService = function() {
-        if (this.cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID]) {
-          return Promise.resolve(this.cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID]);
+        var cachedMasterAesCryptoService;
+        cachedMasterAesCryptoService = Cache.get(Cache.CRYPTO_SERVICES, Cache.MASTER_AES_CRYPTO_SERVICE);
+        if (cachedMasterAesCryptoService) {
+          return Promise.resolve(cachedMasterAesCryptoService);
         }
         return Promise.resolve(KeyStorageApi.getMasterAesCryptoService()).then((function(_this) {
           return function(serializedCryptoService) {
             var decryptedCryptoService, masterAesCryptoService;
             decryptedCryptoService = _this.getRsaCryptoService().decrypt(serializedCryptoService);
             masterAesCryptoService = _this.marshaller.unmarshall(decryptedCryptoService);
-            _this.cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID] = masterAesCryptoService;
+            Cache.store(Cache.CRYPTO_SERVICES, Cache.MASTER_AES_CRYPTO_SERVICE, masterAesCryptoService);
             return masterAesCryptoService;
           };
         })(this));
@@ -27386,7 +27390,7 @@ define("function-name", function(){});
 
       KeyStorageApi.getMasterAesCryptoService = function() {
         var cachedObjectCryptoService, objectCacheId;
-        objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ID;
+        objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ENCRYPTED;
         cachedObjectCryptoService = Cache.get(Cache.CRYPTO_SERVICES, objectCacheId);
         if (cachedObjectCryptoService) {
           return Promise.resolve(cachedObjectCryptoService);
@@ -27398,7 +27402,7 @@ define("function-name", function(){});
           var masterAesCryptoService;
           if (axiosResponse && axiosResponse.data) {
             masterAesCryptoService = atob(axiosResponse.data);
-            objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ID;
+            objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ENCRYPTED;
             Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, masterAesCryptoService);
             return masterAesCryptoService;
           } else {
@@ -27420,7 +27424,7 @@ define("function-name", function(){});
           headers: DEFAULT_HEADERS
         }))).then(function() {
           var objectCacheId;
-          objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ID;
+          objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ENCRYPTED;
           Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, masterAesCryptoService);
         });
       };
@@ -27632,12 +27636,14 @@ define("function-name", function(){});
         });
       };
 
-      ObjectApi.prototype.getObjectsByTypeAndLoadLevel = function(objectIds, typeLoadLevels, loadDepth) {
+      ObjectApi.prototype.getObjectsByTypeAndLoadLevel = function(objectIds, typeLoadLevels, loadDepth, createdAfter, objectIdsToFilter) {
         var objectTreeLoadRequest;
         objectTreeLoadRequest = new ObjectTreeLoadRequest({
           objectIds: objectIds,
           loadLevels: typeLoadLevels,
-          depth: loadDepth
+          depth: loadDepth,
+          createdAfter: createdAfter,
+          objectIdsToFilter: objectIdsToFilter
         });
         return Promise.resolve(axios(Requests.wrapCredentials({
           method: 'POST',
@@ -28307,15 +28313,14 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.indexing.object-indexing-service', ['require', 'bluebird', 'forge', 'kryptnostic.binary-utils', 'kryptnostic.chunking.strategy.json', 'kryptnostic.create-object-request', 'kryptnostic.crypto-material', 'kryptnostic.crypto-service-loader', 'kryptnostic.hash-function', 'kryptnostic.kryptnostic-engine', 'kryptnostic.kryptnostic-engine-provider', 'kryptnostic.kryptnostic-object', 'kryptnostic.object-api', 'kryptnostic.search-api', 'kryptnostic.sharing-api', 'kryptnostic.validators'], function(require) {
-    var BinaryUtils, CreateObjectRequest, CryptoMaterial, CryptoServiceLoader, HashFunction, JsonChunkingStrategy, KryptnosticEngine, KryptnosticEngineProvider, KryptnosticObject, MINIMUM_TOKEN_LENGTH, ObjectApi, ObjectIndexer, ObjectIndexingService, Promise, SearchApi, SharingApi, Validators, forge, validateVersionedObjectKey;
+  define('kryptnostic.indexing.object-indexing-service', ['require', 'bluebird', 'forge', 'kryptnostic.binary-utils', 'kryptnostic.chunking.strategy.json', 'kryptnostic.create-object-request', 'kryptnostic.crypto-service-loader', 'kryptnostic.hash-function', 'kryptnostic.kryptnostic-engine', 'kryptnostic.kryptnostic-engine-provider', 'kryptnostic.kryptnostic-object', 'kryptnostic.object-api', 'kryptnostic.search-api', 'kryptnostic.sharing-api', 'kryptnostic.validators'], function(require) {
+    var BinaryUtils, CreateObjectRequest, CryptoServiceLoader, HashFunction, JsonChunkingStrategy, KryptnosticEngine, KryptnosticEngineProvider, KryptnosticObject, MINIMUM_TOKEN_LENGTH, ObjectApi, ObjectIndexer, ObjectIndexingService, Promise, SearchApi, SharingApi, Validators, forge, validateVersionedObjectKey;
     Promise = require('bluebird');
     forge = require('forge');
     ObjectApi = require('kryptnostic.object-api');
     SearchApi = require('kryptnostic.search-api');
     SharingApi = require('kryptnostic.sharing-api');
     CreateObjectRequest = require('kryptnostic.create-object-request');
-    CryptoMaterial = require('kryptnostic.crypto-material');
     CryptoServiceLoader = require('kryptnostic.crypto-service-loader');
     JsonChunkingStrategy = require('kryptnostic.chunking.strategy.json');
     KryptnosticEngine = require('kryptnostic.kryptnostic-engine');
@@ -28380,8 +28385,7 @@ define("function-name", function(){});
         var createIndexSegmentRequest, createObjectRequest;
         createObjectRequest = new CreateObjectRequest({
           type: ObjectIndexingService.INDEX_SEGMENT_TYPE_ID,
-          parentObjectId: parentObjectKey,
-          requiredCryptoMats: CryptoMaterial.DEFAULT_REQUIRED_CRYPTO_MATERIAL
+          parentObjectId: parentObjectKey
         });
         createIndexSegmentRequest = {
           address: segmentAddressHash,
@@ -28833,13 +28837,16 @@ define("function-name", function(){});
 // Generated by CoffeeScript 1.7.1
 (function() {
   define('kryptnostic.create-object-request', ['require', 'lodash', 'kryptnostic.schema.create-object-request', 'kryptnostic.schema.validator'], function(require) {
-    var CreateObjectRequest, SCHEMA, validator, _;
+    var CreateObjectRequest, DEFAULT_OPTS, SCHEMA, validator, _;
     _ = require('lodash');
     SCHEMA = require('kryptnostic.schema.create-object-request');
     validator = require('kryptnostic.schema.validator');
+    DEFAULT_OPTS = {
+      cypher: 'AES_CTR_128'
+    };
     CreateObjectRequest = (function() {
       function CreateObjectRequest(properties) {
-        _.extend(this, properties);
+        _.extend(this, DEFAULT_OPTS, properties);
         this.validate();
       }
 
@@ -29010,7 +29017,8 @@ define("function-name", function(){});
     validator = require('kryptnostic.schema.validator');
     DEFAULT_OPTS = {
       type: 'object',
-      version: 0
+      version: 0,
+      cypher: 'AES_CTR_128'
     };
     StorageRequest = (function() {
       function StorageRequest(opts) {
@@ -30192,11 +30200,10 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.storage-client', ['require', 'bluebird', 'kryptnostic.logger', 'kryptnostic.validators', 'kryptnostic.object-api', 'kryptnostic.object-listing-api', 'kryptnostic.kryptnostic-object', 'kryptnostic.crypto-service-loader', 'kryptnostic.object-utils', 'kryptnostic.indexing.object-indexing-service', 'kryptnostic.create-object-request', 'kryptnostic.credential-loader', 'kryptnostic.crypto-material'], function(require) {
+  define('kryptnostic.storage-client', ['require', 'bluebird', 'kryptnostic.logger', 'kryptnostic.validators', 'kryptnostic.object-api', 'kryptnostic.object-listing-api', 'kryptnostic.kryptnostic-object', 'kryptnostic.crypto-service-loader', 'kryptnostic.object-utils', 'kryptnostic.indexing.object-indexing-service', 'kryptnostic.create-object-request', 'kryptnostic.credential-loader'], function(require) {
     'use strict';
-    var CreateObjectRequest, CredentialLoader, CryptoMaterial, CryptoServiceLoader, KryptnosticObject, Logger, ObjectApi, ObjectIndexingService, ObjectListingApi, Promise, StorageClient, Validators, logger, validateUuid, validateUuids;
+    var CreateObjectRequest, CredentialLoader, CryptoServiceLoader, KryptnosticObject, Logger, ObjectApi, ObjectIndexingService, ObjectListingApi, Promise, StorageClient, Validators, logger, validateUuid, validateUuids;
     Promise = require('bluebird');
-    CryptoMaterial = require('kryptnostic.crypto-material');
     CreateObjectRequest = require('kryptnostic.create-object-request');
     CryptoServiceLoader = require('kryptnostic.crypto-service-loader');
     KryptnosticObject = require('kryptnostic.kryptnostic-object');
@@ -30386,8 +30393,7 @@ define("function-name", function(){});
           return function(typeId, parentObjectKey) {
             var createObjectRequest;
             createObjectRequest = new CreateObjectRequest({
-              type: typeId,
-              requiredCryptoMats: CryptoMaterial.DEFAULT_REQUIRED_CRYPTO_MATERIAL
+              type: typeId
             });
             if (parentObjectKey != null) {
               createObjectRequest.parentObjectId = parentObjectKey;
@@ -30510,7 +30516,9 @@ define("function-name", function(){});
 
       CachingService.CRYPTO_SERVICES = 'object_crypto_services';
 
-      CachingService.MASTER_AES_CRYPTO_SERVICE_ID = 'master_aes_crypto_service_id';
+      CachingService.MASTER_AES_CRYPTO_SERVICE = 'master_aes_crypto_service';
+
+      CachingService.MASTER_AES_CRYPTO_SERVICE_ENCRYPTED = 'master_aes_crypto_service_encrypted';
 
       CachingService.store = function(group, key, value) {
         var cache;
@@ -30793,10 +30801,10 @@ define("function-name", function(){});
         this.objectApi = new ObjectApi();
       }
 
-      TreeLoader.prototype.loadTree = function(objectIds, typeLoadLevels, loadDepth) {
+      TreeLoader.prototype.loadTree = function(objectIds, typeLoadLevels, loadDepth, createdAfter, objectIdsToFilter) {
         return Promise.resolve().then((function(_this) {
           return function() {
-            return _this.objectApi.getObjectsByTypeAndLoadLevel(objectIds, typeLoadLevels, loadDepth);
+            return _this.objectApi.getObjectsByTypeAndLoadLevel(objectIds, typeLoadLevels, loadDepth, createdAfter, objectIdsToFilter);
           };
         })(this)).then(function(objectMetadataTrees) {
           var objectTreeNodes;

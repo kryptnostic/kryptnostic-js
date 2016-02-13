@@ -14864,10 +14864,8 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 18 */
 /***/ function(module, exports) {
 
-	var toString = {}.toString;
-
 	module.exports = Array.isArray || function (arr) {
-	  return toString.call(arr) == '[object Array]';
+	  return Object.prototype.toString.call(arr) == '[object Array]';
 	};
 
 
@@ -15265,7 +15263,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    KeyStorageApi.getMasterAesCryptoService = function() {
 	      var cachedObjectCryptoService, objectCacheId;
-	      objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ID;
+	      objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ENCRYPTED;
 	      cachedObjectCryptoService = Cache.get(Cache.CRYPTO_SERVICES, objectCacheId);
 	      if (cachedObjectCryptoService) {
 	        return Promise.resolve(cachedObjectCryptoService);
@@ -15277,7 +15275,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var masterAesCryptoService;
 	        if (axiosResponse && axiosResponse.data) {
 	          masterAesCryptoService = atob(axiosResponse.data);
-	          objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ID;
+	          objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ENCRYPTED;
 	          Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, masterAesCryptoService);
 	          return masterAesCryptoService;
 	        } else {
@@ -15299,7 +15297,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        headers: DEFAULT_HEADERS
 	      }))).then(function() {
 	        var objectCacheId;
-	        objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ID;
+	        objectCacheId = Cache.MASTER_AES_CRYPTO_SERVICE_ENCRYPTED;
 	        Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, masterAesCryptoService);
 	      });
 	    };
@@ -20795,7 +20793,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    CachingService.CRYPTO_SERVICES = 'object_crypto_services';
 
-	    CachingService.MASTER_AES_CRYPTO_SERVICE_ID = 'master_aes_crypto_service_id';
+	    CachingService.MASTER_AES_CRYPTO_SERVICE = 'master_aes_crypto_service';
+
+	    CachingService.MASTER_AES_CRYPTO_SERVICE_ENCRYPTED = 'master_aes_crypto_service_encrypted';
 
 	    CachingService.store = function(group, key, value) {
 	      var cache;
@@ -22119,12 +22119,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    CryptoServiceLoader.initializeMasterAesCryptoService = function() {
-	      return Promise.resolve(KeyStorageApi.getMasterAesCryptoService()).then(function(masterAesCryptoService) {
+	      return Promise.resolve(KeyStorageApi.getMasterAesCryptoService()).then(function(_masterAesCryptoService) {
 	        var credentialLoader, cryptoServiceMarshaller, encryptedMasterAesCryptoService, marshalledCryptoService, rsaCryptoService;
-	        if (!masterAesCryptoService) {
-	          masterAesCryptoService = new AesCryptoService(Cypher.AES_CTR_128);
+	        if (!_masterAesCryptoService) {
+	          _masterAesCryptoService = new AesCryptoService(Cypher.AES_CTR_128);
+	          Cache.store(Cache.CRYPTO_SERVICES, Cache.MASTER_AES_CRYPTO_SERVICE, _masterAesCryptoService);
 	          cryptoServiceMarshaller = new CryptoServiceMarshaller();
-	          marshalledCryptoService = cryptoServiceMarshaller.marshall(masterAesCryptoService);
+	          marshalledCryptoService = cryptoServiceMarshaller.marshall(_masterAesCryptoService);
 	          credentialLoader = new CredentialLoader();
 	          rsaCryptoService = new RsaCryptoService(credentialLoader.getCredentials().keypair);
 	          encryptedMasterAesCryptoService = rsaCryptoService.encrypt(marshalledCryptoService);
@@ -22134,21 +22135,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    CryptoServiceLoader.prototype.getRsaCryptoService = function() {
-	      var credentialLoader;
+	      var credentialLoader, rsaCryptoService;
 	      credentialLoader = new CredentialLoader();
-	      return new RsaCryptoService(credentialLoader.getCredentials().keypair);
+	      rsaCryptoService = new RsaCryptoService(credentialLoader.getCredentials().keypair);
+	      return rsaCryptoService;
 	    };
 
 	    CryptoServiceLoader.prototype.getMasterAesCryptoService = function() {
-	      if (this.cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID]) {
-	        return Promise.resolve(this.cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID]);
+	      var cachedMasterAesCryptoService;
+	      cachedMasterAesCryptoService = Cache.get(Cache.CRYPTO_SERVICES, Cache.MASTER_AES_CRYPTO_SERVICE);
+	      if (cachedMasterAesCryptoService) {
+	        return Promise.resolve(cachedMasterAesCryptoService);
 	      }
 	      return Promise.resolve(KeyStorageApi.getMasterAesCryptoService()).then((function(_this) {
 	        return function(serializedCryptoService) {
 	          var decryptedCryptoService, masterAesCryptoService;
 	          decryptedCryptoService = _this.getRsaCryptoService().decrypt(serializedCryptoService);
 	          masterAesCryptoService = _this.marshaller.unmarshall(decryptedCryptoService);
-	          _this.cache[Cache.MASTER_AES_CRYPTO_SERVICE_ID] = masterAesCryptoService;
+	          Cache.store(Cache.CRYPTO_SERVICES, Cache.MASTER_AES_CRYPTO_SERVICE, masterAesCryptoService);
 	          return masterAesCryptoService;
 	        };
 	      })(this));

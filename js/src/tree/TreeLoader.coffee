@@ -20,14 +20,15 @@ define 'kryptnostic.tree-loader', [
     constructor: ->
       @objectApi = new ObjectApi()
 
-    loadTree: (objectIds, typeLoadLevels, loadDepth, createdAfter) ->
+    loadTree: (objectIds, typeLoadLevels, loadDepth, createdAfter, objectIdsToFilter) ->
       Promise.resolve()
       .then =>
         @objectApi.getObjectsByTypeAndLoadLevel(
           objectIds,
           typeLoadLevels,
           loadDepth,
-          createdAfter
+          createdAfter,
+          objectIdsToFilter
         )
       .then (objectMetadataTrees) ->
         # objectMetadataTrees == Map<java.util.UUID, com.kryptnostic.v2.storage.models.ObjectMetadataEncryptedNode>

@@ -128,13 +128,14 @@ define 'kryptnostic.object-api', [
         else
           return null
 
-    getObjectsByTypeAndLoadLevel: (objectIds, typeLoadLevels, loadDepth, createdAfter) ->
+    getObjectsByTypeAndLoadLevel: (objectIds, typeLoadLevels, loadDepth, createdAfter, objectIdsToFilter) ->
 
       objectTreeLoadRequest = new ObjectTreeLoadRequest({
-        objectIds    : objectIds
-        loadLevels   : typeLoadLevels
-        depth        : loadDepth,
-        createdAfter : createdAfter
+        objectIds         : objectIds
+        loadLevels        : typeLoadLevels
+        depth             : loadDepth
+        createdAfter      : createdAfter
+        objectIdsToFilter : objectIdsToFilter
       })
 
       Promise.resolve(

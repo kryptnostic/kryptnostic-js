@@ -9,10 +9,12 @@ define 'kryptnostic.create-object-request', [
   SCHEMA       = require 'kryptnostic.schema.create-object-request'
   validator    = require 'kryptnostic.schema.validator'
 
+  DEFAULT_OPTS = { cypher: 'AES_CTR_128' }
+
   class CreateObjectRequest
 
     constructor: (properties) ->
-      _.extend(this, properties)
+      _.extend(this, DEFAULT_OPTS, properties)
       @validate()
 
     validate : ->

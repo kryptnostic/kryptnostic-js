@@ -103,22 +103,29 @@ define 'kryptnostic.crypto-service-migrator', [
 
           logger.info('attempting to migrate RSA crypto service for objectId: ' + objectId)
 
-          rsaEncryptedMarshalledCryptoService = atob(serializedCryptoService)
-          marshalledCryptoService = @rsaCryptoService.decrypt(rsaEncryptedMarshalledCryptoService)
-          objectCryptoService = @cryptoServiceMarshaller.unmarshall(marshalledCryptoService)
+          try
 
-          marshalledCryptoService = @cryptoServiceMarshaller.marshall(objectCryptoService)
-          encryptedCryptoService  = masterAesCryptoService.encrypt(marshalledCryptoService)
+            rsaEncryptedMarshalledCryptoService = atob(serializedCryptoService)
+            marshalledCryptoService = @rsaCryptoService.decrypt(rsaEncryptedMarshalledCryptoService)
+            objectCryptoService = @cryptoServiceMarshaller.unmarshall(marshalledCryptoService)
 
-          Promise.resolve(
-            setAesEncryptedObjectCryptoServiceForMigration(objectId, encryptedCryptoService)
-          )
-          .then ->
-            logger.info('successfully migrated RSA crypto service for objectId: ' + objectId)
-            return
-          .catch (e) ->
-            logger.info('failed to migrate RSA crypto service for objectId: ' + objectId)
-            return
+            marshalledCryptoService = @cryptoServiceMarshaller.marshall(objectCryptoService)
+            encryptedCryptoService  = masterAesCryptoService.encrypt(marshalledCryptoService)
+
+            Promise.resolve(
+              setAesEncryptedObjectCryptoServiceForMigration(objectId, encryptedCryptoService)
+            )
+            .then ->
+              logger.info('successfully migrated RSA crypto service for objectId: ' + objectId)
+              return
+            .catch (e) ->
+              logger.info('failed to migrate RSA crypto service for objectId: ' + objectId)
+              return
+
+          catch e
+            logger.error(e)
+            logger.error('error while migrating RSA crypto service for objectId: ' + objectId)
+            return Promise.resolve()
         )
 
         Promise.all(migrationPromises)

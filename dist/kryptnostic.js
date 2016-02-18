@@ -26585,21 +26585,28 @@ define("function-name", function(){});
             var masterAesCryptoService, migrationPromises, objectCryptoServiceMap;
             masterAesCryptoService = _arg.masterAesCryptoService, objectCryptoServiceMap = _arg.objectCryptoServiceMap;
             migrationPromises = _.map(objectCryptoServiceMap, function(serializedCryptoService, objectId) {
-              var encryptedCryptoService, marshalledCryptoService, objectCryptoService, rsaEncryptedMarshalledCryptoService;
+              var e, encryptedCryptoService, marshalledCryptoService, objectCryptoService, rsaEncryptedMarshalledCryptoService;
               if (_.isEmpty(serializedCryptoService) || !OBJECT_ID_WHITELIST[objectId]) {
                 return Promise.resolve();
               }
               logger.info('attempting to migrate RSA crypto service for objectId: ' + objectId);
-              rsaEncryptedMarshalledCryptoService = atob(serializedCryptoService);
-              marshalledCryptoService = _this.rsaCryptoService.decrypt(rsaEncryptedMarshalledCryptoService);
-              objectCryptoService = _this.cryptoServiceMarshaller.unmarshall(marshalledCryptoService);
-              marshalledCryptoService = _this.cryptoServiceMarshaller.marshall(objectCryptoService);
-              encryptedCryptoService = masterAesCryptoService.encrypt(marshalledCryptoService);
-              return Promise.resolve(setAesEncryptedObjectCryptoServiceForMigration(objectId, encryptedCryptoService)).then(function() {
-                logger.info('successfully migrated RSA crypto service for objectId: ' + objectId);
-              })["catch"](function(e) {
-                logger.info('failed to migrate RSA crypto service for objectId: ' + objectId);
-              });
+              try {
+                rsaEncryptedMarshalledCryptoService = atob(serializedCryptoService);
+                marshalledCryptoService = _this.rsaCryptoService.decrypt(rsaEncryptedMarshalledCryptoService);
+                objectCryptoService = _this.cryptoServiceMarshaller.unmarshall(marshalledCryptoService);
+                marshalledCryptoService = _this.cryptoServiceMarshaller.marshall(objectCryptoService);
+                encryptedCryptoService = masterAesCryptoService.encrypt(marshalledCryptoService);
+                return Promise.resolve(setAesEncryptedObjectCryptoServiceForMigration(objectId, encryptedCryptoService)).then(function() {
+                  logger.info('successfully migrated RSA crypto service for objectId: ' + objectId);
+                })["catch"](function(e) {
+                  logger.info('failed to migrate RSA crypto service for objectId: ' + objectId);
+                });
+              } catch (_error) {
+                e = _error;
+                logger.error(e);
+                logger.error('error while migrating RSA crypto service for objectId: ' + objectId);
+                return Promise.resolve();
+              }
             });
             return Promise.all(migrationPromises)["catch"](function(e) {
               logger.error(e);

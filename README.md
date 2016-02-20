@@ -1,6 +1,6 @@
 # kryptnostic.js
 
-kryptnostic.js is an SDK for secure search, sharing, and storage on the [Kryptnostic](www.kryptnostic.com) platform. It uses state-of-the-art advancements in fully homomorphic encryption to provide searchable encryption over text data.
+kryptnostic.js is an SDK for secure search, sharing, and storage on the [Kryptnostic](www.kryptnostic.com) platform. No private keys are sent to the server in plaintext, and all user data is encrypted with 256-bit AES. It uses state-of-the-art advancements in fully homomorphic encryption to provide searchable encryption over text data.
 
 
 [![build status](https://img.shields.io/travis/kryptnostic/kryptnostic-js.svg?branch=develop&style=flat-square)](https://travis-ci.org/kryptnostic/kryptnostic-js)
@@ -17,8 +17,9 @@ npm install --save kryptnostic-js
 ###Loading
 To load the library:
 ```
-var KJS = require('./static/js/kryptnostic.js');
+var KJS = require('./node_modules/kryptnostic-js/dist/kryptnostic.umd.js');
 ```
+
 ###Configuration
 Currently, you must configure the library with valid URLs for 2 backend services.
 To run against our production services:
@@ -32,7 +33,7 @@ KJS.ConfigurationService.set({
 ###Registration
 To register:
 ```
-KJS.RegistrationClient.register({ 'krypto@kryptnostic.com', 'krypto', 'mansbestfriend1%' })
+KJS.RegistrationClient.register({ 'krypto@kryptnostic.com', 'krypto', 'mansbestfriend1^' })
 .then(function() {
     // confirm successful registration.
 })

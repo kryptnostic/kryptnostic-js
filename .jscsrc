@@ -1,3 +1,8 @@
 {
-  "preset": "airbnb"
+  "preset": "airbnb",
+  "esnext": true,
+  "requireTrailingComma": false,
+  "excludeFiles": [
+    "dist/**"
+  ]
 }

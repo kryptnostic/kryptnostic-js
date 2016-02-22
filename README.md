@@ -33,7 +33,9 @@ KJS.ConfigurationService.set({
 ###Registration
 To register:
 ```
-KJS.RegistrationClient.register({ 'krypto@kryptnostic.com', 'krypto', 'mansbestfriend1^' })
+var registrationClient = new KJS.RegistrationClient();
+
+registrationClient.register({ 'krypto@kryptnostic.com', 'krypto', 'mansbestfriend1^' })
 .then(function() {
     // confirm successful registration.
 })
@@ -48,7 +50,7 @@ interface  KJS {
   ConfigurationService    ConfigurationService;
   AuthenticationService   AuthenticationService;
   UserDirectoryApi        UserDirectoryApi;
-  RegistrationClient'     RegistrationClient;
+  RegistrationClient      RegistrationClient;
   UserDirectoryApi        UserDirectoryApi;
 }
 

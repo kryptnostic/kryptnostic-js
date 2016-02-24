@@ -138,7 +138,8 @@ module.exports = {
       'kryptnostic.binary-utils'                        : 'util/binary-utils.coffee',
       'kryptnostic.object-utils'                        : 'util/object-utils.coffee',
       'kryptnostic.requests'                            : 'util/requests.coffee',
-      'kryptnostic.validators'                          : 'util/validators.coffee'
+      'kryptnostic.validators'                          : 'util/validators.coffee',
+      'kryptnostic.kryptnostic-workers-api'             : 'workers/KryptnosticWorkersApi.coffee'
     }
   }
 }

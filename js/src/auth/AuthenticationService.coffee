@@ -11,6 +11,7 @@ define 'kryptnostic.authentication-service', [
   'kryptnostic.user-directory-api'
   'kryptnostic.kryptnostic-engine-provider'
   'kryptnostic.crypto-service-migrator'
+  'kryptnostic.kryptnostic-workers-api'
 ], (require) ->
 
   Promise                   = require 'bluebird'
@@ -24,6 +25,7 @@ define 'kryptnostic.authentication-service', [
   UserDirectoryApi          = require 'kryptnostic.user-directory-api'
   KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
   CryptoServiceMigrator     = require 'kryptnostic.crypto-service-migrator'
+  KryptnosticWorkersApi     = require 'kryptnostic.kryptnostic-workers-api'
 
   logger = Logger.get('AuthenticationService')
 
@@ -79,7 +81,14 @@ define 'kryptnostic.authentication-service', [
 
       Promise.resolve()
       .then ->
-        searchCredentialService.getKeys()
+        KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER)
+      .then (fheKeys) ->
+        if not _.isEmpty(fheKeys)
+          KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER)
+          searchCredentialService.initializeKeys(fheKeys)
+          return fheKeys
+        else
+          return searchCredentialService.getKeys()
       .then (keys) ->
         fhePrivateKey = keys.FHE_PRIVATE_KEY
         fheSearchPrivateKey = keys.FHE_SEARCH_PRIVATE_KEY

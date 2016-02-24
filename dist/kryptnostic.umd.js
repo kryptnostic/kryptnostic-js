@@ -21820,7 +21820,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12), __webpack_require__(2), __webpack_require__(22)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(12), __webpack_require__(2), __webpack_require__(38)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var EXPONENT_BIG_INT, EXPONENT_NUM, KryptnosticWorkersApi, Logger, Promise, RSA_KEY_SIZE, RsaKeyGenerator, forge, logger;
 	  forge = __webpack_require__(12);
 	  Promise = __webpack_require__(22);
@@ -21964,10 +21964,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
 	  hasProp = {}.hasOwnProperty;
 
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12), __webpack_require__(6), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var Config, FHEKeysGenerationWorker, KryptnosticWorker, KryptnosticWorkersApi, Logger, RSAKeysGenerationWorker, forge, logger;
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var FHEKeysGenerationWorker, KryptnosticWorker, KryptnosticWorkersApi, Logger, RSAKeysGenerationWorker, forge, logger;
 	  forge = __webpack_require__(12);
-	  Config = __webpack_require__(6);
 	  Logger = __webpack_require__(2);
 	  logger = Logger.get('KryptnosticWorkersApi');
 	  KryptnosticWorker = (function() {

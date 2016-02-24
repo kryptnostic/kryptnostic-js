@@ -95,7 +95,6 @@ function webCryptoGenerate() {
     });
 };
 
-/*
 function ieWebCryptoGenerate() {
 
   Promise.resolve()
@@ -114,8 +113,7 @@ function ieWebCryptoGenerate() {
       );
 
       keyOperation.onerror = function() {
-        // close worker?
-        // log.error('Failed to generate RSA keys using IE web crypto');
+        self.close();
       };
 
       keyOperation.oncomplete = function() {
@@ -130,8 +128,7 @@ function ieWebCryptoGenerate() {
       deferred1 = Promise.defer();
       keyOpPrivate = self.msCrypto.subtle.exportKey('pkcs8', keys.privateKey);
       keyOpPrivate.onerror = function() {
-        // close worker?
-        // log.error('Failed to export RSA private key using IE web crypto')
+        self.close();
       };
       keyOpPrivate.oncomplete = function() {
         return deferred1.resolve(keyOpPrivate.result);
@@ -142,8 +139,7 @@ function ieWebCryptoGenerate() {
       deferred2 = Promise.defer();
       keyOpPublic = self.msCrypto.subtle.exportKey('spki', keys.publicKey);
       keyOpPublic.onerror = function() {
-        // close worker?
-        // log.error('Failed to export RSA public key using IE web crypto')
+        self.close();
       };
       keyOpPublic.oncomplete = function() {
         return deferred2.resolve(keyOpPublic.result);
@@ -161,4 +157,3 @@ function ieWebCryptoGenerate() {
       self.close();
     });
 };
-*/

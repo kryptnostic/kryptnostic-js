@@ -1,7 +1,8 @@
+# coffeelint: disable=cyclomatic_complexity
+
 define 'kryptnostic.kryptnostic-workers-api', [
   'require',
   'forge',
-  'kryptnostic.configuration',
   'kryptnostic.logger'
 ], (require) ->
 
@@ -9,7 +10,6 @@ define 'kryptnostic.kryptnostic-workers-api', [
   forge = require 'forge'
 
   # utils
-  Config = require 'kryptnostic.configuration'
   Logger = require 'kryptnostic.logger'
 
   logger = Logger.get('KryptnosticWorkersApi')
@@ -65,7 +65,7 @@ define 'kryptnostic.kryptnostic-workers-api', [
       return new Promise (resolve, reject) =>
 
         # handle query response
-        @webWorker.onmessage = (messageEvent) =>
+        @webWorker.onmessage = (messageEvent) ->
 
           fheKeys = null
           if messageEvent and messageEvent.data
@@ -93,7 +93,7 @@ define 'kryptnostic.kryptnostic-workers-api', [
       return new Promise (resolve, reject) =>
 
         # handle query response
-        @webWorker.onmessage = (messageEvent) =>
+        @webWorker.onmessage = (messageEvent) ->
 
           rsaKeyPair = null
           if messageEvent and messageEvent.data
@@ -112,6 +112,10 @@ define 'kryptnostic.kryptnostic-workers-api', [
         # execute query
         super()
         return
+
+  #
+  # external API for interacting with web workers
+  #
 
   class KryptnosticWorkersApi
 

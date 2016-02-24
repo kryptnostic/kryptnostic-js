@@ -1,8 +1,9 @@
 define 'kryptnostic.rsa-key-generator', [
   'require'
+  'bluebird'
   'forge'
   'kryptnostic.logger'
-  'bluebird'
+  'kryptnostic.kryptnostic-workers-api'
 ], (require) ->
 
   # libraries

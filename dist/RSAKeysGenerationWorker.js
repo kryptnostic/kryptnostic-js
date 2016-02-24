@@ -29,8 +29,6 @@ function generateKeys() {
 
   if (self.crypto && self.crypto.subtle) {
     webCryptoGenerate();
-  } else if (self.msCrypto && self.msCrypto.subtle) {
-    ieWebCryptoGenerate();
   } else {
     forgeGenerate();
   }
@@ -41,7 +39,7 @@ function forgeGenerate() {
   Promise.resolve()
     .then(function() {
 
-      forgeKeys       = forge.rsa.generatekeypair(RSA_KEY_SIZE, EXPONENT_NUM);
+      forgeKeys       = forge.rsa.generateKeyPair(RSA_KEY_SIZE, EXPONENT_NUM);
       privateKeyAsn1  = forge.pki.privateKeyToAsn1(forgeKeys.privateKey);
       publicKeyAsn1   = forge.pki.publicKeyToAsn1(forgeKeys.publicKey);
       privateKeyAsDer = forge.asn1.toDer(privateKeyAsn1);
@@ -87,69 +85,6 @@ function webCryptoGenerate() {
 
         rsaKeyPair.publicKey = publicKeyArrayBuffer;
         rsaKeyPair.privateKey = privateKeyArrayBuffer;
-        return;
-      });
-    })
-    .catch(function(e) {
-      self.close();
-    });
-};
-
-function ieWebCryptoGenerate() {
-
-  Promise.resolve()
-    .then(function() {
-
-      deferred = Promise.defer()
-      keyOperation = self.msCrypto.subtle.generateKey(
-        {
-          name: 'RSA-OAEP',
-          modulusLength: RSA_KEY_SIZE,
-          publicExponent: EXPONENT_BIG_INT,
-          hash: { name: 'SHA-256' }
-        },
-        true,
-        ['encrypt', 'decrypt']
-      );
-
-      keyOperation.onerror = function() {
-        self.close();
-      };
-
-      keyOperation.oncomplete = function() {
-        keypair = keyOperation.result;
-        return deferred.resolve(keypair);
-      };
-
-      return deferred.promise;
-    })
-    .then(function(keys) {
-
-      deferred1 = Promise.defer();
-      keyOpPrivate = self.msCrypto.subtle.exportKey('pkcs8', keys.privateKey);
-      keyOpPrivate.onerror = function() {
-        self.close();
-      };
-      keyOpPrivate.oncomplete = function() {
-        return deferred1.resolve(keyOpPrivate.result);
-      };
-
-      privateKeyPromise = deferred1.promise;
-
-      deferred2 = Promise.defer();
-      keyOpPublic = self.msCrypto.subtle.exportKey('spki', keys.publicKey);
-      keyOpPublic.onerror = function() {
-        self.close();
-      };
-      keyOpPublic.oncomplete = function() {
-        return deferred2.resolve(keyOpPublic.result);
-      };
-
-      publicKeyPromise = deferred2.promise;
-
-      return Promise.join(privateKeyPromise, publicKeyPromise, function(privateKey, publicKey) {
-        rsaKeyPair.publicKey = publicKey;
-        rsaKeyPair.privateKey = privateKey;
         return;
       });
     })

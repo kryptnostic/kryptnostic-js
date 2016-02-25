@@ -126,8 +126,9 @@ define 'kryptnostic.rsa-key-generator', [
         KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER)
       .then (rsaKeyPair) =>
 
+        KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER)
+
         if rsaKeyPair?
-          KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER)
           return rsaKeyPair
 
         if window.crypto?.subtle?

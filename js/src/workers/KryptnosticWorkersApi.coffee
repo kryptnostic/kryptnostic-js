@@ -26,9 +26,10 @@ define 'kryptnostic.kryptnostic-workers-api', [
 
     start: ->
 
-      logger.info('worker script url: ' + @scriptUrl)
-
       if _.isEmpty(@scriptUrl)
+        return
+
+      if @webWorker?
         return
 
       @webWorker = new Worker(@scriptUrl)
@@ -119,7 +120,6 @@ define 'kryptnostic.kryptnostic-workers-api', [
 
   class KryptnosticWorkersApi
 
-    # static constants
     @FHE_KEYS_GEN_WORKER = 'FHE_KEYS_GEN_WORKER'
     @RSA_KEYS_GEN_WORKER = 'RSA_KEYS_GEN_WORKER'
 

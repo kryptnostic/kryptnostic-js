@@ -83,8 +83,8 @@ define 'kryptnostic.authentication-service', [
       .then ->
         KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER)
       .then (fheKeys) ->
+        KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER)
         if not _.isEmpty(fheKeys)
-          KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER)
           searchCredentialService.initializeKeys(fheKeys)
           return fheKeys
         else

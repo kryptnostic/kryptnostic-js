@@ -17,6 +17,7 @@ else
   cd bower_components/forge;
   npm install;
   npm run minify;
+  npm run bundle;
   cd ../../;
 fi
 

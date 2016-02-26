@@ -10,7 +10,7 @@ var BOWER_PATH = path.resolve(__dirname, 'bower_components');
 var NODE_PATH = path.resolve(__dirname, 'node_modules');
 
 var AXIOS_PATH = path.resolve('bower_components/axios/dist/axios.amd.js');
-var FORGE_PATH = path.resolve('bower_components/forge/js/forge.js');
+var FORGE_PATH = path.resolve('bower_components/forge/js/forge.bundle.js');
 
 module.exports = {
   context: SOURCE_PATH,

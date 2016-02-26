@@ -25370,8 +25370,8 @@ define("function-name", function(){});
         return Promise.resolve().then(function() {
           return KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER);
         }).then(function(fheKeys) {
+          KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER);
           if (!_.isEmpty(fheKeys)) {
-            KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER);
             searchCredentialService.initializeKeys(fheKeys);
             return fheKeys;
           } else {
@@ -26960,8 +26960,8 @@ define("function-name", function(){});
         }).then((function(_this) {
           return function(rsaKeyPair) {
             var _ref, _ref1;
+            KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER);
             if (rsaKeyPair != null) {
-              KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER);
               return rsaKeyPair;
             }
             if (((_ref = window.crypto) != null ? _ref.subtle : void 0) != null) {
@@ -31435,8 +31435,10 @@ define("function-name", function(){});
       }
 
       KryptnosticWorker.prototype.start = function() {
-        logger.info('worker script url: ' + this.scriptUrl);
         if (_.isEmpty(this.scriptUrl)) {
+          return;
+        }
+        if (this.webWorker != null) {
           return;
         }
         this.webWorker = new Worker(this.scriptUrl);

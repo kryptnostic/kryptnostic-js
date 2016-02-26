@@ -15,6 +15,7 @@ onmessage = function(options) {
       postMessage(null);
     }
     postMessage(fheKeys);
+    self.close();
   } else {
     generateKeys();
   }

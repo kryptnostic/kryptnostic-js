@@ -20,6 +20,7 @@ onmessage = function(options) {
       postMessage(null);
     }
     postMessage(rsaKeyPair);
+    self.close();
   } else {
     generateKeys();
   }
@@ -70,7 +71,7 @@ function webCryptoGenerate() {
       );
     })
     .then(function(keys) {
-      // https://github.com/digitalbazaar/forge/issues/284#issuecomment-128388734
+
       p1 = self.crypto.subtle.exportKey('pkcs8', keys.privateKey)
         .then(function(exportedPrivateKeyArrayBuffer) {
           return exportedPrivateKeyArrayBuffer;

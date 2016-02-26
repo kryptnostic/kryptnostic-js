@@ -9,8 +9,8 @@ var DIST_PATH = path.resolve(__dirname, 'dist');
 var BOWER_PATH = path.resolve(__dirname, 'bower_components');
 var NODE_PATH = path.resolve(__dirname, 'node_modules');
 
-var AXIOS_PATH = path.resolve('bower_components/axios/dist/axios.amd.min.js');
-var FORGE_PATH = path.resolve('bower_components/forge/js/forge.min.js');
+var AXIOS_PATH = path.resolve('bower_components/axios/dist/axios.amd.js');
+var FORGE_PATH = path.resolve('bower_components/forge/js/forge.bundle.js');
 
 module.exports = {
   context: SOURCE_PATH,
@@ -138,7 +138,8 @@ module.exports = {
       'kryptnostic.binary-utils'                        : 'util/binary-utils.coffee',
       'kryptnostic.object-utils'                        : 'util/object-utils.coffee',
       'kryptnostic.requests'                            : 'util/requests.coffee',
-      'kryptnostic.validators'                          : 'util/validators.coffee'
+      'kryptnostic.validators'                          : 'util/validators.coffee',
+      'kryptnostic.kryptnostic-workers-api'             : 'workers/KryptnosticWorkersApi.coffee'
     }
   }
 }

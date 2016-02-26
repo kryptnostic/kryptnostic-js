@@ -23,6 +23,10 @@ define 'kryptnostic.kryptnostic-engine', [
     @OBJECT_SHARE_PAIR_SIZE = 2064
     @OBJECT_SEARCH_PAIR_SIZE = 2080
 
+    @FHE_PRIVATE_KEY_SIZE = 329760
+    @FHE_SEARCH_PRIVATE_KEY_SIZE = 4096
+    @FHE_HASH_FUNCTION_SIZE = 1060896
+
     constructor: ({ @fhePrivateKey, @fheSearchPrivateKey } = {}) ->
       unless Module? and Module.KryptnosticClient?
         logger.error(ENGINE_MISSING_ERROR)
@@ -81,6 +85,18 @@ define 'kryptnostic.kryptnostic-engine', [
     #
     # helper functions
     #
+
+    @isValidFHEPrivateKey: (fhePrivateKey) ->
+      return fhePrivateKey instanceof Uint8Array and
+        fhePrivateKey.length is KryptnosticEngine.FHE_PRIVATE_KEY_SIZE
+
+    @isValidFHESearchPrivateKey: (fheSearchPrivateKey) ->
+      return fheSearchPrivateKey instanceof Uint8Array and
+        fheSearchPrivateKey.length is KryptnosticEngine.FHE_SEARCH_PRIVATE_KEY_SIZE
+
+    @isValidFHEHashFunction: (fheHashFunction) ->
+      return fheHashFunction instanceof Uint8Array and
+        fheHashFunction.length is KryptnosticEngine.FHE_HASH_FUNCTION_SIZE
 
     @isValidObjectIndexPair: (objectIndexPair) ->
       return objectIndexPair instanceof Uint8Array and

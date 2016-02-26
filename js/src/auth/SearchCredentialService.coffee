@@ -6,6 +6,7 @@ define 'kryptnostic.search-credential-service', [
   'kryptnostic.authentication-stage'
   'kryptnostic.search-key-generator'
   'kryptnostic.key-storage-api'
+  'kryptnostic.kryptnostic-engine'
   'kryptnostic.crypto-service-loader'
 ], (require) ->
 
@@ -14,6 +15,7 @@ define 'kryptnostic.search-credential-service', [
   Logger              = require 'kryptnostic.logger'
   AuthenticationStage = require 'kryptnostic.authentication-stage'
   KeyStorageApi       = require 'kryptnostic.key-storage-api'
+  KryptnosticEngine   = require 'kryptnostic.kryptnostic-engine'
   SearchKeyGenerator  = require 'kryptnostic.search-key-generator'
   CryptoServiceLoader = require 'kryptnostic.crypto-service-loader'
 
@@ -111,11 +113,17 @@ define 'kryptnostic.search-credential-service', [
 
         return keys
 
-    initializeKeys: ->
+    initializeKeys: (fheKeys = {}) ->
       { clientKeys } = {}
       Promise.resolve()
       .then =>
-        clientKeys = @searchKeyGenerator.generateClientKeys()
+        if not _.isEmpty(fheKeys) and
+            KryptnosticEngine.isValidFHEPrivateKey(fheKeys.FHE_PRIVATE_KEY) and
+            KryptnosticEngine.isValidFHESearchPrivateKey(fheKeys.FHE_SEARCH_PRIVATE_KEY) and
+            KryptnosticEngine.isValidFHEHashFunction(fheKeys.FHE_HASH_FUNCTION)
+          clientKeys = fheKeys
+        else
+          clientKeys = @searchKeyGenerator.generateClientKeys()
       .then =>
         @initializeKey(CredentialType.FHE_PRIVATE_KEY, clientKeys)
       .then =>

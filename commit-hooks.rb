@@ -19,7 +19,7 @@ COMMIT_HOOKS = [
     :name           => 'no raw javascript files',
     :file_pattern   => '*.js',
     :pattern        => '',
-    :exception      => /test-main.js|karma.*.conf.js|KryptnosticClient.js|kryptnostic-umd-exports.js/,
+    :exception      => /test-main.js|karma.*.conf.js|KryptnosticClient.js|kryptnostic-umd-exports.js|.*Worker.js/,
     :explanation    => 'raw js files are not allowed, please use coffeescript'
   },
   {

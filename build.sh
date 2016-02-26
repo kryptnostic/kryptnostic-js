@@ -17,6 +17,7 @@ else
   cd bower_components/forge;
   npm install;
   npm run minify;
+  npm run bundle;
   cd ../../;
 fi
 
@@ -46,6 +47,10 @@ fi
 
 echo; echo "copying kryptnostic client";
 cp bower_components/krypto-js/KryptnosticClient.js dist/KryptnosticClient.js;
+
+echo; echo "copying web workers";
+cp js/src/workers/RSAKeysGenerationWorker.js dist/ ;
+cp js/src/workers/FHEKeysGenerationWorker.js dist/ ;
 
 echo; echo "DIST BUILD SUCCESSFUL!";
 echo ":)";

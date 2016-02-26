@@ -1,15 +1,22 @@
 define 'kryptnostic.rsa-key-generator', [
   'require'
+  'bluebird'
   'forge'
   'kryptnostic.logger'
-  'bluebird'
+  'kryptnostic.kryptnostic-workers-api'
 ], (require) ->
 
+  # libraries
   forge            = require 'forge'
-  Logger           = require 'kryptnostic.logger'
   Promise          = require 'bluebird'
 
-  log              = Logger.get('RsaKeyGenerator')
+  # kryptnostic
+  KryptnosticWorkersApi = require 'kryptnostic.kryptnostic-workers-api'
+
+  # utils
+  Logger = require 'kryptnostic.logger'
+
+  logger = Logger.get('RsaKeyGenerator')
 
   RSA_KEY_SIZE     = 4096
   EXPONENT_NUM     = 0x10001
@@ -58,8 +65,10 @@ define 'kryptnostic.rsa-key-generator', [
           return keyPair
         )
 
+    #
     # IE 11 Web Crypto
     # https://msdn.microsoft.com/en-us/library/dn904640(v=vs.85).aspx
+    #
     ieWebCryptoGenerate: ->
       Promise.resolve()
       .then ->
@@ -75,7 +84,7 @@ define 'kryptnostic.rsa-key-generator', [
           ['encrypt', 'decrypt']
         )
         keyOperation.onerror = ->
-          log.error('Failed to generate RSA keys using IE web crypto')
+          logger.error('Failed to generate RSA keys using IE web crypto')
 
         keyOperation.oncomplete = ->
           keyPair = keyOperation.result
@@ -87,7 +96,7 @@ define 'kryptnostic.rsa-key-generator', [
         deferred1 = Promise.defer()
         keyOpPrivate = window.msCrypto.subtle.exportKey('pkcs8', keys.privateKey)
         keyOpPrivate.onerror = ->
-          log.error('Failed to export RSA private key using IE web crypto')
+          logger.error('Failed to export RSA private key using IE web crypto')
         keyOpPrivate.oncomplete = ->
           privateKey = new forge.util.ByteBuffer(keyOpPrivate.result)
           return deferred1.resolve(privateKey)
@@ -96,7 +105,7 @@ define 'kryptnostic.rsa-key-generator', [
         deferred2 = Promise.defer()
         keyOpPublic = window.msCrypto.subtle.exportKey('spki', keys.publicKey)
         keyOpPublic.onerror = ->
-          log.error('Failed to export RSA public key using IE web crypto')
+          logger.error('Failed to export RSA public key using IE web crypto')
         keyOpPublic.oncomplete = ->
           publicKey = new forge.util.ByteBuffer(keyOpPublic.result)
           return deferred2.resolve(publicKey)
@@ -111,11 +120,22 @@ define 'kryptnostic.rsa-key-generator', [
     # Generate public and private RSA keys
     # returns a Promise object with private and public keys in Forge buffer objects
     generateKeypair: ->
-      if window.crypto?.subtle?
-        return @webCryptoGenerate()
-      else if window.msCrypto?.subtle?
-        return @ieWebCryptoGenerate()
-      else
-        return @forgeGenerate()
+
+      Promise.resolve()
+      .then ->
+        KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER)
+      .then (rsaKeyPair) =>
+
+        KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER)
+
+        if rsaKeyPair?
+          return rsaKeyPair
+
+        if window.crypto?.subtle?
+          return @webCryptoGenerate()
+        else if window.msCrypto?.subtle?
+          return @ieWebCryptoGenerate()
+        else
+          return @forgeGenerate()
 
   return RsaKeyGenerator

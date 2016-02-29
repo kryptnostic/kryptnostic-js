@@ -25,8 +25,8 @@ define [
   # mock data
   # =========
 
-  MOCK_FHE_PRIVATE_KEY_OCS          = new AesCryptoService(Cypher.AES_CTR_128)
-  MOCK_SEARCH_PRIVATE_KEY_OCS       = new AesCryptoService(Cypher.AES_CTR_128)
+  MOCK_FHE_PRIVATE_KEY_OCS          = new AesCryptoService(Cypher.AES_GCM_128)
+  MOCK_SEARCH_PRIVATE_KEY_OCS       = new AesCryptoService(Cypher.AES_GCM_128)
 
   MOCK_FHE_PRIVATE_KEY              = MockDataUtils.generateMockFhePrivateKeyAsUint8()
   MOCK_SEARCH_PRIVATE_KEY           = MockDataUtils.generateMockSearchPrivateKeyAsUint8()
@@ -67,7 +67,7 @@ define [
         else if id is 'KryptnosticEngine.SearchPrivateKey'
           return Promise.resolve(MOCK_SEARCH_PRIVATE_KEY_OCS)
         else
-          return new AesCryptoService(Cypher.AES_CTR_128)
+          return new AesCryptoService(Cypher.AES_GCM_128)
       )
       return
 

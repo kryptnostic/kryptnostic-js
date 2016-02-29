@@ -63,6 +63,17 @@ define 'kryptnostic.aes-crypto-service', [
 
     encrypt: (plaintext) ->
 
+      # GCM
+      # ================================
+      # iv         = Forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
+      # cipherOutput = @abstractCryptoService.encrypt(@key, iv, plaintext)
+      #
+      # return new BlockCiphertext {
+      #   iv       : btoa(iv)
+      #   salt     : btoa(Forge.random.getBytesSync(0))
+      #   contents : btoa(cipherOutput.ciphertext)
+      #   tag      : btoa(cipherOutput.tag)
+
       iv         = forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
       salt       = forge.random.getBytesSync(0)
       ciphertext = @abstractCryptoService.encrypt(@key, iv, plaintext)
@@ -79,6 +90,19 @@ define 'kryptnostic.aes-crypto-service', [
       return new BlockCiphertext(props)
 
     encryptUint8Array: (uint8) ->
+
+      # GCM
+      # ================================
+      # iv         = Forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
+      # buffer     = Forge.util.createBuffer(uint8)
+      # cipherOutput = @abstractCryptoService.encryptBuffer(@key, iv, buffer)
+      # logger.debug( cipherOutput.tag )
+      #
+      # return new BlockCiphertext {
+      #   iv       : btoa(iv)
+      #   salt     : btoa(Forge.random.getBytesSync(0))
+      #   contents : btoa(cipherOutput.ciphertext)
+      #   tag      : btoa(cipherOutput.tag)
 
       iv         = forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
       salt       = forge.random.getBytesSync(0)
@@ -99,6 +123,16 @@ define 'kryptnostic.aes-crypto-service', [
     decrypt: (blockCipherText) ->
 
       Validator.validate(blockCipherText, BlockCiphertext, BLOCK_CIPHERTEXT_SCHEMA)
+
+      # GCM
+      # ================================
+      # iv       = atob(blockCipherText.iv)
+      # contents = atob(blockCipherText.contents)
+      # if blockCipherText.tag?
+      #   tag = atob(blockCipherText.tag)
+      #   return @abstractCryptoService.decrypt(@key, iv, contents, tag)
+      #
+      # return @abstractCryptoService.decrypt(@key, iv, contents)
 
       iv         = atob(blockCipherText.iv)
       salt       = atob(blockCipherText.salt)

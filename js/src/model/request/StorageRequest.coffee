@@ -9,7 +9,7 @@ define 'kryptnostic.storage-request', [
   SCHEMA       = require 'kryptnostic.schema.storage-request'
   validator    = require 'kryptnostic.schema.validator'
 
-  DEFAULT_OPTS = { type: 'object', version: 0, cypher: 'AES_CTR_128' }
+  DEFAULT_OPTS = { type: 'object', version: 0, cypher: 'AES_GCM_128' }
 
   #
   # JSON request to store an object in Kryptnostic services.

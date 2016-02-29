@@ -48,7 +48,7 @@ define 'kryptnostic.crypto-service-loader', [
 
         if not _masterAesCryptoService
 
-          _masterAesCryptoService = new AesCryptoService(Cypher.AES_CTR_128)
+          _masterAesCryptoService = new AesCryptoService(Cypher.AES_GCM_128)
           Cache.store(Cache.CRYPTO_SERVICES, Cache.MASTER_AES_CRYPTO_SERVICE, _masterAesCryptoService)
 
           cryptoServiceMarshaller = new CryptoServiceMarshaller()
@@ -96,7 +96,7 @@ define 'kryptnostic.crypto-service-loader', [
         objectCryptoService = {}
         if !cryptoServiceBlockCiphertext && expectMiss
           log.info('no cryptoService exists for this object. creating one on-the-fly', { objectId })
-          objectCryptoService = new AesCryptoService( Cypher.AES_CTR_128 )
+          objectCryptoService = new AesCryptoService( Cypher.AES_GCM_128 )
           @setObjectCryptoServiceV2(versionedObjectKey, objectCryptoService, masterAesCryptoService)
         else if !cryptoServiceBlockCiphertext && !expectMiss
           log.error('no cryptoservice exists for this object, but a miss was not expected')

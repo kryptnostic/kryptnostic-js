@@ -17,7 +17,7 @@ define [
   KEY = 'abcdefghijklmnop'
 
   beforeEach ->
-    cryptoService   = new AesCryptoService( Cypher.AES_CTR_128, KEY )
+    cryptoService   = new AesCryptoService( Cypher.AES_GCM_128, KEY )
     blockEncryption = new BlockEncryptionService()
 
   describe 'BlockEncryptionService', ->

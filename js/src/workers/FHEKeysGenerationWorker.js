@@ -8,16 +8,14 @@ var fheKeys = {
 
 onmessage = function(options) {
 
-  if (options.data && options.data.query) {
-    if (fheKeys.FHE_PRIVATE_KEY === null ||
-        fheKeys.FHE_SEARCH_PRIVATE_KEY === null ||
-        fheKeys.FHE_HASH_FUNCTION === null) {
-      postMessage(null);
+  workerQuery = options.data;
+
+  if (workerQuery) {
+    if (workerQuery.operation === 'init') {
+      generateKeys();
+    } else if (workerQuery.operation === 'getKeys') {
+      getKeys();
     }
-    postMessage(fheKeys);
-    self.close();
-  } else {
-    generateKeys();
   }
 };
 
@@ -32,4 +30,15 @@ function generateKeys() {
   fheKeys.FHE_PRIVATE_KEY = fhePrivateKey;
   fheKeys.FHE_SEARCH_PRIVATE_KEY = fheSearchPrivateKey;
   fheKeys.FHE_HASH_FUNCTION = fheHashFunction;
+};
+
+function getKeys() {
+
+  if (fheKeys.FHE_PRIVATE_KEY === null ||
+      fheKeys.FHE_SEARCH_PRIVATE_KEY === null ||
+      fheKeys.FHE_HASH_FUNCTION === null) {
+    postMessage(null);
+  }
+  postMessage(fheKeys);
+  self.close();
 };

@@ -15,14 +15,14 @@ var rsaKeyPair = {
  */
 onmessage = function(options) {
 
-  if (options.data && options.data.query) {
-    if (rsaKeyPair.publicKey === null || rsaKeyPair.privateKey === null) {
-      postMessage(null);
+  workerQuery = options.data;
+
+  if (workerQuery) {
+    if (workerQuery.operation === 'init') {
+      generateKeys();
+    } else if (workerQuery.operation === 'getKeys') {
+      getKeys();
     }
-    postMessage(rsaKeyPair);
-    self.close();
-  } else {
-    generateKeys();
   }
 };
 
@@ -33,6 +33,15 @@ function generateKeys() {
   } else {
     forgeGenerate();
   }
+};
+
+function getKeys() {
+
+  if (rsaKeyPair.publicKey === null || rsaKeyPair.privateKey === null) {
+    postMessage(null);
+  }
+  postMessage(rsaKeyPair);
+  self.close();
 };
 
 function forgeGenerate() {

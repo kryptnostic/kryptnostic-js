@@ -76,6 +76,11 @@ define 'kryptnostic.kryptnostic-engine', [
     # sharing
     #
 
+    generateObjectSearchPair: ->
+      objectIndexPair = @generateObjectIndexPair()
+      objectSearchPair = @calculateObjectSearchPairFromObjectIndexPair(objectIndexPair)
+      return objectSearchPair
+
     calculateObjectSharePairFromObjectSearchPair: (objectSearchPair) ->
       return new Uint8Array(@krypto.calculateObjectSharePairFromObjectSearchPair(objectSearchPair))
 

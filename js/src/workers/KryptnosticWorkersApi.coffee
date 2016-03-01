@@ -3,13 +3,21 @@
 define 'kryptnostic.kryptnostic-workers-api', [
   'require',
   'forge',
+  'kryptnostic.credential-loader',
+  'kryptnostic.keypair-serializer',
+  'kryptnostic.kryptnostic-engine-provider',
   'kryptnostic.logger'
 ], (require) ->
 
   # libraries
   forge = require 'forge'
 
+  # kryptnostic
+  CredentialLoader = require 'kryptnostic.credential-loader'
+  KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
+
   # utils
+  KeypairSerializer = require 'kryptnostic.keypair-serializer'
   Logger = require 'kryptnostic.logger'
 
   logger = Logger.get('KryptnosticWorkersApi')
@@ -24,7 +32,7 @@ define 'kryptnostic.kryptnostic-workers-api', [
       @scriptUrl = null
       @webWorker = null
 
-    start: ->
+    start: (workerParams) ->
 
       if _.isEmpty(@scriptUrl)
         return
@@ -33,7 +41,10 @@ define 'kryptnostic.kryptnostic-workers-api', [
         return
 
       @webWorker = new Worker(@scriptUrl)
-      @webWorker.postMessage({})
+      @webWorker.postMessage({
+        operation: 'init',
+        params: workerParams
+      })
 
     terminate: ->
 
@@ -44,14 +55,12 @@ define 'kryptnostic.kryptnostic-workers-api', [
       @webWorker = null
       @scriptUrl = null
 
-    query: ->
+    query: (workerQuery) ->
 
-      if not @webWorker
-        return
+      if not @webWorker or not workerQuery
+        return Promise.resolve()
 
-      @webWorker.postMessage({
-        query: true
-      })
+      @webWorker.postMessage(workerQuery)
 
   class FHEKeysGenerationWorker extends KryptnosticWorker
 
@@ -61,7 +70,7 @@ define 'kryptnostic.kryptnostic-workers-api', [
     query: ->
 
       if not @webWorker
-        return
+        return Promise.resolve()
 
       return new Promise (resolve, reject) =>
 
@@ -78,7 +87,9 @@ define 'kryptnostic.kryptnostic-workers-api', [
             resolve(null)
 
         # execute query
-        super()
+        super({
+          operation: 'getKeys'
+        })
         return
 
   class RSAKeysGenerationWorker extends KryptnosticWorker
@@ -89,7 +100,7 @@ define 'kryptnostic.kryptnostic-workers-api', [
     query: ->
 
       if not @webWorker
-        return
+        return Promise.resolve()
 
       return new Promise (resolve, reject) =>
 
@@ -111,9 +122,50 @@ define 'kryptnostic.kryptnostic-workers-api', [
             resolve(null)
 
         # execute query
-        super()
+        super({
+          operation: 'getKeys'
+        })
         return
 
+  class ObjectIndexingWorker extends KryptnosticWorker
+
+    constructor: ->
+      super()
+
+    start: ->
+
+      workerParams = {}
+
+      credentialLoader = new CredentialLoader()
+      credentials = credentialLoader.getCredentials()
+      workerParams.principal = credentials.principal
+      workerParams.credential = credentials.credential
+
+      # we have to serialize the RSA key pair before passing it to the Web Worker
+      serializedKeyPair = KeypairSerializer.serialize(credentials.keypair)
+      workerParams.rsaKeyPair = serializedKeyPair
+
+      engine = KryptnosticEngineProvider.getEngine()
+      workerParams.fhePrivateKey = engine.getPrivateKey()
+      workerParams.fheSearchPrivateKey = engine.getSearchPrivateKey()
+
+      super(workerParams)
+
+    query: (workerQuery) ->
+
+      throw new Error('ObjectIndexingWorker:query() - not yet implemented!')
+
+      # if not @webWorker
+      #   return Promise.resolve()
+      #
+      # return new Promise (resolve, reject) =>
+      #
+      #   @webWorker.onmessage = (messageEvent) ->
+      #     resolve()
+      #
+      #   # execute query
+      #   super(workerQuery)
+      #   return
   #
   # external API for interacting with web workers
   #
@@ -122,10 +174,12 @@ define 'kryptnostic.kryptnostic-workers-api', [
 
     @FHE_KEYS_GEN_WORKER = 'FHE_KEYS_GEN_WORKER'
     @RSA_KEYS_GEN_WORKER = 'RSA_KEYS_GEN_WORKER'
+    @OBJ_INDEXING_WORKER = 'OBJ_INDEXING_WORKER'
 
     WORKERS = {
       FHE_KEYS_GEN_WORKER: new FHEKeysGenerationWorker()
       RSA_KEYS_GEN_WORKER: new RSAKeysGenerationWorker()
+      OBJ_INDEXING_WORKER: new ObjectIndexingWorker()
     }
 
     @setWorkerUrl: (workerKey, workerScriptUrl) ->
@@ -159,7 +213,7 @@ define 'kryptnostic.kryptnostic-workers-api', [
       kWorker = WORKERS[workerKey]
       kWorker.terminate()
 
-    @queryWebWorker: (workerKey) ->
+    @queryWebWorker: (workerKey, workerQuery) ->
 
       if not window.Worker
         logger.info('Web Workers API is not supported')
@@ -169,6 +223,6 @@ define 'kryptnostic.kryptnostic-workers-api', [
         return
 
       kWorker = WORKERS[workerKey]
-      return kWorker.query()
+      return kWorker.query(workerQuery)
 
   return KryptnosticWorkersApi

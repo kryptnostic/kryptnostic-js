@@ -50,30 +50,54 @@ define 'kryptnostic.sharing-client', [
       @cryptoServiceMarshaller = new CryptoServiceMarshaller()
       @cryptoServiceLoader     = new CryptoServiceLoader()
 
-    shareObject: (objectId, uuids, objectSearchPair) ->
-
-      if not validateUuid(objectId)
-        return Promise.resolve()
+    #
+    # @public
+    # @param objectIdOrKey - the UUID or latest VersionedObjectKey of the object to share
+    # @param uuids - the UUIDs with which to share the object
+    # @param isSearchable - boolean flag for deciding whether or not the object (and its children) should be searchable
+    #
+    shareObject: (objectIdOrKey, uuids, isSearchable) ->
 
       if _.isEmpty(uuids) or not validateUuids(uuids)
         return Promise.resolve()
 
-      Promise.resolve(
-        @objectApi.getLatestVersionedObjectKey(objectId)
-      )
-      .then (versionedObjectKey) =>
+      objectKeyPromise = null
+      if validateVersionedObjectKey(objectIdOrKey)
+        objectKeyPromise = Promise.resolve(objectIdOrKey)
+      else if validateUuid(objectIdOrKey)
+        objectKeyPromise = @objectApi.getLatestVersionedObjectKey(objectIdOrKey)
+      else
+        return Promise.resolve()
 
-        objectSearchPairPromise = undefined
-        if objectSearchPair
-          objectSearchPairPromise = Promise.resolve(objectSearchPair)
-        else
-          objectSearchPairPromise = @sharingApi.getObjectSearchPair(versionedObjectKey)
+      return Promise.resolve(objectKeyPromise)
+        .then (latestVersionedObjectKey) =>
+          if latestVersionedObjectKey?
+            @share(latestVersionedObjectKey, uuids, isSearchable)
+          return
 
+    #
+    # parameters to a private function are assumed valid since it is expected for the calling function to validate
+    #
+    # @private
+    # @param objectKey - the latest VersionedObjectKey of the object to share
+    # @param uuids - the UUIDs with which to share the object
+    # @param isSearchable - boolean flag for deciding whether or not the object (and its children) should be searchable
+    #
+    share = (objectKey, uuids, isSearchable) ->
+
+      { engine, objectSearchPair, addObjectSearchPairPromise, sharingRequest } = {}
+
+      if isSearchable
+        engine = KryptnosticEngineProvider.getEngine()
+        objectSearchPair = engine.generateObjectSearchPair()
+        addObjectSearchPairPromise = @sharingApi.addObjectSearchPair(objectKey, objectSearchPair)
+
+      Promise.resolve(addObjectSearchPairPromise)
+      .then ->
         Promise.join(
-          objectSearchPairPromise,
-          @cryptoServiceLoader.getObjectCryptoServiceV2(versionedObjectKey),
+          @cryptoServiceLoader.getObjectCryptoServiceV2(objectKey),
           KeyStorageApi.getRSAPublicKeys(uuids),
-          (objectSearchPair, objectCryptoService, uuidsToRsaPublicKeys) =>
+          (objectCryptoService, uuidsToRsaPublicKeys) =>
 
             # transform RSA public key to Base64 seal
             seals = _.mapValues(uuidsToRsaPublicKeys, (rsaPublicKey) =>
@@ -86,29 +110,23 @@ define 'kryptnostic.sharing-client', [
                 sealBase64       = btoa(seal)
                 return sealBase64
             )
-            logger.info('seals', seals)
 
-            if !objectSearchPair
-              # if we did not get an object search pair, we can omit it from the SharingRequest
+            if objectSearchPair
+              objectSharePair = engine.calculateObjectSharePairFromObjectSearchPair(objectSearchPair)
+              encryptedObjectSharePair = objectCryptoService.encryptUint8Array(objectSharePair)
+              sharingRequest = new SharingRequest({
+                id          : objectKey,
+                users       : seals,
+                sharingPair : encryptedObjectSharePair
+              })
+            else
               sharingRequest = new SharingRequest({
                 id          : versionedObjectKey,
                 users       : seals
               })
-            else
-              # create the object share pair from the object search pair, and encrypt it
-              engine = KryptnosticEngineProvider.getEngine()
-              objectSharePair = engine.calculateObjectSharePairFromObjectSearchPair(objectSearchPair)
 
-              encryptedObjectSharePair = objectCryptoService.encryptUint8Array(objectSharePair)
-
-              sharingRequest = new SharingRequest({
-                id          : versionedObjectKey,
-                users       : seals,
-                sharingPair : encryptedObjectSharePair
-              })
-
-            # send off the object sharing request
             @sharingApi.shareObject(sharingRequest)
+            return
         )
 
     revokeObject: (objectId, uuids) ->
@@ -160,12 +178,5 @@ define 'kryptnostic.sharing-client', [
       .catch (e) ->
         # DOTO - how do we handle failure when processing incoming shares?
         logger.error('failed to process incoming shares', e)
-
-    getObjectSearchPair: (objectId) ->
-      Promise.resolve(
-        @objectApi.getLatestVersionedObjectKey(objectId)
-      )
-      .then (versionedObjectKey) =>
-        @sharingApi.getObjectSearchPair(versionedObjectKey)
 
   return SharingClient

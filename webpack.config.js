@@ -139,7 +139,12 @@ module.exports = {
       'kryptnostic.object-utils'                        : 'util/object-utils.coffee',
       'kryptnostic.requests'                            : 'util/requests.coffee',
       'kryptnostic.validators'                          : 'util/validators.coffee',
-      'kryptnostic.kryptnostic-workers-api'             : 'workers/KryptnosticWorkersApi.coffee'
+      'kryptnostic.kryptnostic-workers-api'             : 'workers/KryptnosticWorkersApi.coffee',
+      'kryptnostic.fhe-keys-gen-worker-wrapper'         : 'workers/FHEKeysGenerationWorkerWrapper',
+      'kryptnostic.kryptnostic-workers-api'             : 'workers/KryptnosticWorkersApi',
+      'kryptnostic.object-indexing-worker-wrapper'      : 'workers/ObjectIndexingWorkerWrapper',
+      'kryptnostic.rsa-keys-gen-worker-wrapper'         : 'workers/RSAKeysGenerationWorkerWrapper',
+      'kryptnostic.worker-wrapper'                      : 'workers/WorkerWrapper'
     }
   }
 }

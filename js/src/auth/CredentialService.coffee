@@ -142,7 +142,7 @@ define 'kryptnostic.credential-service', [
       Promise.resolve(
         KeyStorageApi.getRSAPublicKey(principal)
       )
-      .then (rsaPublicKeyAsUint8) =>
+      .then (rsaPublicKeyAsUint8) ->
 
         publicKeyAsPem = null
         derivedPublicKeyAsPem = Forge.pki.publicKeyToPem(rsaKeyPair.publicKey)

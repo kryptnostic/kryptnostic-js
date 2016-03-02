@@ -134,7 +134,7 @@ define 'kryptnostic.credential-service', [
 
           return { privateKey, publicKey }
 
-    verifyPublicKeyIntegrity: (principal, rsaKeyPair) ->
+    ensureValidRSAPublickKey: (principal, rsaKeyPair) ->
 
       if not validateUuid(principal) or _.isEmpty(rsaKeyPair)
         return Promise.resolve()

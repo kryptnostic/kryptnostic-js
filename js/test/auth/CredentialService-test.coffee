@@ -269,7 +269,7 @@ define [
         .catch (e) ->
           done.fail(e)
 
-    describe 'verifyPublicKeyIntegrity()', ->
+    describe 'ensureValidRSAPublickKey()', ->
 
       beforeEach ->
         getPublicKeyStub.reset()
@@ -280,7 +280,7 @@ define [
       it 'should not do anything if the user UUID (principal) is invalid', (done) ->
 
         credentialService = new CredentialService()
-        credentialService.verifyPublicKeyIntegrity(null, MOCK_RSA_KEY_PAIR)
+        credentialService.ensureValidRSAPublickKey(null, MOCK_RSA_KEY_PAIR)
         .then ->
           sinon.assert.notCalled(getPublicKeyStub)
           sinon.assert.notCalled(setPublicKeyStub)
@@ -291,7 +291,7 @@ define [
       it 'should not do anything if the RSA key pair is invalid', (done) ->
 
         credentialService = new CredentialService()
-        credentialService.verifyPublicKeyIntegrity(MOCK_USER_ID, {})
+        credentialService.ensureValidRSAPublickKey(MOCK_USER_ID, {})
         .then ->
           sinon.assert.notCalled(getPublicKeyStub)
           sinon.assert.notCalled(setPublicKeyStub)
@@ -306,7 +306,7 @@ define [
         getPublicKeyStub.returns(Promise.resolve(publicKeyAsUint8))
 
         credentialService = new CredentialService()
-        credentialService.verifyPublicKeyIntegrity(MOCK_USER_ID, MOCK_RSA_KEY_PAIR)
+        credentialService.ensureValidRSAPublickKey(MOCK_USER_ID, MOCK_RSA_KEY_PAIR)
         .then ->
           sinon.assert.calledOnce(getPublicKeyStub)
           sinon.assert.calledWith(getPublicKeyStub, MOCK_USER_ID)
@@ -320,7 +320,7 @@ define [
         getPublicKeyStub.returns(Promise.resolve(null))
 
         credentialService = new CredentialService()
-        credentialService.verifyPublicKeyIntegrity(MOCK_USER_ID, MOCK_RSA_KEY_PAIR)
+        credentialService.ensureValidRSAPublickKey(MOCK_USER_ID, MOCK_RSA_KEY_PAIR)
         .then ->
           sinon.assert.calledOnce(getPublicKeyStub)
           sinon.assert.calledWith(getPublicKeyStub, MOCK_USER_ID)

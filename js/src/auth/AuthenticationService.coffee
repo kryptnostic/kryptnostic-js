@@ -59,7 +59,7 @@ define 'kryptnostic.authentication-service', [
         credentialService.deriveKeyPair({ password })
       .then (_keypair) ->
         keypair = _keypair
-        credentialService.verifyPublicKeyIntegrity(principal, keypair)
+        credentialService.ensureValidRSAPublickKey(principal, keypair)
       .then ->
         credentialProvider.store({ principal, credential, keypair })
       .then ->

@@ -136,7 +136,7 @@ define 'kryptnostic.credential-service', [
 
     verifyPublicKeyIntegrity: (principal, rsaKeyPair) ->
 
-      if _.isEmpty(rsaKeyPair)
+      if not validateUuid(principal) or _.isEmpty(rsaKeyPair)
         return Promise.resolve()
 
       Promise.resolve(
@@ -164,7 +164,5 @@ define 'kryptnostic.credential-service', [
           Promise.resolve(
             KeyStorageApi.setRSAPublicKey(publicKeyAsDer.data)
           )
-
-      return
 
   return CredentialService

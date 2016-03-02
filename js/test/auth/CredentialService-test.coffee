@@ -4,6 +4,7 @@ define [
   'require'
   'forge'
   'sinon'
+  'kryptnostic.binary-utils'
   'kryptnostic.credential-service'
   'kryptnostic.key-storage-api'
   'kryptnostic.mock.mock-data-utils'
@@ -21,6 +22,7 @@ define [
   CredentialService = require 'kryptnostic.credential-service'
 
   # utils
+  BinaryUtils = require 'kryptnostic.binary-utils'
   MockDataUtils = require 'kryptnostic.mock.mock-data-utils'
 
   #
@@ -76,12 +78,14 @@ define [
   # tests
   #
 
+  getPublicKeyStub     = null
   setPublicKeyStub     = null
   getPrivateKeyStub    = null
   setPrivateKeyStub    = null
   setEncryptedSaltStub = null
 
   beforeAll ->
+    getPublicKeyStub     = sinon.stub(KeyStorageApi, 'getRSAPublicKey')
     setPublicKeyStub     = sinon.stub(KeyStorageApi, 'setRSAPublicKey')
     getPrivateKeyStub    = sinon.stub(KeyStorageApi, 'getRSAPrivateKey')
     setPrivateKeyStub    = sinon.stub(KeyStorageApi, 'setRSAPrivateKey')
@@ -89,10 +93,12 @@ define [
     sinon.stub(KeyStorageApi, 'getEncryptedSalt').returns(MOCK_ENCRYPTED_SALT)
 
   afterAll ->
+    getPublicKeyStub     = null
     setPublicKeyStub     = null
     getPrivateKeyStub    = null
     setPrivateKeyStub    = null
     setEncryptedSaltStub = null
+    KeyStorageApi.getRSAPublicKey.restore()
     KeyStorageApi.setRSAPublicKey.restore()
     KeyStorageApi.getRSAPrivateKey.restore()
     KeyStorageApi.setRSAPrivateKey.restore()
@@ -259,6 +265,67 @@ define [
           sinon.assert.notCalled(setPublicKeyStub)
           sinon.assert.notCalled(setPrivateKeyStub)
           sinon.assert.calledOnce(getPrivateKeyStub)
+          done()
+        .catch (e) ->
+          done.fail(e)
+
+    describe 'verifyPublicKeyIntegrity()', ->
+
+      beforeEach ->
+        getPublicKeyStub.reset()
+        setPublicKeyStub.reset()
+        getPrivateKeyStub.reset()
+        setPrivateKeyStub.reset()
+
+      it 'should not do anything if the user UUID (principal) is invalid', (done) ->
+
+        credentialService = new CredentialService()
+        credentialService.verifyPublicKeyIntegrity(null, MOCK_RSA_KEY_PAIR)
+        .then ->
+          sinon.assert.notCalled(getPublicKeyStub)
+          sinon.assert.notCalled(setPublicKeyStub)
+          done()
+        .catch (e) ->
+          done.fail(e)
+
+      it 'should not do anything if the RSA key pair is invalid', (done) ->
+
+        credentialService = new CredentialService()
+        credentialService.verifyPublicKeyIntegrity(MOCK_USER_ID, {})
+        .then ->
+          sinon.assert.notCalled(getPublicKeyStub)
+          sinon.assert.notCalled(setPublicKeyStub)
+          done()
+        .catch (e) ->
+          done.fail(e)
+
+      it 'should not set the RSA public key if the stored key matches the derived key', (done) ->
+
+        publicKeyBytes = MOCK_RSA_KEY_PAIR_AS_DER().publicKey.data
+        publicKeyAsUint8 = BinaryUtils.stringToUint8(publicKeyBytes)
+        getPublicKeyStub.returns(Promise.resolve(publicKeyAsUint8))
+
+        credentialService = new CredentialService()
+        credentialService.verifyPublicKeyIntegrity(MOCK_USER_ID, MOCK_RSA_KEY_PAIR)
+        .then ->
+          sinon.assert.calledOnce(getPublicKeyStub)
+          sinon.assert.calledWith(getPublicKeyStub, MOCK_USER_ID)
+          sinon.assert.notCalled(setPublicKeyStub)
+          done()
+        .catch (e) ->
+          done.fail(e)
+
+      it 'should set the RSA public key if the stored key does not match the derived key', (done) ->
+
+        getPublicKeyStub.returns(Promise.resolve(null))
+
+        credentialService = new CredentialService()
+        credentialService.verifyPublicKeyIntegrity(MOCK_USER_ID, MOCK_RSA_KEY_PAIR)
+        .then ->
+          sinon.assert.calledOnce(getPublicKeyStub)
+          sinon.assert.calledWith(getPublicKeyStub, MOCK_USER_ID)
+          sinon.assert.calledOnce(setPublicKeyStub)
+          sinon.assert.calledWith(setPublicKeyStub, MOCK_RSA_KEY_PAIR_AS_DER().publicKey.data)
           done()
         .catch (e) ->
           done.fail(e)

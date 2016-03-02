@@ -105,8 +105,7 @@ define 'kryptnostic.credential-service', [
       .then ->
         KeyStorageApi.setRSAPrivateKey(privateKey)
       .then ->
-        publicKeyAsUint8 = BinaryUtils.stringToUint8(publicKey)
-        KeyStorageApi.setRSAPublicKey(publicKeyAsUint8)
+        KeyStorageApi.setRSAPublicKey(publicKey)
       .then ->
         log.info('keypair initialization complete')
         return keypair
@@ -134,5 +133,36 @@ define 'kryptnostic.credential-service', [
           publicKey        = Forge.pki.setRsaPublicKey(privateKey.n, privateKey.e)
 
           return { privateKey, publicKey }
+
+    ensureValidRSAPublickKey: (principal, rsaKeyPair) ->
+
+      if not validateUuid(principal) or _.isEmpty(rsaKeyPair)
+        return Promise.resolve()
+
+      Promise.resolve(
+        KeyStorageApi.getRSAPublicKey(principal)
+      )
+      .then (rsaPublicKeyAsUint8) ->
+
+        publicKeyAsPem = null
+        derivedPublicKeyAsPem = Forge.pki.publicKeyToPem(rsaKeyPair.publicKey)
+
+        if rsaPublicKeyAsUint8?
+          try
+            publicKeyBytes = BinaryUtils.uint8ToString(rsaPublicKeyAsUint8)
+            publicKeyBuffer = Forge.util.createBuffer(publicKeyBytes, 'raw')
+            publicKeyAsAsn1 = Forge.asn1.fromDer(publicKeyBuffer)
+            publicKey = Forge.pki.publicKeyFromAsn1(publicKeyAsAsn1)
+            publicKeyAsPem = Forge.pki.publicKeyToPem(publicKey)
+          catch e
+            publicKeyAsPem = null
+
+        # update the RSA public key if the stored key does not match the derived key
+        if publicKeyAsPem != derivedPublicKeyAsPem
+          publicKeyAsAsn1 = Forge.pki.publicKeyToAsn1(rsaKeyPair.publicKey)
+          publicKeyAsDer = Forge.asn1.toDer(publicKeyAsAsn1)
+          Promise.resolve(
+            KeyStorageApi.setRSAPublicKey(publicKeyAsDer.data)
+          )
 
   return CredentialService

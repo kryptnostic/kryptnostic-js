@@ -53,16 +53,16 @@ define 'kryptnostic.authentication-service', [
         if _.isEmpty(uuid)
           throw new Error LOGIN_FAILURE_MESSAGE
         principal = uuid
-        logger.info('authenticating', email)
         credentialService.deriveCredential({ principal, password }, notifier)
       .then (_credential) ->
         credential = _credential
-        logger.info('derived credential')
-        credentialProvider.store { principal, credential }
+        credentialProvider.store({ principal, credential })
         credentialService.deriveKeyPair({ password })
       .then (_keypair) ->
         keypair = _keypair
-        credentialProvider.store { principal, credential, keypair }
+        credentialService.ensureValidRSAPublickKey(principal, keypair)
+      .then ->
+        credentialProvider.store({ principal, credential, keypair })
       .then ->
         CryptoServiceLoader.initializeMasterAesCryptoService()
       .then ->

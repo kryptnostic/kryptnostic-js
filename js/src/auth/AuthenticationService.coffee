@@ -56,6 +56,7 @@ define 'kryptnostic.authentication-service', [
         credentialService.deriveCredential({ principal, password }, notifier)
       .then (_credential) ->
         credential = _credential
+        credentialProvider.store({ principal, credential })
         credentialService.deriveKeyPair({ password })
       .then (_keypair) ->
         keypair = _keypair

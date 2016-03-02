@@ -58,11 +58,13 @@ define 'kryptnostic.authentication-service', [
       .then (_credential) ->
         credential = _credential
         logger.info('derived credential')
-        credentialProvider.store { principal, credential }
+        credentialProvider.store({ principal, credential })
         credentialService.deriveKeyPair({ password })
       .then (_keypair) ->
         keypair = _keypair
-        credentialProvider.store { principal, credential, keypair }
+        credentialService.verifyPublicKeyIntegrity(principal, keypair)
+      .then ->
+        credentialProvider.store({ principal, credential, keypair })
       .then ->
         CryptoServiceLoader.initializeMasterAesCryptoService()
       .then ->

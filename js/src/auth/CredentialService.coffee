@@ -161,9 +161,8 @@ define 'kryptnostic.credential-service', [
         if publicKeyAsPem != derivedPublicKeyAsPem
           publicKeyAsAsn1 = Forge.pki.publicKeyToAsn1(rsaKeyPair.publicKey)
           publicKeyAsDer = Forge.asn1.toDer(publicKeyAsAsn1)
-          publicKeyAsUint8 = BinaryUtils.stringToUint8(publicKeyAsDer.data)
           Promise.resolve(
-            KeyStorageApi.setRSAPublicKey(publicKeyAsUint8)
+            KeyStorageApi.setRSAPublicKey(publicKeyAsDer.data)
           )
 
       return

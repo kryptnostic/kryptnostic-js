@@ -106,8 +106,6 @@ define 'kryptnostic.sharing-api', [
       if not validateVersionedObjectKey(versionedObjectKey)
         return Promise.resolve(null)
 
-      # ToDo - cache objectSearchPair
-
       versionedObjectSearchPair = {
         objectKey        : versionedObjectKey
         objectSearchPair : BinaryUtils.uint8ToBase64(objectSearchPair)

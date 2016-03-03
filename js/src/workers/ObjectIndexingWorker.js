@@ -79,6 +79,6 @@ function index(queryParams) {
   var objectKey = queryParams.objectKey;
   var parentObjectKey = queryParams.parentObjectKey;
 
-  // TODO - indexing queue
+  // ToDo - indexing queue
   objectIndexingService.index(data, objectKey, parentObjectKey);
 };

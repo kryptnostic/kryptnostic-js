@@ -48,7 +48,7 @@ define 'kryptnostic.object-indexing-worker-wrapper', [
     query: (workerQuery) ->
 
       if not @webWorker
-        # TODO - reject with an Error instance
+        # ToDo - reject with an Error instance
         return Promise.reject()
 
       # execute query

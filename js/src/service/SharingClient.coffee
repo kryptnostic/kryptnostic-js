@@ -1,3 +1,5 @@
+# coffeelint: disable=cyclomatic_complexity
+
 define 'kryptnostic.sharing-client', [
   'require'
   'bluebird'
@@ -58,7 +60,7 @@ define 'kryptnostic.sharing-client', [
     # @param uuids - the UUIDs with which to share the object
     # @param isSearchable - boolean flag for deciding whether or not the object (and its children) should be searchable
     #
-    shareObject: (objectIdOrKey, uuids, isSearchable) ->
+    shareObject: (objectIdOrKey, uuids, isSearchable) =>
 
       if _.isEmpty(uuids) or not validateUuids(uuids)
         return Promise.resolve()
@@ -72,7 +74,7 @@ define 'kryptnostic.sharing-client', [
         return Promise.resolve()
 
       return Promise.resolve(objectKeyPromise)
-        .then (latestVersionedObjectKey) =>
+        .then (latestVersionedObjectKey) ->
           if latestVersionedObjectKey?
             share(latestVersionedObjectKey, uuids, isSearchable)
           return
@@ -109,7 +111,7 @@ define 'kryptnostic.sharing-client', [
           .then ->
 
             # transform RSA public key to Base64 seal
-            seals = _.mapValues(uuidsToRsaPublicKeys, (rsaPublicKey) =>
+            seals = _.mapValues(uuidsToRsaPublicKeys, (rsaPublicKey) ->
               if rsaPublicKey
                 rsaCryptoService = new RsaCryptoService({
                   publicKey: rsaPublicKey

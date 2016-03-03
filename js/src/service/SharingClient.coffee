@@ -4,6 +4,7 @@ define 'kryptnostic.sharing-client', [
   'kryptnostic.crypto-service-loader'
   'kryptnostic.crypto-service-marshaller'
   'kryptnostic.key-storage-api'
+  'kryptnostic.kryptnostic-engine'
   'kryptnostic.kryptnostic-engine-provider'
   'kryptnostic.logger'
   'kryptnostic.object-api'
@@ -26,6 +27,7 @@ define 'kryptnostic.sharing-client', [
   # Kryptnostic classes
   CryptoServiceLoader       = require 'kryptnostic.crypto-service-loader'
   CryptoServiceMarshaller   = require 'kryptnostic.crypto-service-marshaller'
+  KryptnosticEngine         = require 'kryptnostic.kryptnostic-engine'
   KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
   RevocationRequest         = require 'kryptnostic.revocation-request'
   RsaCryptoService          = require 'kryptnostic.rsa-crypto-service'
@@ -72,7 +74,7 @@ define 'kryptnostic.sharing-client', [
       return Promise.resolve(objectKeyPromise)
         .then (latestVersionedObjectKey) =>
           if latestVersionedObjectKey?
-            @share(latestVersionedObjectKey, uuids, isSearchable)
+            share(latestVersionedObjectKey, uuids, isSearchable)
           return
 
     #
@@ -85,19 +87,26 @@ define 'kryptnostic.sharing-client', [
     #
     share = (objectKey, uuids, isSearchable) ->
 
-      { engine, objectSearchPair, addObjectSearchPairPromise, sharingRequest } = {}
+      { objectSearchPair, addObjectSearchPairPromise, sharingRequest } = {}
 
-      if isSearchable
-        engine = KryptnosticEngineProvider.getEngine()
-        objectSearchPair = engine.generateObjectSearchPair()
-        addObjectSearchPairPromise = @sharingApi.addObjectSearchPair(objectKey, objectSearchPair)
+      engine = KryptnosticEngineProvider.getEngine()
 
-      Promise.resolve(addObjectSearchPairPromise)
-      .then ->
-        Promise.join(
-          @cryptoServiceLoader.getObjectCryptoServiceV2(objectKey),
-          KeyStorageApi.getRSAPublicKeys(uuids),
-          (objectCryptoService, uuidsToRsaPublicKeys) =>
+      cryptoServiceLoader = new CryptoServiceLoader()
+      cryptoServiceMarshaller = new CryptoServiceMarshaller()
+      sharingApi = new SharingApi()
+
+      Promise.join(
+        sharingApi.getObjectSearchPair(objectKey),
+        cryptoServiceLoader.getObjectCryptoServiceV2(objectKey),
+        KeyStorageApi.getRSAPublicKeys(uuids),
+        (objectSearchPair, objectCryptoService, uuidsToRsaPublicKeys) ->
+
+          if isSearchable and not KryptnosticEngine.isValidObjectSearchPair(objectSearchPair)
+            objectSearchPair = engine.generateObjectSearchPair()
+            addObjectSearchPairPromise = sharingApi.addObjectSearchPair(objectKey, objectSearchPair)
+
+          Promise.resolve(addObjectSearchPairPromise)
+          .then ->
 
             # transform RSA public key to Base64 seal
             seals = _.mapValues(uuidsToRsaPublicKeys, (rsaPublicKey) =>
@@ -105,13 +114,13 @@ define 'kryptnostic.sharing-client', [
                 rsaCryptoService = new RsaCryptoService({
                   publicKey: rsaPublicKey
                 })
-                marshalledCrypto = @cryptoServiceMarshaller.marshall(objectCryptoService)
+                marshalledCrypto = cryptoServiceMarshaller.marshall(objectCryptoService)
                 seal             = rsaCryptoService.encrypt(marshalledCrypto)
                 sealBase64       = btoa(seal)
                 return sealBase64
             )
 
-            if objectSearchPair
+            if KryptnosticEngine.isValidObjectSearchPair(objectSearchPair)
               objectSharePair = engine.calculateObjectSharePairFromObjectSearchPair(objectSearchPair)
               encryptedObjectSharePair = objectCryptoService.encryptUint8Array(objectSharePair)
               sharingRequest = new SharingRequest({
@@ -121,13 +130,13 @@ define 'kryptnostic.sharing-client', [
               })
             else
               sharingRequest = new SharingRequest({
-                id          : versionedObjectKey,
+                id          : objectKey,
                 users       : seals
               })
 
-            @sharingApi.shareObject(sharingRequest)
+            sharingApi.shareObject(sharingRequest)
             return
-        )
+      )
 
     revokeObject: (objectId, uuids) ->
       { revocationRequest } = {}

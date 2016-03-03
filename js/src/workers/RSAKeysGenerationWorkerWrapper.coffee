@@ -24,7 +24,7 @@ define 'kryptnostic.rsa-keys-gen-worker-wrapper', [
     query: ->
 
       if not @webWorker
-        return Promise.resolve()
+        return Promise.reject()
 
       return new Promise (resolve, reject) =>
 
@@ -43,12 +43,11 @@ define 'kryptnostic.rsa-keys-gen-worker-wrapper', [
               privateKey
             })
           else
-            resolve(null)
+            reject()
 
         # execute query
         super({
           operation: 'getKeys'
         })
-        return
 
   return RSAKeysGenerationWorkerWrapper

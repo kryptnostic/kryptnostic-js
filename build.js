@@ -8,7 +8,7 @@
     wrap                   : false,
     findNestedDependencies : true,
     paths                  : {
-      'axios'         : '../../bower_components/axios/dist/axios.amd.min',
+      'axios'         : '../../bower_components/axios/dist/axios.min',
       'bluebird'      : '../../bower_components/bluebird/js/browser/bluebird',
       'forge'         : '../../bower_components/forge/js/forge.min',
       'function-name' : '../../bower_components/function-name/index',

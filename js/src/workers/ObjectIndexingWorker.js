@@ -5,6 +5,7 @@ importScripts('KryptnosticClient.js', 'kryptnostic.js');
 
 // libraries
 var Cache = require('jscache');
+var Promise = require('bluebird');
 
 // APIs
 var ObjectApi = require('kryptnostic.object-api');
@@ -12,7 +13,7 @@ var SearchApi = require('kryptnostic.search-api');
 var SharingApi = require('kryptnostic.sharing-api');
 
 // kryptnostic
-var Config = require('kryptnostic.configuration');
+var ConfigService = require('kryptnostic.configuration');
 var CredentialProviderLoader = require('kryptnostic.credential-provider-loader');
 var CryptoServiceLoader = require('kryptnostic.crypto-service-loader');
 var KryptnosticEngineProvider = require('kryptnostic.kryptnostic-engine-provider');
@@ -25,15 +26,13 @@ var HashFunction = require('kryptnostic.hash-function');
 var KeypairSerializer = require('kryptnostic.keypair-serializer');
 var Validators = require('kryptnostic.validators');
 
-// constants
-// defined in com.kryptnostic.v2.storage.types.TypeUUIDs
-var INDEX_SEGMENT_TYPE_ID = '00000000-0000-0000-0000-000000000007';
-
 /*
  * Web Workers do not have access to window.localStorage, so we define our own
  */
 window.localStorage = new Cache()
 LocalStorageCredentialProvider.delegate = window.localStorage;
+
+var objectIndexingService = new ObjectIndexingService();
 
 onmessage = function(options) {
 
@@ -50,6 +49,9 @@ onmessage = function(options) {
 
 function init(queryParams) {
 
+  // Web Workers need to inherit KJS config
+  ConfigService.set(queryParams.config)
+
   /*
    * TODO:
    * we have to serialize the RSA key pair before passing it to the Web Worker, but we have to deserialize before
@@ -58,7 +60,7 @@ function init(queryParams) {
    */
   var rsaKeyPair = KeypairSerializer.hydrate(queryParams.rsaKeyPair)
 
-  var credentialProvider = CredentialProviderLoader.load(Config.get('credentialProvider'))
+  var credentialProvider = CredentialProviderLoader.load(ConfigService.get('credentialProvider'))
   credentialProvider.store({
     principal: queryParams.principal,
     credential: queryParams.credential,
@@ -73,4 +75,10 @@ function init(queryParams) {
 
 function index(queryParams) {
 
+  var data = queryParams.data;
+  var objectKey = queryParams.objectKey;
+  var parentObjectKey = queryParams.parentObjectKey;
+
+  // TODO - indexing queue
+  objectIndexingService.index(data, objectKey, parentObjectKey);
 };

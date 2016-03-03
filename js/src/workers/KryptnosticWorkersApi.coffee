@@ -65,10 +65,10 @@ define 'kryptnostic.kryptnostic-workers-api', [
 
       if not window.Worker
         logger.info('Web Workers API is not supported')
-        return
+        return Promise.reject()
 
       if not WORKERS[workerKey]
-        return
+        return Promise.reject()
 
       kWorker = WORKERS[workerKey]
       return kWorker.query(workerQuery)

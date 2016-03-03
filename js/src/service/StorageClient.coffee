@@ -231,7 +231,7 @@ define 'kryptnostic.storage-client', [
               @objectApi.setObjectFromBlockCiphertext(objectKeyForNewlyCreatedObject, blockCiphertext)
             .then =>
               if storageRequest.isSearchable
-                @objectIndexingService.index(
+                @objectIndexingService.enqueueIndexTask(
                   storageRequest.body,
                   objectKeyForNewlyCreatedObject,
                   parentObjectKey
@@ -280,12 +280,11 @@ define 'kryptnostic.storage-client', [
           @objectApi.setObjectFromBlockCiphertext(versionedObjectKey, blockCiphertext)
 
           # ToDo: index updated object for it to be searchable
-          @objectIndexingService.index(
+          @objectIndexingService.enqueueIndexTask(
             content,
             objectKeyForNewlyCreatedObject,
             parentObjectKey
           )
-        .then ->
           return
 
   return StorageClient

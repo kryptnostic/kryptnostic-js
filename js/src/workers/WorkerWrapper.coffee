@@ -40,8 +40,10 @@ define 'kryptnostic.worker-wrapper', [
     query: (workerQuery) ->
 
       if not @webWorker or not workerQuery
-        return Promise.resolve()
+        return Promise.reject()
 
       @webWorker.postMessage(workerQuery)
+
+      return Promise.resolve()
 
   return WorkerWrapper

@@ -1,5 +1,6 @@
 define 'kryptnostic.object-indexing-worker-wrapper', [
   'require',
+  'kryptnostic.configuration',
   'kryptnostic.credential-loader',
   'kryptnostic.keypair-serializer',
   'kryptnostic.kryptnostic-engine-provider',
@@ -8,6 +9,7 @@ define 'kryptnostic.object-indexing-worker-wrapper', [
 ], (require) ->
 
   # kryptnostic
+  ConfigService = require 'kryptnostic.configuration'
   CredentialLoader = require 'kryptnostic.credential-loader'
   KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
   WorkerWrapper = require 'kryptnostic.worker-wrapper'
@@ -26,6 +28,7 @@ define 'kryptnostic.object-indexing-worker-wrapper', [
     start: ->
 
       workerParams = {}
+      workerParams.config = ConfigService.config
 
       credentialLoader = new CredentialLoader()
       credentials = credentialLoader.getCredentials()
@@ -44,18 +47,11 @@ define 'kryptnostic.object-indexing-worker-wrapper', [
 
     query: (workerQuery) ->
 
-      throw new Error('ObjectIndexingWorker:query() - not yet implemented!')
+      if not @webWorker
+        # TODO - reject with an Error instance
+        return Promise.reject()
 
-      # if not @webWorker
-      #   return Promise.resolve()
-      #
-      # return new Promise (resolve, reject) =>
-      #
-      #   @webWorker.onmessage = (messageEvent) ->
-      #     resolve()
-      #
-      #   # execute query
-      #   super(workerQuery)
-      #   return
+      # execute query
+      super(workerQuery)
 
   return ObjectIndexingWorkerWrapper

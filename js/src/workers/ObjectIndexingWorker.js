@@ -5,26 +5,16 @@ importScripts('KryptnosticClient.js', 'kryptnostic.js');
 
 // libraries
 var Cache = require('jscache');
-var Promise = require('bluebird');
-
-// APIs
-var ObjectApi = require('kryptnostic.object-api');
-var SearchApi = require('kryptnostic.search-api');
-var SharingApi = require('kryptnostic.sharing-api');
 
 // kryptnostic
 var ConfigService = require('kryptnostic.configuration');
 var CredentialProviderLoader = require('kryptnostic.credential-provider-loader');
-var CryptoServiceLoader = require('kryptnostic.crypto-service-loader');
 var KryptnosticEngineProvider = require('kryptnostic.kryptnostic-engine-provider');
 var LocalStorageCredentialProvider = require('kryptnostic.credential-provider.local-storage');
 var ObjectIndexingService = require('kryptnostic.indexing.object-indexing-service');
 
 // utils
-var BinaryUtils = require('kryptnostic.binary-utils');
-var HashFunction = require('kryptnostic.hash-function');
 var KeypairSerializer = require('kryptnostic.keypair-serializer');
-var Validators = require('kryptnostic.validators');
 
 /*
  * Web Workers do not have access to window.localStorage, so we define our own

@@ -2,6 +2,8 @@ sudo: required
 language: node_js
 node_js:
   - "0.10"
+cache:
+  - apt
 before_script:
   - npm install -g bower
   - bower install

@@ -3,6 +3,7 @@ define 'kryptnostic.sharing-api', [
   'axios'
   'bluebird'
   'kryptnostic.binary-utils'
+  'kryptnostic.caching-service'
   'kryptnostic.configuration'
   'kryptnostic.logger'
   'kryptnostic.requests'
@@ -15,6 +16,7 @@ define 'kryptnostic.sharing-api', [
 
   # utils
   BinaryUtils = require 'kryptnostic.binary-utils'
+  Cache       = require 'kryptnostic.caching-service'
   Config      = require 'kryptnostic.configuration'
   Logger      = require 'kryptnostic.logger'
   Requests    = require 'kryptnostic.requests'
@@ -87,9 +89,17 @@ define 'kryptnostic.sharing-api', [
       if not validateVersionedObjectKey(versionedObjectKey)
         return Promise.resolve(null)
 
+      cachedObjectSearchPair = Cache.get(Cache.OBJECT_SEARCH_PAIRS, versionedObjectKey.objectId)
+      if cachedObjectSearchPair
+        return Promise.resolve(cachedObjectSearchPair)
+
       Requests.getAsUint8FromUrl(
         getObjectSearchPairUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
       )
+      .then (objectSearchPair) ->
+        if objectSearchPair?
+          Cache.store(Cache.OBJECT_SEARCH_PAIRS, versionedObjectKey.objectId, objectSearchPair)
+        return objectSearchPair
 
     addObjectSearchPair: (versionedObjectKey, objectSearchPair) ->
 

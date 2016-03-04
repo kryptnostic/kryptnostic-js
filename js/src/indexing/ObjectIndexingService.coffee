@@ -65,22 +65,31 @@ define 'kryptnostic.indexing.object-indexing-service', [
       if not validateVersionedObjectKey(parentObjectKey)
         parentObjectKey = objectKey
 
-      KryptnosticWorkersApi.queryWebWorker(
-        KryptnosticWorkersApi.OBJ_INDEXING_WORKER,
-        {
-          operation: 'index',
-          params: {
-            data,
-            objectKey,
-            parentObjectKey
-          }
-        }
+      Promise.resolve(
+        @sharingApi.getObjectSearchPair(parentObjectKey)
       )
-      .catch (e) =>
-        @index(data, objectKey, parentObjectKey)
+      .then (objectSearchPair) =>
+        if not KryptnosticEngine.isValidObjectSearchPair(objectSearchPair)
+          engine = KryptnosticEngineProvider.getEngine()
+          objectSearchPair = engine.generateObjectSearchPair()
+          @sharingApi.addObjectSearchPair(parentObjectKey, objectSearchPair)
+      .then =>
+        KryptnosticWorkersApi.queryWebWorker(
+          KryptnosticWorkersApi.OBJ_INDEXING_WORKER,
+          {
+            operation: 'index',
+            params: {
+              data,
+              objectKey,
+              parentObjectKey
+            }
+          }
+        )
+        .catch (e) =>
+          @index(data, objectKey, parentObjectKey)
 
-      # we don't need to wait for the query Promise to resolve since we want to index in the background
-      return
+        # we don't need to wait for the query Promise to resolve since we want to index in the background
+        return
 
     index: (data, objectKey, parentObjectKey) ->
 

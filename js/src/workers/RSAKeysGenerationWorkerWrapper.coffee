@@ -31,7 +31,7 @@ define 'kryptnostic.rsa-keys-gen-worker-wrapper', [
       return new Promise (resolve, reject) =>
 
         # handle query response
-        @webWorker.onmessage = (messageEvent) ->
+        @webWorker.onmessage = (messageEvent) =>
 
           rsaKeyPair = null
           if messageEvent and messageEvent.data
@@ -47,7 +47,7 @@ define 'kryptnostic.rsa-keys-gen-worker-wrapper', [
           else
             reject()
 
-          super.terminate()
+          @terminate()
 
         # execute query
         super({

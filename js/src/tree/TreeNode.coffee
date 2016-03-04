@@ -25,9 +25,6 @@ define 'kryptnostic.tree-node', [
     unless _.isObject(children)
       errMsg = 'illegal TreeNode - children must be an Object'
       throw new Error(errMsg)
-    # children.forEach (child) ->
-    #   unless child.constructor.name is 'TreeNode'
-    #     throw new Error 'child must be a tree node'
 
   class TreeNode
 

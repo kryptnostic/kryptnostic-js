@@ -19,7 +19,7 @@ define 'kryptnostic.crypto-service-marshaller', [
     marshall: (cryptoService) ->
       { key, cypher } = cryptoService
 
-      if cryptoService.constructor.name isnt 'AesCryptoService'
+      if cryptoService._CLASS_NAME isnt AesCryptoService._CLASS_NAME
         throw new Error 'serialization only implemented for AesCryptoService'
       if !key
         throw new Error 'key cannot be blank'

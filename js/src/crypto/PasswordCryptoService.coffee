@@ -16,11 +16,13 @@ define 'kryptnostic.password-crypto-service', [
     md = Forge.sha1.create()
     return Forge.pkcs5.pbkdf2(password, salt, iterations, keySize, md)
 
-  #
-  # Crypto service which encrypts and decrypts using the user's password.
-  # Author: nickdhewitt, rbuckheit
-  #
   class PasswordCryptoService
+
+    #
+    # HACK!!! - uglfifying changes constructor.name, so we can't rely on the name property
+    #
+    _CLASS_NAME: 'PasswordCryptoService'
+    @_CLASS_NAME: 'PasswordCryptoService'
 
     @BLOCK_CIPHER_ITERATIONS : 128
 

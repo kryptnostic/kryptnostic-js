@@ -103,41 +103,34 @@ define 'kryptnostic.sharing-client', [
         KeyStorageApi.getRSAPublicKeys(uuids),
         (objectSearchPair, objectCryptoService, uuidsToRsaPublicKeys) ->
 
-          if isSearchable and not KryptnosticEngine.isValidObjectSearchPair(objectSearchPair)
-            objectSearchPair = engine.generateObjectSearchPair()
-            addObjectSearchPairPromise = sharingApi.addObjectSearchPair(objectKey, objectSearchPair)
-
-          Promise.resolve(addObjectSearchPairPromise)
-          .then ->
-
-            # transform RSA public key to Base64 seal
-            seals = _.mapValues(uuidsToRsaPublicKeys, (rsaPublicKey) ->
-              if rsaPublicKey
-                rsaCryptoService = new RsaCryptoService({
-                  publicKey: rsaPublicKey
-                })
-                marshalledCrypto = cryptoServiceMarshaller.marshall(objectCryptoService)
-                seal             = rsaCryptoService.encrypt(marshalledCrypto)
-                sealBase64       = btoa(seal)
-                return sealBase64
-            )
-
-            if KryptnosticEngine.isValidObjectSearchPair(objectSearchPair)
-              objectSharePair = engine.calculateObjectSharePairFromObjectSearchPair(objectSearchPair)
-              encryptedObjectSharePair = objectCryptoService.encryptUint8Array(objectSharePair)
-              sharingRequest = new SharingRequest({
-                id          : objectKey,
-                users       : seals,
-                sharingPair : encryptedObjectSharePair
+          # transform RSA public key to Base64 seal
+          seals = _.mapValues(uuidsToRsaPublicKeys, (rsaPublicKey) ->
+            if rsaPublicKey
+              rsaCryptoService = new RsaCryptoService({
+                publicKey: rsaPublicKey
               })
-            else
-              sharingRequest = new SharingRequest({
-                id          : objectKey,
-                users       : seals
-              })
+              marshalledCrypto = cryptoServiceMarshaller.marshall(objectCryptoService)
+              seal             = rsaCryptoService.encrypt(marshalledCrypto)
+              sealBase64       = btoa(seal)
+              return sealBase64
+          )
 
-            sharingApi.shareObject(sharingRequest)
-            return
+          if KryptnosticEngine.isValidObjectSearchPair(objectSearchPair)
+            objectSharePair = engine.calculateObjectSharePairFromObjectSearchPair(objectSearchPair)
+            encryptedObjectSharePair = objectCryptoService.encryptUint8Array(objectSharePair)
+            sharingRequest = new SharingRequest({
+              id          : objectKey,
+              users       : seals,
+              sharingPair : encryptedObjectSharePair
+            })
+          else
+            sharingRequest = new SharingRequest({
+              id          : objectKey,
+              users       : seals
+            })
+
+          sharingApi.shareObject(sharingRequest)
+          return
       )
 
     revokeObject: (objectId, uuids) ->

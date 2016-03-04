@@ -29,7 +29,7 @@ define 'kryptnostic.fhe-keys-gen-worker-wrapper', [
       return new Promise (resolve, reject) =>
 
         # handle query response
-        @webWorker.onmessage = (messageEvent) ->
+        @webWorker.onmessage = (messageEvent) =>
 
           fheKeys = null
           if messageEvent and messageEvent.data
@@ -40,7 +40,7 @@ define 'kryptnostic.fhe-keys-gen-worker-wrapper', [
           else
             reject()
 
-          super.terminate()
+          @terminate()
 
         # execute query
         super({

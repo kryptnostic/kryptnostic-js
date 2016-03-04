@@ -28,6 +28,12 @@ define 'kryptnostic.aes-crypto-service', [
 
   class AesCryptoService
 
+    #
+    # HACK!!! - uglfifying changes constructor.name, so we can't rely on the name property
+    #
+    _CLASS_NAME: 'AesCryptoService'
+    @_CLASS_NAME: 'AesCryptoService'
+
     @BLOCK_CIPHER_KEY_SIZE : 16
 
     constructor: (@cypher, @key) ->

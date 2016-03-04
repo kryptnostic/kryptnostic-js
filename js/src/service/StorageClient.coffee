@@ -236,6 +236,7 @@ define 'kryptnostic.storage-client', [
                   objectKeyForNewlyCreatedObject,
                   parentObjectKey
                 )
+            .then ->
               storageResponse.objectKey = objectKeyForNewlyCreatedObject
               return storageResponse
       )

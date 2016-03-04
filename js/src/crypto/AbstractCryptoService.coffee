@@ -7,10 +7,13 @@ define 'kryptnostic.abstract-crypto-service', [
   Forge           = require 'forge'
   CryptoAlgorithm = require 'kryptnostic.crypto-algorithm'
 
-  #
-  # Author: nickdhewitt, rbuckheit
-  #
   class AbstractCryptoService
+
+    #
+    # HACK!!! - uglfifying changes constructor.name, so we can't rely on the name property
+    #
+    _CLASS_NAME: 'AbstractCryptoService'
+    @_CLASS_NAME: 'AbstractCryptoService'
 
     constructor: ({ @algorithm, @mode }) ->
       unless @algorithm is CryptoAlgorithm.AES and @mode is 'CTR'

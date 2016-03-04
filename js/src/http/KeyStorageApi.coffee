@@ -5,6 +5,7 @@ define 'kryptnostic.key-storage-api', [
   'axios',
   'bluebird',
   'forge',
+  'kryptnostic.binary-utils',
   'kryptnostic.block-ciphertext',
   'kryptnostic.caching-service',
   'kryptnostic.configuration',
@@ -15,18 +16,19 @@ define 'kryptnostic.key-storage-api', [
 
   # libraries
   axios   = require 'axios'
-  Forge   = require 'forge'
+  forge   = require 'forge'
   Promise = require 'bluebird'
 
   # Kryptnostic
-  BlockCiphertext   = require 'kryptnostic.block-ciphertext'
+  BlockCiphertext = require 'kryptnostic.block-ciphertext'
 
   # utils
-  Cache      = require 'kryptnostic.caching-service'
-  Config     = require 'kryptnostic.configuration'
-  Logger     = require 'kryptnostic.logger'
-  Requests   = require 'kryptnostic.requests'
-  Validators = require 'kryptnostic.validators'
+  BinaryUtils = require 'kryptnostic.binary-utils'
+  Cache       = require 'kryptnostic.caching-service'
+  Config      = require 'kryptnostic.configuration'
+  Logger      = require 'kryptnostic.logger'
+  Requests    = require 'kryptnostic.requests'
+  Validators  = require 'kryptnostic.validators'
 
   # constants
   DEFAULT_HEADERS = { 'Content-Type' : 'application/json' }
@@ -254,9 +256,9 @@ define 'kryptnostic.key-storage-api', [
             uuidToRsaPublicKeyMap = _.mapValues(uuidToPublicKeyMap, (encodedPublicKey) ->
               try
                 publicKey       = atob(encodedPublicKey)
-                publicKeyBuffer = Forge.util.createBuffer(publicKey, 'raw')
-                publicKeyAsn1   = Forge.asn1.fromDer(publicKeyBuffer)
-                rsaPublicKey    = Forge.pki.publicKeyFromAsn1(publicKeyAsn1)
+                publicKeyBuffer = forge.util.createBuffer(publicKey, 'raw')
+                publicKeyAsn1   = forge.asn1.fromDer(publicKeyBuffer)
+                rsaPublicKey    = forge.pki.publicKeyFromAsn1(publicKeyAsn1)
                 return rsaPublicKey
               catch e
                 return null
@@ -268,17 +270,27 @@ define 'kryptnostic.key-storage-api', [
           return null
 
     @getRSAPublicKey: (userId) ->
-      throw new Error('KeyStorageApi:getRSAPublicKey() - not yet implemented!')
+
+      if not validateUuid(userId)
+        return Promise.resolve(null)
+
+      Requests.getAsUint8FromUrl(
+        getRSAPublicKeyUrl(userId)
+      )
 
     @setRSAPublicKey: (publicKey) ->
-      # ToDo - validate publicKey is Uint8Array
-      encodedPublicKey = btoa(publicKey)
+
+      if not _.isString(publicKey) or _.isEmpty(publicKey)
+        return Promise.resolve()
+
+      publicKeyAsUint8 = BinaryUtils.stringToUint8(publicKey)
+
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
             method  : 'POST',
             url     : setRSAPublicKeyUrl(),
-            data    : publicKey,
+            data    : publicKeyAsUint8,
             headers : DEFAULT_HEADERS
           })
         )

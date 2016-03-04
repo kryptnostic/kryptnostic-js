@@ -185,7 +185,7 @@ define 'kryptnostic.storage-client', [
           )
           return childObjects
 
-    storeObject: (storageRequest, objectSearchPair) ->
+    storeObject: (storageRequest) ->
 
       storageRequest.validate()
       storageResponse = {}
@@ -231,18 +231,13 @@ define 'kryptnostic.storage-client', [
               @objectApi.setObjectFromBlockCiphertext(objectKeyForNewlyCreatedObject, blockCiphertext)
             .then =>
               if storageRequest.isSearchable
-                # ToDo: PLATFORM-61 - search and indexing migration to backend v2
-                return @objectIndexingService.index(
+                @objectIndexingService.enqueueIndexTask(
                   storageRequest.body,
                   objectKeyForNewlyCreatedObject,
-                  parentObjectKey,
-                  objectSearchPair
+                  parentObjectKey
                 )
-              else
-                return objectSearchPair
-            .then (objectSearchPair) ->
+            .then ->
               storageResponse.objectKey = objectKeyForNewlyCreatedObject
-              storageResponse.objectSearchPair = objectSearchPair
               return storageResponse
       )
 
@@ -285,15 +280,12 @@ define 'kryptnostic.storage-client', [
           blockCiphertext = encrypted.body.data[0].block
           @objectApi.setObjectFromBlockCiphertext(versionedObjectKey, blockCiphertext)
 
-          # ToDo: PLATFORM-61 - search and indexing migration to backend v2
           # ToDo: index updated object for it to be searchable
-          @objectIndexingService.index(
+          @objectIndexingService.enqueueIndexTask(
             content,
             objectKeyForNewlyCreatedObject,
-            parentObjectKey,
-            objectSearchPair
+            parentObjectKey
           )
-        .then ->
           return
 
   return StorageClient

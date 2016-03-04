@@ -8,10 +8,13 @@ define 'kryptnostic.rsa-crypto-service', [
   _      = require 'lodash'
   Forge  = require 'forge'
 
-  #
-  # Author: nickdhewitt, rbuckheit
-  #
   class RsaCryptoService
+
+    #
+    # HACK!!! - uglfifying changes constructor.name, so we can't rely on the name property
+    #
+    _CLASS_NAME: 'RsaCryptoService'
+    @_CLASS_NAME: 'RsaCryptoService'
 
     # construct from forge public and private key objects
     constructor: ({ @privateKey, @publicKey }) ->

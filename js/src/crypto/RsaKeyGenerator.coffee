@@ -121,21 +121,30 @@ define 'kryptnostic.rsa-key-generator', [
     # returns a Promise object with private and public keys in Forge buffer objects
     generateKeypair: ->
 
-      Promise.resolve()
-      .then ->
-        KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER)
-      .then (rsaKeyPair) =>
-
+      #
+      # we treat Web Cryto in a browser that supports msCrypto (such as IE) as a special case. since msCrypto is not
+      # available in a Web Worker, we don't want to geneate RSA keys in a Web Worker if msCrypto is available since
+      # running msCrypto on the main thread will likely be faster than running Forge in a Web Worker.
+      #
+      if window.msCrypto?.subtle?
         KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER)
+        return @ieWebCryptoGenerate()
 
-        if rsaKeyPair?
-          return rsaKeyPair
+      else
+        Promise.resolve()
+        .then ->
+          KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER)
+          .catch (e) -> return null
+        .then (rsaKeyPair) =>
 
-        if window.crypto?.subtle?
-          return @webCryptoGenerate()
-        else if window.msCrypto?.subtle?
-          return @ieWebCryptoGenerate()
-        else
-          return @forgeGenerate()
+          KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER)
+
+          if rsaKeyPair?
+            return rsaKeyPair
+
+          if window.crypto?.subtle?
+            return @webCryptoGenerate()
+          else
+            return @forgeGenerate()
 
   return RsaKeyGenerator

@@ -108,7 +108,7 @@ define 'kryptnostic.crypto-service-loader', [
         return objectCryptoService
 
     setObjectCryptoServiceV2: (versionedObjectKey, objectCryptoService, masterAesCryptoService) ->
-      unless objectCryptoService.constructor.name is 'AesCryptoService'
+      unless objectCryptoService._CLASS_NAME is AesCryptoService._CLASS_NAME
         throw new Error('support is only implemented for AesCryptoService')
 
       marshalledCryptoService = @marshaller.marshall(objectCryptoService)

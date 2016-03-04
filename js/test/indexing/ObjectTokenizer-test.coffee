@@ -50,7 +50,7 @@ define [
 
   describe 'ObjectTokenizer', ->
 
-    describe 'constructor', ->
+    describe 'construct', ->
 
       it 'should default to the correct bucket size', ->
 

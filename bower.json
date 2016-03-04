@@ -1,6 +1,6 @@
 {
   "name"       : "kryptnostic-js",
-  "version"    : "0.7.0",
+  "version"    : "0.8.0",
   "main"       : "dist/kryptnostic.js",
   "homepage"   : "https://github.com/kryptnostic/kryptnostic-js",
   "license"    : "Apache-2.0",
@@ -40,7 +40,8 @@
   "dependencies" : {
   },
   "devDependencies" : {
-    "axios"              : "0.5.4",
+    "axios"              : "0.9.1",
+    "base64"             : "0.3.0",
     "bluebird"           : "2.9.34",
     "forge"              : "0.6.31",
     "function-name"      : "https://raw.githubusercontent.com/kryptnostic/Function.name/6705081d59ccfc59999450694a273a15f91d09ff/Function.name.js",

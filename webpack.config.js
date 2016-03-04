@@ -9,7 +9,7 @@ var DIST_PATH = path.resolve(__dirname, 'dist');
 var BOWER_PATH = path.resolve(__dirname, 'bower_components');
 var NODE_PATH = path.resolve(__dirname, 'node_modules');
 
-var AXIOS_PATH = path.resolve('bower_components/axios/dist/axios.amd.js');
+var AXIOS_PATH = path.resolve('bower_components/axios/dist/axios.js');
 var FORGE_PATH = path.resolve('bower_components/forge/js/forge.bundle.js');
 
 module.exports = {
@@ -76,7 +76,6 @@ module.exports = {
       'kryptnostic.kryptnostic-engine-provider'         : 'engine/KryptnosticEngineProvider.coffee',
       'kryptnostic.search-key-generator'                : 'engine/SearchKeyGenerator.coffee',
       'kryptnostic.key-storage-api'                     : 'http/KeyStorageApi.coffee',
-      'kryptnostic.metadata-api'                        : 'http/MetadataApi.coffee',
       'kryptnostic.object-api'                          : 'http/ObjectApi.coffee',
       'kryptnostic.object-authorization-api'            : 'http/ObjectAuthorizationApi.coffee',
       'kryptnostic.object-listing-api'                  : 'http/ObjectListingApi.coffee',
@@ -95,7 +94,6 @@ module.exports = {
       'kryptnostic.object-metadata'                     : 'model/object/ObjectMetadata.coffee',
       'kryptnostic.object-metadata-tree'                : 'model/object/ObjectMetadataTree.coffee',
       'kryptnostic.create-object-request'               : 'model/request/CreateObjectRequest.coffee',
-      'kryptnostic.metadata-request'                    : 'model/request/MetadataRequest.coffee',
       'kryptnostic.object-tree-load-request'            : 'model/request/ObjectTreeLoadRequest.coffee',
       'kryptnostic.revocation-request'                  : 'model/request/RevocationRequest.coffee',
       'kryptnostic.search-request'                      : 'model/request/SearchRequest.coffee',
@@ -106,7 +104,6 @@ module.exports = {
       'kryptnostic.schema.create-object-request'        : 'model/schema/create-object-request.coffee',
       'kryptnostic.schema.encryptable'                  : 'model/schema/encryptable.coffee',
       'kryptnostic.schema.encrypted-block'              : 'model/schema/encrypted-block.coffee',
-      'kryptnostic.schema.indexed-metadata'             : 'model/schema/indexed-metadata.coffee',
       'kryptnostic.schema.inverted-index-segment'       : 'model/schema/inverted-index-segment.coffee',
       'kryptnostic.schema.kryptnostic-object'           : 'model/schema/kryptnostic-object.coffee',
       'kryptnostic.schema.object-metadata'              : 'model/schema/object-metadata.coffee',
@@ -119,7 +116,6 @@ module.exports = {
       'kryptnostic.schema.storage-request'              : 'model/schema/storage-request.coffee',
       'kryptnostic.schema.user-registration-request'    : 'model/schema/user-registration-request.coffee',
       'kryptnostic.schema.validator'                    : 'model/schema/validator.coffee',
-      'kryptnostic.indexed-metadata'                    : 'model/search/IndexedMetadata.coffee',
       'kryptnostic.random-index-generator'              : 'search/RandomIndexGenerator.coffee',
       'kryptnostic.search-client'                       : 'search/SearchClient.coffee',
       'kryptnostic.block-encryption-service'            : 'service/BlockEncryptionService.coffee',
@@ -139,7 +135,12 @@ module.exports = {
       'kryptnostic.object-utils'                        : 'util/object-utils.coffee',
       'kryptnostic.requests'                            : 'util/requests.coffee',
       'kryptnostic.validators'                          : 'util/validators.coffee',
-      'kryptnostic.kryptnostic-workers-api'             : 'workers/KryptnosticWorkersApi.coffee'
+      'kryptnostic.kryptnostic-workers-api'             : 'workers/KryptnosticWorkersApi.coffee',
+      'kryptnostic.fhe-keys-gen-worker-wrapper'         : 'workers/FHEKeysGenerationWorkerWrapper.coffee',
+      'kryptnostic.kryptnostic-workers-api'             : 'workers/KryptnosticWorkersApi.coffee',
+      'kryptnostic.object-indexing-worker-wrapper'      : 'workers/ObjectIndexingWorkerWrapper.coffee',
+      'kryptnostic.rsa-keys-gen-worker-wrapper'         : 'workers/RSAKeysGenerationWorkerWrapper.coffee',
+      'kryptnostic.worker-wrapper'                      : 'workers/WorkerWrapper.coffee'
     }
   }
 }

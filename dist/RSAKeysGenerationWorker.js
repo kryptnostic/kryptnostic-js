@@ -15,14 +15,14 @@ var rsaKeyPair = {
  */
 onmessage = function(options) {
 
-  if (options.data && options.data.query) {
-    if (rsaKeyPair.publicKey === null || rsaKeyPair.privateKey === null) {
-      postMessage(null);
+  workerQuery = options.data;
+
+  if (workerQuery) {
+    if (workerQuery.operation === 'init') {
+      generateKeys();
+    } else if (workerQuery.operation === 'getKeys') {
+      getKeys();
     }
-    postMessage(rsaKeyPair);
-    self.close();
-  } else {
-    generateKeys();
   }
 };
 
@@ -30,29 +30,15 @@ function generateKeys() {
 
   if (self.crypto && self.crypto.subtle) {
     webCryptoGenerate();
-  } else {
-    forgeGenerate();
   }
 };
 
-function forgeGenerate() {
+function getKeys() {
 
-  Promise.resolve()
-    .then(function() {
-
-      forgeKeys       = forge.rsa.generateKeyPair(RSA_KEY_SIZE, EXPONENT_NUM);
-      privateKeyAsn1  = forge.pki.privateKeyToAsn1(forgeKeys.privateKey);
-      publicKeyAsn1   = forge.pki.publicKeyToAsn1(forgeKeys.publicKey);
-      privateKeyAsDer = forge.asn1.toDer(privateKeyAsn1);
-      publicKeyAsDer  = forge.asn1.toDer(publicKeyAsn1);
-
-      rsaKeyPair.publicKey = publicKeyAsDer.data;
-      rsaKeyPair.privateKey = privateKeyAsDer.data;
-      return;
-    })
-    .catch(function(e) {
-      self.close();
-    });
+  if (rsaKeyPair === null || rsaKeyPair.publicKey === null || rsaKeyPair.privateKey === null) {
+    postMessage(null);
+  }
+  postMessage(rsaKeyPair);
 };
 
 function webCryptoGenerate() {
@@ -90,6 +76,6 @@ function webCryptoGenerate() {
       });
     })
     .catch(function(e) {
-      self.close();
+      rsaKeyPair = null;
     });
 };

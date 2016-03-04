@@ -1,13 +1,70 @@
-/* axios v0.5.4 | (c) 2015 by Matt Zabriskie */
-define("axios",[],function(){return function(t){function e(r){if(n[r])return n[r].exports;var o=n[r]={exports:{},id:r,loaded:!1};return t[r].call(o.exports,o,o.exports,e),o.loaded=!0,o.exports}var n={};return e.m=t,e.c=n,e.p="",e(0)}([function(t,e,n){t.exports=n(1)},function(t,e,n){"use strict";var r=n(2),o=n(3),i=n(4),s=n(5),u=n(6);!function(){var t=n(9);t&&"function"==typeof t.polyfill&&t.polyfill()}();var a=t.exports=function c(t){t=o.merge({method:"get",headers:{},transformRequest:r.transformRequest,transformResponse:r.transformResponse},t),t.withCredentials=t.withCredentials||r.withCredentials;var e=[s,void 0],n=Promise.resolve(t);for(c.interceptors.request.forEach(function(t){e.unshift(t.fulfilled,t.rejected)}),c.interceptors.response.forEach(function(t){e.push(t.fulfilled,t.rejected)});e.length;)n=n.then(e.shift(),e.shift());return n.success=function(t){return i("success","then","https://github.com/mzabriskie/axios/blob/master/README.md#response-api"),n.then(function(e){t(e.data,e.status,e.headers,e.config)}),n},n.error=function(t){return i("error","catch","https://github.com/mzabriskie/axios/blob/master/README.md#response-api"),n.then(null,function(e){t(e.data,e.status,e.headers,e.config)}),n},n};a.defaults=r,a.all=function(t){return Promise.all(t)},a.spread=n(7),a.interceptors={request:new u,response:new u},function(){function t(){o.forEach(arguments,function(t){a[t]=function(e,n){return a(o.merge(n||{},{method:t,url:e}))}})}function e(){o.forEach(arguments,function(t){a[t]=function(e,n,r){return a(o.merge(r||{},{method:t,url:e,data:n}))}})}t("delete","get","head"),e("post","put","patch")}()},function(t,e,n){"use strict";var r=n(3),o=/^\)\]\}',?\n/,i={"Content-Type":"application/x-www-form-urlencoded"};t.exports={transformRequest:[function(t,e){return r.isFormData(t)?t:r.isArrayBuffer(t)?t:r.isArrayBufferView(t)?t.buffer:!r.isObject(t)||r.isFile(t)||r.isBlob(t)?t:(!r.isUndefined(e)&&r.isUndefined(e["Content-Type"])&&(e["Content-Type"]="application/json;charset=utf-8"),JSON.stringify(t))}],transformResponse:[function(t){if("string"==typeof t){t=t.replace(o,"");try{t=JSON.parse(t)}catch(e){}}return t}],headers:{common:{Accept:"application/json, text/plain, */*"},patch:r.merge(i),post:r.merge(i),put:r.merge(i)},xsrfCookieName:"XSRF-TOKEN",xsrfHeaderName:"X-XSRF-TOKEN"}},function(t){"use strict";function e(t){return"[object Array]"===m.call(t)}function n(t){return"[object ArrayBuffer]"===m.call(t)}function r(t){return"[object FormData]"===m.call(t)}function o(t){return"undefined"!=typeof ArrayBuffer&&ArrayBuffer.isView?ArrayBuffer.isView(t):t&&t.buffer&&t.buffer instanceof ArrayBuffer}function i(t){return"string"==typeof t}function s(t){return"number"==typeof t}function u(t){return"undefined"==typeof t}function a(t){return null!==t&&"object"==typeof t}function c(t){return"[object Date]"===m.call(t)}function f(t){return"[object File]"===m.call(t)}function l(t){return"[object Blob]"===m.call(t)}function p(t){return t.replace(/^\s*/,"").replace(/\s*$/,"")}function h(t,n){if(null!==t&&"undefined"!=typeof t){var r=e(t)||"object"==typeof t&&!isNaN(t.length);if("object"==typeof t||r||(t=[t]),r)for(var o=0,i=t.length;i>o;o++)n.call(null,t[o],o,t);else for(var s in t)t.hasOwnProperty(s)&&n.call(null,t[s],s,t)}}function d(){var t={};return h(arguments,function(e){h(e,function(e,n){t[n]=e})}),t}var m=Object.prototype.toString;t.exports={isArray:e,isArrayBuffer:n,isFormData:r,isArrayBufferView:o,isString:i,isNumber:s,isObject:a,isUndefined:u,isDate:c,isFile:f,isBlob:l,forEach:h,merge:d,trim:p}},function(t){"use strict";t.exports=function(t,e,n){try{console.warn("DEPRECATED method `"+t+"`."+(e?" Use `"+e+"` instead.":"")+" This method will be removed in a future release."),n&&console.warn("For more information about usage see "+n)}catch(r){}}},function(t,e,n){(function(e){"use strict";t.exports=function(t){return new Promise(function(r,o){try{"undefined"!=typeof window?n(8)(r,o,t):"undefined"!=typeof e&&n(8)(r,o,t)}catch(i){o(i)}})}}).call(e,n(10))},function(t,e,n){"use strict";function r(){this.handlers=[]}var o=n(3);r.prototype.use=function(t,e){return this.handlers.push({fulfilled:t,rejected:e}),this.handlers.length-1},r.prototype.eject=function(t){this.handlers[t]&&(this.handlers[t]=null)},r.prototype.forEach=function(t){o.forEach(this.handlers,function(e){null!==e&&t(e)})},t.exports=r},function(t){"use strict";t.exports=function(t){return function(e){t.apply(null,e)}}},function(t,e,n){"use strict";var r=n(2),o=n(3),i=n(11),s=n(12),u=n(13),a=n(14),c=n(15);t.exports=function(t,e,n){var f=a(n.data,n.headers,n.transformRequest),l=o.merge(r.headers.common,r.headers[n.method]||{},n.headers||{});o.isFormData(f)&&delete l["Content-Type"];var p=new(XMLHttpRequest||ActiveXObject)("Microsoft.XMLHTTP");p.open(n.method.toUpperCase(),i(n.url,n.params),!0),p.onreadystatechange=function(){if(p&&4===p.readyState){var r=u(p.getAllResponseHeaders()),o=-1!==["text",""].indexOf(n.responseType||"")?p.responseText:p.response,i={data:a(o,r,n.transformResponse),status:p.status,statusText:p.statusText,headers:r,config:n};(p.status>=200&&p.status<300?t:e)(i),p=null}};var h=c(n.url)?s.read(n.xsrfCookieName||r.xsrfCookieName):void 0;if(h&&(l[n.xsrfHeaderName||r.xsrfHeaderName]=h),o.forEach(l,function(t,e){f||"content-type"!==e.toLowerCase()?p.setRequestHeader(e,t):delete l[e]}),n.withCredentials&&(p.withCredentials=!0),n.responseType)try{p.responseType=n.responseType}catch(d){if("json"!==p.responseType)throw d}o.isArrayBuffer(f)&&(f=new DataView(f)),p.send(f)}},function(t,e,n){var r;(function(t,o,i){/*!
-	 * @overview es6-promise - a tiny implementation of Promises/A+.
-	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
-	 * @license   Licensed under MIT license
-	 *            See https://raw.githubusercontent.com/jakearchibald/es6-promise/master/LICENSE
-	 * @version   2.0.1
-	 */
-(function(){"use strict";function s(t){return"function"==typeof t||"object"==typeof t&&null!==t}function u(t){return"function"==typeof t}function a(t){return"object"==typeof t&&null!==t}function c(){}function f(){return function(){t.nextTick(d)}}function l(){var t=0,e=new X(d),n=document.createTextNode("");return e.observe(n,{characterData:!0}),function(){n.data=t=++t%2}}function p(){var t=new MessageChannel;return t.port1.onmessage=d,function(){t.port2.postMessage(0)}}function h(){return function(){setTimeout(d,1)}}function d(){for(var t=0;H>t;t+=2){var e=J[t],n=J[t+1];e(n),J[t]=void 0,J[t+1]=void 0}H=0}function m(){}function y(){return new TypeError("You cannot resolve a promise with itself")}function v(){return new TypeError("A promises callback cannot return that same promise.")}function w(t){try{return t.then}catch(e){return z.error=e,z}}function g(t,e,n,r){try{t.call(e,n,r)}catch(o){return o}}function b(t,e,n){L(function(t){var r=!1,o=g(n,e,function(n){r||(r=!0,e!==n?A(t,n):j(t,n))},function(e){r||(r=!0,T(t,e))},"Settle: "+(t._label||" unknown promise"));!r&&o&&(r=!0,T(t,o))},t)}function _(t,e){e._state===Y?j(t,e._result):t._state===$?T(t,e._result):C(e,void 0,function(e){A(t,e)},function(e){T(t,e)})}function x(t,e){if(e.constructor===t.constructor)_(t,e);else{var n=w(e);n===z?T(t,z.error):void 0===n?j(t,e):u(n)?b(t,e,n):j(t,e)}}function A(t,e){t===e?T(t,y()):s(e)?x(t,e):j(t,e)}function E(t){t._onerror&&t._onerror(t._result),R(t)}function j(t,e){t._state===K&&(t._result=e,t._state=Y,0===t._subscribers.length||L(R,t))}function T(t,e){t._state===K&&(t._state=$,t._result=e,L(E,t))}function C(t,e,n,r){var o=t._subscribers,i=o.length;t._onerror=null,o[i]=e,o[i+Y]=n,o[i+$]=r,0===i&&t._state&&L(R,t)}function R(t){var e=t._subscribers,n=t._state;if(0!==e.length){for(var r,o,i=t._result,s=0;s<e.length;s+=3)r=e[s],o=e[s+n],r?P(n,r,o,i):o(i);t._subscribers.length=0}}function S(){this.error=null}function O(t,e){try{return t(e)}catch(n){return G.error=n,G}}function P(t,e,n,r){var o,i,s,a,c=u(n);if(c){if(o=O(n,r),o===G?(a=!0,i=o.error,o=null):s=!0,e===o)return void T(e,v())}else o=r,s=!0;e._state!==K||(c&&s?A(e,o):a?T(e,i):t===Y?j(e,o):t===$&&T(e,o))}function k(t,e){try{e(function(e){A(t,e)},function(e){T(t,e)})}catch(n){T(t,n)}}function D(t,e,n,r){this._instanceConstructor=t,this.promise=new t(m,r),this._abortOnReject=n,this._validateInput(e)?(this._input=e,this.length=e.length,this._remaining=e.length,this._init(),0===this.length?j(this.promise,this._result):(this.length=this.length||0,this._enumerate(),0===this._remaining&&j(this.promise,this._result))):T(this.promise,this._validationError())}function N(){throw new TypeError("You must pass a resolver function as the first argument to the promise constructor")}function B(){throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.")}function M(t){this._id=ne++,this._state=void 0,this._result=void 0,this._subscribers=[],m!==t&&(u(t)||N(),this instanceof M||B(),k(this,t))}var F;F=Array.isArray?Array.isArray:function(t){return"[object Array]"===Object.prototype.toString.call(t)};var U,q=F,H=(Date.now||function(){return(new Date).getTime()},Object.create||function(t){if(arguments.length>1)throw new Error("Second argument not supported");if("object"!=typeof t)throw new TypeError("Argument must be an object");return c.prototype=t,new c},0),L=function(t,e){J[H]=t,J[H+1]=e,H+=2,2===H&&U()},I="undefined"!=typeof window?window:{},X=I.MutationObserver||I.WebKitMutationObserver,V="undefined"!=typeof Uint8ClampedArray&&"undefined"!=typeof importScripts&&"undefined"!=typeof MessageChannel,J=new Array(1e3);U="undefined"!=typeof t&&"[object process]"==={}.toString.call(t)?f():X?l():V?p():h();var K=void 0,Y=1,$=2,z=new S,G=new S;D.prototype._validateInput=function(t){return q(t)},D.prototype._validationError=function(){return new Error("Array Methods must be provided an Array")},D.prototype._init=function(){this._result=new Array(this.length)};var W=D;D.prototype._enumerate=function(){for(var t=this.length,e=this.promise,n=this._input,r=0;e._state===K&&t>r;r++)this._eachEntry(n[r],r)},D.prototype._eachEntry=function(t,e){var n=this._instanceConstructor;a(t)?t.constructor===n&&t._state!==K?(t._onerror=null,this._settledAt(t._state,e,t._result)):this._willSettleAt(n.resolve(t),e):(this._remaining--,this._result[e]=this._makeResult(Y,e,t))},D.prototype._settledAt=function(t,e,n){var r=this.promise;r._state===K&&(this._remaining--,this._abortOnReject&&t===$?T(r,n):this._result[e]=this._makeResult(t,e,n)),0===this._remaining&&j(r,this._result)},D.prototype._makeResult=function(t,e,n){return n},D.prototype._willSettleAt=function(t,e){var n=this;C(t,void 0,function(t){n._settledAt(Y,e,t)},function(t){n._settledAt($,e,t)})};var Q=function(t,e){return new W(this,t,!0,e).promise},Z=function(t,e){function n(t){A(i,t)}function r(t){T(i,t)}var o=this,i=new o(m,e);if(!q(t))return T(i,new TypeError("You must pass an array to race.")),i;for(var s=t.length,u=0;i._state===K&&s>u;u++)C(o.resolve(t[u]),void 0,n,r);return i},te=function(t,e){var n=this;if(t&&"object"==typeof t&&t.constructor===n)return t;var r=new n(m,e);return A(r,t),r},ee=function(t,e){var n=this,r=new n(m,e);return T(r,t),r},ne=0,re=M;M.all=Q,M.race=Z,M.resolve=te,M.reject=ee,M.prototype={constructor:M,then:function(t,e){var n=this,r=n._state;if(r===Y&&!t||r===$&&!e)return this;var o=new this.constructor(m),i=n._result;if(r){var s=arguments[r-1];L(function(){P(r,o,s,i)})}else C(n,o,t,e);return o},"catch":function(t){return this.then(null,t)}};var oe=function(){var t;t="undefined"!=typeof o?o:"undefined"!=typeof window&&window.document?window:self;var e="Promise"in t&&"resolve"in t.Promise&&"reject"in t.Promise&&"all"in t.Promise&&"race"in t.Promise&&function(){var e;return new t.Promise(function(t){e=t}),u(e)}();e||(t.Promise=re)},ie={Promise:re,polyfill:oe};n(16).amd?(r=function(){return ie}.call(e,n,e,i),!(void 0!==r&&(i.exports=r))):"undefined"!=typeof i&&i.exports?i.exports=ie:"undefined"!=typeof this&&(this.ES6Promise=ie)}).call(this)}).call(e,n(10),function(){return this}(),n(17)(t))},function(t){function e(){if(!i){i=!0;for(var t,e=o.length;e;){t=o,o=[];for(var n=-1;++n<e;)t[n]();e=o.length}i=!1}}function n(){}var r=t.exports={},o=[],i=!1;r.nextTick=function(t){o.push(t),i||setTimeout(e,0)},r.title="browser",r.browser=!0,r.env={},r.argv=[],r.version="",r.versions={},r.on=n,r.addListener=n,r.once=n,r.off=n,r.removeListener=n,r.removeAllListeners=n,r.emit=n,r.binding=function(){throw new Error("process.binding is not supported")},r.cwd=function(){return"/"},r.chdir=function(){throw new Error("process.chdir is not supported")},r.umask=function(){return 0}},function(t,e,n){"use strict";function r(t){return encodeURIComponent(t).replace(/%40/gi,"@").replace(/%3A/gi,":").replace(/%24/g,"$").replace(/%2C/gi,",").replace(/%20/g,"+")}var o=n(3);t.exports=function(t,e){if(!e)return t;var n=[];return o.forEach(e,function(t,e){null!==t&&"undefined"!=typeof t&&(o.isArray(t)||(t=[t]),o.forEach(t,function(t){o.isDate(t)?t=t.toISOString():o.isObject(t)&&(t=JSON.stringify(t)),n.push(r(e)+"="+r(t))}))}),n.length>0&&(t+=(-1===t.indexOf("?")?"?":"&")+n.join("&")),t}},function(t,e,n){"use strict";var r=n(3);t.exports={write:function(t,e,n,o,i,s){var u=[];u.push(t+"="+encodeURIComponent(e)),r.isNumber(n)&&u.push("expires="+new Date(n).toGMTString()),r.isString(o)&&u.push("path="+o),r.isString(i)&&u.push("domain="+i),s===!0&&u.push("secure"),document.cookie=u.join("; ")},read:function(t){var e=document.cookie.match(new RegExp("(^|;\\s*)("+t+")=([^;]*)"));return e?decodeURIComponent(e[3]):null},remove:function(t){this.write(t,"",Date.now()-864e5)}}},function(t,e,n){"use strict";var r=n(3);t.exports=function(t){var e,n,o,i={};return t?(r.forEach(t.split("\n"),function(t){o=t.indexOf(":"),e=r.trim(t.substr(0,o)).toLowerCase(),n=r.trim(t.substr(o+1)),e&&(i[e]=i[e]?i[e]+", "+n:n)}),i):i}},function(t,e,n){"use strict";var r=n(3);t.exports=function(t,e,n){return r.forEach(n,function(n){t=n(t,e)}),t}},function(t,e,n){"use strict";function r(t){var e=t;return s&&(u.setAttribute("href",e),e=u.href),u.setAttribute("href",e),{href:u.href,protocol:u.protocol?u.protocol.replace(/:$/,""):"",host:u.host,search:u.search?u.search.replace(/^\?/,""):"",hash:u.hash?u.hash.replace(/^#/,""):"",hostname:u.hostname,port:u.port,pathname:"/"===u.pathname.charAt(0)?u.pathname:"/"+u.pathname}}var o,i=n(3),s=/(msie|trident)/i.test(navigator.userAgent),u=document.createElement("a");o=r(window.location.href),t.exports=function(t){var e=i.isString(t)?r(t):t;return e.protocol===o.protocol&&e.host===o.host}},function(t){t.exports=function(){throw new Error("define cannot be used indirect")}},function(t){t.exports=function(t){return t.webpackPolyfill||(t.deprecate=function(){},t.paths=[],t.children=[],t.webpackPolyfill=1),t}}])});
-//# sourceMappingURL=axios.amd.min.map;
+/* axios v0.9.1 | (c) 2016 by Matt Zabriskie */
+!function(e,t){"object"==typeof exports&&"object"==typeof module?module.exports=t():"function"==typeof define&&define.amd?define('axios',[],t):"object"==typeof exports?exports.axios=t():e.axios=t()}(this,function(){return function(e){function t(n){if(r[n])return r[n].exports;var o=r[n]={exports:{},id:n,loaded:!1};return e[n].call(o.exports,o,o.exports,t),o.loaded=!0,o.exports}var r={};return t.m=e,t.c=r,t.p="",t(0)}([function(e,t,r){e.exports=r(1)},function(e,t,r){"use strict";function n(e){this.defaults=i.merge({},e),this.interceptors={request:new u,response:new u}}var o=r(2),i=r(3),s=r(4),u=r(12),a=r(13),c=r(14),f=r(15),p=r(8);n.prototype.request=function(e){"string"==typeof e&&(e=i.merge({url:arguments[0]},arguments[1])),e=i.merge(o,this.defaults,{method:"get"},e),e.baseURL&&!a(e.url)&&(e.url=c(e.baseURL,e.url)),e.withCredentials=e.withCredentials||this.defaults.withCredentials,e.data=p(e.data,e.headers,e.transformRequest),e.headers=i.merge(e.headers.common||{},e.headers[e.method]||{},e.headers||{}),i.forEach(["delete","get","head","post","put","patch","common"],function(t){delete e.headers[t]});var t=[s,void 0],r=Promise.resolve(e);for(this.interceptors.request.forEach(function(e){t.unshift(e.fulfilled,e.rejected)}),this.interceptors.response.forEach(function(e){t.push(e.fulfilled,e.rejected)});t.length;)r=r.then(t.shift(),t.shift());return r};var l=new n(o),d=e.exports=f(n.prototype.request,l);d.create=function(e){return new n(e)},d.defaults=l.defaults,d.all=function(e){return Promise.all(e)},d.spread=r(16),d.interceptors=l.interceptors,i.forEach(["delete","get","head"],function(e){n.prototype[e]=function(t,r){return this.request(i.merge(r||{},{method:e,url:t}))},d[e]=f(n.prototype[e],l)}),i.forEach(["post","put","patch"],function(e){n.prototype[e]=function(t,r,n){return this.request(i.merge(n||{},{method:e,url:t,data:r}))},d[e]=f(n.prototype[e],l)})},function(e,t,r){"use strict";var n=r(3),o=/^\)\]\}',?\n/,i={"Content-Type":"application/x-www-form-urlencoded"};e.exports={transformRequest:[function(e,t){return n.isFormData(e)?e:n.isArrayBuffer(e)?e:n.isArrayBufferView(e)?e.buffer:!n.isObject(e)||n.isFile(e)||n.isBlob(e)?e:(n.isUndefined(t)||(n.forEach(t,function(e,r){"content-type"===r.toLowerCase()&&(t["Content-Type"]=e)}),n.isUndefined(t["Content-Type"])&&(t["Content-Type"]="application/json;charset=utf-8")),JSON.stringify(e))}],transformResponse:[function(e){if("string"==typeof e){e=e.replace(o,"");try{e=JSON.parse(e)}catch(t){}}return e}],headers:{common:{Accept:"application/json, text/plain, */*"},patch:n.merge(i),post:n.merge(i),put:n.merge(i)},timeout:0,xsrfCookieName:"XSRF-TOKEN",xsrfHeaderName:"X-XSRF-TOKEN"}},function(e,t){"use strict";function r(e){return"[object Array]"===w.call(e)}function n(e){return"[object ArrayBuffer]"===w.call(e)}function o(e){return"[object FormData]"===w.call(e)}function i(e){var t;return t="undefined"!=typeof ArrayBuffer&&ArrayBuffer.isView?ArrayBuffer.isView(e):e&&e.buffer&&e.buffer instanceof ArrayBuffer}function s(e){return"string"==typeof e}function u(e){return"number"==typeof e}function a(e){return"undefined"==typeof e}function c(e){return null!==e&&"object"==typeof e}function f(e){return"[object Date]"===w.call(e)}function p(e){return"[object File]"===w.call(e)}function l(e){return"[object Blob]"===w.call(e)}function d(e){return e.replace(/^\s*/,"").replace(/\s*$/,"")}function h(){return"undefined"!=typeof window&&"undefined"!=typeof document&&"function"==typeof document.createElement}function m(e,t){if(null!==e&&"undefined"!=typeof e)if("object"==typeof e||r(e)||(e=[e]),r(e))for(var n=0,o=e.length;o>n;n++)t.call(null,e[n],n,e);else for(var i in e)e.hasOwnProperty(i)&&t.call(null,e[i],i,e)}function y(){function e(e,r){"object"==typeof t[r]&&"object"==typeof e?t[r]=y(t[r],e):t[r]=e}for(var t={},r=0,n=arguments.length;n>r;r++)m(arguments[r],e);return t}var w=Object.prototype.toString;e.exports={isArray:r,isArrayBuffer:n,isFormData:o,isArrayBufferView:i,isString:s,isNumber:u,isObject:c,isUndefined:a,isDate:f,isFile:p,isBlob:l,isStandardBrowserEnv:h,forEach:m,merge:y,trim:d}},function(e,t,r){"use strict";e.exports=function(e){return new Promise(function(t,n){try{var o;"function"==typeof e.adapter?o=e.adapter:"undefined"!=typeof XMLHttpRequest?o=r(5):"undefined"!=typeof process&&(o=r(5)),"function"==typeof o&&o(t,n,e)}catch(i){n(i)}})}},function(e,t,r){"use strict";var n=r(3),o=r(6),i=r(7),s=r(8),u=r(9),a=window.btoa||r(10);e.exports=function(e,t,c){var f=c.data,p=c.headers;n.isFormData(f)&&delete p["Content-Type"];var l=new XMLHttpRequest;if(!window.XDomainRequest||"withCredentials"in l||u(c.url)||(l=new window.XDomainRequest),c.auth){var d=c.auth.username||"",h=c.auth.password||"";p.Authorization="Basic "+a(d+":"+h)}if(l.open(c.method.toUpperCase(),o(c.url,c.params,c.paramsSerializer),!0),l.timeout=c.timeout,l.onload=function(){if(l){var r="getAllResponseHeaders"in l?i(l.getAllResponseHeaders()):null,n=-1!==["text",""].indexOf(c.responseType||"")?l.responseText:l.response,o={data:s(n,r,c.transformResponse),status:1223===l.status?204:l.status,statusText:1223===l.status?"No Content":l.statusText,headers:r,config:c};(o.status>=200&&o.status<300||!("status"in l)&&o.responseText?e:t)(o),l=null}},l.onerror=function(){t(new Error("Network Error")),l=null},n.isStandardBrowserEnv()){var m=r(11),y=c.withCredentials||u(c.url)?m.read(c.xsrfCookieName):void 0;y&&(p[c.xsrfHeaderName]=y)}if("setRequestHeader"in l&&n.forEach(p,function(e,t){"undefined"==typeof f&&"content-type"===t.toLowerCase()?delete p[t]:l.setRequestHeader(t,e)}),c.withCredentials&&(l.withCredentials=!0),c.responseType)try{l.responseType=c.responseType}catch(w){if("json"!==l.responseType)throw w}n.isArrayBuffer(f)&&(f=new DataView(f)),l.send(f)}},function(e,t,r){"use strict";function n(e){return encodeURIComponent(e).replace(/%40/gi,"@").replace(/%3A/gi,":").replace(/%24/g,"$").replace(/%2C/gi,",").replace(/%20/g,"+").replace(/%5B/gi,"[").replace(/%5D/gi,"]")}var o=r(3);e.exports=function(e,t,r){if(!t)return e;var i;if(r)i=r(t);else{var s=[];o.forEach(t,function(e,t){null!==e&&"undefined"!=typeof e&&(o.isArray(e)&&(t+="[]"),o.isArray(e)||(e=[e]),o.forEach(e,function(e){o.isDate(e)?e=e.toISOString():o.isObject(e)&&(e=JSON.stringify(e)),s.push(n(t)+"="+n(e))}))}),i=s.join("&")}return i&&(e+=(-1===e.indexOf("?")?"?":"&")+i),e}},function(e,t,r){"use strict";var n=r(3);e.exports=function(e){var t,r,o,i={};return e?(n.forEach(e.split("\n"),function(e){o=e.indexOf(":"),t=n.trim(e.substr(0,o)).toLowerCase(),r=n.trim(e.substr(o+1)),t&&(i[t]=i[t]?i[t]+", "+r:r)}),i):i}},function(e,t,r){"use strict";var n=r(3);e.exports=function(e,t,r){return n.forEach(r,function(r){e=r(e,t)}),e}},function(e,t,r){"use strict";var n=r(3);e.exports=n.isStandardBrowserEnv()?function(){function e(e){var t=e;return r&&(o.setAttribute("href",t),t=o.href),o.setAttribute("href",t),{href:o.href,protocol:o.protocol?o.protocol.replace(/:$/,""):"",host:o.host,search:o.search?o.search.replace(/^\?/,""):"",hash:o.hash?o.hash.replace(/^#/,""):"",hostname:o.hostname,port:o.port,pathname:"/"===o.pathname.charAt(0)?o.pathname:"/"+o.pathname}}var t,r=/(msie|trident)/i.test(navigator.userAgent),o=document.createElement("a");return t=e(window.location.href),function(r){var o=n.isString(r)?e(r):r;return o.protocol===t.protocol&&o.host===t.host}}():function(){return function(){return!0}}()},function(e,t){"use strict";function r(e){this.message=e}function n(e){for(var t,n,i=String(e),s="",u=0,a=o;i.charAt(0|u)||(a="=",u%1);s+=a.charAt(63&t>>8-u%1*8)){if(n=i.charCodeAt(u+=.75),n>255)throw new r("INVALID_CHARACTER_ERR: DOM Exception 5");t=t<<8|n}return s}var o="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";r.prototype=new Error,r.prototype.code=5,r.prototype.name="InvalidCharacterError",e.exports=n},function(e,t,r){"use strict";var n=r(3);e.exports=n.isStandardBrowserEnv()?function(){return{write:function(e,t,r,o,i,s){var u=[];u.push(e+"="+encodeURIComponent(t)),n.isNumber(r)&&u.push("expires="+new Date(r).toGMTString()),n.isString(o)&&u.push("path="+o),n.isString(i)&&u.push("domain="+i),s===!0&&u.push("secure"),document.cookie=u.join("; ")},read:function(e){var t=document.cookie.match(new RegExp("(^|;\\s*)("+e+")=([^;]*)"));return t?decodeURIComponent(t[3]):null},remove:function(e){this.write(e,"",Date.now()-864e5)}}}():function(){return{write:function(){},read:function(){return null},remove:function(){}}}()},function(e,t,r){"use strict";function n(){this.handlers=[]}var o=r(3);n.prototype.use=function(e,t){return this.handlers.push({fulfilled:e,rejected:t}),this.handlers.length-1},n.prototype.eject=function(e){this.handlers[e]&&(this.handlers[e]=null)},n.prototype.forEach=function(e){o.forEach(this.handlers,function(t){null!==t&&e(t)})},e.exports=n},function(e,t){"use strict";e.exports=function(e){return/^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(e)}},function(e,t){"use strict";e.exports=function(e,t){return e.replace(/\/+$/,"")+"/"+t.replace(/^\/+/,"")}},function(e,t){"use strict";e.exports=function(e,t){return function(){for(var r=new Array(arguments.length),n=0;n<r.length;n++)r[n]=arguments[n];return e.apply(t,r)}}},function(e,t){"use strict";e.exports=function(e){return function(t){return e.apply(null,t)}}}])});
+//# sourceMappingURL=axios.min.map;
+;(function () {
+
+  var object = typeof exports != 'undefined' ? exports : this; // #8: web workers
+  var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+
+  function InvalidCharacterError(message) {
+    this.message = message;
+  }
+  InvalidCharacterError.prototype = new Error;
+  InvalidCharacterError.prototype.name = 'InvalidCharacterError';
+
+  // encoder
+  // [https://gist.github.com/999166] by [https://github.com/nignag]
+  object.btoa || (
+  object.btoa = function (input) {
+    var str = String(input);
+    for (
+      // initialize result and counter
+      var block, charCode, idx = 0, map = chars, output = '';
+      // if the next str index does not exist:
+      //   change the mapping table to "="
+      //   check if d has no fractional digits
+      str.charAt(idx | 0) || (map = '=', idx % 1);
+      // "8 - idx % 1 * 8" generates the sequence 2, 4, 6, 8
+      output += map.charAt(63 & block >> 8 - idx % 1 * 8)
+    ) {
+      charCode = str.charCodeAt(idx += 3/4);
+      if (charCode > 0xFF) {
+        throw new InvalidCharacterError("'btoa' failed: The string to be encoded contains characters outside of the Latin1 range.");
+      }
+      block = block << 8 | charCode;
+    }
+    return output;
+  });
+
+  // decoder
+  // [https://gist.github.com/1020396] by [https://github.com/atk]
+  object.atob || (
+  object.atob = function (input) {
+    var str = String(input).replace(/=+$/, '');
+    if (str.length % 4 == 1) {
+      throw new InvalidCharacterError("'atob' failed: The string to be decoded is not correctly encoded.");
+    }
+    for (
+      // initialize result and counters
+      var bc = 0, bs, buffer, idx = 0, output = '';
+      // get next character
+      buffer = str.charAt(idx++);
+      // character found in table? initialize bit storage and add its ascii value;
+      ~buffer && (bs = bc % 4 ? bs * 64 + buffer : buffer,
+        // and if not first of each 4 characters,
+        // convert the first 8 bits to one ascii character
+        bc++ % 4) ? output += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0
+    ) {
+      // try to find character in table (0-63, not found => -1)
+      buffer = chars.indexOf(buffer);
+    }
+    return output;
+  });
+
+}());
+
+define("base64", function(){});
+
 /* @preserve
  * The MIT License (MIT)
  * 
@@ -25327,14 +25384,12 @@ define("function-name", function(){});
             throw new Error(LOGIN_FAILURE_MESSAGE);
           }
           principal = uuid;
-          logger.info('authenticating', email);
           return credentialService.deriveCredential({
             principal: principal,
             password: password
           }, notifier);
         }).then(function(_credential) {
           credential = _credential;
-          logger.info('derived credential');
           credentialProvider.store({
             principal: principal,
             credential: credential
@@ -25344,6 +25399,8 @@ define("function-name", function(){});
           });
         }).then(function(_keypair) {
           keypair = _keypair;
+          return credentialService.ensureValidRSAPublickKey(principal, keypair);
+        }).then(function() {
           return credentialProvider.store({
             principal: principal,
             credential: credential,
@@ -25368,7 +25425,9 @@ define("function-name", function(){});
         var searchCredentialService;
         searchCredentialService = new SearchCredentialService();
         return Promise.resolve().then(function() {
-          return KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER);
+          return KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER)["catch"](function(e) {
+            return null;
+          });
         }).then(function(fheKeys) {
           KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER);
           if (!_.isEmpty(fheKeys)) {
@@ -25385,7 +25444,8 @@ define("function-name", function(){});
             fhePrivateKey: fhePrivateKey,
             fheSearchPrivateKey: fheSearchPrivateKey
           });
-          return logger.info('KryptnosticEngine initialized');
+          logger.info('KryptnosticEngine initialized');
+          KryptnosticWorkersApi.startWebWorker(KryptnosticWorkersApi.OBJ_INDEXING_WORKER);
         });
       };
 
@@ -25575,9 +25635,7 @@ define("function-name", function(){});
         }).then(function() {
           return KeyStorageApi.setRSAPrivateKey(privateKey);
         }).then(function() {
-          var publicKeyAsUint8;
-          publicKeyAsUint8 = BinaryUtils.stringToUint8(publicKey);
-          return KeyStorageApi.setRSAPublicKey(publicKeyAsUint8);
+          return KeyStorageApi.setRSAPublicKey(publicKey);
         }).then(function() {
           log.info('keypair initialization complete');
           return keypair;
@@ -25613,6 +25671,34 @@ define("function-name", function(){});
             }
           };
         })(this));
+      };
+
+      CredentialService.prototype.ensureValidRSAPublickKey = function(principal, rsaKeyPair) {
+        if (!validateUuid(principal) || _.isEmpty(rsaKeyPair)) {
+          return Promise.resolve();
+        }
+        return Promise.resolve(KeyStorageApi.getRSAPublicKey(principal)).then(function(rsaPublicKeyAsUint8) {
+          var derivedPublicKeyAsPem, e, publicKey, publicKeyAsAsn1, publicKeyAsDer, publicKeyAsPem, publicKeyBuffer, publicKeyBytes;
+          publicKeyAsPem = null;
+          derivedPublicKeyAsPem = Forge.pki.publicKeyToPem(rsaKeyPair.publicKey);
+          if (rsaPublicKeyAsUint8 != null) {
+            try {
+              publicKeyBytes = BinaryUtils.uint8ToString(rsaPublicKeyAsUint8);
+              publicKeyBuffer = Forge.util.createBuffer(publicKeyBytes, 'raw');
+              publicKeyAsAsn1 = Forge.asn1.fromDer(publicKeyBuffer);
+              publicKey = Forge.pki.publicKeyFromAsn1(publicKeyAsAsn1);
+              publicKeyAsPem = Forge.pki.publicKeyToPem(publicKey);
+            } catch (_error) {
+              e = _error;
+              publicKeyAsPem = null;
+            }
+          }
+          if (publicKeyAsPem !== derivedPublicKeyAsPem) {
+            publicKeyAsAsn1 = Forge.pki.publicKeyToAsn1(rsaKeyPair.publicKey);
+            publicKeyAsDer = Forge.asn1.toDer(publicKeyAsAsn1);
+            return Promise.resolve(KeyStorageApi.setRSAPublicKey(publicKeyAsDer.data));
+          }
+        });
       };
 
       return CredentialService;
@@ -26199,6 +26285,10 @@ define("function-name", function(){});
     Forge = require('forge');
     CryptoAlgorithm = require('kryptnostic.crypto-algorithm');
     AbstractCryptoService = (function() {
+      AbstractCryptoService.prototype._CLASS_NAME = 'AbstractCryptoService';
+
+      AbstractCryptoService._CLASS_NAME = 'AbstractCryptoService';
+
       function AbstractCryptoService(_arg) {
         this.algorithm = _arg.algorithm, this.mode = _arg.mode;
         this.decrypt = __bind(this.decrypt, this);
@@ -26265,6 +26355,10 @@ define("function-name", function(){});
     BITS_PER_BYTE = 8;
     logger = Logger.get('AesCryptoService');
     AesCryptoService = (function() {
+      AesCryptoService.prototype._CLASS_NAME = 'AesCryptoService';
+
+      AesCryptoService._CLASS_NAME = 'AesCryptoService';
+
       AesCryptoService.BLOCK_CIPHER_KEY_SIZE = 16;
 
       function AesCryptoService(cypher, key) {
@@ -26459,7 +26553,7 @@ define("function-name", function(){});
 
       CryptoServiceLoader.prototype.setObjectCryptoServiceV2 = function(versionedObjectKey, objectCryptoService, masterAesCryptoService) {
         var encryptedCryptoService, marshalledCryptoService;
-        if (objectCryptoService.constructor.name !== 'AesCryptoService') {
+        if (objectCryptoService._CLASS_NAME !== AesCryptoService._CLASS_NAME) {
           throw new Error('support is only implemented for AesCryptoService');
         }
         marshalledCryptoService = this.marshaller.marshall(objectCryptoService);
@@ -26494,7 +26588,7 @@ define("function-name", function(){});
       CryptoServiceMarshaller.prototype.marshall = function(cryptoService) {
         var cypher, key, rawCryptoService, serializedCryptoService;
         key = cryptoService.key, cypher = cryptoService.cypher;
-        if (cryptoService.constructor.name !== 'AesCryptoService') {
+        if (cryptoService._CLASS_NAME !== AesCryptoService._CLASS_NAME) {
           throw new Error('serialization only implemented for AesCryptoService');
         }
         if (!key) {
@@ -26753,6 +26847,10 @@ define("function-name", function(){});
       return Forge.pkcs5.pbkdf2(password, salt, iterations, keySize, md);
     };
     PasswordCryptoService = (function() {
+      PasswordCryptoService.prototype._CLASS_NAME = 'PasswordCryptoService';
+
+      PasswordCryptoService._CLASS_NAME = 'PasswordCryptoService';
+
       PasswordCryptoService.BLOCK_CIPHER_ITERATIONS = 128;
 
       PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE = 16;
@@ -26811,6 +26909,10 @@ define("function-name", function(){});
     _ = require('lodash');
     Forge = require('forge');
     RsaCryptoService = (function() {
+      RsaCryptoService.prototype._CLASS_NAME = 'RsaCryptoService';
+
+      RsaCryptoService._CLASS_NAME = 'RsaCryptoService';
+
       function RsaCryptoService(_arg) {
         this.privateKey = _arg.privateKey, this.publicKey = _arg.publicKey;
         if (_.isEmpty(this.privateKey) && _.isEmpty(this.publicKey)) {
@@ -26955,24 +27057,30 @@ define("function-name", function(){});
       };
 
       RsaKeyGenerator.prototype.generateKeypair = function() {
-        return Promise.resolve().then(function() {
-          return KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER);
-        }).then((function(_this) {
-          return function(rsaKeyPair) {
-            var _ref, _ref1;
-            KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER);
-            if (rsaKeyPair != null) {
-              return rsaKeyPair;
-            }
-            if (((_ref = window.crypto) != null ? _ref.subtle : void 0) != null) {
-              return _this.webCryptoGenerate();
-            } else if (((_ref1 = window.msCrypto) != null ? _ref1.subtle : void 0) != null) {
-              return _this.ieWebCryptoGenerate();
-            } else {
-              return _this.forgeGenerate();
-            }
-          };
-        })(this));
+        var _ref;
+        if (((_ref = window.msCrypto) != null ? _ref.subtle : void 0) != null) {
+          KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER);
+          return this.ieWebCryptoGenerate();
+        } else {
+          return Promise.resolve().then(function() {
+            return KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER)["catch"](function(e) {
+              return null;
+            });
+          }).then((function(_this) {
+            return function(rsaKeyPair) {
+              var _ref1;
+              KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER);
+              if (rsaKeyPair != null) {
+                return rsaKeyPair;
+              }
+              if (((_ref1 = window.crypto) != null ? _ref1.subtle : void 0) != null) {
+                return _this.webCryptoGenerate();
+              } else {
+                return _this.forgeGenerate();
+              }
+            };
+          })(this));
+        }
       };
 
       return RsaKeyGenerator;
@@ -27047,6 +27155,13 @@ define("function-name", function(){});
 
       KryptnosticEngine.prototype.calculateEncryptedSearchToken = function(tokenAsUint8) {
         return new Uint8Array(this.krypto.calculateEncryptedSearchToken(tokenAsUint8));
+      };
+
+      KryptnosticEngine.prototype.generateObjectSearchPair = function() {
+        var objectIndexPair, objectSearchPair;
+        objectIndexPair = this.generateObjectIndexPair();
+        objectSearchPair = this.calculateObjectSearchPairFromObjectIndexPair(objectIndexPair);
+        return objectSearchPair;
       };
 
       KryptnosticEngine.prototype.calculateObjectSharePairFromObjectSearchPair = function(objectSearchPair) {
@@ -27234,12 +27349,13 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.key-storage-api', ['require', 'axios', 'bluebird', 'forge', 'kryptnostic.block-ciphertext', 'kryptnostic.caching-service', 'kryptnostic.configuration', 'kryptnostic.logger', 'kryptnostic.requests', 'kryptnostic.validators'], function(require) {
-    var BlockCiphertext, Cache, Config, DEFAULT_HEADERS, Forge, KeyStorageApi, Logger, Promise, Requests, Validators, aesCryptoServiceUrl, aesUrl, axios, fheHashUrl, fheKeysUrl, fhePrivateKeyUrl, fheSearchPrivateKeyUrl, getRSAPublicKeyBulkUrl, getRSAPublicKeyUrl, keyStorageApi, logger, rsaKeysUrl, rsaPrivateKeyUrl, saltUrl, setRSAPublicKeyUrl, toCacheId, validateObjectCryptoService, validateUuid, validateUuids, validateVersionedObjectKey;
+  define('kryptnostic.key-storage-api', ['require', 'axios', 'bluebird', 'forge', 'kryptnostic.binary-utils', 'kryptnostic.block-ciphertext', 'kryptnostic.caching-service', 'kryptnostic.configuration', 'kryptnostic.logger', 'kryptnostic.requests', 'kryptnostic.validators'], function(require) {
+    var BinaryUtils, BlockCiphertext, Cache, Config, DEFAULT_HEADERS, KeyStorageApi, Logger, Promise, Requests, Validators, aesCryptoServiceUrl, aesUrl, axios, fheHashUrl, fheKeysUrl, fhePrivateKeyUrl, fheSearchPrivateKeyUrl, forge, getRSAPublicKeyBulkUrl, getRSAPublicKeyUrl, keyStorageApi, logger, rsaKeysUrl, rsaPrivateKeyUrl, saltUrl, setRSAPublicKeyUrl, toCacheId, validateObjectCryptoService, validateUuid, validateUuids, validateVersionedObjectKey;
     axios = require('axios');
-    Forge = require('forge');
+    forge = require('forge');
     Promise = require('bluebird');
     BlockCiphertext = require('kryptnostic.block-ciphertext');
+    BinaryUtils = require('kryptnostic.binary-utils');
     Cache = require('kryptnostic.caching-service');
     Config = require('kryptnostic.configuration');
     Logger = require('kryptnostic.logger');
@@ -27409,9 +27525,9 @@ define("function-name", function(){});
                 var e, publicKey, publicKeyAsn1, publicKeyBuffer, rsaPublicKey;
                 try {
                   publicKey = atob(encodedPublicKey);
-                  publicKeyBuffer = Forge.util.createBuffer(publicKey, 'raw');
-                  publicKeyAsn1 = Forge.asn1.fromDer(publicKeyBuffer);
-                  rsaPublicKey = Forge.pki.publicKeyFromAsn1(publicKeyAsn1);
+                  publicKeyBuffer = forge.util.createBuffer(publicKey, 'raw');
+                  publicKeyAsn1 = forge.asn1.fromDer(publicKeyBuffer);
+                  rsaPublicKey = forge.pki.publicKeyFromAsn1(publicKeyAsn1);
                   return rsaPublicKey;
                 } catch (_error) {
                   e = _error;
@@ -27430,16 +27546,22 @@ define("function-name", function(){});
       };
 
       KeyStorageApi.getRSAPublicKey = function(userId) {
-        throw new Error('KeyStorageApi:getRSAPublicKey() - not yet implemented!');
+        if (!validateUuid(userId)) {
+          return Promise.resolve(null);
+        }
+        return Requests.getAsUint8FromUrl(getRSAPublicKeyUrl(userId));
       };
 
       KeyStorageApi.setRSAPublicKey = function(publicKey) {
-        var encodedPublicKey;
-        encodedPublicKey = btoa(publicKey);
+        var publicKeyAsUint8;
+        if (!_.isString(publicKey) || _.isEmpty(publicKey)) {
+          return Promise.resolve();
+        }
+        publicKeyAsUint8 = BinaryUtils.stringToUint8(publicKey);
         return Promise.resolve(axios(Requests.wrapCredentials({
           method: 'POST',
           url: setRSAPublicKeyUrl(),
-          data: publicKey,
+          data: publicKeyAsUint8,
           headers: DEFAULT_HEADERS
         })));
       };
@@ -27532,57 +27654,8 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.metadata-api', ['require', 'axios', 'bluebird', 'kryptnostic.configuration', 'kryptnostic.requests', 'kryptnostic.logger'], function(require) {
-    var Config, DEFAULT_HEADER, Logger, MetadataApi, Promise, Requests, axios, deleteUrl, logger, metadataUrl;
-    axios = require('axios');
-    Promise = require('bluebird');
-    Config = require('kryptnostic.configuration');
-    Logger = require('kryptnostic.logger');
-    Requests = require('kryptnostic.requests');
-    DEFAULT_HEADER = {
-      'Content-Type': 'application/json'
-    };
-    metadataUrl = function() {
-      return Config.get('servicesUrl') + '/metadata';
-    };
-    deleteUrl = function() {
-      return metadataUrl() + '/delete';
-    };
-    logger = Logger.get('MetadataApi');
-    MetadataApi = (function() {
-      function MetadataApi() {}
-
-      MetadataApi.prototype.uploadMetadata = function(metadataRequest) {
-        return Promise.resolve().then(function() {
-          metadataRequest.validate();
-          return axios(Requests.wrapCredentials({
-            url: metadataUrl(),
-            method: 'POST',
-            headers: DEFAULT_HEADER,
-            data: JSON.stringify(metadataRequest)
-          }));
-        }).then(function(response) {
-          return logger.debug('uploadMetadata()', response.data.data);
-        });
-      };
-
-      MetadataApi.prototype.deleteAll = function(metadataDeleteRequest) {
-        throw new Error('deleteAll() not implemented');
-      };
-
-      return MetadataApi;
-
-    })();
-    return MetadataApi;
-  });
-
-}).call(this);
-
-
-// Generated by CoffeeScript 1.7.1
-(function() {
   define('kryptnostic.object-api', ['require', 'axios', 'bluebird', 'kryptnostic.block-ciphertext', 'kryptnostic.configuration', 'kryptnostic.kryptnostic-object', 'kryptnostic.logger', 'kryptnostic.requests', 'kryptnostic.object-metadata', 'kryptnostic.validators', 'kryptnostic.object-tree-load-request'], function(require) {
-    var BlockCiphertext, Config, DEFAULT_HEADERS, Logger, ObjectApi, ObjectMetadata, ObjectMetadataTree, ObjectTreeLoadRequest, Promise, Requests, Validators, axios, indexSegmentUrl, latestObjectIdUrl, logger, objectIdUrl, objectLevelsUrl, objectMetadataUrl, objectUrl, objectVersionUrl, objectsUrl, validateId, validateUuid, validateUuids;
+    var BlockCiphertext, Config, DEFAULT_HEADERS, Logger, ObjectApi, ObjectMetadata, ObjectMetadataTree, ObjectTreeLoadRequest, Promise, Requests, Validators, axios, indexSegmentUrl, latestObjectIdUrl, logger, objectIdUrl, objectLevelsUrl, objectMetadataUrl, objectUrl, objectVersionUrl, objectsUrl, validateId, validateUuid, validateUuids, validateVersionedObjectKey;
     axios = require('axios');
     BlockCiphertext = require('kryptnostic.block-ciphertext');
     Requests = require('kryptnostic.requests');
@@ -27593,7 +27666,7 @@ define("function-name", function(){});
     ObjectMetadataTree = require('kryptnostic.object-metadata-tree');
     ObjectTreeLoadRequest = require('kryptnostic.object-tree-load-request');
     Validators = require('kryptnostic.validators');
-    validateId = Validators.validateId, validateUuid = Validators.validateUuid, validateUuids = Validators.validateUuids;
+    validateId = Validators.validateId, validateUuid = Validators.validateUuid, validateUuids = Validators.validateUuids, validateVersionedObjectKey = Validators.validateVersionedObjectKey;
     DEFAULT_HEADERS = {
       'Content-Type': 'application/json'
     };
@@ -27668,11 +27741,12 @@ define("function-name", function(){});
           method: 'GET',
           url: latestObjectIdUrl(objectId)
         }))).then(function(axiosResponse) {
-          if ((axiosResponse != null) && (axiosResponse.data != null)) {
-            return axiosResponse.data;
-          } else {
-            return null;
+          if (axiosResponse && axiosResponse.data) {
+            if (validateVersionedObjectKey(axiosResponse.data)) {
+              return axiosResponse.data;
+            }
           }
+          return null;
         });
       };
 
@@ -28039,11 +28113,12 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.sharing-api', ['require', 'axios', 'bluebird', 'kryptnostic.binary-utils', 'kryptnostic.configuration', 'kryptnostic.logger', 'kryptnostic.requests', 'kryptnostic.validators'], function(require) {
-    var BinaryUtils, Config, DEFAULT_HEADERS, Logger, Promise, Requests, SharingApi, Validators, addObjectSearchPairUrl, axios, getObjectSearchPairUrl, incomingSharesUrl, logger, revokeObjectUrl, shareObjectUrl, sharingUrl, validateVersionedObjectKey;
+  define('kryptnostic.sharing-api', ['require', 'axios', 'bluebird', 'kryptnostic.binary-utils', 'kryptnostic.caching-service', 'kryptnostic.configuration', 'kryptnostic.logger', 'kryptnostic.requests', 'kryptnostic.validators'], function(require) {
+    var BinaryUtils, Cache, Config, DEFAULT_HEADERS, Logger, Promise, Requests, SharingApi, Validators, addObjectSearchPairUrl, axios, getObjectSearchPairUrl, incomingSharesUrl, logger, revokeObjectUrl, shareObjectUrl, sharingUrl, validateVersionedObjectKey;
     axios = require('axios');
     Promise = require('bluebird');
     BinaryUtils = require('kryptnostic.binary-utils');
+    Cache = require('kryptnostic.caching-service');
     Config = require('kryptnostic.configuration');
     Logger = require('kryptnostic.logger');
     Requests = require('kryptnostic.requests');
@@ -28108,10 +28183,20 @@ define("function-name", function(){});
       };
 
       SharingApi.prototype.getObjectSearchPair = function(versionedObjectKey) {
+        var cachedObjectSearchPair;
         if (!validateVersionedObjectKey(versionedObjectKey)) {
           return Promise.resolve(null);
         }
-        return Requests.getAsUint8FromUrl(getObjectSearchPairUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion));
+        cachedObjectSearchPair = Cache.get(Cache.OBJECT_SEARCH_PAIRS, versionedObjectKey.objectId);
+        if (cachedObjectSearchPair) {
+          return Promise.resolve(cachedObjectSearchPair);
+        }
+        return Requests.getAsUint8FromUrl(getObjectSearchPairUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)).then(function(objectSearchPair) {
+          if (objectSearchPair != null) {
+            Cache.store(Cache.OBJECT_SEARCH_PAIRS, versionedObjectKey.objectId, objectSearchPair);
+          }
+          return objectSearchPair;
+        });
       };
 
       SharingApi.prototype.addObjectSearchPair = function(versionedObjectKey, objectSearchPair) {
@@ -28369,8 +28454,8 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.indexing.object-indexing-service', ['require', 'bluebird', 'forge', 'kryptnostic.binary-utils', 'kryptnostic.chunking.strategy.json', 'kryptnostic.create-object-request', 'kryptnostic.crypto-service-loader', 'kryptnostic.hash-function', 'kryptnostic.kryptnostic-engine', 'kryptnostic.kryptnostic-engine-provider', 'kryptnostic.kryptnostic-object', 'kryptnostic.object-api', 'kryptnostic.search-api', 'kryptnostic.sharing-api', 'kryptnostic.validators'], function(require) {
-    var BinaryUtils, CreateObjectRequest, CryptoServiceLoader, HashFunction, JsonChunkingStrategy, KryptnosticEngine, KryptnosticEngineProvider, KryptnosticObject, MINIMUM_TOKEN_LENGTH, ObjectApi, ObjectIndexer, ObjectIndexingService, Promise, SearchApi, SharingApi, Validators, forge, validateVersionedObjectKey;
+  define('kryptnostic.indexing.object-indexing-service', ['require', 'bluebird', 'forge', 'kryptnostic.binary-utils', 'kryptnostic.chunking.strategy.json', 'kryptnostic.create-object-request', 'kryptnostic.crypto-service-loader', 'kryptnostic.hash-function', 'kryptnostic.kryptnostic-engine', 'kryptnostic.kryptnostic-engine-provider', 'kryptnostic.kryptnostic-object', 'kryptnostic.kryptnostic-workers-api', 'kryptnostic.object-api', 'kryptnostic.search-api', 'kryptnostic.sharing-api', 'kryptnostic.validators'], function(require) {
+    var BinaryUtils, CreateObjectRequest, CryptoServiceLoader, HashFunction, JsonChunkingStrategy, KryptnosticEngine, KryptnosticEngineProvider, KryptnosticObject, KryptnosticWorkersApi, MINIMUM_TOKEN_LENGTH, ObjectApi, ObjectIndexer, ObjectIndexingService, Promise, SearchApi, SharingApi, Validators, forge, validateVersionedObjectKey;
     Promise = require('bluebird');
     forge = require('forge');
     ObjectApi = require('kryptnostic.object-api');
@@ -28382,6 +28467,7 @@ define("function-name", function(){});
     KryptnosticEngine = require('kryptnostic.kryptnostic-engine');
     KryptnosticEngineProvider = require('kryptnostic.kryptnostic-engine-provider');
     KryptnosticObject = require('kryptnostic.kryptnostic-object');
+    KryptnosticWorkersApi = require('kryptnostic.kryptnostic-workers-api');
     ObjectIndexer = require('kryptnostic.indexing.object-indexer');
     BinaryUtils = require('kryptnostic.binary-utils');
     HashFunction = require('kryptnostic.hash-function');
@@ -28398,7 +28484,39 @@ define("function-name", function(){});
         this.sharingApi = new SharingApi();
       }
 
-      ObjectIndexingService.prototype.index = function(data, objectKey, parentObjectKey, objectSearchPair) {
+      ObjectIndexingService.prototype.enqueueIndexTask = function(data, objectKey, parentObjectKey) {
+        if (!validateVersionedObjectKey(objectKey)) {
+          return;
+        }
+        if (!validateVersionedObjectKey(parentObjectKey)) {
+          parentObjectKey = objectKey;
+        }
+        return Promise.resolve(this.sharingApi.getObjectSearchPair(parentObjectKey)).then((function(_this) {
+          return function(objectSearchPair) {
+            var engine;
+            if (!KryptnosticEngine.isValidObjectSearchPair(objectSearchPair)) {
+              engine = KryptnosticEngineProvider.getEngine();
+              objectSearchPair = engine.generateObjectSearchPair();
+              return _this.sharingApi.addObjectSearchPair(parentObjectKey, objectSearchPair);
+            }
+          };
+        })(this)).then((function(_this) {
+          return function() {
+            KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.OBJ_INDEXING_WORKER, {
+              operation: 'index',
+              params: {
+                data: data,
+                objectKey: objectKey,
+                parentObjectKey: parentObjectKey
+              }
+            })["catch"](function(e) {
+              return _this.index(data, objectKey, parentObjectKey);
+            });
+          };
+        })(this));
+      };
+
+      ObjectIndexingService.prototype.index = function(data, objectKey, parentObjectKey) {
         var invertedIndexSegments;
         if (!validateVersionedObjectKey(objectKey)) {
           return Promise.resolve();
@@ -28408,20 +28526,21 @@ define("function-name", function(){});
         }
         invertedIndexSegments = this.objectIndexer.buildInvertedIndexSegments(data, objectKey, parentObjectKey);
         this.shuffle(invertedIndexSegments);
-        return Promise.props({
+        Promise.props({
+          objectSearchPair: this.sharingApi.getObjectSearchPair(parentObjectKey),
           objectCryptoService: this.cryptoServiceLoader.getObjectCryptoServiceV2(parentObjectKey),
           segmentRangeStartIndex: SearchApi.reserveSegmentRange(parentObjectKey, invertedIndexSegments.length)
         }).then((function(_this) {
           return function(_arg) {
-            var objectCryptoService, objectIndexPair, pairs, segmentRangeStartIndex;
-            objectCryptoService = _arg.objectCryptoService, segmentRangeStartIndex = _arg.segmentRangeStartIndex;
+            var objectCryptoService, objectIndexPair, objectSearchPair, pairs, segmentRangeStartIndex;
+            objectSearchPair = _arg.objectSearchPair, objectCryptoService = _arg.objectCryptoService, segmentRangeStartIndex = _arg.segmentRangeStartIndex;
             if (!objectCryptoService) {
               return;
             }
             pairs = _this.calculateObjectIndexPairAndObjectSearchPair(parentObjectKey, objectSearchPair);
             objectIndexPair = pairs.objectIndexPair;
             objectSearchPair = pairs.objectSearchPair;
-            _.forEach(invertedIndexSegments, function(segment, segmentIndex) {
+            return _.forEach(invertedIndexSegments, function(segment, segmentIndex) {
               var segmentAddressHash;
               segmentAddressHash = _this.computeSegmentAddressHash(segment.token, segmentRangeStartIndex, segmentIndex, objectIndexPair);
               if (segmentAddressHash) {
@@ -28432,7 +28551,6 @@ define("function-name", function(){});
                 });
               }
             });
-            return objectSearchPair;
           };
         })(this));
       };
@@ -28921,45 +29039,6 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.metadata-request', ['require'], function(require) {
-    var MetadataRequest, validateMetadata;
-    validateMetadata = function(metadata) {
-      var metadatum, _i, _len, _results;
-      if (!_.isArray(metadata)) {
-        throw new Error('must construct with a list of metadata');
-      }
-      _results = [];
-      for (_i = 0, _len = metadata.length; _i < _len; _i++) {
-        metadatum = metadata[_i];
-        if (metadatum.constructor.name !== 'IndexedMetadata') {
-          throw new Error('metadata list member must be indexed metadata');
-        } else {
-          _results.push(void 0);
-        }
-      }
-      return _results;
-    };
-    MetadataRequest = (function() {
-      function MetadataRequest(_arg) {
-        this.metadata = _arg.metadata;
-        this.validate();
-      }
-
-      MetadataRequest.prototype.validate = function() {
-        return validateMetadata(this.metadata);
-      };
-
-      return MetadataRequest;
-
-    })();
-    return MetadataRequest;
-  });
-
-}).call(this);
-
-
-// Generated by CoffeeScript 1.7.1
-(function() {
   define('kryptnostic.object-tree-load-request', ['require', 'kryptnostic.schema.create-object-request', 'kryptnostic.schema.validator'], function(require) {
     var DEFAULT_OPTS, ObjectTreeLoadRequest, SCHEMA, validator, _;
     _ = require('lodash');
@@ -29271,36 +29350,6 @@ define("function-name", function(){});
           type: 'number',
           required: true
         }
-      }
-    };
-    return SCHEMA;
-  });
-
-}).call(this);
-
-
-// Generated by CoffeeScript 1.7.1
-(function() {
-  define('kryptnostic.schema.indexed-metadata', ['require', 'kryptnostic.schema.encryptable'], function(require) {
-    var ENCRYPTABLE_SCHEMA, SCHEMA;
-    ENCRYPTABLE_SCHEMA = require('kryptnostic.schema.encryptable');
-    SCHEMA = {
-      properties: {
-        key: {
-          description: 'the indexed search key for this term',
-          type: 'string',
-          required: true,
-          allowEmpty: false
-        },
-        id: {
-          description: 'the object id which the term came from',
-          type: 'string',
-          required: true,
-          allowEmpty: false
-        },
-        data: _.extend({}, ENCRYPTABLE_SCHEMA, {
-          description: 'the encrypted metadata content'
-        })
       }
     };
     return SCHEMA;
@@ -29777,33 +29826,6 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.indexed-metadata', ['require', 'lodash', 'kryptnostic.schema.indexed-metadata', 'kryptnostic.schema.validator'], function(require) {
-    var DEFAULT_OPTS, IndexedMetadata, SCHEMA, validator, _;
-    _ = require('lodash');
-    SCHEMA = require('kryptnostic.schema.indexed-metadata');
-    validator = require('kryptnostic.schema.validator');
-    DEFAULT_OPTS = {};
-    IndexedMetadata = (function() {
-      function IndexedMetadata(opts) {
-        _.extend(this, DEFAULT_OPTS, opts);
-        this.validate();
-      }
-
-      IndexedMetadata.prototype.validate = function() {
-        return validator.validate(this, IndexedMetadata, SCHEMA);
-      };
-
-      return IndexedMetadata;
-
-    })();
-    return IndexedMetadata;
-  });
-
-}).call(this);
-
-
-// Generated by CoffeeScript 1.7.1
-(function() {
   define('kryptnostic.search.random-index-generator', ['require'], function(require) {
     var RandomIndexGenerator;
     RandomIndexGenerator = (function() {
@@ -30101,8 +30123,10 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
-  define('kryptnostic.sharing-client', ['require', 'bluebird', 'kryptnostic.crypto-service-loader', 'kryptnostic.crypto-service-marshaller', 'kryptnostic.key-storage-api', 'kryptnostic.kryptnostic-engine-provider', 'kryptnostic.logger', 'kryptnostic.object-api', 'kryptnostic.revocation-request', 'kryptnostic.rsa-crypto-service', 'kryptnostic.sharing-api', 'kryptnostic.sharing-request', 'kryptnostic.validators'], function(require) {
-    var CryptoServiceLoader, CryptoServiceMarshaller, KeyStorageApi, KryptnosticEngineProvider, Logger, ObjectApi, Promise, RevocationRequest, RsaCryptoService, SharingApi, SharingClient, SharingRequest, Validators, logger, validateUuid, validateUuids, validateVersionedObjectKey, _;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+  define('kryptnostic.sharing-client', ['require', 'bluebird', 'kryptnostic.crypto-service-loader', 'kryptnostic.crypto-service-marshaller', 'kryptnostic.key-storage-api', 'kryptnostic.kryptnostic-engine', 'kryptnostic.kryptnostic-engine-provider', 'kryptnostic.logger', 'kryptnostic.object-api', 'kryptnostic.revocation-request', 'kryptnostic.rsa-crypto-service', 'kryptnostic.sharing-api', 'kryptnostic.sharing-request', 'kryptnostic.validators'], function(require) {
+    var CryptoServiceLoader, CryptoServiceMarshaller, KeyStorageApi, KryptnosticEngine, KryptnosticEngineProvider, Logger, ObjectApi, Promise, RevocationRequest, RsaCryptoService, SharingApi, SharingClient, SharingRequest, Validators, logger, validateUuid, validateUuids, validateVersionedObjectKey, _;
     _ = require('lodash');
     Promise = require('bluebird');
     KeyStorageApi = require('kryptnostic.key-storage-api');
@@ -30110,6 +30134,7 @@ define("function-name", function(){});
     SharingApi = require('kryptnostic.sharing-api');
     CryptoServiceLoader = require('kryptnostic.crypto-service-loader');
     CryptoServiceMarshaller = require('kryptnostic.crypto-service-marshaller');
+    KryptnosticEngine = require('kryptnostic.kryptnostic-engine');
     KryptnosticEngineProvider = require('kryptnostic.kryptnostic-engine-provider');
     RevocationRequest = require('kryptnostic.revocation-request');
     RsaCryptoService = require('kryptnostic.rsa-crypto-service');
@@ -30119,63 +30144,73 @@ define("function-name", function(){});
     logger = Logger.get('SharingClient');
     validateUuid = Validators.validateUuid, validateUuids = Validators.validateUuids, validateVersionedObjectKey = Validators.validateVersionedObjectKey;
     SharingClient = (function() {
+      var share;
+
       function SharingClient() {
+        this.shareObject = __bind(this.shareObject, this);
         this.sharingApi = new SharingApi();
         this.objectApi = new ObjectApi();
         this.cryptoServiceMarshaller = new CryptoServiceMarshaller();
         this.cryptoServiceLoader = new CryptoServiceLoader();
       }
 
-      SharingClient.prototype.shareObject = function(objectId, uuids, objectSearchPair) {
-        if (!validateUuid(objectId)) {
-          return Promise.resolve();
-        }
+      SharingClient.prototype.shareObject = function(objectIdOrKey, uuids, isSearchable) {
+        var objectKeyPromise;
         if (_.isEmpty(uuids) || !validateUuids(uuids)) {
           return Promise.resolve();
         }
-        return Promise.resolve(this.objectApi.getLatestVersionedObjectKey(objectId)).then((function(_this) {
-          return function(versionedObjectKey) {
-            var objectSearchPairPromise;
-            objectSearchPairPromise = void 0;
-            if (objectSearchPair) {
-              objectSearchPairPromise = Promise.resolve(objectSearchPair);
-            } else {
-              objectSearchPairPromise = _this.sharingApi.getObjectSearchPair(versionedObjectKey);
-            }
-            return Promise.join(objectSearchPairPromise, _this.cryptoServiceLoader.getObjectCryptoServiceV2(versionedObjectKey), KeyStorageApi.getRSAPublicKeys(uuids), function(objectSearchPair, objectCryptoService, uuidsToRsaPublicKeys) {
-              var encryptedObjectSharePair, engine, objectSharePair, seals, sharingRequest;
-              seals = _.mapValues(uuidsToRsaPublicKeys, function(rsaPublicKey) {
-                var marshalledCrypto, rsaCryptoService, seal, sealBase64;
-                if (rsaPublicKey) {
-                  rsaCryptoService = new RsaCryptoService({
-                    publicKey: rsaPublicKey
-                  });
-                  marshalledCrypto = _this.cryptoServiceMarshaller.marshall(objectCryptoService);
-                  seal = rsaCryptoService.encrypt(marshalledCrypto);
-                  sealBase64 = btoa(seal);
-                  return sealBase64;
-                }
+        objectKeyPromise = null;
+        if (validateVersionedObjectKey(objectIdOrKey)) {
+          objectKeyPromise = Promise.resolve(objectIdOrKey);
+        } else if (validateUuid(objectIdOrKey)) {
+          objectKeyPromise = this.objectApi.getLatestVersionedObjectKey(objectIdOrKey);
+        } else {
+          return Promise.resolve();
+        }
+        return Promise.resolve(objectKeyPromise).then(function(latestVersionedObjectKey) {
+          if (latestVersionedObjectKey != null) {
+            share(latestVersionedObjectKey, uuids, isSearchable);
+          }
+        });
+      };
+
+      share = function(objectKey, uuids, isSearchable) {
+        var addObjectSearchPairPromise, cryptoServiceLoader, cryptoServiceMarshaller, engine, objectSearchPair, sharingApi, sharingRequest, _ref;
+        _ref = {}, objectSearchPair = _ref.objectSearchPair, addObjectSearchPairPromise = _ref.addObjectSearchPairPromise, sharingRequest = _ref.sharingRequest;
+        engine = KryptnosticEngineProvider.getEngine();
+        cryptoServiceLoader = new CryptoServiceLoader();
+        cryptoServiceMarshaller = new CryptoServiceMarshaller();
+        sharingApi = new SharingApi();
+        return Promise.join(sharingApi.getObjectSearchPair(objectKey), cryptoServiceLoader.getObjectCryptoServiceV2(objectKey), KeyStorageApi.getRSAPublicKeys(uuids), function(objectSearchPair, objectCryptoService, uuidsToRsaPublicKeys) {
+          var encryptedObjectSharePair, objectSharePair, seals;
+          seals = _.mapValues(uuidsToRsaPublicKeys, function(rsaPublicKey) {
+            var marshalledCrypto, rsaCryptoService, seal, sealBase64;
+            if (rsaPublicKey) {
+              rsaCryptoService = new RsaCryptoService({
+                publicKey: rsaPublicKey
               });
-              logger.info('seals', seals);
-              if (!objectSearchPair) {
-                sharingRequest = new SharingRequest({
-                  id: versionedObjectKey,
-                  users: seals
-                });
-              } else {
-                engine = KryptnosticEngineProvider.getEngine();
-                objectSharePair = engine.calculateObjectSharePairFromObjectSearchPair(objectSearchPair);
-                encryptedObjectSharePair = objectCryptoService.encryptUint8Array(objectSharePair);
-                sharingRequest = new SharingRequest({
-                  id: versionedObjectKey,
-                  users: seals,
-                  sharingPair: encryptedObjectSharePair
-                });
-              }
-              return _this.sharingApi.shareObject(sharingRequest);
+              marshalledCrypto = cryptoServiceMarshaller.marshall(objectCryptoService);
+              seal = rsaCryptoService.encrypt(marshalledCrypto);
+              sealBase64 = btoa(seal);
+              return sealBase64;
+            }
+          });
+          if (KryptnosticEngine.isValidObjectSearchPair(objectSearchPair)) {
+            objectSharePair = engine.calculateObjectSharePairFromObjectSearchPair(objectSearchPair);
+            encryptedObjectSharePair = objectCryptoService.encryptUint8Array(objectSharePair);
+            sharingRequest = new SharingRequest({
+              id: objectKey,
+              users: seals,
+              sharingPair: encryptedObjectSharePair
             });
-          };
-        })(this));
+          } else {
+            sharingRequest = new SharingRequest({
+              id: objectKey,
+              users: seals
+            });
+          }
+          sharingApi.shareObject(sharingRequest);
+        });
       };
 
       SharingClient.prototype.revokeObject = function(objectId, uuids) {
@@ -30238,14 +30273,6 @@ define("function-name", function(){});
         })(this))["catch"](function(e) {
           return logger.error('failed to process incoming shares', e);
         });
-      };
-
-      SharingClient.prototype.getObjectSearchPair = function(objectId) {
-        return Promise.resolve(this.objectApi.getLatestVersionedObjectKey(objectId)).then((function(_this) {
-          return function(versionedObjectKey) {
-            return _this.sharingApi.getObjectSearchPair(versionedObjectKey);
-          };
-        })(this));
       };
 
       return SharingClient;
@@ -30434,7 +30461,7 @@ define("function-name", function(){});
         })(this));
       };
 
-      StorageClient.prototype.storeObject = function(storageRequest, objectSearchPair) {
+      StorageClient.prototype.storeObject = function(storageRequest) {
         var parentObjectKeyPromise, storageResponse, typeIdPromise;
         storageRequest.validate();
         storageResponse = {};
@@ -30469,13 +30496,10 @@ define("function-name", function(){});
                 return _this.objectApi.setObjectFromBlockCiphertext(objectKeyForNewlyCreatedObject, blockCiphertext);
               }).then(function() {
                 if (storageRequest.isSearchable) {
-                  return _this.objectIndexingService.index(storageRequest.body, objectKeyForNewlyCreatedObject, parentObjectKey, objectSearchPair);
-                } else {
-                  return objectSearchPair;
+                  return _this.objectIndexingService.enqueueIndexTask(storageRequest.body, objectKeyForNewlyCreatedObject, parentObjectKey);
                 }
-              }).then(function(objectSearchPair) {
+              }).then(function() {
                 storageResponse.objectKey = objectKeyForNewlyCreatedObject;
-                storageResponse.objectSearchPair = objectSearchPair;
                 return storageResponse;
               });
             });
@@ -30504,8 +30528,8 @@ define("function-name", function(){});
               var blockCiphertext;
               blockCiphertext = encrypted.body.data[0].block;
               _this.objectApi.setObjectFromBlockCiphertext(versionedObjectKey, blockCiphertext);
-              return _this.objectIndexingService.index(content, objectKeyForNewlyCreatedObject, parentObjectKey, objectSearchPair);
-            }).then(function() {});
+              _this.objectIndexingService.enqueueIndexTask(content, objectKeyForNewlyCreatedObject, parentObjectKey);
+            });
           };
         })(this));
       };
@@ -30574,6 +30598,8 @@ define("function-name", function(){});
       CachingService.DEFAULT_GROUP = 'default_group';
 
       CachingService.CRYPTO_SERVICES = 'object_crypto_services';
+
+      CachingService.OBJECT_SEARCH_PAIRS = 'object_search_pairs';
 
       CachingService.MASTER_AES_CRYPTO_SERVICE = 'master_aes_crypto_service';
 
@@ -31423,59 +31449,22 @@ define("function-name", function(){});
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define('kryptnostic.kryptnostic-workers-api', ['require', 'forge', 'kryptnostic.logger'], function(require) {
-    var FHEKeysGenerationWorker, KryptnosticWorker, KryptnosticWorkersApi, Logger, RSAKeysGenerationWorker, forge, logger;
-    forge = require('forge');
+  define('kryptnostic.fhe-keys-gen-worker-wrapper', ['require', 'bluebird', 'kryptnostic.logger', 'kryptnostic.worker-wrapper'], function(require) {
+    var FHEKeysGenerationWorkerWrapper, Logger, Promise, WorkerWrapper, logger;
+    Promise = require('bluebird');
+    WorkerWrapper = require('kryptnostic.worker-wrapper');
     Logger = require('kryptnostic.logger');
-    logger = Logger.get('KryptnosticWorkersApi');
-    KryptnosticWorker = (function() {
-      function KryptnosticWorker() {
-        this.scriptUrl = null;
-        this.webWorker = null;
+    logger = Logger.get('FHEKeysGenerationWorkerWrapper');
+    FHEKeysGenerationWorkerWrapper = (function(_super) {
+      __extends(FHEKeysGenerationWorkerWrapper, _super);
+
+      function FHEKeysGenerationWorkerWrapper() {
+        FHEKeysGenerationWorkerWrapper.__super__.constructor.call(this);
       }
 
-      KryptnosticWorker.prototype.start = function() {
-        if (_.isEmpty(this.scriptUrl)) {
-          return;
-        }
-        if (this.webWorker != null) {
-          return;
-        }
-        this.webWorker = new Worker(this.scriptUrl);
-        return this.webWorker.postMessage({});
-      };
-
-      KryptnosticWorker.prototype.terminate = function() {
+      FHEKeysGenerationWorkerWrapper.prototype.query = function() {
         if (!this.webWorker) {
-          return;
-        }
-        this.webWorker.terminate();
-        this.webWorker = null;
-        return this.scriptUrl = null;
-      };
-
-      KryptnosticWorker.prototype.query = function() {
-        if (!this.webWorker) {
-          return;
-        }
-        return this.webWorker.postMessage({
-          query: true
-        });
-      };
-
-      return KryptnosticWorker;
-
-    })();
-    FHEKeysGenerationWorker = (function(_super) {
-      __extends(FHEKeysGenerationWorker, _super);
-
-      function FHEKeysGenerationWorker() {
-        FHEKeysGenerationWorker.__super__.constructor.call(this);
-      }
-
-      FHEKeysGenerationWorker.prototype.query = function() {
-        if (!this.webWorker) {
-          return;
+          return Promise.reject();
         }
         return new Promise((function(_this) {
           return function(resolve, reject) {
@@ -31486,57 +31475,38 @@ define("function-name", function(){});
                 fheKeys = messageEvent.data;
               }
               if (fheKeys != null) {
-                return resolve(fheKeys);
+                resolve(fheKeys);
               } else {
-                return resolve(null);
+                reject();
               }
+              return _this.terminate();
             };
-            FHEKeysGenerationWorker.__super__.query.call(_this);
+            return FHEKeysGenerationWorkerWrapper.__super__.query.call(_this, {
+              operation: 'getKeys'
+            });
           };
         })(this));
       };
 
-      return FHEKeysGenerationWorker;
+      return FHEKeysGenerationWorkerWrapper;
 
-    })(KryptnosticWorker);
-    RSAKeysGenerationWorker = (function(_super) {
-      __extends(RSAKeysGenerationWorker, _super);
+    })(WorkerWrapper);
+    return FHEKeysGenerationWorkerWrapper;
+  });
 
-      function RSAKeysGenerationWorker() {
-        RSAKeysGenerationWorker.__super__.constructor.call(this);
-      }
+}).call(this);
 
-      RSAKeysGenerationWorker.prototype.query = function() {
-        if (!this.webWorker) {
-          return;
-        }
-        return new Promise((function(_this) {
-          return function(resolve, reject) {
-            _this.webWorker.onmessage = function(messageEvent) {
-              var privateKey, publicKey, rsaKeyPair;
-              rsaKeyPair = null;
-              if (messageEvent && messageEvent.data) {
-                rsaKeyPair = messageEvent.data;
-              }
-              if (rsaKeyPair != null) {
-                publicKey = new forge.util.ByteBuffer(rsaKeyPair.publicKey);
-                privateKey = new forge.util.ByteBuffer(rsaKeyPair.privateKey);
-                return resolve({
-                  publicKey: publicKey,
-                  privateKey: privateKey
-                });
-              } else {
-                return resolve(null);
-              }
-            };
-            RSAKeysGenerationWorker.__super__.query.call(_this);
-          };
-        })(this));
-      };
 
-      return RSAKeysGenerationWorker;
-
-    })(KryptnosticWorker);
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.kryptnostic-workers-api', ['require', 'bluebird', 'kryptnostic.fhe-keys-gen-worker-wrapper', 'kryptnostic.rsa-keys-gen-worker-wrapper', 'kryptnostic.object-indexing-worker-wrapper', 'kryptnostic.logger'], function(require) {
+    var FHEKeysGenerationWorkerWrapper, KryptnosticWorkersApi, Logger, ObjectIndexingWorkerWrapper, Promise, RSAKeysGenerationWorkerWrapper, logger;
+    Promise = require('bluebird');
+    FHEKeysGenerationWorkerWrapper = require('kryptnostic.fhe-keys-gen-worker-wrapper');
+    RSAKeysGenerationWorkerWrapper = require('kryptnostic.rsa-keys-gen-worker-wrapper');
+    ObjectIndexingWorkerWrapper = require('kryptnostic.object-indexing-worker-wrapper');
+    Logger = require('kryptnostic.logger');
+    logger = Logger.get('KryptnosticWorkersApi');
     KryptnosticWorkersApi = (function() {
       var WORKERS;
 
@@ -31546,9 +31516,12 @@ define("function-name", function(){});
 
       KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER = 'RSA_KEYS_GEN_WORKER';
 
+      KryptnosticWorkersApi.OBJ_INDEXING_WORKER = 'OBJ_INDEXING_WORKER';
+
       WORKERS = {
-        FHE_KEYS_GEN_WORKER: new FHEKeysGenerationWorker(),
-        RSA_KEYS_GEN_WORKER: new RSAKeysGenerationWorker()
+        FHE_KEYS_GEN_WORKER: new FHEKeysGenerationWorkerWrapper(),
+        RSA_KEYS_GEN_WORKER: new RSAKeysGenerationWorkerWrapper(),
+        OBJ_INDEXING_WORKER: new ObjectIndexingWorkerWrapper()
       };
 
       KryptnosticWorkersApi.setWorkerUrl = function(workerKey, workerScriptUrl) {
@@ -31584,17 +31557,17 @@ define("function-name", function(){});
         return kWorker.terminate();
       };
 
-      KryptnosticWorkersApi.queryWebWorker = function(workerKey) {
+      KryptnosticWorkersApi.queryWebWorker = function(workerKey, workerQuery) {
         var kWorker;
         if (!window.Worker) {
           logger.info('Web Workers API is not supported');
-          return;
+          return Promise.reject();
         }
         if (!WORKERS[workerKey]) {
-          return;
+          return Promise.reject();
         }
         kWorker = WORKERS[workerKey];
-        return kWorker.query();
+        return kWorker.query(workerQuery);
       };
 
       return KryptnosticWorkersApi;
@@ -31608,9 +31581,174 @@ define("function-name", function(){});
 
 // Generated by CoffeeScript 1.7.1
 (function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  define('kryptnostic.object-indexing-worker-wrapper', ['require', 'bluebird', 'kryptnostic.configuration', 'kryptnostic.credential-loader', 'kryptnostic.keypair-serializer', 'kryptnostic.kryptnostic-engine-provider', 'kryptnostic.logger', 'kryptnostic.worker-wrapper'], function(require) {
+    var ConfigService, CredentialLoader, KeypairSerializer, KryptnosticEngineProvider, Logger, ObjectIndexingWorkerWrapper, Promise, WorkerWrapper, logger;
+    Promise = require('bluebird');
+    ConfigService = require('kryptnostic.configuration');
+    CredentialLoader = require('kryptnostic.credential-loader');
+    KryptnosticEngineProvider = require('kryptnostic.kryptnostic-engine-provider');
+    WorkerWrapper = require('kryptnostic.worker-wrapper');
+    KeypairSerializer = require('kryptnostic.keypair-serializer');
+    Logger = require('kryptnostic.logger');
+    logger = Logger.get('FHEKeysGenerationWorkerWrapper');
+    ObjectIndexingWorkerWrapper = (function(_super) {
+      __extends(ObjectIndexingWorkerWrapper, _super);
+
+      function ObjectIndexingWorkerWrapper() {
+        ObjectIndexingWorkerWrapper.__super__.constructor.call(this);
+      }
+
+      ObjectIndexingWorkerWrapper.prototype.start = function() {
+        var credentialLoader, credentials, engine, serializedKeyPair, workerParams;
+        workerParams = {};
+        workerParams.config = ConfigService.config;
+        credentialLoader = new CredentialLoader();
+        credentials = credentialLoader.getCredentials();
+        workerParams.principal = credentials.principal;
+        workerParams.credential = credentials.credential;
+        serializedKeyPair = KeypairSerializer.serialize(credentials.keypair);
+        workerParams.rsaKeyPair = serializedKeyPair;
+        engine = KryptnosticEngineProvider.getEngine();
+        workerParams.fhePrivateKey = engine.getPrivateKey();
+        workerParams.fheSearchPrivateKey = engine.getSearchPrivateKey();
+        return ObjectIndexingWorkerWrapper.__super__.start.call(this, workerParams);
+      };
+
+      ObjectIndexingWorkerWrapper.prototype.query = function(workerQuery) {
+        if (!this.webWorker) {
+          return Promise.reject();
+        }
+        return ObjectIndexingWorkerWrapper.__super__.query.call(this, workerQuery);
+      };
+
+      return ObjectIndexingWorkerWrapper;
+
+    })(WorkerWrapper);
+    return ObjectIndexingWorkerWrapper;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  define('kryptnostic.rsa-keys-gen-worker-wrapper', ['require', 'bluebird', 'forge', 'kryptnostic.logger', 'kryptnostic.worker-wrapper'], function(require) {
+    var Logger, Promise, RSAKeysGenerationWorkerWrapper, WorkerWrapper, forge, logger;
+    forge = require('forge');
+    Promise = require('bluebird');
+    WorkerWrapper = require('kryptnostic.worker-wrapper');
+    Logger = require('kryptnostic.logger');
+    logger = Logger.get('RSAKeysGenerationWorkerWrapper');
+    RSAKeysGenerationWorkerWrapper = (function(_super) {
+      __extends(RSAKeysGenerationWorkerWrapper, _super);
+
+      function RSAKeysGenerationWorkerWrapper() {
+        RSAKeysGenerationWorkerWrapper.__super__.constructor.call(this);
+      }
+
+      RSAKeysGenerationWorkerWrapper.prototype.query = function() {
+        if (!this.webWorker) {
+          return Promise.reject();
+        }
+        return new Promise((function(_this) {
+          return function(resolve, reject) {
+            _this.webWorker.onmessage = function(messageEvent) {
+              var privateKey, publicKey, rsaKeyPair;
+              rsaKeyPair = null;
+              if (messageEvent && messageEvent.data) {
+                rsaKeyPair = messageEvent.data;
+              }
+              if (rsaKeyPair != null) {
+                publicKey = new forge.util.ByteBuffer(rsaKeyPair.publicKey);
+                privateKey = new forge.util.ByteBuffer(rsaKeyPair.privateKey);
+                resolve({
+                  publicKey: publicKey,
+                  privateKey: privateKey
+                });
+              } else {
+                reject();
+              }
+              return _this.terminate();
+            };
+            return RSAKeysGenerationWorkerWrapper.__super__.query.call(_this, {
+              operation: 'getKeys'
+            });
+          };
+        })(this));
+      };
+
+      return RSAKeysGenerationWorkerWrapper;
+
+    })(WorkerWrapper);
+    return RSAKeysGenerationWorkerWrapper;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
+  define('kryptnostic.worker-wrapper', ['require', 'kryptnostic.logger'], function(require) {
+    var Logger, WorkerWrapper, logger;
+    Logger = require('kryptnostic.logger');
+    logger = Logger.get('WorkerWrapper');
+    WorkerWrapper = (function() {
+      function WorkerWrapper() {
+        this.scriptUrl = null;
+        this.webWorker = null;
+      }
+
+      WorkerWrapper.prototype.start = function(workerParams) {
+        if (_.isEmpty(this.scriptUrl)) {
+          return;
+        }
+        if (this.webWorker != null) {
+          return;
+        }
+        this.webWorker = new Worker(this.scriptUrl);
+        return this.webWorker.postMessage({
+          operation: 'init',
+          params: workerParams
+        });
+      };
+
+      WorkerWrapper.prototype.terminate = function() {
+        if (!this.webWorker) {
+          return;
+        }
+        this.webWorker.terminate();
+        this.webWorker = null;
+        return this.scriptUrl = null;
+      };
+
+      WorkerWrapper.prototype.query = function(workerQuery) {
+        if (!this.webWorker || !workerQuery) {
+          return Promise.reject();
+        }
+        this.webWorker.postMessage(workerQuery);
+        return Promise.resolve();
+      };
+
+      return WorkerWrapper;
+
+    })();
+    return WorkerWrapper;
+  });
+
+}).call(this);
+
+
+// Generated by CoffeeScript 1.7.1
+(function() {
   var EXPORTED_MODULES;
 
-  EXPORTED_MODULES = ['axios', 'bluebird', 'forge', 'jscache', 'lodash', 'loglevel', 'murmurhash3', 'pako', 'revalidator', 'function-name', 'cs!auth/AuthenticationService', 'cs!auth/AuthenticationStage', 'cs!auth/CredentialLoader', 'cs!auth/CredentialProviderLoader', 'cs!auth/CredentialService', 'cs!auth/SaltGenerator', 'cs!auth/SearchCredentialService', 'cs!auth/SearchKeySerializer', 'cs!auth/credential-provider/InMemoryCredentialProvider', 'cs!auth/credential-provider/KeyValueCredentialProvider', 'cs!auth/credential-provider/LocalStorageCredentialProvider', 'cs!auth/credential-provider/SessionStorageCredentialProvider', 'cs!chunking/ChunkingStrategyRegistry', 'cs!chunking/DefaultChunkingStrategy', 'cs!chunking/JsonChunkingStrategy', 'cs!crypto/AbstractCryptoService', 'cs!crypto/AesCryptoService', 'cs!crypto/CryptoAlgorithm', 'cs!crypto/CryptoMaterial', 'cs!crypto/CryptoServiceLoader', 'cs!crypto/CryptoServiceMarshaller', 'cs!crypto/CryptoServiceMigrator', 'cs!crypto/Cypher', 'cs!crypto/HashFunction', 'cs!crypto/KeypairSerializer', 'cs!crypto/PasswordCryptoService', 'cs!crypto/RsaCryptoService', 'cs!crypto/RsaKeyGenerator', 'cs!engine/KryptnosticEngine', 'cs!engine/KryptnosticEngineProvider', 'cs!engine/MockKryptnosticEngine', 'cs!engine/MockSearchKeyGenerator', 'cs!engine/SearchKeyGenerator', 'cs!http/KeyStorageApi', 'cs!http/MetadataApi', 'cs!http/ObjectApi', 'cs!http/ObjectAuthorizationApi', 'cs!http/ObjectListingApi', 'cs!http/RegistrationApi', 'cs!http/SearchApi', 'cs!http/SharingApi', 'cs!http/UserDirectoryApi', 'cs!indexing/InvertedIndexSegment', 'cs!indexing/ObjectIndexer', 'cs!indexing/ObjectIndexingService', 'cs!indexing/ObjectTokenizer', 'cs!marshalling/DeflatingMarshaller', 'cs!model/object/BlockCiphertext', 'cs!model/object/EncryptedBlock', 'cs!model/object/KryptnosticObject', 'cs!model/object/ObjectMetadata', 'cs!model/object/ObjectMetadataTree', 'cs!model/request/CreateObjectRequest', 'cs!model/request/MetadataRequest', 'cs!model/request/ObjectTreeLoadRequest', 'cs!model/request/RevocationRequest', 'cs!model/request/SearchRequest', 'cs!model/request/SharingRequest', 'cs!model/request/StorageRequest', 'cs!model/request/UserRegistrationRequest', 'cs!model/schema/block-ciphertext', 'cs!model/schema/create-object-request', 'cs!model/schema/encryptable', 'cs!model/schema/encrypted-block', 'cs!model/schema/indexed-metadata', 'cs!model/schema/inverted-index-segment', 'cs!model/schema/kryptnostic-object', 'cs!model/schema/object-metadata', 'cs!model/schema/object-metadata-tree', 'cs!model/schema/object-tree-load-request', 'cs!model/schema/pending-object-request', 'cs!model/schema/revocation-request', 'cs!model/schema/search-request', 'cs!model/schema/sharing-request', 'cs!model/schema/storage-request', 'cs!model/schema/user-registration-request', 'cs!model/schema/validator', 'cs!model/search/IndexedMetadata', 'cs!search/RandomIndexGenerator', 'cs!search/SearchClient', 'cs!service/BlockEncryptionService', 'cs!service/ConfigurationService', 'cs!service/RegistrationClient', 'cs!service/SharingClient', 'cs!service/StorageClient', 'cs!service/caching-provider/CachingProviderLoader', 'cs!service/caching-provider/CachingService', 'cs!service/caching-provider/InMemoryCachingProvider', 'cs!service/caching-provider/JscacheCachingProvider', 'cs!tree/PermissionChangeVisitor', 'cs!tree/TreeLoader', 'cs!tree/TreeNode', 'cs!util/Logger', 'cs!util/binary-utils', 'cs!util/object-utils', 'cs!util/requests', 'cs!util/validators', 'cs!workers/KryptnosticWorkersApi'];
+  EXPORTED_MODULES = ['axios', 'base64', 'bluebird', 'forge', 'jscache', 'lodash', 'loglevel', 'murmurhash3', 'pako', 'revalidator', 'function-name', 'cs!auth/AuthenticationService', 'cs!auth/AuthenticationStage', 'cs!auth/CredentialLoader', 'cs!auth/CredentialProviderLoader', 'cs!auth/CredentialService', 'cs!auth/SaltGenerator', 'cs!auth/SearchCredentialService', 'cs!auth/SearchKeySerializer', 'cs!auth/credential-provider/InMemoryCredentialProvider', 'cs!auth/credential-provider/KeyValueCredentialProvider', 'cs!auth/credential-provider/LocalStorageCredentialProvider', 'cs!auth/credential-provider/SessionStorageCredentialProvider', 'cs!chunking/ChunkingStrategyRegistry', 'cs!chunking/DefaultChunkingStrategy', 'cs!chunking/JsonChunkingStrategy', 'cs!crypto/AbstractCryptoService', 'cs!crypto/AesCryptoService', 'cs!crypto/CryptoAlgorithm', 'cs!crypto/CryptoMaterial', 'cs!crypto/CryptoServiceLoader', 'cs!crypto/CryptoServiceMarshaller', 'cs!crypto/CryptoServiceMigrator', 'cs!crypto/Cypher', 'cs!crypto/HashFunction', 'cs!crypto/KeypairSerializer', 'cs!crypto/PasswordCryptoService', 'cs!crypto/RsaCryptoService', 'cs!crypto/RsaKeyGenerator', 'cs!engine/KryptnosticEngine', 'cs!engine/KryptnosticEngineProvider', 'cs!engine/MockKryptnosticEngine', 'cs!engine/MockSearchKeyGenerator', 'cs!engine/SearchKeyGenerator', 'cs!http/KeyStorageApi', 'cs!http/ObjectApi', 'cs!http/ObjectAuthorizationApi', 'cs!http/ObjectListingApi', 'cs!http/RegistrationApi', 'cs!http/SearchApi', 'cs!http/SharingApi', 'cs!http/UserDirectoryApi', 'cs!indexing/InvertedIndexSegment', 'cs!indexing/ObjectIndexer', 'cs!indexing/ObjectIndexingService', 'cs!indexing/ObjectTokenizer', 'cs!marshalling/DeflatingMarshaller', 'cs!model/object/BlockCiphertext', 'cs!model/object/EncryptedBlock', 'cs!model/object/KryptnosticObject', 'cs!model/object/ObjectMetadata', 'cs!model/object/ObjectMetadataTree', 'cs!model/request/CreateObjectRequest', 'cs!model/request/ObjectTreeLoadRequest', 'cs!model/request/RevocationRequest', 'cs!model/request/SearchRequest', 'cs!model/request/SharingRequest', 'cs!model/request/StorageRequest', 'cs!model/request/UserRegistrationRequest', 'cs!model/schema/block-ciphertext', 'cs!model/schema/create-object-request', 'cs!model/schema/encryptable', 'cs!model/schema/encrypted-block', 'cs!model/schema/inverted-index-segment', 'cs!model/schema/kryptnostic-object', 'cs!model/schema/object-metadata', 'cs!model/schema/object-metadata-tree', 'cs!model/schema/object-tree-load-request', 'cs!model/schema/pending-object-request', 'cs!model/schema/revocation-request', 'cs!model/schema/search-request', 'cs!model/schema/sharing-request', 'cs!model/schema/storage-request', 'cs!model/schema/user-registration-request', 'cs!model/schema/validator', 'cs!search/RandomIndexGenerator', 'cs!search/SearchClient', 'cs!service/BlockEncryptionService', 'cs!service/ConfigurationService', 'cs!service/RegistrationClient', 'cs!service/SharingClient', 'cs!service/StorageClient', 'cs!service/caching-provider/CachingProviderLoader', 'cs!service/caching-provider/CachingService', 'cs!service/caching-provider/InMemoryCachingProvider', 'cs!service/caching-provider/JscacheCachingProvider', 'cs!tree/PermissionChangeVisitor', 'cs!tree/TreeLoader', 'cs!tree/TreeNode', 'cs!util/Logger', 'cs!util/binary-utils', 'cs!util/object-utils', 'cs!util/requests', 'cs!util/validators', 'cs!workers/FHEKeysGenerationWorkerWrapper', 'cs!workers/KryptnosticWorkersApi', 'cs!workers/ObjectIndexingWorkerWrapper', 'cs!workers/RSAKeysGenerationWorkerWrapper', 'cs!workers/WorkerWrapper'];
 
   define('kryptnostic', EXPORTED_MODULES, function(require) {
     'use strict';

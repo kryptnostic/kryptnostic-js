@@ -56,9 +56,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var AuthenticationService = __webpack_require__(1);
 	var ConfigurationService  = __webpack_require__(6);
-	var RegistrationApi       = __webpack_require__(57);
-	var RegistrationClient    = __webpack_require__(58);
-	var UserDirectoryApi      = __webpack_require__(55);
+	var RegistrationApi       = __webpack_require__(61);
+	var RegistrationClient    = __webpack_require__(62);
+	var UserDirectoryApi      = __webpack_require__(59);
 
 	module.exports = {
 	  'AuthenticationService' : AuthenticationService,
@@ -73,19 +73,19 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(2), __webpack_require__(6), __webpack_require__(7), __webpack_require__(20), __webpack_require__(43), __webpack_require__(50), __webpack_require__(51), __webpack_require__(55), __webpack_require__(53), __webpack_require__(56), __webpack_require__(38)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(2), __webpack_require__(6), __webpack_require__(7), __webpack_require__(20), __webpack_require__(49), __webpack_require__(56), __webpack_require__(57), __webpack_require__(59), __webpack_require__(43), __webpack_require__(60), __webpack_require__(38)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var AuthenticationService, AuthenticationStage, Config, CredentialProviderLoader, CredentialService, CryptoServiceLoader, CryptoServiceMigrator, KryptnosticEngineProvider, KryptnosticWorkersApi, LOGIN_FAILURE_MESSAGE, Logger, Promise, SearchCredentialService, UserDirectoryApi, logger;
 	  Promise = __webpack_require__(22);
 	  Logger = __webpack_require__(2);
 	  Config = __webpack_require__(6);
 	  CredentialProviderLoader = __webpack_require__(7);
 	  CredentialService = __webpack_require__(20);
-	  CryptoServiceLoader = __webpack_require__(43);
-	  SearchCredentialService = __webpack_require__(50);
-	  AuthenticationStage = __webpack_require__(51);
-	  UserDirectoryApi = __webpack_require__(55);
-	  KryptnosticEngineProvider = __webpack_require__(53);
-	  CryptoServiceMigrator = __webpack_require__(56);
+	  CryptoServiceLoader = __webpack_require__(49);
+	  SearchCredentialService = __webpack_require__(56);
+	  AuthenticationStage = __webpack_require__(57);
+	  UserDirectoryApi = __webpack_require__(59);
+	  KryptnosticEngineProvider = __webpack_require__(43);
+	  CryptoServiceMigrator = __webpack_require__(60);
 	  KryptnosticWorkersApi = __webpack_require__(38);
 	  logger = Logger.get('AuthenticationService');
 	  LOGIN_FAILURE_MESSAGE = 'invalid credentials';
@@ -111,14 +111,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	          throw new Error(LOGIN_FAILURE_MESSAGE);
 	        }
 	        principal = uuid;
-	        logger.info('authenticating', email);
 	        return credentialService.deriveCredential({
 	          principal: principal,
 	          password: password
 	        }, notifier);
 	      }).then(function(_credential) {
 	        credential = _credential;
-	        logger.info('derived credential');
 	        credentialProvider.store({
 	          principal: principal,
 	          credential: credential
@@ -128,6 +126,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 	      }).then(function(_keypair) {
 	        keypair = _keypair;
+	        return credentialService.ensureValidRSAPublickKey(principal, keypair);
+	      }).then(function() {
 	        return credentialProvider.store({
 	          principal: principal,
 	          credential: credential,
@@ -152,7 +152,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var searchCredentialService;
 	      searchCredentialService = new SearchCredentialService();
 	      return Promise.resolve().then(function() {
-	        return KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER);
+	        return KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER)["catch"](function(e) {
+	          return null;
+	        });
 	      }).then(function(fheKeys) {
 	        KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER);
 	        if (!_.isEmpty(fheKeys)) {
@@ -169,7 +171,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	          fhePrivateKey: fhePrivateKey,
 	          fheSearchPrivateKey: fheSearchPrivateKey
 	        });
-	        return logger.info('KryptnosticEngine initialized');
+	        logger.info('KryptnosticEngine initialized');
+	        KryptnosticWorkersApi.startWebWorker(KryptnosticWorkersApi.OBJ_INDEXING_WORKER);
 	      });
 	    };
 
@@ -43776,17 +43779,17 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(12), __webpack_require__(2), __webpack_require__(21), __webpack_require__(36), __webpack_require__(37), __webpack_require__(39), __webpack_require__(42), __webpack_require__(35)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(12), __webpack_require__(2), __webpack_require__(21), __webpack_require__(23), __webpack_require__(37), __webpack_require__(45), __webpack_require__(48), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var BITS_PER_BYTE, BinaryUtils, CredentialService, DEFAULT_ITERATIONS, DEFAULT_KEY_SIZE, Forge, KeyStorageApi, Logger, PasswordCryptoService, Promise, RsaKeyGenerator, SaltGenerator, Validators, log, validateUuid;
 	  Logger = __webpack_require__(2);
 	  Forge = __webpack_require__(12);
 	  Promise = __webpack_require__(22);
-	  BinaryUtils = __webpack_require__(36);
+	  BinaryUtils = __webpack_require__(23);
 	  KeyStorageApi = __webpack_require__(21);
-	  PasswordCryptoService = __webpack_require__(39);
+	  PasswordCryptoService = __webpack_require__(45);
 	  RsaKeyGenerator = __webpack_require__(37);
-	  SaltGenerator = __webpack_require__(42);
-	  Validators = __webpack_require__(35);
+	  SaltGenerator = __webpack_require__(48);
+	  Validators = __webpack_require__(36);
 	  DEFAULT_ITERATIONS = 1000;
 	  DEFAULT_KEY_SIZE = 256;
 	  BITS_PER_BYTE = 8;
@@ -43866,9 +43869,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }).then(function() {
 	        return KeyStorageApi.setRSAPrivateKey(privateKey);
 	      }).then(function() {
-	        var publicKeyAsUint8;
-	        publicKeyAsUint8 = BinaryUtils.stringToUint8(publicKey);
-	        return KeyStorageApi.setRSAPublicKey(publicKeyAsUint8);
+	        return KeyStorageApi.setRSAPublicKey(publicKey);
 	      }).then(function() {
 	        log.info('keypair initialization complete');
 	        return keypair;
@@ -43906,6 +43907,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	      })(this));
 	    };
 
+	    CredentialService.prototype.ensureValidRSAPublickKey = function(principal, rsaKeyPair) {
+	      if (!validateUuid(principal) || _.isEmpty(rsaKeyPair)) {
+	        return Promise.resolve();
+	      }
+	      return Promise.resolve(KeyStorageApi.getRSAPublicKey(principal)).then(function(rsaPublicKeyAsUint8) {
+	        var derivedPublicKeyAsPem, e, publicKey, publicKeyAsAsn1, publicKeyAsDer, publicKeyAsPem, publicKeyBuffer, publicKeyBytes;
+	        publicKeyAsPem = null;
+	        derivedPublicKeyAsPem = Forge.pki.publicKeyToPem(rsaKeyPair.publicKey);
+	        if (rsaPublicKeyAsUint8 != null) {
+	          try {
+	            publicKeyBytes = BinaryUtils.uint8ToString(rsaPublicKeyAsUint8);
+	            publicKeyBuffer = Forge.util.createBuffer(publicKeyBytes, 'raw');
+	            publicKeyAsAsn1 = Forge.asn1.fromDer(publicKeyBuffer);
+	            publicKey = Forge.pki.publicKeyFromAsn1(publicKeyAsAsn1);
+	            publicKeyAsPem = Forge.pki.publicKeyToPem(publicKey);
+	          } catch (_error) {
+	            e = _error;
+	            publicKeyAsPem = null;
+	          }
+	        }
+	        if (publicKeyAsPem !== derivedPublicKeyAsPem) {
+	          publicKeyAsAsn1 = Forge.pki.publicKeyToAsn1(rsaKeyPair.publicKey);
+	          publicKeyAsDer = Forge.asn1.toDer(publicKeyAsAsn1);
+	          return Promise.resolve(KeyStorageApi.setRSAPublicKey(publicKeyAsDer.data));
+	        }
+	      });
+	    };
+
 	    return CredentialService;
 
 	  })();
@@ -43917,17 +43946,18 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(34), __webpack_require__(22), __webpack_require__(12), __webpack_require__(23), __webpack_require__(27), __webpack_require__(6), __webpack_require__(2), __webpack_require__(32), __webpack_require__(35)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var BlockCiphertext, Cache, Config, DEFAULT_HEADERS, Forge, KeyStorageApi, Logger, Promise, Requests, Validators, aesCryptoServiceUrl, aesUrl, axios, fheHashUrl, fheKeysUrl, fhePrivateKeyUrl, fheSearchPrivateKeyUrl, getRSAPublicKeyBulkUrl, getRSAPublicKeyUrl, keyStorageApi, logger, rsaKeysUrl, rsaPrivateKeyUrl, saltUrl, setRSAPublicKeyUrl, toCacheId, validateObjectCryptoService, validateUuid, validateUuids, validateVersionedObjectKey;
-	  axios = __webpack_require__(34);
-	  Forge = __webpack_require__(12);
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(12), __webpack_require__(23), __webpack_require__(24), __webpack_require__(28), __webpack_require__(6), __webpack_require__(2), __webpack_require__(33), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var BinaryUtils, BlockCiphertext, Cache, Config, DEFAULT_HEADERS, KeyStorageApi, Logger, Promise, Requests, Validators, aesCryptoServiceUrl, aesUrl, axios, fheHashUrl, fheKeysUrl, fhePrivateKeyUrl, fheSearchPrivateKeyUrl, forge, getRSAPublicKeyBulkUrl, getRSAPublicKeyUrl, keyStorageApi, logger, rsaKeysUrl, rsaPrivateKeyUrl, saltUrl, setRSAPublicKeyUrl, toCacheId, validateObjectCryptoService, validateUuid, validateUuids, validateVersionedObjectKey;
+	  axios = __webpack_require__(35);
+	  forge = __webpack_require__(12);
 	  Promise = __webpack_require__(22);
-	  BlockCiphertext = __webpack_require__(23);
-	  Cache = __webpack_require__(27);
+	  BlockCiphertext = __webpack_require__(24);
+	  BinaryUtils = __webpack_require__(23);
+	  Cache = __webpack_require__(28);
 	  Config = __webpack_require__(6);
 	  Logger = __webpack_require__(2);
-	  Requests = __webpack_require__(32);
-	  Validators = __webpack_require__(35);
+	  Requests = __webpack_require__(33);
+	  Validators = __webpack_require__(36);
 	  DEFAULT_HEADERS = {
 	    'Content-Type': 'application/json'
 	  };
@@ -44092,9 +44122,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	              var e, publicKey, publicKeyAsn1, publicKeyBuffer, rsaPublicKey;
 	              try {
 	                publicKey = atob(encodedPublicKey);
-	                publicKeyBuffer = Forge.util.createBuffer(publicKey, 'raw');
-	                publicKeyAsn1 = Forge.asn1.fromDer(publicKeyBuffer);
-	                rsaPublicKey = Forge.pki.publicKeyFromAsn1(publicKeyAsn1);
+	                publicKeyBuffer = forge.util.createBuffer(publicKey, 'raw');
+	                publicKeyAsn1 = forge.asn1.fromDer(publicKeyBuffer);
+	                rsaPublicKey = forge.pki.publicKeyFromAsn1(publicKeyAsn1);
 	                return rsaPublicKey;
 	              } catch (_error) {
 	                e = _error;
@@ -44113,16 +44143,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    KeyStorageApi.getRSAPublicKey = function(userId) {
-	      throw new Error('KeyStorageApi:getRSAPublicKey() - not yet implemented!');
+	      if (!validateUuid(userId)) {
+	        return Promise.resolve(null);
+	      }
+	      return Requests.getAsUint8FromUrl(getRSAPublicKeyUrl(userId));
 	    };
 
 	    KeyStorageApi.setRSAPublicKey = function(publicKey) {
-	      var encodedPublicKey;
-	      encodedPublicKey = btoa(publicKey);
+	      var publicKeyAsUint8;
+	      if (!_.isString(publicKey) || _.isEmpty(publicKey)) {
+	        return Promise.resolve();
+	      }
+	      publicKeyAsUint8 = BinaryUtils.stringToUint8(publicKey);
 	      return Promise.resolve(axios(Requests.wrapCredentials({
 	        method: 'POST',
 	        url: setRSAPublicKeyUrl(),
-	        data: publicKey,
+	        data: publicKeyAsUint8,
 	        headers: DEFAULT_HEADERS
 	      })));
 	    };
@@ -49078,12 +49114,201 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(3), __webpack_require__(24), __webpack_require__(26)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(3), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var EMPTY_STRING, HEX_CHARS_PER_BYTE, HEX_SIZE_PER_CHAR, Logger, UINT16_REPRESENTABLE_SIZE, UINT8_REPRESENTABLE_SIZE, _, chunkUint8, cleanUint8Buffer, getCharCode, hexToUint8, intToUint8, joinUint8, logger, stringToHex, stringToUint16, stringToUint8, uint16ToString, uint16ToUint8, uint8ToBase64, uint8ToNumeric, uint8ToString, uint8ToUint16, validateString, validateUint16, validateUint8;
+	  _ = __webpack_require__(3);
+	  Logger = __webpack_require__(2);
+	  logger = Logger.get('BinaryUtils');
+	  EMPTY_STRING = '';
+	  validateString = function(arg) {
+	    if (!_.isString(arg)) {
+	      throw new Error('argument is not a string');
+	    }
+	  };
+	  validateUint8 = function(arg) {
+	    if (arg.buffer == null) {
+	      throw new Error('argument is not a uint8 array');
+	    }
+	  };
+	  validateUint16 = function(arg) {
+	    if (arg.buffer == null) {
+	      throw new Error('argument is not a uint16 array');
+	    }
+	  };
+	  getCharCode = function(c, maxSize) {
+	    var code;
+	    code = c.charCodeAt();
+	    if (code >= maxSize) {
+	      throw new Error('code outside of range!');
+	    } else {
+	      return code;
+	    }
+	  };
+	  HEX_CHARS_PER_BYTE = 2;
+	  HEX_SIZE_PER_CHAR = 16;
+	  hexToUint8 = function(hex) {
+	    var bytes, hexByte, index, j, ref, ref1;
+	    validateString(hex);
+	    bytes = [];
+	    for (index = j = 0, ref = hex.length, ref1 = HEX_CHARS_PER_BYTE; ref1 > 0 ? j < ref : j > ref; index = j += ref1) {
+	      hexByte = hex.substr(index, HEX_CHARS_PER_BYTE);
+	      bytes.push(parseInt(hexByte, HEX_SIZE_PER_CHAR));
+	    }
+	    return new Uint8Array(bytes);
+	  };
+	  stringToHex = function(str) {
+	    if (!_.isString(str)) {
+	      throw new Error('argument is not a string');
+	    }
+	    return str.split(EMPTY_STRING).map(function(c) {
+	      return c.charCodeAt().toString(16);
+	    }).join(EMPTY_STRING);
+	  };
+	  UINT8_REPRESENTABLE_SIZE = Math.pow(2, 8);
+	  UINT16_REPRESENTABLE_SIZE = Math.pow(2, 16);
+	  cleanUint8Buffer = function(arr) {
+	    var j, raw, ref, results;
+	    validateUint8(arr);
+	    if (arr.length === arr.byteLength && arr.length === arr.buffer.byteLength) {
+	      return arr;
+	    } else {
+	      raw = (function() {
+	        results = [];
+	        for (var j = 0, ref = arr.length; 0 <= ref ? j < ref : j > ref; 0 <= ref ? j++ : j--){ results.push(j); }
+	        return results;
+	      }).apply(this).map(function(i) {
+	        return arr[i];
+	      });
+	      return new Uint8Array(raw);
+	    }
+	  };
+	  uint8ToNumeric = function(arr) {
+	    var j, ref, results;
+	    validateUint8(arr);
+	    return (function() {
+	      results = [];
+	      for (var j = 0, ref = arr.length; 0 <= ref ? j < ref : j > ref; 0 <= ref ? j++ : j--){ results.push(j); }
+	      return results;
+	    }).apply(this).map(function(i) {
+	      return arr[i];
+	    });
+	  };
+	  uint8ToString = function(arr) {
+	    var j, ref, results;
+	    validateUint8(arr);
+	    return (function() {
+	      results = [];
+	      for (var j = 0, ref = arr.length; 0 <= ref ? j < ref : j > ref; 0 <= ref ? j++ : j--){ results.push(j); }
+	      return results;
+	    }).apply(this).map(function(i) {
+	      return String.fromCharCode(arr[i]);
+	    }).join(EMPTY_STRING);
+	  };
+	  uint8ToBase64 = function(arr) {
+	    validateUint8(arr);
+	    return btoa(uint8ToString(arr));
+	  };
+	  uint16ToString = function(arr) {
+	    var j, ref, results;
+	    validateUint16(arr);
+	    return (function() {
+	      results = [];
+	      for (var j = 0, ref = arr.length; 0 <= ref ? j < ref : j > ref; 0 <= ref ? j++ : j--){ results.push(j); }
+	      return results;
+	    }).apply(this).map(function(i) {
+	      return String.fromCharCode(arr[i]);
+	    }).join(EMPTY_STRING);
+	  };
+	  stringToUint8 = function(string) {
+	    validateString(string);
+	    return new Uint8Array(_.map(string, function(c) {
+	      return getCharCode(c, UINT8_REPRESENTABLE_SIZE);
+	    }));
+	  };
+	  stringToUint16 = function(string) {
+	    validateString(string);
+	    return new Uint16Array(_.map(string, function(c) {
+	      return getCharCode(c, UINT16_REPRESENTABLE_SIZE);
+	    }));
+	  };
+	  uint16ToUint8 = function(arr) {
+	    validateUint16(arr);
+	    return new Uint8Array(arr.buffer);
+	  };
+	  uint8ToUint16 = function(arr) {
+	    validateUint8(arr);
+	    return new Uint16Array(arr.buffer);
+	  };
+	  intToUint8 = function(integer) {
+	    var nextByte, rawBytes;
+	    rawBytes = [];
+	    while (integer > 0) {
+	      nextByte = integer & 0xff;
+	      rawBytes.push(nextByte);
+	      integer = (integer - nextByte) / 256;
+	    }
+	    return new Uint8Array(rawBytes);
+	  };
+	  joinUint8 = function(arrays) {
+	    var buffer, copyIndex, targetLength;
+	    targetLength = _.reduce(arrays, (function(length, arr) {
+	      return length + arr.length;
+	    }), 0);
+	    buffer = new Uint8Array(targetLength);
+	    copyIndex = 0;
+	    arrays.forEach(function(arr) {
+	      var j, ref, results, sublistIndex;
+	      results = [];
+	      for (sublistIndex = j = 0, ref = arr.length; 0 <= ref ? j < ref : j > ref; sublistIndex = 0 <= ref ? ++j : --j) {
+	        buffer[copyIndex] = arr[sublistIndex];
+	        results.push(copyIndex += 1);
+	      }
+	      return results;
+	    });
+	    return buffer;
+	  };
+	  chunkUint8 = function(array, chunkSizeBytes) {
+	    var arrays, buffer, copyIndex, subarr;
+	    validateUint8(array);
+	    arrays = [];
+	    copyIndex = 0;
+	    buffer = new Uint8Array(chunkSizeBytes);
+	    while (copyIndex < array.length) {
+	      subarr = array.subarray(copyIndex, copyIndex + chunkSizeBytes);
+	      arrays.push(new Uint8Array(subarr));
+	      copyIndex += chunkSizeBytes;
+	    }
+	    return arrays;
+	  };
+	  return {
+	    chunkUint8: chunkUint8,
+	    cleanUint8Buffer: cleanUint8Buffer,
+	    hexToUint8: hexToUint8,
+	    intToUint8: intToUint8,
+	    joinUint8: joinUint8,
+	    stringToHex: stringToHex,
+	    stringToUint16: stringToUint16,
+	    stringToUint8: stringToUint8,
+	    uint16ToString: uint16ToString,
+	    uint16ToUint8: uint16ToUint8,
+	    uint8ToString: uint8ToString,
+	    uint8ToBase64: uint8ToBase64,
+	    uint8ToUint16: uint8ToUint16,
+	    uint8ToNumeric: uint8ToNumeric
+	  };
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+
+/***/ },
+/* 24 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(3), __webpack_require__(25), __webpack_require__(27)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  'use strict';
 	  var BlockCiphertext, SCHEMA, Validator, _;
 	  _ = __webpack_require__(3);
-	  SCHEMA = __webpack_require__(26);
-	  Validator = __webpack_require__(24);
+	  SCHEMA = __webpack_require__(27);
+	  Validator = __webpack_require__(25);
 	  BlockCiphertext = (function() {
 	    function BlockCiphertext(raw) {
 	      _.extend(this, raw);
@@ -49102,13 +49327,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(25), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(26), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var logger, revalidator, validate;
 	  logger = __webpack_require__(2).get('validator');
-	  revalidator = __webpack_require__(25);
+	  revalidator = __webpack_require__(26);
 	  validate = function(object, classDef, schema) {
 	    var validation;
 	    if (!object instanceof classDef) {
@@ -49133,7 +49358,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(module) {(function (exports) {
@@ -49603,7 +49828,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)(module)))
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function() {
@@ -49633,14 +49858,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(3), __webpack_require__(6), __webpack_require__(28), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(3), __webpack_require__(6), __webpack_require__(29), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var CachingProviderLoader, CachingService, Config, Logger, log;
 	  Logger = __webpack_require__(2);
 	  Config = __webpack_require__(6);
-	  CachingProviderLoader = __webpack_require__(28);
+	  CachingProviderLoader = __webpack_require__(29);
 	  log = Logger.get('CachingService');
 	  CachingService = (function() {
 	    function CachingService() {}
@@ -49658,6 +49883,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    CachingService.DEFAULT_GROUP = 'default_group';
 
 	    CachingService.CRYPTO_SERVICES = 'object_crypto_services';
+
+	    CachingService.OBJECT_SEARCH_PAIRS = 'object_search_pairs';
 
 	    CachingService.MASTER_AES_CRYPTO_SERVICE = 'master_aes_crypto_service';
 
@@ -49726,10 +49953,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2), __webpack_require__(29), __webpack_require__(31)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2), __webpack_require__(30), __webpack_require__(32)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var CachingProviderLoader, Logger, log;
 	  Logger = __webpack_require__(2);
 	  log = Logger.get('CachingProviderLoader');
@@ -49739,9 +49966,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    CachingProviderLoader.load = function(uri) {
 	      var module;
 	      if (uri === 'kryptnostic.caching-provider.jscache') {
-	        module = __webpack_require__(29);
+	        module = __webpack_require__(30);
 	      } else if (uri === 'kryptnostic.caching-provider.memory') {
-	        module = __webpack_require__(31);
+	        module = __webpack_require__(32);
 	      }
 	      if (module != null) {
 	        return module;
@@ -49757,13 +49984,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(30), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(31), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var CACHE_TIMEOUT_MILLIS, Cache, JscacheCachingProvider, Logger, MAX_CACHED_OBJECTS, getCacheOpts, log;
 	  Logger = __webpack_require__(2);
-	  Cache = __webpack_require__(30);
+	  Cache = __webpack_require__(31);
 	  log = Logger.get('JsCacheCachingProvider');
 	  MAX_CACHED_OBJECTS = 500;
 	  CACHE_TIMEOUT_MILLIS = 1000 * 60 * 60 * 8;
@@ -49816,7 +50043,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -50254,7 +50481,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
@@ -50296,16 +50523,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 32 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(34), __webpack_require__(22), __webpack_require__(23), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(24), __webpack_require__(34)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  'use strict';
 	  var BlockCiphertext, CREDENTIAL_HEADER, CredentialLoader, PRINCIPAL_HEADER, Promise, axios, getAsUint8FromUrl, getBlockCiphertextFromUrl, wrapCredentials;
-	  axios = __webpack_require__(34);
+	  axios = __webpack_require__(35);
 	  Promise = __webpack_require__(22);
-	  BlockCiphertext = __webpack_require__(23);
-	  CredentialLoader = __webpack_require__(33);
+	  BlockCiphertext = __webpack_require__(24);
+	  CredentialLoader = __webpack_require__(34);
 	  PRINCIPAL_HEADER = 'X-Kryptnostic-Principal';
 	  CREDENTIAL_HEADER = 'X-Kryptnostic-Credential';
 	  wrapCredentials = function(request, credentials) {
@@ -50363,7 +50590,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 33 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(6), __webpack_require__(7)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
@@ -50390,10 +50617,21 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function() { return /******/ (function(modules) { // webpackBootstrap
+	/* WEBPACK VAR INJECTION */(function(process) {/* axios v0.9.1 | (c) 2016 by Matt Zabriskie */
+	(function webpackUniversalModuleDefinition(root, factory) {
+		if(true)
+			module.exports = factory();
+		else if(typeof define === 'function' && define.amd)
+			define([], factory);
+		else if(typeof exports === 'object')
+			exports["axios"] = factory();
+		else
+			root["axios"] = factory();
+	})(this, function() {
+	return /******/ (function(modules) { // webpackBootstrap
 	/******/ 	// The module cache
 	/******/ 	var installedModules = {};
 	/******/
@@ -50449,40 +50687,70 @@ return /******/ (function(modules) { // webpackBootstrap
 		
 		var defaults = __webpack_require__(2);
 		var utils = __webpack_require__(3);
-		var deprecatedMethod = __webpack_require__(4);
-		var dispatchRequest = __webpack_require__(5);
-		var InterceptorManager = __webpack_require__(6);
+		var dispatchRequest = __webpack_require__(4);
+		var InterceptorManager = __webpack_require__(12);
+		var isAbsoluteURL = __webpack_require__(13);
+		var combineURLs = __webpack_require__(14);
+		var bind = __webpack_require__(15);
+		var transformData = __webpack_require__(8);
 		
-		// Polyfill ES6 Promise if needed
-		(function () {
-		  // webpack is being used to set es6-promise to the native Promise
-		  // for the standalone build. It's necessary to make sure polyfill exists.
-		  var P = __webpack_require__(9);
-		  if (P && typeof P.polyfill === 'function') {
-		    P.polyfill();
+		function Axios(defaultConfig) {
+		  this.defaults = utils.merge({}, defaultConfig);
+		  this.interceptors = {
+		    request: new InterceptorManager(),
+		    response: new InterceptorManager()
+		  };
+		}
+		
+		Axios.prototype.request = function request(config) {
+		  /*eslint no-param-reassign:0*/
+		  // Allow for axios('example/url'[, config]) a la fetch API
+		  if (typeof config === 'string') {
+		    config = utils.merge({
+		      url: arguments[0]
+		    }, arguments[1]);
 		  }
-		})();
 		
-		var axios = module.exports = function axios(config) {
-		  config = utils.merge({
-		    method: 'get',
-		    headers: {},
-		    transformRequest: defaults.transformRequest,
-		    transformResponse: defaults.transformResponse
-		  }, config);
+		  config = utils.merge(defaults, this.defaults, { method: 'get' }, config);
+		
+		  // Support baseURL config
+		  if (config.baseURL && !isAbsoluteURL(config.url)) {
+		    config.url = combineURLs(config.baseURL, config.url);
+		  }
 		
 		  // Don't allow overriding defaults.withCredentials
-		  config.withCredentials = config.withCredentials || defaults.withCredentials;
+		  config.withCredentials = config.withCredentials || this.defaults.withCredentials;
+		
+		  // Transform request data
+		  config.data = transformData(
+		    config.data,
+		    config.headers,
+		    config.transformRequest
+		  );
+		
+		  // Flatten headers
+		  config.headers = utils.merge(
+		    config.headers.common || {},
+		    config.headers[config.method] || {},
+		    config.headers || {}
+		  );
+		
+		  utils.forEach(
+		    ['delete', 'get', 'head', 'post', 'put', 'patch', 'common'],
+		    function cleanHeaderConfig(method) {
+		      delete config.headers[method];
+		    }
+		  );
 		
 		  // Hook up interceptors middleware
 		  var chain = [dispatchRequest, undefined];
 		  var promise = Promise.resolve(config);
 		
-		  axios.interceptors.request.forEach(function (interceptor) {
+		  this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
 		    chain.unshift(interceptor.fulfilled, interceptor.rejected);
 		  });
 		
-		  axios.interceptors.response.forEach(function (interceptor) {
+		  this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
 		    chain.push(interceptor.fulfilled, interceptor.rejected);
 		  });
 		
@@ -50490,72 +50758,51 @@ return /******/ (function(modules) { // webpackBootstrap
 		    promise = promise.then(chain.shift(), chain.shift());
 		  }
 		
-		  // Provide alias for success
-		  promise.success = function success(fn) {
-		    deprecatedMethod('success', 'then', 'https://github.com/mzabriskie/axios/blob/master/README.md#response-api');
-		
-		    promise.then(function(response) {
-		      fn(response.data, response.status, response.headers, response.config);
-		    });
-		    return promise;
-		  };
-		
-		  // Provide alias for error
-		  promise.error = function error(fn) {
-		    deprecatedMethod('error', 'catch', 'https://github.com/mzabriskie/axios/blob/master/README.md#response-api');
-		
-		    promise.then(null, function(response) {
-		      fn(response.data, response.status, response.headers, response.config);
-		    });
-		    return promise;
-		  };
-		
 		  return promise;
 		};
 		
+		var defaultInstance = new Axios(defaults);
+		var axios = module.exports = bind(Axios.prototype.request, defaultInstance);
+		
+		axios.create = function create(defaultConfig) {
+		  return new Axios(defaultConfig);
+		};
+		
 		// Expose defaults
-		axios.defaults = defaults;
+		axios.defaults = defaultInstance.defaults;
 		
 		// Expose all/spread
-		axios.all = function (promises) {
+		axios.all = function all(promises) {
 		  return Promise.all(promises);
 		};
-		axios.spread = __webpack_require__(7);
+		axios.spread = __webpack_require__(16);
 		
 		// Expose interceptors
-		axios.interceptors = {
-		  request: new InterceptorManager(),
-		  response: new InterceptorManager()
-		};
+		axios.interceptors = defaultInstance.interceptors;
 		
 		// Provide aliases for supported request methods
-		(function () {
-		  function createShortMethods() {
-		    utils.forEach(arguments, function (method) {
-		      axios[method] = function (url, config) {
-		        return axios(utils.merge(config || {}, {
-		          method: method,
-		          url: url
-		        }));
-		      };
-		    });
-		  }
+		utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
+		  /*eslint func-names:0*/
+		  Axios.prototype[method] = function(url, config) {
+		    return this.request(utils.merge(config || {}, {
+		      method: method,
+		      url: url
+		    }));
+		  };
+		  axios[method] = bind(Axios.prototype[method], defaultInstance);
+		});
 		
-		  function createShortMethodsWithData() {
-		    utils.forEach(arguments, function (method) {
-		      axios[method] = function (url, data, config) {
-		        return axios(utils.merge(config || {}, {
-		          method: method,
-		          url: url,
-		          data: data
-		        }));
-		      };
-		    });
-		  }
-		
-		  createShortMethods('delete', 'get', 'head');
-		  createShortMethodsWithData('post', 'put', 'patch');
-		})();
+		utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
+		  /*eslint func-names:0*/
+		  Axios.prototype[method] = function(url, data, config) {
+		    return this.request(utils.merge(config || {}, {
+		      method: method,
+		      url: url,
+		      data: data
+		    }));
+		  };
+		  axios[method] = bind(Axios.prototype[method], defaultInstance);
+		});
 
 
 	/***/ },
@@ -50572,8 +50819,8 @@ return /******/ (function(modules) { // webpackBootstrap
 		};
 		
 		module.exports = {
-		  transformRequest: [function (data, headers) {
-		    if(utils.isFormData(data)) {
+		  transformRequest: [function transformResponseJSON(data, headers) {
+		    if (utils.isFormData(data)) {
 		      return data;
 		    }
 		    if (utils.isArrayBuffer(data)) {
@@ -50584,20 +50831,29 @@ return /******/ (function(modules) { // webpackBootstrap
 		    }
 		    if (utils.isObject(data) && !utils.isFile(data) && !utils.isBlob(data)) {
 		      // Set application/json if no Content-Type has been specified
-		      if (!utils.isUndefined(headers) && utils.isUndefined(headers['Content-Type'])) {
-		        headers['Content-Type'] = 'application/json;charset=utf-8';
+		      if (!utils.isUndefined(headers)) {
+		        utils.forEach(headers, function processContentTypeHeader(val, key) {
+		          if (key.toLowerCase() === 'content-type') {
+		            headers['Content-Type'] = val;
+		          }
+		        });
+		
+		        if (utils.isUndefined(headers['Content-Type'])) {
+		          headers['Content-Type'] = 'application/json;charset=utf-8';
+		        }
 		      }
 		      return JSON.stringify(data);
 		    }
 		    return data;
 		  }],
 		
-		  transformResponse: [function (data) {
+		  transformResponse: [function transformResponseJSON(data) {
+		    /*eslint no-param-reassign:0*/
 		    if (typeof data === 'string') {
 		      data = data.replace(PROTECTION_PREFIX, '');
 		      try {
 		        data = JSON.parse(data);
-		      } catch (e) {}
+		      } catch (e) { /* Ignore */ }
 		    }
 		    return data;
 		  }],
@@ -50611,6 +50867,8 @@ return /******/ (function(modules) { // webpackBootstrap
 		    put: utils.merge(DEFAULT_CONTENT_TYPE)
 		  },
 		
+		  timeout: 0,
+		
 		  xsrfCookieName: 'XSRF-TOKEN',
 		  xsrfHeaderName: 'X-XSRF-TOKEN'
 		};
@@ -50618,7 +50876,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/***/ },
 	/* 3 */
-	/***/ function(module, exports, __webpack_require__) {
+	/***/ function(module, exports) {
 
 		'use strict';
 		
@@ -50665,11 +50923,13 @@ return /******/ (function(modules) { // webpackBootstrap
 		 * @returns {boolean} True if value is a view on an ArrayBuffer, otherwise false
 		 */
 		function isArrayBufferView(val) {
+		  var result;
 		  if ((typeof ArrayBuffer !== 'undefined') && (ArrayBuffer.isView)) {
-		    return ArrayBuffer.isView(val);
+		    result = ArrayBuffer.isView(val);
 		  } else {
-		    return (val) && (val.buffer) && (val.buffer instanceof ArrayBuffer);
+		    result = (val) && (val.buffer) && (val.buffer instanceof ArrayBuffer);
 		  }
+		  return result;
 		}
 		
 		/**
@@ -50753,9 +51013,30 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 		
 		/**
+		 * Determine if we're running in a standard browser environment
+		 *
+		 * This allows axios to run in a web worker, and react-native.
+		 * Both environments support XMLHttpRequest, but not fully standard globals.
+		 *
+		 * web workers:
+		 *  typeof window -> undefined
+		 *  typeof document -> undefined
+		 *
+		 * react-native:
+		 *  typeof document.createElement -> undefined
+		 */
+		function isStandardBrowserEnv() {
+		  return (
+		    typeof window !== 'undefined' &&
+		    typeof document !== 'undefined' &&
+		    typeof document.createElement === 'function'
+		  );
+		}
+		
+		/**
 		 * Iterate over an Array or an Object invoking a function for each item.
 		 *
-		 * If `obj` is an Array or arguments callback will be called passing
+		 * If `obj` is an Array callback will be called passing
 		 * the value, index, and complete array for each item.
 		 *
 		 * If 'obj' is an Object callback will be called passing
@@ -50770,22 +51051,19 @@ return /******/ (function(modules) { // webpackBootstrap
 		    return;
 		  }
 		
-		  // Check if obj is array-like
-		  var isArrayLike = isArray(obj) || (typeof obj === 'object' && !isNaN(obj.length));
-		
 		  // Force an array if not already something iterable
-		  if (typeof obj !== 'object' && !isArrayLike) {
+		  if (typeof obj !== 'object' && !isArray(obj)) {
+		    /*eslint no-param-reassign:0*/
 		    obj = [obj];
 		  }
 		
-		  // Iterate over array values
-		  if (isArrayLike) {
+		  if (isArray(obj)) {
+		    // Iterate over array values
 		    for (var i = 0, l = obj.length; i < l; i++) {
 		      fn.call(null, obj[i], i, obj);
 		    }
-		  }
-		  // Iterate over object keys
-		  else {
+		  } else {
+		    // Iterate over object keys
 		    for (var key in obj) {
 		      if (obj.hasOwnProperty(key)) {
 		        fn.call(null, obj[key], key, obj);
@@ -50811,13 +51089,19 @@ return /******/ (function(modules) { // webpackBootstrap
 		 * @param {Object} obj1 Object to merge
 		 * @returns {Object} Result of all merge properties
 		 */
-		function merge(/*obj1, obj2, obj3, ...*/) {
+		function merge(/* obj1, obj2, obj3, ... */) {
 		  var result = {};
-		  forEach(arguments, function (obj) {
-		    forEach(obj, function (val, key) {
+		  function assignValue(val, key) {
+		    if (typeof result[key] === 'object' && typeof val === 'object') {
+		      result[key] = merge(result[key], val);
+		    } else {
 		      result[key] = val;
-		    });
-		  });
+		    }
+		  }
+		
+		  for (var i = 0, l = arguments.length; i < l; i++) {
+		    forEach(arguments[i], assignValue);
+		  }
 		  return result;
 		}
 		
@@ -50833,6 +51117,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		  isDate: isDate,
 		  isFile: isFile,
 		  isBlob: isBlob,
+		  isStandardBrowserEnv: isStandardBrowserEnv,
 		  forEach: forEach,
 		  merge: merge,
 		  trim: trim
@@ -50846,34 +51131,6 @@ return /******/ (function(modules) { // webpackBootstrap
 		'use strict';
 		
 		/**
-		 * Supply a warning to the developer that a method they are using
-		 * has been deprecated.
-		 *
-		 * @param {string} method The name of the deprecated method
-		 * @param {string} [instead] The alternate method to use if applicable
-		 * @param {string} [docs] The documentation URL to get further details
-		 */
-		module.exports = function deprecatedMethod(method, instead, docs) {
-		  try {
-		    console.warn(
-		      'DEPRECATED method `' + method + '`.' +
-		      (instead ? ' Use `' + instead + '` instead.' : '') +
-		      ' This method will be removed in a future release.');
-		
-		    if (docs) {
-		      console.warn('For more information about usage see ' + docs);
-		    }
-		  } catch (e) {}
-		};
-
-
-	/***/ },
-	/* 5 */
-	/***/ function(module, exports, __webpack_require__) {
-
-		/* WEBPACK VAR INJECTION */(function(process) {'use strict';
-		
-		/**
 		 * Dispatch a request to the server using whichever adapter
 		 * is supported by the current environment.
 		 *
@@ -50881,15 +51138,23 @@ return /******/ (function(modules) { // webpackBootstrap
 		 * @returns {Promise} The Promise to be fulfilled
 		 */
 		module.exports = function dispatchRequest(config) {
-		  return new Promise(function (resolve, reject) {
+		  return new Promise(function executor(resolve, reject) {
 		    try {
-		      // For browsers use XHR adapter
-		      if (typeof window !== 'undefined') {
-		        __webpack_require__(8)(resolve, reject, config);
+		      var adapter;
+		
+		      if (typeof config.adapter === 'function') {
+		        // For custom adapter support
+		        adapter = config.adapter;
+		      } else if (typeof XMLHttpRequest !== 'undefined') {
+		        // For browsers use XHR adapter
+		        adapter = __webpack_require__(5);
+		      } else if (typeof process !== 'undefined') {
+		        // For node use HTTP adapter
+		        adapter = __webpack_require__(5);
 		      }
-		      // For node use HTTP adapter
-		      else if (typeof process !== 'undefined') {
-		        __webpack_require__(8)(resolve, reject, config);
+		
+		      if (typeof adapter === 'function') {
+		        adapter(resolve, reject, config);
 		      }
 		    } catch (e) {
 		      reject(e);
@@ -50897,11 +51162,463 @@ return /******/ (function(modules) { // webpackBootstrap
 		  });
 		};
 		
+
+
+	/***/ },
+	/* 5 */
+	/***/ function(module, exports, __webpack_require__) {
+
+		'use strict';
 		
-		/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+		var utils = __webpack_require__(3);
+		var buildURL = __webpack_require__(6);
+		var parseHeaders = __webpack_require__(7);
+		var transformData = __webpack_require__(8);
+		var isURLSameOrigin = __webpack_require__(9);
+		var btoa = window.btoa || __webpack_require__(10);
+		
+		module.exports = function xhrAdapter(resolve, reject, config) {
+		  var requestData = config.data;
+		  var requestHeaders = config.headers;
+		
+		  if (utils.isFormData(requestData)) {
+		    delete requestHeaders['Content-Type']; // Let the browser set it
+		  }
+		
+		  var request = new XMLHttpRequest();
+		
+		  // For IE 8/9 CORS support
+		  // Only supports POST and GET calls and doesn't returns the response headers.
+		  if (window.XDomainRequest && !('withCredentials' in request) && !isURLSameOrigin(config.url)) {
+		    request = new window.XDomainRequest();
+		  }
+		
+		  // HTTP basic authentication
+		  if (config.auth) {
+		    var username = config.auth.username || '';
+		    var password = config.auth.password || '';
+		    requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
+		  }
+		
+		  request.open(config.method.toUpperCase(), buildURL(config.url, config.params, config.paramsSerializer), true);
+		
+		  // Set the request timeout in MS
+		  request.timeout = config.timeout;
+		
+		  // Listen for ready state
+		  request.onload = function handleLoad() {
+		    if (!request) {
+		      return;
+		    }
+		    // Prepare the response
+		    var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
+		    var responseData = ['text', ''].indexOf(config.responseType || '') !== -1 ? request.responseText : request.response;
+		    var response = {
+		      data: transformData(
+		        responseData,
+		        responseHeaders,
+		        config.transformResponse
+		      ),
+		      // IE sends 1223 instead of 204 (https://github.com/mzabriskie/axios/issues/201)
+		      status: request.status === 1223 ? 204 : request.status,
+		      statusText: request.status === 1223 ? 'No Content' : request.statusText,
+		      headers: responseHeaders,
+		      config: config
+		    };
+		
+		    // Resolve or reject the Promise based on the status
+		    ((response.status >= 200 && response.status < 300) ||
+		     (!('status' in request) && response.responseText) ?
+		      resolve :
+		      reject)(response);
+		
+		    // Clean up request
+		    request = null;
+		  };
+		
+		  // Handle low level network errors
+		  request.onerror = function handleError() {
+		    // Real errors are hidden from us by the browser
+		    // onerror should only fire if it's a network error
+		    reject(new Error('Network Error'));
+		
+		    // Clean up request
+		    request = null;
+		  };
+		
+		  // Add xsrf header
+		  // This is only done if running in a standard browser environment.
+		  // Specifically not if we're in a web worker, or react-native.
+		  if (utils.isStandardBrowserEnv()) {
+		    var cookies = __webpack_require__(11);
+		
+		    // Add xsrf header
+		    var xsrfValue = config.withCredentials || isURLSameOrigin(config.url) ?
+		        cookies.read(config.xsrfCookieName) :
+		        undefined;
+		
+		    if (xsrfValue) {
+		      requestHeaders[config.xsrfHeaderName] = xsrfValue;
+		    }
+		  }
+		
+		  // Add headers to the request
+		  if ('setRequestHeader' in request) {
+		    utils.forEach(requestHeaders, function setRequestHeader(val, key) {
+		      if (typeof requestData === 'undefined' && key.toLowerCase() === 'content-type') {
+		        // Remove Content-Type if data is undefined
+		        delete requestHeaders[key];
+		      } else {
+		        // Otherwise add header to the request
+		        request.setRequestHeader(key, val);
+		      }
+		    });
+		  }
+		
+		  // Add withCredentials to request if needed
+		  if (config.withCredentials) {
+		    request.withCredentials = true;
+		  }
+		
+		  // Add responseType to request if needed
+		  if (config.responseType) {
+		    try {
+		      request.responseType = config.responseType;
+		    } catch (e) {
+		      if (request.responseType !== 'json') {
+		        throw e;
+		      }
+		    }
+		  }
+		
+		  if (utils.isArrayBuffer(requestData)) {
+		    requestData = new DataView(requestData);
+		  }
+		
+		  // Send the request
+		  request.send(requestData);
+		};
+
 
 	/***/ },
 	/* 6 */
+	/***/ function(module, exports, __webpack_require__) {
+
+		'use strict';
+		
+		var utils = __webpack_require__(3);
+		
+		function encode(val) {
+		  return encodeURIComponent(val).
+		    replace(/%40/gi, '@').
+		    replace(/%3A/gi, ':').
+		    replace(/%24/g, '$').
+		    replace(/%2C/gi, ',').
+		    replace(/%20/g, '+').
+		    replace(/%5B/gi, '[').
+		    replace(/%5D/gi, ']');
+		}
+		
+		/**
+		 * Build a URL by appending params to the end
+		 *
+		 * @param {string} url The base of the url (e.g., http://www.google.com)
+		 * @param {object} [params] The params to be appended
+		 * @returns {string} The formatted url
+		 */
+		module.exports = function buildURL(url, params, paramsSerializer) {
+		  /*eslint no-param-reassign:0*/
+		  if (!params) {
+		    return url;
+		  }
+		
+		  var serializedParams;
+		  if (paramsSerializer) {
+		    serializedParams = paramsSerializer(params);
+		  } else {
+		    var parts = [];
+		
+		    utils.forEach(params, function serialize(val, key) {
+		      if (val === null || typeof val === 'undefined') {
+		        return;
+		      }
+		
+		      if (utils.isArray(val)) {
+		        key = key + '[]';
+		      }
+		
+		      if (!utils.isArray(val)) {
+		        val = [val];
+		      }
+		
+		      utils.forEach(val, function parseValue(v) {
+		        if (utils.isDate(v)) {
+		          v = v.toISOString();
+		        } else if (utils.isObject(v)) {
+		          v = JSON.stringify(v);
+		        }
+		        parts.push(encode(key) + '=' + encode(v));
+		      });
+		    });
+		
+		    serializedParams = parts.join('&');
+		  }
+		
+		  if (serializedParams) {
+		    url += (url.indexOf('?') === -1 ? '?' : '&') + serializedParams;
+		  }
+		
+		  return url;
+		};
+		
+
+
+	/***/ },
+	/* 7 */
+	/***/ function(module, exports, __webpack_require__) {
+
+		'use strict';
+		
+		var utils = __webpack_require__(3);
+		
+		/**
+		 * Parse headers into an object
+		 *
+		 * ```
+		 * Date: Wed, 27 Aug 2014 08:58:49 GMT
+		 * Content-Type: application/json
+		 * Connection: keep-alive
+		 * Transfer-Encoding: chunked
+		 * ```
+		 *
+		 * @param {String} headers Headers needing to be parsed
+		 * @returns {Object} Headers parsed into an object
+		 */
+		module.exports = function parseHeaders(headers) {
+		  var parsed = {};
+		  var key;
+		  var val;
+		  var i;
+		
+		  if (!headers) { return parsed; }
+		
+		  utils.forEach(headers.split('\n'), function parser(line) {
+		    i = line.indexOf(':');
+		    key = utils.trim(line.substr(0, i)).toLowerCase();
+		    val = utils.trim(line.substr(i + 1));
+		
+		    if (key) {
+		      parsed[key] = parsed[key] ? parsed[key] + ', ' + val : val;
+		    }
+		  });
+		
+		  return parsed;
+		};
+
+
+	/***/ },
+	/* 8 */
+	/***/ function(module, exports, __webpack_require__) {
+
+		'use strict';
+		
+		var utils = __webpack_require__(3);
+		
+		/**
+		 * Transform the data for a request or a response
+		 *
+		 * @param {Object|String} data The data to be transformed
+		 * @param {Array} headers The headers for the request or response
+		 * @param {Array|Function} fns A single function or Array of functions
+		 * @returns {*} The resulting transformed data
+		 */
+		module.exports = function transformData(data, headers, fns) {
+		  /*eslint no-param-reassign:0*/
+		  utils.forEach(fns, function transform(fn) {
+		    data = fn(data, headers);
+		  });
+		
+		  return data;
+		};
+
+
+	/***/ },
+	/* 9 */
+	/***/ function(module, exports, __webpack_require__) {
+
+		'use strict';
+		
+		var utils = __webpack_require__(3);
+		
+		module.exports = (
+		  utils.isStandardBrowserEnv() ?
+		
+		  // Standard browser envs have full support of the APIs needed to test
+		  // whether the request URL is of the same origin as current location.
+		  (function standardBrowserEnv() {
+		    var msie = /(msie|trident)/i.test(navigator.userAgent);
+		    var urlParsingNode = document.createElement('a');
+		    var originURL;
+		
+		    /**
+		    * Parse a URL to discover it's components
+		    *
+		    * @param {String} url The URL to be parsed
+		    * @returns {Object}
+		    */
+		    function resolveURL(url) {
+		      var href = url;
+		
+		      if (msie) {
+		        // IE needs attribute set twice to normalize properties
+		        urlParsingNode.setAttribute('href', href);
+		        href = urlParsingNode.href;
+		      }
+		
+		      urlParsingNode.setAttribute('href', href);
+		
+		      // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
+		      return {
+		        href: urlParsingNode.href,
+		        protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
+		        host: urlParsingNode.host,
+		        search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
+		        hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
+		        hostname: urlParsingNode.hostname,
+		        port: urlParsingNode.port,
+		        pathname: (urlParsingNode.pathname.charAt(0) === '/') ?
+		                  urlParsingNode.pathname :
+		                  '/' + urlParsingNode.pathname
+		      };
+		    }
+		
+		    originURL = resolveURL(window.location.href);
+		
+		    /**
+		    * Determine if a URL shares the same origin as the current location
+		    *
+		    * @param {String} requestURL The URL to test
+		    * @returns {boolean} True if URL shares the same origin, otherwise false
+		    */
+		    return function isURLSameOrigin(requestURL) {
+		      var parsed = (utils.isString(requestURL)) ? resolveURL(requestURL) : requestURL;
+		      return (parsed.protocol === originURL.protocol &&
+		            parsed.host === originURL.host);
+		    };
+		  })() :
+		
+		  // Non standard browser envs (web workers, react-native) lack needed support.
+		  (function nonStandardBrowserEnv() {
+		    return function isURLSameOrigin() {
+		      return true;
+		    };
+		  })()
+		);
+
+
+	/***/ },
+	/* 10 */
+	/***/ function(module, exports) {
+
+		'use strict';
+		
+		// btoa polyfill for IE<10 courtesy https://github.com/davidchambers/Base64.js
+		
+		var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+		
+		function InvalidCharacterError(message) {
+		  this.message = message;
+		}
+		InvalidCharacterError.prototype = new Error;
+		InvalidCharacterError.prototype.code = 5;
+		InvalidCharacterError.prototype.name = 'InvalidCharacterError';
+		
+		function btoa(input) {
+		  var str = String(input);
+		  var output = '';
+		  for (
+		    // initialize result and counter
+		    var block, charCode, idx = 0, map = chars;
+		    // if the next str index does not exist:
+		    //   change the mapping table to "="
+		    //   check if d has no fractional digits
+		    str.charAt(idx | 0) || (map = '=', idx % 1);
+		    // "8 - idx % 1 * 8" generates the sequence 2, 4, 6, 8
+		    output += map.charAt(63 & block >> 8 - idx % 1 * 8)
+		  ) {
+		    charCode = str.charCodeAt(idx += 3 / 4);
+		    if (charCode > 0xFF) {
+		      throw new InvalidCharacterError('INVALID_CHARACTER_ERR: DOM Exception 5');
+		    }
+		    block = block << 8 | charCode;
+		  }
+		  return output;
+		}
+		
+		module.exports = btoa;
+
+
+	/***/ },
+	/* 11 */
+	/***/ function(module, exports, __webpack_require__) {
+
+		'use strict';
+		
+		var utils = __webpack_require__(3);
+		
+		module.exports = (
+		  utils.isStandardBrowserEnv() ?
+		
+		  // Standard browser envs support document.cookie
+		  (function standardBrowserEnv() {
+		    return {
+		      write: function write(name, value, expires, path, domain, secure) {
+		        var cookie = [];
+		        cookie.push(name + '=' + encodeURIComponent(value));
+		
+		        if (utils.isNumber(expires)) {
+		          cookie.push('expires=' + new Date(expires).toGMTString());
+		        }
+		
+		        if (utils.isString(path)) {
+		          cookie.push('path=' + path);
+		        }
+		
+		        if (utils.isString(domain)) {
+		          cookie.push('domain=' + domain);
+		        }
+		
+		        if (secure === true) {
+		          cookie.push('secure');
+		        }
+		
+		        document.cookie = cookie.join('; ');
+		      },
+		
+		      read: function read(name) {
+		        var match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+		        return (match ? decodeURIComponent(match[3]) : null);
+		      },
+		
+		      remove: function remove(name) {
+		        this.write(name, '', Date.now() - 86400000);
+		      }
+		    };
+		  })() :
+		
+		  // Non standard browser env (web workers, react-native) lack needed support.
+		  (function nonStandardBrowserEnv() {
+		    return {
+		      write: function write() {},
+		      read: function read() { return null; },
+		      remove: function remove() {}
+		    };
+		  })()
+		);
+
+
+	/***/ },
+	/* 12 */
 	/***/ function(module, exports, __webpack_require__) {
 
 		'use strict';
@@ -50920,7 +51637,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		 *
 		 * @return {Number} An ID used to remove interceptor later
 		 */
-		InterceptorManager.prototype.use = function (fulfilled, rejected) {
+		InterceptorManager.prototype.use = function use(fulfilled, rejected) {
 		  this.handlers.push({
 		    fulfilled: fulfilled,
 		    rejected: rejected
@@ -50933,7 +51650,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		 *
 		 * @param {Number} id The ID that was returned by `use`
 		 */
-		InterceptorManager.prototype.eject = function (id) {
+		InterceptorManager.prototype.eject = function eject(id) {
 		  if (this.handlers[id]) {
 		    this.handlers[id] = null;
 		  }
@@ -50943,12 +51660,12 @@ return /******/ (function(modules) { // webpackBootstrap
 		 * Iterate over all the registered interceptors
 		 *
 		 * This method is particularly useful for skipping over any
-		 * interceptors that may have become `null` calling `remove`.
+		 * interceptors that may have become `null` calling `eject`.
 		 *
 		 * @param {Function} fn The function to call for each interceptor
 		 */
-		InterceptorManager.prototype.forEach = function (fn) {
-		  utils.forEach(this.handlers, function (h) {
+		InterceptorManager.prototype.forEach = function forEach(fn) {
+		  utils.forEach(this.handlers, function forEachHandler(h) {
 		    if (h !== null) {
 		      fn(h);
 		    }
@@ -50959,8 +51676,63 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	/***/ },
-	/* 7 */
-	/***/ function(module, exports, __webpack_require__) {
+	/* 13 */
+	/***/ function(module, exports) {
+
+		'use strict';
+		
+		/**
+		 * Determines whether the specified URL is absolute
+		 *
+		 * @param {string} url The URL to test
+		 * @returns {boolean} True if the specified URL is absolute, otherwise false
+		 */
+		module.exports = function isAbsoluteURL(url) {
+		  // A URL is considered absolute if it begins with "<scheme>://" or "//" (protocol-relative URL).
+		  // RFC 3986 defines scheme name as a sequence of characters beginning with a letter and followed
+		  // by any combination of letters, digits, plus, period, or hyphen.
+		  return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
+		};
+
+
+	/***/ },
+	/* 14 */
+	/***/ function(module, exports) {
+
+		'use strict';
+		
+		/**
+		 * Creates a new URL by combining the specified URLs
+		 *
+		 * @param {string} baseURL The base URL
+		 * @param {string} relativeURL The relative URL
+		 * @returns {string} The combined URL
+		 */
+		module.exports = function combineURLs(baseURL, relativeURL) {
+		  return baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '');
+		};
+
+
+	/***/ },
+	/* 15 */
+	/***/ function(module, exports) {
+
+		'use strict';
+		
+		module.exports = function bind(fn, thisArg) {
+		  return function wrap() {
+		    var args = new Array(arguments.length);
+		    for (var i = 0; i < args.length; i++) {
+		      args[i] = arguments[i];
+		    }
+		    return fn.apply(thisArg, args);
+		  };
+		};
+
+
+	/***/ },
+	/* 16 */
+	/***/ function(module, exports) {
 
 		'use strict';
 		
@@ -50985,1407 +51757,21 @@ return /******/ (function(modules) { // webpackBootstrap
 		 * @returns {Function}
 		 */
 		module.exports = function spread(callback) {
-		  return function (arr) {
-		    callback.apply(null, arr);
+		  return function wrap(arr) {
+		    return callback.apply(null, arr);
 		  };
 		};
-
-
-	/***/ },
-	/* 8 */
-	/***/ function(module, exports, __webpack_require__) {
-
-		'use strict';
-		
-		/*global ActiveXObject:true*/
-		
-		var defaults = __webpack_require__(2);
-		var utils = __webpack_require__(3);
-		var buildUrl = __webpack_require__(11);
-		var cookies = __webpack_require__(12);
-		var parseHeaders = __webpack_require__(13);
-		var transformData = __webpack_require__(14);
-		var urlIsSameOrigin = __webpack_require__(15);
-		
-		module.exports = function xhrAdapter(resolve, reject, config) {
-		  // Transform request data
-		  var data = transformData(
-		    config.data,
-		    config.headers,
-		    config.transformRequest
-		  );
-		
-		  // Merge headers
-		  var requestHeaders = utils.merge(
-		    defaults.headers.common,
-		    defaults.headers[config.method] || {},
-		    config.headers || {}
-		  );
-		
-		  if (utils.isFormData(data)) {
-		    delete requestHeaders['Content-Type']; // Let the browser set it
-		  }
-		
-		  // Create the request
-		  var request = new (XMLHttpRequest || ActiveXObject)('Microsoft.XMLHTTP');
-		  request.open(config.method.toUpperCase(), buildUrl(config.url, config.params), true);
-		
-		  // Listen for ready state
-		  request.onreadystatechange = function () {
-		    if (request && request.readyState === 4) {
-		      // Prepare the response
-		      var responseHeaders = parseHeaders(request.getAllResponseHeaders());
-		      var responseData = ['text', ''].indexOf(config.responseType || '') !== -1 ? request.responseText : request.response;
-		      var response = {
-		        data: transformData(
-		          responseData,
-		          responseHeaders,
-		          config.transformResponse
-		        ),
-		        status: request.status,
-		        statusText: request.statusText,
-		        headers: responseHeaders,
-		        config: config
-		      };
-		
-		      // Resolve or reject the Promise based on the status
-		      (request.status >= 200 && request.status < 300 ?
-		        resolve :
-		        reject)(response);
-		
-		      // Clean up request
-		      request = null;
-		    }
-		  };
-		
-		  // Add xsrf header
-		  var xsrfValue = urlIsSameOrigin(config.url) ?
-		      cookies.read(config.xsrfCookieName || defaults.xsrfCookieName) :
-		      undefined;
-		  if (xsrfValue) {
-		    requestHeaders[config.xsrfHeaderName || defaults.xsrfHeaderName] = xsrfValue;
-		  }
-		
-		  // Add headers to the request
-		  utils.forEach(requestHeaders, function (val, key) {
-		    // Remove Content-Type if data is undefined
-		    if (!data && key.toLowerCase() === 'content-type') {
-		      delete requestHeaders[key];
-		    }
-		    // Otherwise add header to the request
-		    else {
-		      request.setRequestHeader(key, val);
-		    }
-		  });
-		
-		  // Add withCredentials to request if needed
-		  if (config.withCredentials) {
-		    request.withCredentials = true;
-		  }
-		
-		  // Add responseType to request if needed
-		  if (config.responseType) {
-		    try {
-		      request.responseType = config.responseType;
-		    } catch (e) {
-		      if (request.responseType !== 'json') {
-		        throw e;
-		      }
-		    }
-		  }
-		
-		  if (utils.isArrayBuffer(data)) {
-		    data = new DataView(data);
-		  }
-		
-		  // Send the request
-		  request.send(data);
-		};
-
-
-	/***/ },
-	/* 9 */
-	/***/ function(module, exports, __webpack_require__) {
-
-		var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
-		 * @overview es6-promise - a tiny implementation of Promises/A+.
-		 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
-		 * @license   Licensed under MIT license
-		 *            See https://raw.githubusercontent.com/jakearchibald/es6-promise/master/LICENSE
-		 * @version   2.0.1
-		 */
-		
-		(function() {
-		    "use strict";
-		
-		    function $$utils$$objectOrFunction(x) {
-		      return typeof x === 'function' || (typeof x === 'object' && x !== null);
-		    }
-		
-		    function $$utils$$isFunction(x) {
-		      return typeof x === 'function';
-		    }
-		
-		    function $$utils$$isMaybeThenable(x) {
-		      return typeof x === 'object' && x !== null;
-		    }
-		
-		    var $$utils$$_isArray;
-		
-		    if (!Array.isArray) {
-		      $$utils$$_isArray = function (x) {
-		        return Object.prototype.toString.call(x) === '[object Array]';
-		      };
-		    } else {
-		      $$utils$$_isArray = Array.isArray;
-		    }
-		
-		    var $$utils$$isArray = $$utils$$_isArray;
-		    var $$utils$$now = Date.now || function() { return new Date().getTime(); };
-		    function $$utils$$F() { }
-		
-		    var $$utils$$o_create = (Object.create || function (o) {
-		      if (arguments.length > 1) {
-		        throw new Error('Second argument not supported');
-		      }
-		      if (typeof o !== 'object') {
-		        throw new TypeError('Argument must be an object');
-		      }
-		      $$utils$$F.prototype = o;
-		      return new $$utils$$F();
-		    });
-		
-		    var $$asap$$len = 0;
-		
-		    var $$asap$$default = function asap(callback, arg) {
-		      $$asap$$queue[$$asap$$len] = callback;
-		      $$asap$$queue[$$asap$$len + 1] = arg;
-		      $$asap$$len += 2;
-		      if ($$asap$$len === 2) {
-		        // If len is 1, that means that we need to schedule an async flush.
-		        // If additional callbacks are queued before the queue is flushed, they
-		        // will be processed by this flush that we are scheduling.
-		        $$asap$$scheduleFlush();
-		      }
-		    };
-		
-		    var $$asap$$browserGlobal = (typeof window !== 'undefined') ? window : {};
-		    var $$asap$$BrowserMutationObserver = $$asap$$browserGlobal.MutationObserver || $$asap$$browserGlobal.WebKitMutationObserver;
-		
-		    // test for web worker but not in IE10
-		    var $$asap$$isWorker = typeof Uint8ClampedArray !== 'undefined' &&
-		      typeof importScripts !== 'undefined' &&
-		      typeof MessageChannel !== 'undefined';
-		
-		    // node
-		    function $$asap$$useNextTick() {
-		      return function() {
-		        process.nextTick($$asap$$flush);
-		      };
-		    }
-		
-		    function $$asap$$useMutationObserver() {
-		      var iterations = 0;
-		      var observer = new $$asap$$BrowserMutationObserver($$asap$$flush);
-		      var node = document.createTextNode('');
-		      observer.observe(node, { characterData: true });
-		
-		      return function() {
-		        node.data = (iterations = ++iterations % 2);
-		      };
-		    }
-		
-		    // web worker
-		    function $$asap$$useMessageChannel() {
-		      var channel = new MessageChannel();
-		      channel.port1.onmessage = $$asap$$flush;
-		      return function () {
-		        channel.port2.postMessage(0);
-		      };
-		    }
-		
-		    function $$asap$$useSetTimeout() {
-		      return function() {
-		        setTimeout($$asap$$flush, 1);
-		      };
-		    }
-		
-		    var $$asap$$queue = new Array(1000);
-		
-		    function $$asap$$flush() {
-		      for (var i = 0; i < $$asap$$len; i+=2) {
-		        var callback = $$asap$$queue[i];
-		        var arg = $$asap$$queue[i+1];
-		
-		        callback(arg);
-		
-		        $$asap$$queue[i] = undefined;
-		        $$asap$$queue[i+1] = undefined;
-		      }
-		
-		      $$asap$$len = 0;
-		    }
-		
-		    var $$asap$$scheduleFlush;
-		
-		    // Decide what async method to use to triggering processing of queued callbacks:
-		    if (typeof process !== 'undefined' && {}.toString.call(process) === '[object process]') {
-		      $$asap$$scheduleFlush = $$asap$$useNextTick();
-		    } else if ($$asap$$BrowserMutationObserver) {
-		      $$asap$$scheduleFlush = $$asap$$useMutationObserver();
-		    } else if ($$asap$$isWorker) {
-		      $$asap$$scheduleFlush = $$asap$$useMessageChannel();
-		    } else {
-		      $$asap$$scheduleFlush = $$asap$$useSetTimeout();
-		    }
-		
-		    function $$$internal$$noop() {}
-		    var $$$internal$$PENDING   = void 0;
-		    var $$$internal$$FULFILLED = 1;
-		    var $$$internal$$REJECTED  = 2;
-		    var $$$internal$$GET_THEN_ERROR = new $$$internal$$ErrorObject();
-		
-		    function $$$internal$$selfFullfillment() {
-		      return new TypeError("You cannot resolve a promise with itself");
-		    }
-		
-		    function $$$internal$$cannotReturnOwn() {
-		      return new TypeError('A promises callback cannot return that same promise.')
-		    }
-		
-		    function $$$internal$$getThen(promise) {
-		      try {
-		        return promise.then;
-		      } catch(error) {
-		        $$$internal$$GET_THEN_ERROR.error = error;
-		        return $$$internal$$GET_THEN_ERROR;
-		      }
-		    }
-		
-		    function $$$internal$$tryThen(then, value, fulfillmentHandler, rejectionHandler) {
-		      try {
-		        then.call(value, fulfillmentHandler, rejectionHandler);
-		      } catch(e) {
-		        return e;
-		      }
-		    }
-		
-		    function $$$internal$$handleForeignThenable(promise, thenable, then) {
-		       $$asap$$default(function(promise) {
-		        var sealed = false;
-		        var error = $$$internal$$tryThen(then, thenable, function(value) {
-		          if (sealed) { return; }
-		          sealed = true;
-		          if (thenable !== value) {
-		            $$$internal$$resolve(promise, value);
-		          } else {
-		            $$$internal$$fulfill(promise, value);
-		          }
-		        }, function(reason) {
-		          if (sealed) { return; }
-		          sealed = true;
-		
-		          $$$internal$$reject(promise, reason);
-		        }, 'Settle: ' + (promise._label || ' unknown promise'));
-		
-		        if (!sealed && error) {
-		          sealed = true;
-		          $$$internal$$reject(promise, error);
-		        }
-		      }, promise);
-		    }
-		
-		    function $$$internal$$handleOwnThenable(promise, thenable) {
-		      if (thenable._state === $$$internal$$FULFILLED) {
-		        $$$internal$$fulfill(promise, thenable._result);
-		      } else if (promise._state === $$$internal$$REJECTED) {
-		        $$$internal$$reject(promise, thenable._result);
-		      } else {
-		        $$$internal$$subscribe(thenable, undefined, function(value) {
-		          $$$internal$$resolve(promise, value);
-		        }, function(reason) {
-		          $$$internal$$reject(promise, reason);
-		        });
-		      }
-		    }
-		
-		    function $$$internal$$handleMaybeThenable(promise, maybeThenable) {
-		      if (maybeThenable.constructor === promise.constructor) {
-		        $$$internal$$handleOwnThenable(promise, maybeThenable);
-		      } else {
-		        var then = $$$internal$$getThen(maybeThenable);
-		
-		        if (then === $$$internal$$GET_THEN_ERROR) {
-		          $$$internal$$reject(promise, $$$internal$$GET_THEN_ERROR.error);
-		        } else if (then === undefined) {
-		          $$$internal$$fulfill(promise, maybeThenable);
-		        } else if ($$utils$$isFunction(then)) {
-		          $$$internal$$handleForeignThenable(promise, maybeThenable, then);
-		        } else {
-		          $$$internal$$fulfill(promise, maybeThenable);
-		        }
-		      }
-		    }
-		
-		    function $$$internal$$resolve(promise, value) {
-		      if (promise === value) {
-		        $$$internal$$reject(promise, $$$internal$$selfFullfillment());
-		      } else if ($$utils$$objectOrFunction(value)) {
-		        $$$internal$$handleMaybeThenable(promise, value);
-		      } else {
-		        $$$internal$$fulfill(promise, value);
-		      }
-		    }
-		
-		    function $$$internal$$publishRejection(promise) {
-		      if (promise._onerror) {
-		        promise._onerror(promise._result);
-		      }
-		
-		      $$$internal$$publish(promise);
-		    }
-		
-		    function $$$internal$$fulfill(promise, value) {
-		      if (promise._state !== $$$internal$$PENDING) { return; }
-		
-		      promise._result = value;
-		      promise._state = $$$internal$$FULFILLED;
-		
-		      if (promise._subscribers.length === 0) {
-		      } else {
-		        $$asap$$default($$$internal$$publish, promise);
-		      }
-		    }
-		
-		    function $$$internal$$reject(promise, reason) {
-		      if (promise._state !== $$$internal$$PENDING) { return; }
-		      promise._state = $$$internal$$REJECTED;
-		      promise._result = reason;
-		
-		      $$asap$$default($$$internal$$publishRejection, promise);
-		    }
-		
-		    function $$$internal$$subscribe(parent, child, onFulfillment, onRejection) {
-		      var subscribers = parent._subscribers;
-		      var length = subscribers.length;
-		
-		      parent._onerror = null;
-		
-		      subscribers[length] = child;
-		      subscribers[length + $$$internal$$FULFILLED] = onFulfillment;
-		      subscribers[length + $$$internal$$REJECTED]  = onRejection;
-		
-		      if (length === 0 && parent._state) {
-		        $$asap$$default($$$internal$$publish, parent);
-		      }
-		    }
-		
-		    function $$$internal$$publish(promise) {
-		      var subscribers = promise._subscribers;
-		      var settled = promise._state;
-		
-		      if (subscribers.length === 0) { return; }
-		
-		      var child, callback, detail = promise._result;
-		
-		      for (var i = 0; i < subscribers.length; i += 3) {
-		        child = subscribers[i];
-		        callback = subscribers[i + settled];
-		
-		        if (child) {
-		          $$$internal$$invokeCallback(settled, child, callback, detail);
-		        } else {
-		          callback(detail);
-		        }
-		      }
-		
-		      promise._subscribers.length = 0;
-		    }
-		
-		    function $$$internal$$ErrorObject() {
-		      this.error = null;
-		    }
-		
-		    var $$$internal$$TRY_CATCH_ERROR = new $$$internal$$ErrorObject();
-		
-		    function $$$internal$$tryCatch(callback, detail) {
-		      try {
-		        return callback(detail);
-		      } catch(e) {
-		        $$$internal$$TRY_CATCH_ERROR.error = e;
-		        return $$$internal$$TRY_CATCH_ERROR;
-		      }
-		    }
-		
-		    function $$$internal$$invokeCallback(settled, promise, callback, detail) {
-		      var hasCallback = $$utils$$isFunction(callback),
-		          value, error, succeeded, failed;
-		
-		      if (hasCallback) {
-		        value = $$$internal$$tryCatch(callback, detail);
-		
-		        if (value === $$$internal$$TRY_CATCH_ERROR) {
-		          failed = true;
-		          error = value.error;
-		          value = null;
-		        } else {
-		          succeeded = true;
-		        }
-		
-		        if (promise === value) {
-		          $$$internal$$reject(promise, $$$internal$$cannotReturnOwn());
-		          return;
-		        }
-		
-		      } else {
-		        value = detail;
-		        succeeded = true;
-		      }
-		
-		      if (promise._state !== $$$internal$$PENDING) {
-		        // noop
-		      } else if (hasCallback && succeeded) {
-		        $$$internal$$resolve(promise, value);
-		      } else if (failed) {
-		        $$$internal$$reject(promise, error);
-		      } else if (settled === $$$internal$$FULFILLED) {
-		        $$$internal$$fulfill(promise, value);
-		      } else if (settled === $$$internal$$REJECTED) {
-		        $$$internal$$reject(promise, value);
-		      }
-		    }
-		
-		    function $$$internal$$initializePromise(promise, resolver) {
-		      try {
-		        resolver(function resolvePromise(value){
-		          $$$internal$$resolve(promise, value);
-		        }, function rejectPromise(reason) {
-		          $$$internal$$reject(promise, reason);
-		        });
-		      } catch(e) {
-		        $$$internal$$reject(promise, e);
-		      }
-		    }
-		
-		    function $$$enumerator$$makeSettledResult(state, position, value) {
-		      if (state === $$$internal$$FULFILLED) {
-		        return {
-		          state: 'fulfilled',
-		          value: value
-		        };
-		      } else {
-		        return {
-		          state: 'rejected',
-		          reason: value
-		        };
-		      }
-		    }
-		
-		    function $$$enumerator$$Enumerator(Constructor, input, abortOnReject, label) {
-		      this._instanceConstructor = Constructor;
-		      this.promise = new Constructor($$$internal$$noop, label);
-		      this._abortOnReject = abortOnReject;
-		
-		      if (this._validateInput(input)) {
-		        this._input     = input;
-		        this.length     = input.length;
-		        this._remaining = input.length;
-		
-		        this._init();
-		
-		        if (this.length === 0) {
-		          $$$internal$$fulfill(this.promise, this._result);
-		        } else {
-		          this.length = this.length || 0;
-		          this._enumerate();
-		          if (this._remaining === 0) {
-		            $$$internal$$fulfill(this.promise, this._result);
-		          }
-		        }
-		      } else {
-		        $$$internal$$reject(this.promise, this._validationError());
-		      }
-		    }
-		
-		    $$$enumerator$$Enumerator.prototype._validateInput = function(input) {
-		      return $$utils$$isArray(input);
-		    };
-		
-		    $$$enumerator$$Enumerator.prototype._validationError = function() {
-		      return new Error('Array Methods must be provided an Array');
-		    };
-		
-		    $$$enumerator$$Enumerator.prototype._init = function() {
-		      this._result = new Array(this.length);
-		    };
-		
-		    var $$$enumerator$$default = $$$enumerator$$Enumerator;
-		
-		    $$$enumerator$$Enumerator.prototype._enumerate = function() {
-		      var length  = this.length;
-		      var promise = this.promise;
-		      var input   = this._input;
-		
-		      for (var i = 0; promise._state === $$$internal$$PENDING && i < length; i++) {
-		        this._eachEntry(input[i], i);
-		      }
-		    };
-		
-		    $$$enumerator$$Enumerator.prototype._eachEntry = function(entry, i) {
-		      var c = this._instanceConstructor;
-		      if ($$utils$$isMaybeThenable(entry)) {
-		        if (entry.constructor === c && entry._state !== $$$internal$$PENDING) {
-		          entry._onerror = null;
-		          this._settledAt(entry._state, i, entry._result);
-		        } else {
-		          this._willSettleAt(c.resolve(entry), i);
-		        }
-		      } else {
-		        this._remaining--;
-		        this._result[i] = this._makeResult($$$internal$$FULFILLED, i, entry);
-		      }
-		    };
-		
-		    $$$enumerator$$Enumerator.prototype._settledAt = function(state, i, value) {
-		      var promise = this.promise;
-		
-		      if (promise._state === $$$internal$$PENDING) {
-		        this._remaining--;
-		
-		        if (this._abortOnReject && state === $$$internal$$REJECTED) {
-		          $$$internal$$reject(promise, value);
-		        } else {
-		          this._result[i] = this._makeResult(state, i, value);
-		        }
-		      }
-		
-		      if (this._remaining === 0) {
-		        $$$internal$$fulfill(promise, this._result);
-		      }
-		    };
-		
-		    $$$enumerator$$Enumerator.prototype._makeResult = function(state, i, value) {
-		      return value;
-		    };
-		
-		    $$$enumerator$$Enumerator.prototype._willSettleAt = function(promise, i) {
-		      var enumerator = this;
-		
-		      $$$internal$$subscribe(promise, undefined, function(value) {
-		        enumerator._settledAt($$$internal$$FULFILLED, i, value);
-		      }, function(reason) {
-		        enumerator._settledAt($$$internal$$REJECTED, i, reason);
-		      });
-		    };
-		
-		    var $$promise$all$$default = function all(entries, label) {
-		      return new $$$enumerator$$default(this, entries, true /* abort on reject */, label).promise;
-		    };
-		
-		    var $$promise$race$$default = function race(entries, label) {
-		      /*jshint validthis:true */
-		      var Constructor = this;
-		
-		      var promise = new Constructor($$$internal$$noop, label);
-		
-		      if (!$$utils$$isArray(entries)) {
-		        $$$internal$$reject(promise, new TypeError('You must pass an array to race.'));
-		        return promise;
-		      }
-		
-		      var length = entries.length;
-		
-		      function onFulfillment(value) {
-		        $$$internal$$resolve(promise, value);
-		      }
-		
-		      function onRejection(reason) {
-		        $$$internal$$reject(promise, reason);
-		      }
-		
-		      for (var i = 0; promise._state === $$$internal$$PENDING && i < length; i++) {
-		        $$$internal$$subscribe(Constructor.resolve(entries[i]), undefined, onFulfillment, onRejection);
-		      }
-		
-		      return promise;
-		    };
-		
-		    var $$promise$resolve$$default = function resolve(object, label) {
-		      /*jshint validthis:true */
-		      var Constructor = this;
-		
-		      if (object && typeof object === 'object' && object.constructor === Constructor) {
-		        return object;
-		      }
-		
-		      var promise = new Constructor($$$internal$$noop, label);
-		      $$$internal$$resolve(promise, object);
-		      return promise;
-		    };
-		
-		    var $$promise$reject$$default = function reject(reason, label) {
-		      /*jshint validthis:true */
-		      var Constructor = this;
-		      var promise = new Constructor($$$internal$$noop, label);
-		      $$$internal$$reject(promise, reason);
-		      return promise;
-		    };
-		
-		    var $$es6$promise$promise$$counter = 0;
-		
-		    function $$es6$promise$promise$$needsResolver() {
-		      throw new TypeError('You must pass a resolver function as the first argument to the promise constructor');
-		    }
-		
-		    function $$es6$promise$promise$$needsNew() {
-		      throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");
-		    }
-		
-		    var $$es6$promise$promise$$default = $$es6$promise$promise$$Promise;
-		
-		    /**
-		      Promise objects represent the eventual result of an asynchronous operation. The
-		      primary way of interacting with a promise is through its `then` method, which
-		      registers callbacks to receive either a promise’s eventual value or the reason
-		      why the promise cannot be fulfilled.
-		
-		      Terminology
-		      -----------
-		
-		      - `promise` is an object or function with a `then` method whose behavior conforms to this specification.
-		      - `thenable` is an object or function that defines a `then` method.
-		      - `value` is any legal JavaScript value (including undefined, a thenable, or a promise).
-		      - `exception` is a value that is thrown using the throw statement.
-		      - `reason` is a value that indicates why a promise was rejected.
-		      - `settled` the final resting state of a promise, fulfilled or rejected.
-		
-		      A promise can be in one of three states: pending, fulfilled, or rejected.
-		
-		      Promises that are fulfilled have a fulfillment value and are in the fulfilled
-		      state.  Promises that are rejected have a rejection reason and are in the
-		      rejected state.  A fulfillment value is never a thenable.
-		
-		      Promises can also be said to *resolve* a value.  If this value is also a
-		      promise, then the original promise's settled state will match the value's
-		      settled state.  So a promise that *resolves* a promise that rejects will
-		      itself reject, and a promise that *resolves* a promise that fulfills will
-		      itself fulfill.
-		
-		
-		      Basic Usage:
-		      ------------
-		
-		      ```js
-		      var promise = new Promise(function(resolve, reject) {
-		        // on success
-		        resolve(value);
-		
-		        // on failure
-		        reject(reason);
-		      });
-		
-		      promise.then(function(value) {
-		        // on fulfillment
-		      }, function(reason) {
-		        // on rejection
-		      });
-		      ```
-		
-		      Advanced Usage:
-		      ---------------
-		
-		      Promises shine when abstracting away asynchronous interactions such as
-		      `XMLHttpRequest`s.
-		
-		      ```js
-		      function getJSON(url) {
-		        return new Promise(function(resolve, reject){
-		          var xhr = new XMLHttpRequest();
-		
-		          xhr.open('GET', url);
-		          xhr.onreadystatechange = handler;
-		          xhr.responseType = 'json';
-		          xhr.setRequestHeader('Accept', 'application/json');
-		          xhr.send();
-		
-		          function handler() {
-		            if (this.readyState === this.DONE) {
-		              if (this.status === 200) {
-		                resolve(this.response);
-		              } else {
-		                reject(new Error('getJSON: `' + url + '` failed with status: [' + this.status + ']'));
-		              }
-		            }
-		          };
-		        });
-		      }
-		
-		      getJSON('/posts.json').then(function(json) {
-		        // on fulfillment
-		      }, function(reason) {
-		        // on rejection
-		      });
-		      ```
-		
-		      Unlike callbacks, promises are great composable primitives.
-		
-		      ```js
-		      Promise.all([
-		        getJSON('/posts'),
-		        getJSON('/comments')
-		      ]).then(function(values){
-		        values[0] // => postsJSON
-		        values[1] // => commentsJSON
-		
-		        return values;
-		      });
-		      ```
-		
-		      @class Promise
-		      @param {function} resolver
-		      Useful for tooling.
-		      @constructor
-		    */
-		    function $$es6$promise$promise$$Promise(resolver) {
-		      this._id = $$es6$promise$promise$$counter++;
-		      this._state = undefined;
-		      this._result = undefined;
-		      this._subscribers = [];
-		
-		      if ($$$internal$$noop !== resolver) {
-		        if (!$$utils$$isFunction(resolver)) {
-		          $$es6$promise$promise$$needsResolver();
-		        }
-		
-		        if (!(this instanceof $$es6$promise$promise$$Promise)) {
-		          $$es6$promise$promise$$needsNew();
-		        }
-		
-		        $$$internal$$initializePromise(this, resolver);
-		      }
-		    }
-		
-		    $$es6$promise$promise$$Promise.all = $$promise$all$$default;
-		    $$es6$promise$promise$$Promise.race = $$promise$race$$default;
-		    $$es6$promise$promise$$Promise.resolve = $$promise$resolve$$default;
-		    $$es6$promise$promise$$Promise.reject = $$promise$reject$$default;
-		
-		    $$es6$promise$promise$$Promise.prototype = {
-		      constructor: $$es6$promise$promise$$Promise,
-		
-		    /**
-		      The primary way of interacting with a promise is through its `then` method,
-		      which registers callbacks to receive either a promise's eventual value or the
-		      reason why the promise cannot be fulfilled.
-		
-		      ```js
-		      findUser().then(function(user){
-		        // user is available
-		      }, function(reason){
-		        // user is unavailable, and you are given the reason why
-		      });
-		      ```
-		
-		      Chaining
-		      --------
-		
-		      The return value of `then` is itself a promise.  This second, 'downstream'
-		      promise is resolved with the return value of the first promise's fulfillment
-		      or rejection handler, or rejected if the handler throws an exception.
-		
-		      ```js
-		      findUser().then(function (user) {
-		        return user.name;
-		      }, function (reason) {
-		        return 'default name';
-		      }).then(function (userName) {
-		        // If `findUser` fulfilled, `userName` will be the user's name, otherwise it
-		        // will be `'default name'`
-		      });
-		
-		      findUser().then(function (user) {
-		        throw new Error('Found user, but still unhappy');
-		      }, function (reason) {
-		        throw new Error('`findUser` rejected and we're unhappy');
-		      }).then(function (value) {
-		        // never reached
-		      }, function (reason) {
-		        // if `findUser` fulfilled, `reason` will be 'Found user, but still unhappy'.
-		        // If `findUser` rejected, `reason` will be '`findUser` rejected and we're unhappy'.
-		      });
-		      ```
-		      If the downstream promise does not specify a rejection handler, rejection reasons will be propagated further downstream.
-		
-		      ```js
-		      findUser().then(function (user) {
-		        throw new PedagogicalException('Upstream error');
-		      }).then(function (value) {
-		        // never reached
-		      }).then(function (value) {
-		        // never reached
-		      }, function (reason) {
-		        // The `PedgagocialException` is propagated all the way down to here
-		      });
-		      ```
-		
-		      Assimilation
-		      ------------
-		
-		      Sometimes the value you want to propagate to a downstream promise can only be
-		      retrieved asynchronously. This can be achieved by returning a promise in the
-		      fulfillment or rejection handler. The downstream promise will then be pending
-		      until the returned promise is settled. This is called *assimilation*.
-		
-		      ```js
-		      findUser().then(function (user) {
-		        return findCommentsByAuthor(user);
-		      }).then(function (comments) {
-		        // The user's comments are now available
-		      });
-		      ```
-		
-		      If the assimliated promise rejects, then the downstream promise will also reject.
-		
-		      ```js
-		      findUser().then(function (user) {
-		        return findCommentsByAuthor(user);
-		      }).then(function (comments) {
-		        // If `findCommentsByAuthor` fulfills, we'll have the value here
-		      }, function (reason) {
-		        // If `findCommentsByAuthor` rejects, we'll have the reason here
-		      });
-		      ```
-		
-		      Simple Example
-		      --------------
-		
-		      Synchronous Example
-		
-		      ```javascript
-		      var result;
-		
-		      try {
-		        result = findResult();
-		        // success
-		      } catch(reason) {
-		        // failure
-		      }
-		      ```
-		
-		      Errback Example
-		
-		      ```js
-		      findResult(function(result, err){
-		        if (err) {
-		          // failure
-		        } else {
-		          // success
-		        }
-		      });
-		      ```
-		
-		      Promise Example;
-		
-		      ```javascript
-		      findResult().then(function(result){
-		        // success
-		      }, function(reason){
-		        // failure
-		      });
-		      ```
-		
-		      Advanced Example
-		      --------------
-		
-		      Synchronous Example
-		
-		      ```javascript
-		      var author, books;
-		
-		      try {
-		        author = findAuthor();
-		        books  = findBooksByAuthor(author);
-		        // success
-		      } catch(reason) {
-		        // failure
-		      }
-		      ```
-		
-		      Errback Example
-		
-		      ```js
-		
-		      function foundBooks(books) {
-		
-		      }
-		
-		      function failure(reason) {
-		
-		      }
-		
-		      findAuthor(function(author, err){
-		        if (err) {
-		          failure(err);
-		          // failure
-		        } else {
-		          try {
-		            findBoooksByAuthor(author, function(books, err) {
-		              if (err) {
-		                failure(err);
-		              } else {
-		                try {
-		                  foundBooks(books);
-		                } catch(reason) {
-		                  failure(reason);
-		                }
-		              }
-		            });
-		          } catch(error) {
-		            failure(err);
-		          }
-		          // success
-		        }
-		      });
-		      ```
-		
-		      Promise Example;
-		
-		      ```javascript
-		      findAuthor().
-		        then(findBooksByAuthor).
-		        then(function(books){
-		          // found books
-		      }).catch(function(reason){
-		        // something went wrong
-		      });
-		      ```
-		
-		      @method then
-		      @param {Function} onFulfilled
-		      @param {Function} onRejected
-		      Useful for tooling.
-		      @return {Promise}
-		    */
-		      then: function(onFulfillment, onRejection) {
-		        var parent = this;
-		        var state = parent._state;
-		
-		        if (state === $$$internal$$FULFILLED && !onFulfillment || state === $$$internal$$REJECTED && !onRejection) {
-		          return this;
-		        }
-		
-		        var child = new this.constructor($$$internal$$noop);
-		        var result = parent._result;
-		
-		        if (state) {
-		          var callback = arguments[state - 1];
-		          $$asap$$default(function(){
-		            $$$internal$$invokeCallback(state, child, callback, result);
-		          });
-		        } else {
-		          $$$internal$$subscribe(parent, child, onFulfillment, onRejection);
-		        }
-		
-		        return child;
-		      },
-		
-		    /**
-		      `catch` is simply sugar for `then(undefined, onRejection)` which makes it the same
-		      as the catch block of a try/catch statement.
-		
-		      ```js
-		      function findAuthor(){
-		        throw new Error('couldn't find that author');
-		      }
-		
-		      // synchronous
-		      try {
-		        findAuthor();
-		      } catch(reason) {
-		        // something went wrong
-		      }
-		
-		      // async with promises
-		      findAuthor().catch(function(reason){
-		        // something went wrong
-		      });
-		      ```
-		
-		      @method catch
-		      @param {Function} onRejection
-		      Useful for tooling.
-		      @return {Promise}
-		    */
-		      'catch': function(onRejection) {
-		        return this.then(null, onRejection);
-		      }
-		    };
-		
-		    var $$es6$promise$polyfill$$default = function polyfill() {
-		      var local;
-		
-		      if (typeof global !== 'undefined') {
-		        local = global;
-		      } else if (typeof window !== 'undefined' && window.document) {
-		        local = window;
-		      } else {
-		        local = self;
-		      }
-		
-		      var es6PromiseSupport =
-		        "Promise" in local &&
-		        // Some of these methods are missing from
-		        // Firefox/Chrome experimental implementations
-		        "resolve" in local.Promise &&
-		        "reject" in local.Promise &&
-		        "all" in local.Promise &&
-		        "race" in local.Promise &&
-		        // Older version of the spec had a resolver object
-		        // as the arg rather than a function
-		        (function() {
-		          var resolve;
-		          new local.Promise(function(r) { resolve = r; });
-		          return $$utils$$isFunction(resolve);
-		        }());
-		
-		      if (!es6PromiseSupport) {
-		        local.Promise = $$es6$promise$promise$$default;
-		      }
-		    };
-		
-		    var es6$promise$umd$$ES6Promise = {
-		      'Promise': $$es6$promise$promise$$default,
-		      'polyfill': $$es6$promise$polyfill$$default
-		    };
-		
-		    /* global define:true module:true window: true */
-		    if ("function" === 'function' && __webpack_require__(16)['amd']) {
-		      !(__WEBPACK_AMD_DEFINE_RESULT__ = function() { return es6$promise$umd$$ES6Promise; }.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-		    } else if (typeof module !== 'undefined' && module['exports']) {
-		      module['exports'] = es6$promise$umd$$ES6Promise;
-		    } else if (typeof this !== 'undefined') {
-		      this['ES6Promise'] = es6$promise$umd$$ES6Promise;
-		    }
-		}).call(this);
-		/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10), (function() { return this; }()), __webpack_require__(17)(module)))
-
-	/***/ },
-	/* 10 */
-	/***/ function(module, exports, __webpack_require__) {
-
-		// shim for using process in browser
-		
-		var process = module.exports = {};
-		var queue = [];
-		var draining = false;
-		
-		function drainQueue() {
-		    if (draining) {
-		        return;
-		    }
-		    draining = true;
-		    var currentQueue;
-		    var len = queue.length;
-		    while(len) {
-		        currentQueue = queue;
-		        queue = [];
-		        var i = -1;
-		        while (++i < len) {
-		            currentQueue[i]();
-		        }
-		        len = queue.length;
-		    }
-		    draining = false;
-		}
-		process.nextTick = function (fun) {
-		    queue.push(fun);
-		    if (!draining) {
-		        setTimeout(drainQueue, 0);
-		    }
-		};
-		
-		process.title = 'browser';
-		process.browser = true;
-		process.env = {};
-		process.argv = [];
-		process.version = ''; // empty string to avoid regexp issues
-		process.versions = {};
-		
-		function noop() {}
-		
-		process.on = noop;
-		process.addListener = noop;
-		process.once = noop;
-		process.off = noop;
-		process.removeListener = noop;
-		process.removeAllListeners = noop;
-		process.emit = noop;
-		
-		process.binding = function (name) {
-		    throw new Error('process.binding is not supported');
-		};
-		
-		// TODO(shtylman)
-		process.cwd = function () { return '/' };
-		process.chdir = function (dir) {
-		    throw new Error('process.chdir is not supported');
-		};
-		process.umask = function() { return 0; };
-
-
-	/***/ },
-	/* 11 */
-	/***/ function(module, exports, __webpack_require__) {
-
-		'use strict';
-		
-		var utils = __webpack_require__(3);
-		
-		function encode(val) {
-		  return encodeURIComponent(val).
-		    replace(/%40/gi, '@').
-		    replace(/%3A/gi, ':').
-		    replace(/%24/g, '$').
-		    replace(/%2C/gi, ',').
-		    replace(/%20/g, '+');
-		}
-		
-		/**
-		 * Build a URL by appending params to the end
-		 *
-		 * @param {string} url The base of the url (e.g., http://www.google.com)
-		 * @param {object} [params] The params to be appended
-		 * @returns {string} The formatted url
-		 */
-		module.exports = function buildUrl(url, params) {
-		  if (!params) {
-		    return url;
-		  }
-		
-		  var parts = [];
-		
-		  utils.forEach(params, function (val, key) {
-		    if (val === null || typeof val === 'undefined') {
-		      return;
-		    }
-		    if (!utils.isArray(val)) {
-		      val = [val];
-		    }
-		
-		    utils.forEach(val, function (v) {
-		      if (utils.isDate(v)) {
-		        v = v.toISOString();
-		      }
-		      else if (utils.isObject(v)) {
-		        v = JSON.stringify(v);
-		      }
-		      parts.push(encode(key) + '=' + encode(v));
-		    });
-		  });
-		
-		  if (parts.length > 0) {
-		    url += (url.indexOf('?') === -1 ? '?' : '&') + parts.join('&');
-		  }
-		
-		  return url;
-		};
-
-
-	/***/ },
-	/* 12 */
-	/***/ function(module, exports, __webpack_require__) {
-
-		'use strict';
-		
-		var utils = __webpack_require__(3);
-		
-		module.exports = {
-		  write: function write(name, value, expires, path, domain, secure) {
-		    var cookie = [];
-		    cookie.push(name + '=' + encodeURIComponent(value));
-		
-		    if (utils.isNumber(expires)) {
-		      cookie.push('expires=' + new Date(expires).toGMTString());
-		    }
-		
-		    if (utils.isString(path)) {
-		      cookie.push('path=' + path);
-		    }
-		
-		    if (utils.isString(domain)) {
-		      cookie.push('domain=' + domain);
-		    }
-		
-		    if (secure === true) {
-		      cookie.push('secure');
-		    }
-		
-		    document.cookie = cookie.join('; ');
-		  },
-		
-		  read: function read(name) {
-		    var match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
-		    return (match ? decodeURIComponent(match[3]) : null);
-		  },
-		
-		  remove: function remove(name) {
-		    this.write(name, '', Date.now() - 86400000);
-		  }
-		};
-
-
-	/***/ },
-	/* 13 */
-	/***/ function(module, exports, __webpack_require__) {
-
-		'use strict';
-		
-		var utils = __webpack_require__(3);
-		
-		/**
-		 * Parse headers into an object
-		 *
-		 * ```
-		 * Date: Wed, 27 Aug 2014 08:58:49 GMT
-		 * Content-Type: application/json
-		 * Connection: keep-alive
-		 * Transfer-Encoding: chunked
-		 * ```
-		 *
-		 * @param {String} headers Headers needing to be parsed
-		 * @returns {Object} Headers parsed into an object
-		 */
-		module.exports = function parseHeaders(headers) {
-		  var parsed = {}, key, val, i;
-		
-		  if (!headers) { return parsed; }
-		
-		  utils.forEach(headers.split('\n'), function(line) {
-		    i = line.indexOf(':');
-		    key = utils.trim(line.substr(0, i)).toLowerCase();
-		    val = utils.trim(line.substr(i + 1));
-		
-		    if (key) {
-		      parsed[key] = parsed[key] ? parsed[key] + ', ' + val : val;
-		    }
-		  });
-		
-		  return parsed;
-		};
-
-
-	/***/ },
-	/* 14 */
-	/***/ function(module, exports, __webpack_require__) {
-
-		'use strict';
-		
-		var utils = __webpack_require__(3);
-		
-		/**
-		 * Transform the data for a request or a response
-		 *
-		 * @param {Object|String} data The data to be transformed
-		 * @param {Array} headers The headers for the request or response
-		 * @param {Array|Function} fns A single function or Array of functions
-		 * @returns {*} The resulting transformed data
-		 */
-		module.exports = function transformData(data, headers, fns) {
-		  utils.forEach(fns, function (fn) {
-		    data = fn(data, headers);
-		  });
-		
-		  return data;
-		};
-
-
-	/***/ },
-	/* 15 */
-	/***/ function(module, exports, __webpack_require__) {
-
-		'use strict';
-		
-		var utils = __webpack_require__(3);
-		var msie = /(msie|trident)/i.test(navigator.userAgent);
-		var urlParsingNode = document.createElement('a');
-		var originUrl;
-		
-		/**
-		 * Parse a URL to discover it's components
-		 *
-		 * @param {String} url The URL to be parsed
-		 * @returns {Object}
-		 */
-		function urlResolve(url) {
-		  var href = url;
-		
-		  if (msie) {
-		    // IE needs attribute set twice to normalize properties
-		    urlParsingNode.setAttribute('href', href);
-		    href = urlParsingNode.href;
-		  }
-		
-		  urlParsingNode.setAttribute('href', href);
-		
-		  // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
-		  return {
-		    href: urlParsingNode.href,
-		    protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
-		    host: urlParsingNode.host,
-		    search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
-		    hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
-		    hostname: urlParsingNode.hostname,
-		    port: urlParsingNode.port,
-		    pathname: (urlParsingNode.pathname.charAt(0) === '/') ?
-		              urlParsingNode.pathname :
-		              '/' + urlParsingNode.pathname
-		  };
-		}
-		
-		originUrl = urlResolve(window.location.href);
-		
-		/**
-		 * Determine if a URL shares the same origin as the current location
-		 *
-		 * @param {String} requestUrl The URL to test
-		 * @returns {boolean} True if URL shares the same origin, otherwise false
-		 */
-		module.exports = function urlIsSameOrigin(requestUrl) {
-		  var parsed = (utils.isString(requestUrl)) ? urlResolve(requestUrl) : requestUrl;
-		  return (parsed.protocol === originUrl.protocol &&
-		        parsed.host === originUrl.host);
-		};
-
-
-	/***/ },
-	/* 16 */
-	/***/ function(module, exports, __webpack_require__) {
-
-		module.exports = function() { throw new Error("define cannot be used indirect"); };
-
-
-	/***/ },
-	/* 17 */
-	/***/ function(module, exports, __webpack_require__) {
-
-		module.exports = function(module) {
-			if(!module.webpackPolyfill) {
-				module.deprecate = function() {};
-				module.paths = [];
-				// module.parent = undefined by default
-				module.children = [];
-				module.webpackPolyfill = 1;
-			}
-			return module;
-		}
 
 
 	/***/ }
-	/******/ ])}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));;
-	//# sourceMappingURL=axios.amd.map
+	/******/ ])
+	});
+	;
+	//# sourceMappingURL=axios.map
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
 
 /***/ },
-/* 35 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(3), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
@@ -52458,195 +51844,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    validateNonEmptyString: validateNonEmptyString,
 	    validateVersionedObjectKey: validateVersionedObjectKey,
 	    validateObjectCryptoService: validateObjectCryptoService
-	  };
-	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-
-/***/ },
-/* 36 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(3), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var EMPTY_STRING, HEX_CHARS_PER_BYTE, HEX_SIZE_PER_CHAR, Logger, UINT16_REPRESENTABLE_SIZE, UINT8_REPRESENTABLE_SIZE, _, chunkUint8, cleanUint8Buffer, getCharCode, hexToUint8, intToUint8, joinUint8, logger, stringToHex, stringToUint16, stringToUint8, uint16ToString, uint16ToUint8, uint8ToBase64, uint8ToNumeric, uint8ToString, uint8ToUint16, validateString, validateUint16, validateUint8;
-	  _ = __webpack_require__(3);
-	  Logger = __webpack_require__(2);
-	  logger = Logger.get('BinaryUtils');
-	  EMPTY_STRING = '';
-	  validateString = function(arg) {
-	    if (!_.isString(arg)) {
-	      throw new Error('argument is not a string');
-	    }
-	  };
-	  validateUint8 = function(arg) {
-	    if (arg.buffer == null) {
-	      throw new Error('argument is not a uint8 array');
-	    }
-	  };
-	  validateUint16 = function(arg) {
-	    if (arg.buffer == null) {
-	      throw new Error('argument is not a uint16 array');
-	    }
-	  };
-	  getCharCode = function(c, maxSize) {
-	    var code;
-	    code = c.charCodeAt();
-	    if (code >= maxSize) {
-	      throw new Error('code outside of range!');
-	    } else {
-	      return code;
-	    }
-	  };
-	  HEX_CHARS_PER_BYTE = 2;
-	  HEX_SIZE_PER_CHAR = 16;
-	  hexToUint8 = function(hex) {
-	    var bytes, hexByte, index, j, ref, ref1;
-	    validateString(hex);
-	    bytes = [];
-	    for (index = j = 0, ref = hex.length, ref1 = HEX_CHARS_PER_BYTE; ref1 > 0 ? j < ref : j > ref; index = j += ref1) {
-	      hexByte = hex.substr(index, HEX_CHARS_PER_BYTE);
-	      bytes.push(parseInt(hexByte, HEX_SIZE_PER_CHAR));
-	    }
-	    return new Uint8Array(bytes);
-	  };
-	  stringToHex = function(str) {
-	    if (!_.isString(str)) {
-	      throw new Error('argument is not a string');
-	    }
-	    return str.split(EMPTY_STRING).map(function(c) {
-	      return c.charCodeAt().toString(16);
-	    }).join(EMPTY_STRING);
-	  };
-	  UINT8_REPRESENTABLE_SIZE = Math.pow(2, 8);
-	  UINT16_REPRESENTABLE_SIZE = Math.pow(2, 16);
-	  cleanUint8Buffer = function(arr) {
-	    var j, raw, ref, results;
-	    validateUint8(arr);
-	    if (arr.length === arr.byteLength && arr.length === arr.buffer.byteLength) {
-	      return arr;
-	    } else {
-	      raw = (function() {
-	        results = [];
-	        for (var j = 0, ref = arr.length; 0 <= ref ? j < ref : j > ref; 0 <= ref ? j++ : j--){ results.push(j); }
-	        return results;
-	      }).apply(this).map(function(i) {
-	        return arr[i];
-	      });
-	      return new Uint8Array(raw);
-	    }
-	  };
-	  uint8ToNumeric = function(arr) {
-	    var j, ref, results;
-	    validateUint8(arr);
-	    return (function() {
-	      results = [];
-	      for (var j = 0, ref = arr.length; 0 <= ref ? j < ref : j > ref; 0 <= ref ? j++ : j--){ results.push(j); }
-	      return results;
-	    }).apply(this).map(function(i) {
-	      return arr[i];
-	    });
-	  };
-	  uint8ToString = function(arr) {
-	    var j, ref, results;
-	    validateUint8(arr);
-	    return (function() {
-	      results = [];
-	      for (var j = 0, ref = arr.length; 0 <= ref ? j < ref : j > ref; 0 <= ref ? j++ : j--){ results.push(j); }
-	      return results;
-	    }).apply(this).map(function(i) {
-	      return String.fromCharCode(arr[i]);
-	    }).join(EMPTY_STRING);
-	  };
-	  uint8ToBase64 = function(arr) {
-	    validateUint8(arr);
-	    return btoa(uint8ToString(arr));
-	  };
-	  uint16ToString = function(arr) {
-	    var j, ref, results;
-	    validateUint16(arr);
-	    return (function() {
-	      results = [];
-	      for (var j = 0, ref = arr.length; 0 <= ref ? j < ref : j > ref; 0 <= ref ? j++ : j--){ results.push(j); }
-	      return results;
-	    }).apply(this).map(function(i) {
-	      return String.fromCharCode(arr[i]);
-	    }).join(EMPTY_STRING);
-	  };
-	  stringToUint8 = function(string) {
-	    validateString(string);
-	    return new Uint8Array(_.map(string, function(c) {
-	      return getCharCode(c, UINT8_REPRESENTABLE_SIZE);
-	    }));
-	  };
-	  stringToUint16 = function(string) {
-	    validateString(string);
-	    return new Uint16Array(_.map(string, function(c) {
-	      return getCharCode(c, UINT16_REPRESENTABLE_SIZE);
-	    }));
-	  };
-	  uint16ToUint8 = function(arr) {
-	    validateUint16(arr);
-	    return new Uint8Array(arr.buffer);
-	  };
-	  uint8ToUint16 = function(arr) {
-	    validateUint8(arr);
-	    return new Uint16Array(arr.buffer);
-	  };
-	  intToUint8 = function(integer) {
-	    var nextByte, rawBytes;
-	    rawBytes = [];
-	    while (integer > 0) {
-	      nextByte = integer & 0xff;
-	      rawBytes.push(nextByte);
-	      integer = (integer - nextByte) / 256;
-	    }
-	    return new Uint8Array(rawBytes);
-	  };
-	  joinUint8 = function(arrays) {
-	    var buffer, copyIndex, targetLength;
-	    targetLength = _.reduce(arrays, (function(length, arr) {
-	      return length + arr.length;
-	    }), 0);
-	    buffer = new Uint8Array(targetLength);
-	    copyIndex = 0;
-	    arrays.forEach(function(arr) {
-	      var j, ref, results, sublistIndex;
-	      results = [];
-	      for (sublistIndex = j = 0, ref = arr.length; 0 <= ref ? j < ref : j > ref; sublistIndex = 0 <= ref ? ++j : --j) {
-	        buffer[copyIndex] = arr[sublistIndex];
-	        results.push(copyIndex += 1);
-	      }
-	      return results;
-	    });
-	    return buffer;
-	  };
-	  chunkUint8 = function(array, chunkSizeBytes) {
-	    var arrays, buffer, copyIndex, subarr;
-	    validateUint8(array);
-	    arrays = [];
-	    copyIndex = 0;
-	    buffer = new Uint8Array(chunkSizeBytes);
-	    while (copyIndex < array.length) {
-	      subarr = array.subarray(copyIndex, copyIndex + chunkSizeBytes);
-	      arrays.push(new Uint8Array(subarr));
-	      copyIndex += chunkSizeBytes;
-	    }
-	    return arrays;
-	  };
-	  return {
-	    chunkUint8: chunkUint8,
-	    cleanUint8Buffer: cleanUint8Buffer,
-	    hexToUint8: hexToUint8,
-	    intToUint8: intToUint8,
-	    joinUint8: joinUint8,
-	    stringToHex: stringToHex,
-	    stringToUint16: stringToUint16,
-	    stringToUint8: stringToUint8,
-	    uint16ToString: uint16ToString,
-	    uint16ToUint8: uint16ToUint8,
-	    uint8ToString: uint8ToString,
-	    uint8ToBase64: uint8ToBase64,
-	    uint8ToUint16: uint8ToUint16,
-	    uint8ToNumeric: uint8ToNumeric
 	  };
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
@@ -52765,24 +51962,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    RsaKeyGenerator.prototype.generateKeypair = function() {
-	      return Promise.resolve().then(function() {
-	        return KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER);
-	      }).then((function(_this) {
-	        return function(rsaKeyPair) {
-	          var ref, ref1;
-	          KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER);
-	          if (rsaKeyPair != null) {
-	            return rsaKeyPair;
-	          }
-	          if (((ref = window.crypto) != null ? ref.subtle : void 0) != null) {
-	            return _this.webCryptoGenerate();
-	          } else if (((ref1 = window.msCrypto) != null ? ref1.subtle : void 0) != null) {
-	            return _this.ieWebCryptoGenerate();
-	          } else {
-	            return _this.forgeGenerate();
-	          }
-	        };
-	      })(this));
+	      var ref;
+	      if (((ref = window.msCrypto) != null ? ref.subtle : void 0) != null) {
+	        KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER);
+	        return this.ieWebCryptoGenerate();
+	      } else {
+	        return Promise.resolve().then(function() {
+	          return KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER)["catch"](function(e) {
+	            return null;
+	          });
+	        }).then((function(_this) {
+	          return function(rsaKeyPair) {
+	            var ref1;
+	            KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER);
+	            if (rsaKeyPair != null) {
+	              return rsaKeyPair;
+	            }
+	            if (((ref1 = window.crypto) != null ? ref1.subtle : void 0) != null) {
+	              return _this.webCryptoGenerate();
+	            } else {
+	              return _this.forgeGenerate();
+	            }
+	          };
+	        })(this));
+	      }
 	    };
 
 	    return RsaKeyGenerator;
@@ -52796,123 +51999,14 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-	  hasProp = {}.hasOwnProperty;
-
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var FHEKeysGenerationWorker, KryptnosticWorker, KryptnosticWorkersApi, Logger, RSAKeysGenerationWorker, forge, logger;
-	  forge = __webpack_require__(12);
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(39), __webpack_require__(41), __webpack_require__(42), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var FHEKeysGenerationWorkerWrapper, KryptnosticWorkersApi, Logger, ObjectIndexingWorkerWrapper, Promise, RSAKeysGenerationWorkerWrapper, logger;
+	  Promise = __webpack_require__(22);
+	  FHEKeysGenerationWorkerWrapper = __webpack_require__(39);
+	  RSAKeysGenerationWorkerWrapper = __webpack_require__(41);
+	  ObjectIndexingWorkerWrapper = __webpack_require__(42);
 	  Logger = __webpack_require__(2);
 	  logger = Logger.get('KryptnosticWorkersApi');
-	  KryptnosticWorker = (function() {
-	    function KryptnosticWorker() {
-	      this.scriptUrl = null;
-	      this.webWorker = null;
-	    }
-
-	    KryptnosticWorker.prototype.start = function() {
-	      if (_.isEmpty(this.scriptUrl)) {
-	        return;
-	      }
-	      if (this.webWorker != null) {
-	        return;
-	      }
-	      this.webWorker = new Worker(this.scriptUrl);
-	      return this.webWorker.postMessage({});
-	    };
-
-	    KryptnosticWorker.prototype.terminate = function() {
-	      if (!this.webWorker) {
-	        return;
-	      }
-	      this.webWorker.terminate();
-	      this.webWorker = null;
-	      return this.scriptUrl = null;
-	    };
-
-	    KryptnosticWorker.prototype.query = function() {
-	      if (!this.webWorker) {
-	        return;
-	      }
-	      return this.webWorker.postMessage({
-	        query: true
-	      });
-	    };
-
-	    return KryptnosticWorker;
-
-	  })();
-	  FHEKeysGenerationWorker = (function(superClass) {
-	    extend(FHEKeysGenerationWorker, superClass);
-
-	    function FHEKeysGenerationWorker() {
-	      FHEKeysGenerationWorker.__super__.constructor.call(this);
-	    }
-
-	    FHEKeysGenerationWorker.prototype.query = function() {
-	      if (!this.webWorker) {
-	        return;
-	      }
-	      return new Promise((function(_this) {
-	        return function(resolve, reject) {
-	          _this.webWorker.onmessage = function(messageEvent) {
-	            var fheKeys;
-	            fheKeys = null;
-	            if (messageEvent && messageEvent.data) {
-	              fheKeys = messageEvent.data;
-	            }
-	            if (fheKeys != null) {
-	              return resolve(fheKeys);
-	            } else {
-	              return resolve(null);
-	            }
-	          };
-	          FHEKeysGenerationWorker.__super__.query.call(_this);
-	        };
-	      })(this));
-	    };
-
-	    return FHEKeysGenerationWorker;
-
-	  })(KryptnosticWorker);
-	  RSAKeysGenerationWorker = (function(superClass) {
-	    extend(RSAKeysGenerationWorker, superClass);
-
-	    function RSAKeysGenerationWorker() {
-	      RSAKeysGenerationWorker.__super__.constructor.call(this);
-	    }
-
-	    RSAKeysGenerationWorker.prototype.query = function() {
-	      if (!this.webWorker) {
-	        return;
-	      }
-	      return new Promise((function(_this) {
-	        return function(resolve, reject) {
-	          _this.webWorker.onmessage = function(messageEvent) {
-	            var privateKey, publicKey, rsaKeyPair;
-	            rsaKeyPair = null;
-	            if (messageEvent && messageEvent.data) {
-	              rsaKeyPair = messageEvent.data;
-	            }
-	            if (rsaKeyPair != null) {
-	              publicKey = new forge.util.ByteBuffer(rsaKeyPair.publicKey);
-	              privateKey = new forge.util.ByteBuffer(rsaKeyPair.privateKey);
-	              return resolve({
-	                publicKey: publicKey,
-	                privateKey: privateKey
-	              });
-	            } else {
-	              return resolve(null);
-	            }
-	          };
-	          RSAKeysGenerationWorker.__super__.query.call(_this);
-	        };
-	      })(this));
-	    };
-
-	    return RSAKeysGenerationWorker;
-
-	  })(KryptnosticWorker);
 	  KryptnosticWorkersApi = (function() {
 	    var WORKERS;
 
@@ -52922,9 +52016,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER = 'RSA_KEYS_GEN_WORKER';
 
+	    KryptnosticWorkersApi.OBJ_INDEXING_WORKER = 'OBJ_INDEXING_WORKER';
+
 	    WORKERS = {
-	      FHE_KEYS_GEN_WORKER: new FHEKeysGenerationWorker(),
-	      RSA_KEYS_GEN_WORKER: new RSAKeysGenerationWorker()
+	      FHE_KEYS_GEN_WORKER: new FHEKeysGenerationWorkerWrapper(),
+	      RSA_KEYS_GEN_WORKER: new RSAKeysGenerationWorkerWrapper(),
+	      OBJ_INDEXING_WORKER: new ObjectIndexingWorkerWrapper()
 	    };
 
 	    KryptnosticWorkersApi.setWorkerUrl = function(workerKey, workerScriptUrl) {
@@ -52960,17 +52057,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return kWorker.terminate();
 	    };
 
-	    KryptnosticWorkersApi.queryWebWorker = function(workerKey) {
+	    KryptnosticWorkersApi.queryWebWorker = function(workerKey, workerQuery) {
 	      var kWorker;
 	      if (!window.Worker) {
 	        logger.info('Web Workers API is not supported');
-	        return;
+	        return Promise.reject();
 	      }
 	      if (!WORKERS[workerKey]) {
-	        return;
+	        return Promise.reject();
 	      }
 	      kWorker = WORKERS[workerKey];
-	      return kWorker.query();
+	      return kWorker.query(workerQuery);
 	    };
 
 	    return KryptnosticWorkersApi;
@@ -52984,12 +52081,388 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12), __webpack_require__(40)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+	  hasProp = {}.hasOwnProperty;
+
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(2), __webpack_require__(40)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var FHEKeysGenerationWorkerWrapper, Logger, Promise, WorkerWrapper, logger;
+	  Promise = __webpack_require__(22);
+	  WorkerWrapper = __webpack_require__(40);
+	  Logger = __webpack_require__(2);
+	  logger = Logger.get('FHEKeysGenerationWorkerWrapper');
+	  FHEKeysGenerationWorkerWrapper = (function(superClass) {
+	    extend(FHEKeysGenerationWorkerWrapper, superClass);
+
+	    function FHEKeysGenerationWorkerWrapper() {
+	      FHEKeysGenerationWorkerWrapper.__super__.constructor.call(this);
+	    }
+
+	    FHEKeysGenerationWorkerWrapper.prototype.query = function() {
+	      if (!this.webWorker) {
+	        return Promise.reject();
+	      }
+	      return new Promise((function(_this) {
+	        return function(resolve, reject) {
+	          _this.webWorker.onmessage = function(messageEvent) {
+	            var fheKeys;
+	            fheKeys = null;
+	            if (messageEvent && messageEvent.data) {
+	              fheKeys = messageEvent.data;
+	            }
+	            if (fheKeys != null) {
+	              resolve(fheKeys);
+	            } else {
+	              reject();
+	            }
+	            return _this.terminate();
+	          };
+	          return FHEKeysGenerationWorkerWrapper.__super__.query.call(_this, {
+	            operation: 'getKeys'
+	          });
+	        };
+	      })(this));
+	    };
+
+	    return FHEKeysGenerationWorkerWrapper;
+
+	  })(WorkerWrapper);
+	  return FHEKeysGenerationWorkerWrapper;
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+
+/***/ },
+/* 40 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var Logger, WorkerWrapper, logger;
+	  Logger = __webpack_require__(2);
+	  logger = Logger.get('WorkerWrapper');
+	  WorkerWrapper = (function() {
+	    function WorkerWrapper() {
+	      this.scriptUrl = null;
+	      this.webWorker = null;
+	    }
+
+	    WorkerWrapper.prototype.start = function(workerParams) {
+	      if (_.isEmpty(this.scriptUrl)) {
+	        return;
+	      }
+	      if (this.webWorker != null) {
+	        return;
+	      }
+	      this.webWorker = new Worker(this.scriptUrl);
+	      return this.webWorker.postMessage({
+	        operation: 'init',
+	        params: workerParams
+	      });
+	    };
+
+	    WorkerWrapper.prototype.terminate = function() {
+	      if (!this.webWorker) {
+	        return;
+	      }
+	      this.webWorker.terminate();
+	      this.webWorker = null;
+	      return this.scriptUrl = null;
+	    };
+
+	    WorkerWrapper.prototype.query = function(workerQuery) {
+	      if (!this.webWorker || !workerQuery) {
+	        return Promise.reject();
+	      }
+	      this.webWorker.postMessage(workerQuery);
+	      return Promise.resolve();
+	    };
+
+	    return WorkerWrapper;
+
+	  })();
+	  return WorkerWrapper;
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+
+/***/ },
+/* 41 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+	  hasProp = {}.hasOwnProperty;
+
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(12), __webpack_require__(2), __webpack_require__(40)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var Logger, Promise, RSAKeysGenerationWorkerWrapper, WorkerWrapper, forge, logger;
+	  forge = __webpack_require__(12);
+	  Promise = __webpack_require__(22);
+	  WorkerWrapper = __webpack_require__(40);
+	  Logger = __webpack_require__(2);
+	  logger = Logger.get('RSAKeysGenerationWorkerWrapper');
+	  RSAKeysGenerationWorkerWrapper = (function(superClass) {
+	    extend(RSAKeysGenerationWorkerWrapper, superClass);
+
+	    function RSAKeysGenerationWorkerWrapper() {
+	      RSAKeysGenerationWorkerWrapper.__super__.constructor.call(this);
+	    }
+
+	    RSAKeysGenerationWorkerWrapper.prototype.query = function() {
+	      if (!this.webWorker) {
+	        return Promise.reject();
+	      }
+	      return new Promise((function(_this) {
+	        return function(resolve, reject) {
+	          _this.webWorker.onmessage = function(messageEvent) {
+	            var privateKey, publicKey, rsaKeyPair;
+	            rsaKeyPair = null;
+	            if (messageEvent && messageEvent.data) {
+	              rsaKeyPair = messageEvent.data;
+	            }
+	            if (rsaKeyPair != null) {
+	              publicKey = new forge.util.ByteBuffer(rsaKeyPair.publicKey);
+	              privateKey = new forge.util.ByteBuffer(rsaKeyPair.privateKey);
+	              resolve({
+	                publicKey: publicKey,
+	                privateKey: privateKey
+	              });
+	            } else {
+	              reject();
+	            }
+	            return _this.terminate();
+	          };
+	          return RSAKeysGenerationWorkerWrapper.__super__.query.call(_this, {
+	            operation: 'getKeys'
+	          });
+	        };
+	      })(this));
+	    };
+
+	    return RSAKeysGenerationWorkerWrapper;
+
+	  })(WorkerWrapper);
+	  return RSAKeysGenerationWorkerWrapper;
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+
+/***/ },
+/* 42 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+	  hasProp = {}.hasOwnProperty;
+
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(6), __webpack_require__(34), __webpack_require__(11), __webpack_require__(43), __webpack_require__(2), __webpack_require__(40)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var ConfigService, CredentialLoader, KeypairSerializer, KryptnosticEngineProvider, Logger, ObjectIndexingWorkerWrapper, Promise, WorkerWrapper, logger;
+	  Promise = __webpack_require__(22);
+	  ConfigService = __webpack_require__(6);
+	  CredentialLoader = __webpack_require__(34);
+	  KryptnosticEngineProvider = __webpack_require__(43);
+	  WorkerWrapper = __webpack_require__(40);
+	  KeypairSerializer = __webpack_require__(11);
+	  Logger = __webpack_require__(2);
+	  logger = Logger.get('FHEKeysGenerationWorkerWrapper');
+	  ObjectIndexingWorkerWrapper = (function(superClass) {
+	    extend(ObjectIndexingWorkerWrapper, superClass);
+
+	    function ObjectIndexingWorkerWrapper() {
+	      ObjectIndexingWorkerWrapper.__super__.constructor.call(this);
+	    }
+
+	    ObjectIndexingWorkerWrapper.prototype.start = function() {
+	      var credentialLoader, credentials, engine, serializedKeyPair, workerParams;
+	      workerParams = {};
+	      workerParams.config = ConfigService.config;
+	      credentialLoader = new CredentialLoader();
+	      credentials = credentialLoader.getCredentials();
+	      workerParams.principal = credentials.principal;
+	      workerParams.credential = credentials.credential;
+	      serializedKeyPair = KeypairSerializer.serialize(credentials.keypair);
+	      workerParams.rsaKeyPair = serializedKeyPair;
+	      engine = KryptnosticEngineProvider.getEngine();
+	      workerParams.fhePrivateKey = engine.getPrivateKey();
+	      workerParams.fheSearchPrivateKey = engine.getSearchPrivateKey();
+	      return ObjectIndexingWorkerWrapper.__super__.start.call(this, workerParams);
+	    };
+
+	    ObjectIndexingWorkerWrapper.prototype.query = function(workerQuery) {
+	      if (!this.webWorker) {
+	        return Promise.reject();
+	      }
+	      return ObjectIndexingWorkerWrapper.__super__.query.call(this, workerQuery);
+	    };
+
+	    return ObjectIndexingWorkerWrapper;
+
+	  })(WorkerWrapper);
+	  return ObjectIndexingWorkerWrapper;
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+
+/***/ },
+/* 43 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(44), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var KryptnosticEngine, KryptnosticEngineProvider, Logger, logger;
+	  KryptnosticEngine = __webpack_require__(44);
+	  Logger = __webpack_require__(2);
+	  logger = Logger.get('KryptnosticEngineProvider');
+	  KryptnosticEngineProvider = (function() {
+	    var _engine;
+
+	    function KryptnosticEngineProvider() {}
+
+	    _engine = null;
+
+	    KryptnosticEngineProvider.init = function(arg) {
+	      var ref;
+	      ref = arg != null ? arg : {}, this.fhePrivateKey = ref.fhePrivateKey, this.fheSearchPrivateKey = ref.fheSearchPrivateKey;
+	      logger.debug('initializing KryptnosticEngine with keys');
+	      if (_engine == null) {
+	        _engine = new KryptnosticEngine({
+	          fhePrivateKey: this.fhePrivateKey,
+	          fheSearchPrivateKey: this.fheSearchPrivateKey
+	        });
+	      }
+	      return _engine;
+	    };
+
+	    KryptnosticEngineProvider.getEngine = function() {
+	      if (_engine != null) {
+	        return _engine;
+	      } else {
+	        logger.debug('initializing a new KryptnosticEngine without keys...');
+	        return this.init();
+	      }
+	    };
+
+	    return KryptnosticEngineProvider;
+
+	  })();
+	  return KryptnosticEngineProvider;
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+
+/***/ },
+/* 44 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var ENGINE_MISSING_ERROR, KryptnosticEngine, Logger, logger;
+	  Logger = __webpack_require__(2);
+	  ENGINE_MISSING_ERROR = 'KryptnosticClient is unavailable. This component must be included separately.\nIt is not built as a part of the kryptnostic.js binary. Please see the krytpnostic.js\ndocumentation for more information and/or file an issue on the kryptnostic-js github project:\nhttps://github.com/kryptnostic/kryptnostic-js/issues';
+	  logger = Logger.get('KryptnosticEngine');
+	  KryptnosticEngine = (function() {
+	    KryptnosticEngine.OBJECT_INDEX_PAIR_SIZE = 2064;
+
+	    KryptnosticEngine.OBJECT_SHARE_PAIR_SIZE = 2064;
+
+	    KryptnosticEngine.OBJECT_SEARCH_PAIR_SIZE = 2080;
+
+	    KryptnosticEngine.FHE_PRIVATE_KEY_SIZE = 329760;
+
+	    KryptnosticEngine.FHE_SEARCH_PRIVATE_KEY_SIZE = 4096;
+
+	    KryptnosticEngine.FHE_HASH_FUNCTION_SIZE = 1060896;
+
+	    function KryptnosticEngine(arg) {
+	      var ref;
+	      ref = arg != null ? arg : {}, this.fhePrivateKey = ref.fhePrivateKey, this.fheSearchPrivateKey = ref.fheSearchPrivateKey;
+	      if (!((typeof Module !== "undefined" && Module !== null) && (Module.KryptnosticClient != null))) {
+	        logger.error(ENGINE_MISSING_ERROR);
+	      }
+	      if (this.fhePrivateKey && this.fheSearchPrivateKey) {
+	        this.krypto = new Module.KryptnosticClient(this.fhePrivateKey, this.fheSearchPrivateKey);
+	      } else {
+	        this.krypto = new Module.KryptnosticClient();
+	      }
+	    }
+
+	    KryptnosticEngine.prototype.getPrivateKey = function() {
+	      return new Uint8Array(this.krypto.getPrivateKey());
+	    };
+
+	    KryptnosticEngine.prototype.getSearchPrivateKey = function() {
+	      return new Uint8Array(this.krypto.getSearchPrivateKey());
+	    };
+
+	    KryptnosticEngine.prototype.calculateClientHashFunction = function() {
+	      return new Uint8Array(this.krypto.calculateClientHashFunction());
+	    };
+
+	    KryptnosticEngine.prototype.generateObjectIndexPair = function() {
+	      return new Uint8Array(this.krypto.generateObjectIndexPair());
+	    };
+
+	    KryptnosticEngine.prototype.calculateMetadataAddress = function(objectIndexPair, token) {
+	      return new Uint8Array(this.krypto.calculateMetadataAddress(objectIndexPair, token));
+	    };
+
+	    KryptnosticEngine.prototype.calculateObjectSearchPairFromObjectIndexPair = function(objectIndexPair) {
+	      return new Uint8Array(this.krypto.calculateObjectSearchPairFromObjectIndexPair(objectIndexPair));
+	    };
+
+	    KryptnosticEngine.prototype.calculateObjectIndexPairFromObjectSearchPair = function(objectSearchPair) {
+	      return new Uint8Array(this.krypto.calculateObjectIndexPairFromObjectSearchPair(objectSearchPair));
+	    };
+
+	    KryptnosticEngine.prototype.calculateEncryptedSearchToken = function(tokenAsUint8) {
+	      return new Uint8Array(this.krypto.calculateEncryptedSearchToken(tokenAsUint8));
+	    };
+
+	    KryptnosticEngine.prototype.generateObjectSearchPair = function() {
+	      var objectIndexPair, objectSearchPair;
+	      objectIndexPair = this.generateObjectIndexPair();
+	      objectSearchPair = this.calculateObjectSearchPairFromObjectIndexPair(objectIndexPair);
+	      return objectSearchPair;
+	    };
+
+	    KryptnosticEngine.prototype.calculateObjectSharePairFromObjectSearchPair = function(objectSearchPair) {
+	      return new Uint8Array(this.krypto.calculateObjectSharePairFromObjectSearchPair(objectSearchPair));
+	    };
+
+	    KryptnosticEngine.prototype.calculateObjectSearchPairFromObjectSharePair = function(objectSharePair) {
+	      return new Uint8Array(this.krypto.calculateObjectSearchPairFromObjectSharePair(objectSharePair));
+	    };
+
+	    KryptnosticEngine.isValidFHEPrivateKey = function(fhePrivateKey) {
+	      return fhePrivateKey instanceof Uint8Array && fhePrivateKey.length === KryptnosticEngine.FHE_PRIVATE_KEY_SIZE;
+	    };
+
+	    KryptnosticEngine.isValidFHESearchPrivateKey = function(fheSearchPrivateKey) {
+	      return fheSearchPrivateKey instanceof Uint8Array && fheSearchPrivateKey.length === KryptnosticEngine.FHE_SEARCH_PRIVATE_KEY_SIZE;
+	    };
+
+	    KryptnosticEngine.isValidFHEHashFunction = function(fheHashFunction) {
+	      return fheHashFunction instanceof Uint8Array && fheHashFunction.length === KryptnosticEngine.FHE_HASH_FUNCTION_SIZE;
+	    };
+
+	    KryptnosticEngine.isValidObjectIndexPair = function(objectIndexPair) {
+	      return objectIndexPair instanceof Uint8Array && objectIndexPair.length === KryptnosticEngine.OBJECT_INDEX_PAIR_SIZE;
+	    };
+
+	    KryptnosticEngine.isValidObjectSharePair = function(objectSharePair) {
+	      return objectSharePair instanceof Uint8Array && objectSharePair.length === KryptnosticEngine.OBJECT_SHARE_PAIR_SIZE;
+	    };
+
+	    KryptnosticEngine.isValidObjectSearchPair = function(objectSearchPair) {
+	      return objectSearchPair instanceof Uint8Array && objectSearchPair.length === KryptnosticEngine.OBJECT_SEARCH_PAIR_SIZE;
+	    };
+
+	    return KryptnosticEngine;
+
+	  })();
+	  return KryptnosticEngine;
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+
+/***/ },
+/* 45 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12), __webpack_require__(46)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  'use strict';
 	  var AbstractCryptoService, BlockCiphertext, DEFAULT_ALGORITHM, DEFAULT_MODE, Forge, PasswordCryptoService, derive;
 	  Forge = __webpack_require__(12);
-	  AbstractCryptoService = __webpack_require__(40);
-	  BlockCiphertext = __webpack_require__(23);
+	  AbstractCryptoService = __webpack_require__(46);
+	  BlockCiphertext = __webpack_require__(24);
 	  DEFAULT_ALGORITHM = 'AES';
 	  DEFAULT_MODE = 'CTR';
 	  derive = function(password, salt, iterations, keySize) {
@@ -52998,6 +52471,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return Forge.pkcs5.pbkdf2(password, salt, iterations, keySize, md);
 	  };
 	  PasswordCryptoService = (function() {
+	    PasswordCryptoService.prototype._CLASS_NAME = 'PasswordCryptoService';
+
+	    PasswordCryptoService._CLASS_NAME = 'PasswordCryptoService';
+
 	    PasswordCryptoService.BLOCK_CIPHER_ITERATIONS = 128;
 
 	    PasswordCryptoService.BLOCK_CIPHER_KEY_SIZE = 16;
@@ -53047,16 +52524,20 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 40 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12), __webpack_require__(41)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12), __webpack_require__(47)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var AbstractCryptoService, CryptoAlgorithm, Forge;
 	  Forge = __webpack_require__(12);
-	  CryptoAlgorithm = __webpack_require__(41);
+	  CryptoAlgorithm = __webpack_require__(47);
 	  AbstractCryptoService = (function() {
+	    AbstractCryptoService.prototype._CLASS_NAME = 'AbstractCryptoService';
+
+	    AbstractCryptoService._CLASS_NAME = 'AbstractCryptoService';
+
 	    function AbstractCryptoService(arg) {
 	      this.algorithm = arg.algorithm, this.mode = arg.mode;
 	      this.decrypt = bind(this.decrypt, this);
@@ -53108,7 +52589,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 41 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
@@ -53120,7 +52601,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 42 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
@@ -53136,21 +52617,21 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 43 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(2), __webpack_require__(44), __webpack_require__(27), __webpack_require__(45), __webpack_require__(46), __webpack_require__(21), __webpack_require__(47), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(2), __webpack_require__(50), __webpack_require__(28), __webpack_require__(51), __webpack_require__(52), __webpack_require__(21), __webpack_require__(53), __webpack_require__(34)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  'use strict';
 	  var AesCryptoService, Cache, CredentialLoader, CryptoServiceLoader, CryptoServiceMarshaller, Cypher, DEFAULT_OPTS, EMPTY_BUFFER, INT_SIZE, KeyStorageApi, Logger, Promise, RsaCryptoService, log;
 	  Promise = __webpack_require__(22);
-	  RsaCryptoService = __webpack_require__(45);
-	  AesCryptoService = __webpack_require__(46);
-	  Cache = __webpack_require__(27);
-	  Cypher = __webpack_require__(44);
+	  RsaCryptoService = __webpack_require__(51);
+	  AesCryptoService = __webpack_require__(52);
+	  Cache = __webpack_require__(28);
+	  Cypher = __webpack_require__(50);
 	  KeyStorageApi = __webpack_require__(21);
 	  Logger = __webpack_require__(2);
-	  CryptoServiceMarshaller = __webpack_require__(47);
-	  CredentialLoader = __webpack_require__(33);
+	  CryptoServiceMarshaller = __webpack_require__(53);
+	  CredentialLoader = __webpack_require__(34);
 	  INT_SIZE = 4;
 	  EMPTY_BUFFER = '';
 	  log = Logger.get('CryptoServiceLoader');
@@ -53240,7 +52721,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    CryptoServiceLoader.prototype.setObjectCryptoServiceV2 = function(versionedObjectKey, objectCryptoService, masterAesCryptoService) {
 	      var encryptedCryptoService, marshalledCryptoService;
-	      if (objectCryptoService.constructor.name !== 'AesCryptoService') {
+	      if (objectCryptoService._CLASS_NAME !== AesCryptoService._CLASS_NAME) {
 	        throw new Error('support is only implemented for AesCryptoService');
 	      }
 	      marshalledCryptoService = this.marshaller.marshall(objectCryptoService);
@@ -53260,7 +52741,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 44 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
@@ -53276,7 +52757,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 45 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
@@ -53285,6 +52766,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  _ = __webpack_require__(3);
 	  Forge = __webpack_require__(12);
 	  RsaCryptoService = (function() {
+	    RsaCryptoService.prototype._CLASS_NAME = 'RsaCryptoService';
+
+	    RsaCryptoService._CLASS_NAME = 'RsaCryptoService';
+
 	    function RsaCryptoService(arg) {
 	      this.privateKey = arg.privateKey, this.publicKey = arg.publicKey;
 	      if (_.isEmpty(this.privateKey) && _.isEmpty(this.publicKey)) {
@@ -53316,21 +52801,25 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 46 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12), __webpack_require__(40), __webpack_require__(2), __webpack_require__(23)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12), __webpack_require__(46), __webpack_require__(2), __webpack_require__(24)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  'use strict';
 	  var AbstractCryptoService, AesCryptoService, BITS_PER_BYTE, BLOCK_CIPHERTEXT_SCHEMA, BlockCiphertext, Forge, Logger, Validator, logger;
 	  Forge = __webpack_require__(12);
-	  AbstractCryptoService = __webpack_require__(40);
-	  BlockCiphertext = __webpack_require__(23);
-	  BLOCK_CIPHERTEXT_SCHEMA = __webpack_require__(26);
+	  AbstractCryptoService = __webpack_require__(46);
+	  BlockCiphertext = __webpack_require__(24);
+	  BLOCK_CIPHERTEXT_SCHEMA = __webpack_require__(27);
 	  Logger = __webpack_require__(2);
-	  Validator = __webpack_require__(24);
+	  Validator = __webpack_require__(25);
 	  BITS_PER_BYTE = 8;
 	  logger = Logger.get('AesCryptoService');
 	  AesCryptoService = (function() {
+	    AesCryptoService.prototype._CLASS_NAME = 'AesCryptoService';
+
+	    AesCryptoService._CLASS_NAME = 'AesCryptoService';
+
 	    AesCryptoService.BLOCK_CIPHER_KEY_SIZE = 16;
 
 	    function AesCryptoService(cypher, key) {
@@ -53390,13 +52879,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 47 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(48), __webpack_require__(46)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(54), __webpack_require__(52)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var AesCryptoService, CryptoServiceMarshaller, DeflatingMarshaller;
-	  DeflatingMarshaller = __webpack_require__(48);
-	  AesCryptoService = __webpack_require__(46);
+	  DeflatingMarshaller = __webpack_require__(54);
+	  AesCryptoService = __webpack_require__(52);
 	  CryptoServiceMarshaller = (function() {
 	    function CryptoServiceMarshaller() {
 	      this.deflatingMarshaller = new DeflatingMarshaller();
@@ -53405,7 +52894,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    CryptoServiceMarshaller.prototype.marshall = function(cryptoService) {
 	      var cypher, key, rawCryptoService, serializedCryptoService;
 	      key = cryptoService.key, cypher = cryptoService.cypher;
-	      if (cryptoService.constructor.name !== 'AesCryptoService') {
+	      if (cryptoService._CLASS_NAME !== AesCryptoService._CLASS_NAME) {
 	        throw new Error('serialization only implemented for AesCryptoService');
 	      }
 	      if (!key) {
@@ -53438,12 +52927,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 48 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(49), __webpack_require__(12), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(55), __webpack_require__(12), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var DeflatingMarshaller, EMPTY_BUFFER, Forge, INTEGER_BYTE_COUNT, Pako, _, countBytes, validateBytes;
-	  Pako = __webpack_require__(49);
+	  Pako = __webpack_require__(55);
 	  Forge = __webpack_require__(12);
 	  _ = __webpack_require__(3);
 	  EMPTY_BUFFER = '';
@@ -53496,7 +52985,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 49 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var require;var require;/* pako 0.2.6 nodeca/pako */(function(f){if(true){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.pako = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return require(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
@@ -59874,19 +59363,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 /***/ },
-/* 50 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(3), __webpack_require__(22), __webpack_require__(2), __webpack_require__(51), __webpack_require__(52), __webpack_require__(21), __webpack_require__(54), __webpack_require__(43)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(3), __webpack_require__(22), __webpack_require__(2), __webpack_require__(57), __webpack_require__(58), __webpack_require__(21), __webpack_require__(44), __webpack_require__(49)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var AuthenticationStage, CredentialType, CryptoServiceLoader, FHE_PRIVATE_KEY, FHE_SEARCH_PRIVATE_KEY, KeyStorageApi, KryptnosticEngine, Logger, Promise, SearchCredentialService, SearchKeyGenerator, _, logger;
 	  _ = __webpack_require__(3);
 	  Promise = __webpack_require__(22);
 	  Logger = __webpack_require__(2);
-	  AuthenticationStage = __webpack_require__(51);
+	  AuthenticationStage = __webpack_require__(57);
 	  KeyStorageApi = __webpack_require__(21);
-	  KryptnosticEngine = __webpack_require__(54);
-	  SearchKeyGenerator = __webpack_require__(52);
-	  CryptoServiceLoader = __webpack_require__(43);
+	  KryptnosticEngine = __webpack_require__(44);
+	  SearchKeyGenerator = __webpack_require__(58);
+	  CryptoServiceLoader = __webpack_require__(49);
 	  logger = Logger.get('SearchCredentialService');
 	  FHE_PRIVATE_KEY = 'FHE_PRIVATE_KEY';
 	  FHE_SEARCH_PRIVATE_KEY = 'FHE_SEARCH_PRIVATE_KEY';
@@ -60022,7 +59511,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 51 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
@@ -60041,12 +59530,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 52 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2), __webpack_require__(53)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2), __webpack_require__(43)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var KryptnosticEngineProvider, Logger, SearchKeyGenerator, logger;
-	  KryptnosticEngineProvider = __webpack_require__(53);
+	  KryptnosticEngineProvider = __webpack_require__(43);
 	  Logger = __webpack_require__(2);
 	  logger = Logger.get('SearchKeyGenerator');
 	  SearchKeyGenerator = (function() {
@@ -60070,171 +59559,20 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 53 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(54), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var KryptnosticEngine, KryptnosticEngineProvider, Logger, logger;
-	  KryptnosticEngine = __webpack_require__(54);
-	  Logger = __webpack_require__(2);
-	  logger = Logger.get('KryptnosticEngineProvider');
-	  KryptnosticEngineProvider = (function() {
-	    var _engine;
-
-	    function KryptnosticEngineProvider() {}
-
-	    _engine = null;
-
-	    KryptnosticEngineProvider.init = function(arg) {
-	      var ref;
-	      ref = arg != null ? arg : {}, this.fhePrivateKey = ref.fhePrivateKey, this.fheSearchPrivateKey = ref.fheSearchPrivateKey;
-	      logger.debug('initializing KryptnosticEngine with keys');
-	      if (_engine == null) {
-	        _engine = new KryptnosticEngine({
-	          fhePrivateKey: this.fhePrivateKey,
-	          fheSearchPrivateKey: this.fheSearchPrivateKey
-	        });
-	      }
-	      return _engine;
-	    };
-
-	    KryptnosticEngineProvider.getEngine = function() {
-	      if (_engine != null) {
-	        return _engine;
-	      } else {
-	        logger.debug('initializing a new KryptnosticEngine without keys...');
-	        return this.init();
-	      }
-	    };
-
-	    return KryptnosticEngineProvider;
-
-	  })();
-	  return KryptnosticEngineProvider;
-	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-
-/***/ },
-/* 54 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var ENGINE_MISSING_ERROR, KryptnosticEngine, Logger, logger;
-	  Logger = __webpack_require__(2);
-	  ENGINE_MISSING_ERROR = 'KryptnosticClient is unavailable. This component must be included separately.\nIt is not built as a part of the kryptnostic.js binary. Please see the krytpnostic.js\ndocumentation for more information and/or file an issue on the kryptnostic-js github project:\nhttps://github.com/kryptnostic/kryptnostic-js/issues';
-	  logger = Logger.get('KryptnosticEngine');
-	  KryptnosticEngine = (function() {
-	    KryptnosticEngine.OBJECT_INDEX_PAIR_SIZE = 2064;
-
-	    KryptnosticEngine.OBJECT_SHARE_PAIR_SIZE = 2064;
-
-	    KryptnosticEngine.OBJECT_SEARCH_PAIR_SIZE = 2080;
-
-	    KryptnosticEngine.FHE_PRIVATE_KEY_SIZE = 329760;
-
-	    KryptnosticEngine.FHE_SEARCH_PRIVATE_KEY_SIZE = 4096;
-
-	    KryptnosticEngine.FHE_HASH_FUNCTION_SIZE = 1060896;
-
-	    function KryptnosticEngine(arg) {
-	      var ref;
-	      ref = arg != null ? arg : {}, this.fhePrivateKey = ref.fhePrivateKey, this.fheSearchPrivateKey = ref.fheSearchPrivateKey;
-	      if (!((typeof Module !== "undefined" && Module !== null) && (Module.KryptnosticClient != null))) {
-	        logger.error(ENGINE_MISSING_ERROR);
-	      }
-	      if (this.fhePrivateKey && this.fheSearchPrivateKey) {
-	        this.krypto = new Module.KryptnosticClient(this.fhePrivateKey, this.fheSearchPrivateKey);
-	      } else {
-	        this.krypto = new Module.KryptnosticClient();
-	      }
-	    }
-
-	    KryptnosticEngine.prototype.getPrivateKey = function() {
-	      return new Uint8Array(this.krypto.getPrivateKey());
-	    };
-
-	    KryptnosticEngine.prototype.getSearchPrivateKey = function() {
-	      return new Uint8Array(this.krypto.getSearchPrivateKey());
-	    };
-
-	    KryptnosticEngine.prototype.calculateClientHashFunction = function() {
-	      return new Uint8Array(this.krypto.calculateClientHashFunction());
-	    };
-
-	    KryptnosticEngine.prototype.generateObjectIndexPair = function() {
-	      return new Uint8Array(this.krypto.generateObjectIndexPair());
-	    };
-
-	    KryptnosticEngine.prototype.calculateMetadataAddress = function(objectIndexPair, token) {
-	      return new Uint8Array(this.krypto.calculateMetadataAddress(objectIndexPair, token));
-	    };
-
-	    KryptnosticEngine.prototype.calculateObjectSearchPairFromObjectIndexPair = function(objectIndexPair) {
-	      return new Uint8Array(this.krypto.calculateObjectSearchPairFromObjectIndexPair(objectIndexPair));
-	    };
-
-	    KryptnosticEngine.prototype.calculateObjectIndexPairFromObjectSearchPair = function(objectSearchPair) {
-	      return new Uint8Array(this.krypto.calculateObjectIndexPairFromObjectSearchPair(objectSearchPair));
-	    };
-
-	    KryptnosticEngine.prototype.calculateEncryptedSearchToken = function(tokenAsUint8) {
-	      return new Uint8Array(this.krypto.calculateEncryptedSearchToken(tokenAsUint8));
-	    };
-
-	    KryptnosticEngine.prototype.calculateObjectSharePairFromObjectSearchPair = function(objectSearchPair) {
-	      return new Uint8Array(this.krypto.calculateObjectSharePairFromObjectSearchPair(objectSearchPair));
-	    };
-
-	    KryptnosticEngine.prototype.calculateObjectSearchPairFromObjectSharePair = function(objectSharePair) {
-	      return new Uint8Array(this.krypto.calculateObjectSearchPairFromObjectSharePair(objectSharePair));
-	    };
-
-	    KryptnosticEngine.isValidFHEPrivateKey = function(fhePrivateKey) {
-	      return fhePrivateKey instanceof Uint8Array && fhePrivateKey.length === KryptnosticEngine.FHE_PRIVATE_KEY_SIZE;
-	    };
-
-	    KryptnosticEngine.isValidFHESearchPrivateKey = function(fheSearchPrivateKey) {
-	      return fheSearchPrivateKey instanceof Uint8Array && fheSearchPrivateKey.length === KryptnosticEngine.FHE_SEARCH_PRIVATE_KEY_SIZE;
-	    };
-
-	    KryptnosticEngine.isValidFHEHashFunction = function(fheHashFunction) {
-	      return fheHashFunction instanceof Uint8Array && fheHashFunction.length === KryptnosticEngine.FHE_HASH_FUNCTION_SIZE;
-	    };
-
-	    KryptnosticEngine.isValidObjectIndexPair = function(objectIndexPair) {
-	      return objectIndexPair instanceof Uint8Array && objectIndexPair.length === KryptnosticEngine.OBJECT_INDEX_PAIR_SIZE;
-	    };
-
-	    KryptnosticEngine.isValidObjectSharePair = function(objectSharePair) {
-	      return objectSharePair instanceof Uint8Array && objectSharePair.length === KryptnosticEngine.OBJECT_SHARE_PAIR_SIZE;
-	    };
-
-	    KryptnosticEngine.isValidObjectSearchPair = function(objectSearchPair) {
-	      return objectSearchPair instanceof Uint8Array && objectSearchPair.length === KryptnosticEngine.OBJECT_SEARCH_PAIR_SIZE;
-	    };
-
-	    return KryptnosticEngine;
-
-	  })();
-	  return KryptnosticEngine;
-	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-
-/***/ },
-/* 55 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(34), __webpack_require__(22), __webpack_require__(2), __webpack_require__(6), __webpack_require__(27), __webpack_require__(32), __webpack_require__(35)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(2), __webpack_require__(6), __webpack_require__(28), __webpack_require__(33), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var Cache, Configuration, DEFAULT_HEADER, Logger, Promise, Requests, UserDirectoryApi, Validators, axios, getUserUrl, getUsersUrl, log, usersInRealmUrl, validateEmail, validateUuid, validateUuids;
-	  axios = __webpack_require__(34);
+	  axios = __webpack_require__(35);
 	  Promise = __webpack_require__(22);
 	  Logger = __webpack_require__(2);
 	  Configuration = __webpack_require__(6);
-	  Cache = __webpack_require__(27);
-	  Requests = __webpack_require__(32);
-	  Validators = __webpack_require__(35);
+	  Cache = __webpack_require__(28);
+	  Requests = __webpack_require__(33);
+	  Validators = __webpack_require__(36);
 	  getUserUrl = function() {
 	    return Configuration.get('heraclesUrlV2') + '/directory/user';
 	  };
@@ -60375,21 +59713,21 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 56 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(34), __webpack_require__(22), __webpack_require__(6), __webpack_require__(33), __webpack_require__(43), __webpack_require__(47), __webpack_require__(45), __webpack_require__(2), __webpack_require__(32), __webpack_require__(35)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(6), __webpack_require__(34), __webpack_require__(49), __webpack_require__(53), __webpack_require__(51), __webpack_require__(2), __webpack_require__(33), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var Config, CredentialLoader, CryptoServiceLoader, CryptoServiceMarshaller, CryptoServiceMigrator, DEFAULT_HEADERS, Logger, OBJECT_ID_WHITELIST, Promise, Requests, RsaCryptoService, Validators, aesCryptoServiceMigrationUrl, axios, getRSACryptoServicesForUser, keyStorageApi, logger, rsaCryptoServicesBulkUrl, setAesEncryptedObjectCryptoServiceForMigration, validateUuid;
-	  axios = __webpack_require__(34);
+	  axios = __webpack_require__(35);
 	  Promise = __webpack_require__(22);
-	  CredentialLoader = __webpack_require__(33);
-	  CryptoServiceLoader = __webpack_require__(43);
-	  CryptoServiceMarshaller = __webpack_require__(47);
-	  RsaCryptoService = __webpack_require__(45);
+	  CredentialLoader = __webpack_require__(34);
+	  CryptoServiceLoader = __webpack_require__(49);
+	  CryptoServiceMarshaller = __webpack_require__(53);
+	  RsaCryptoService = __webpack_require__(51);
 	  Config = __webpack_require__(6);
 	  Logger = __webpack_require__(2);
-	  Requests = __webpack_require__(32);
-	  Validators = __webpack_require__(35);
+	  Requests = __webpack_require__(33);
+	  Validators = __webpack_require__(36);
 	  OBJECT_ID_WHITELIST = {
 	    '58694df5-e76a-4053-8c98-281bd9f35167': true,
 	    'd1e02b1f-575b-4ae8-9bfa-33b876ef8cee': true,
@@ -60489,12 +59827,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 57 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(34), __webpack_require__(22), __webpack_require__(6)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(6)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var Configuration, DEFAULT_HEADERS, Promise, RegistrationApi, axios, registrationUrl;
-	  axios = __webpack_require__(34);
+	  axios = __webpack_require__(35);
 	  Promise = __webpack_require__(22);
 	  Configuration = __webpack_require__(6);
 	  registrationUrl = function() {
@@ -60529,15 +59867,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 58 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2), __webpack_require__(57), __webpack_require__(20), __webpack_require__(59), __webpack_require__(38)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2), __webpack_require__(61), __webpack_require__(20), __webpack_require__(63), __webpack_require__(38)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var CredentialService, KryptnosticWorkersApi, Logger, RegistrationApi, RegistrationClient, UserRegistrationRequest, log;
 	  Logger = __webpack_require__(2);
-	  RegistrationApi = __webpack_require__(57);
+	  RegistrationApi = __webpack_require__(61);
 	  CredentialService = __webpack_require__(20);
-	  UserRegistrationRequest = __webpack_require__(59);
+	  UserRegistrationRequest = __webpack_require__(63);
 	  KryptnosticWorkersApi = __webpack_require__(38);
 	  log = Logger.get('RegistrationClient');
 	  RegistrationClient = (function() {
@@ -60589,13 +59927,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 59 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(24), __webpack_require__(60)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(25), __webpack_require__(64)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var DEFAULTS, SCHEMA, UserRegistrationRequest, validator;
-	  validator = __webpack_require__(24);
-	  SCHEMA = __webpack_require__(60);
+	  validator = __webpack_require__(25);
+	  SCHEMA = __webpack_require__(64);
 	  DEFAULTS = {
 	    confirmationEmailNeeded: false
 	  };
@@ -60617,7 +59955,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 60 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function() {

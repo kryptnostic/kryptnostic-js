@@ -7,6 +7,7 @@
 
 JS_LIB_EXPORTS = [
   'axios',
+  'base64',
   'bluebird',
   'forge',
   'jscache',

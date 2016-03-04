@@ -1,8 +1,12 @@
 define 'kryptnostic.fhe-keys-gen-worker-wrapper', [
   'require',
+  'bluebird',
   'kryptnostic.logger',
   'kryptnostic.worker-wrapper'
 ], (require) ->
+
+  # libraries
+  Promise = require 'bluebird'
 
   # kryptnostic
   WorkerWrapper = require 'kryptnostic.worker-wrapper'
@@ -35,6 +39,8 @@ define 'kryptnostic.fhe-keys-gen-worker-wrapper', [
             resolve(fheKeys)
           else
             reject()
+
+          super.terminate()
 
         # execute query
         super({

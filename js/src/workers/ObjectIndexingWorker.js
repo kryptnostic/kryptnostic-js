@@ -4,6 +4,7 @@ importScripts('almond.js');
 importScripts('KryptnosticClient.js', 'kryptnostic.js');
 
 // libraries
+require('base64');
 var Cache = require('jscache');
 
 // kryptnostic

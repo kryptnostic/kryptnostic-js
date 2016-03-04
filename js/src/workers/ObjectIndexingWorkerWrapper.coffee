@@ -1,5 +1,6 @@
 define 'kryptnostic.object-indexing-worker-wrapper', [
   'require',
+  'bluebird',
   'kryptnostic.configuration',
   'kryptnostic.credential-loader',
   'kryptnostic.keypair-serializer',
@@ -7,6 +8,9 @@ define 'kryptnostic.object-indexing-worker-wrapper', [
   'kryptnostic.logger',
   'kryptnostic.worker-wrapper'
 ], (require) ->
+
+  # libraries
+  Promise = require 'bluebird'
 
   # kryptnostic
   ConfigService = require 'kryptnostic.configuration'

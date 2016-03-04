@@ -1,5 +1,6 @@
 define 'kryptnostic.rsa-keys-gen-worker-wrapper', [
   'require',
+  'bluebird',
   'forge',
   'kryptnostic.logger',
   'kryptnostic.worker-wrapper'
@@ -7,6 +8,7 @@ define 'kryptnostic.rsa-keys-gen-worker-wrapper', [
 
   # libraries
   forge = require 'forge'
+  Promise = require 'bluebird'
 
   # kryptnostic
   WorkerWrapper = require 'kryptnostic.worker-wrapper'
@@ -44,6 +46,8 @@ define 'kryptnostic.rsa-keys-gen-worker-wrapper', [
             })
           else
             reject()
+
+          super.terminate()
 
         # execute query
         super({

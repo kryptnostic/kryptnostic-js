@@ -34,11 +34,11 @@ function generateKeys() {
 
 function getKeys() {
 
-  if (fheKeys.FHE_PRIVATE_KEY === null ||
+  if (fheKeys === null ||
+      fheKeys.FHE_PRIVATE_KEY === null ||
       fheKeys.FHE_SEARCH_PRIVATE_KEY === null ||
       fheKeys.FHE_HASH_FUNCTION === null) {
     postMessage(null);
   }
   postMessage(fheKeys);
-  self.close();
 };

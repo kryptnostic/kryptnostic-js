@@ -30,38 +30,15 @@ function generateKeys() {
 
   if (self.crypto && self.crypto.subtle) {
     webCryptoGenerate();
-  } else {
-    forgeGenerate();
   }
 };
 
 function getKeys() {
 
-  if (rsaKeyPair.publicKey === null || rsaKeyPair.privateKey === null) {
+  if (rsaKeyPair === null || rsaKeyPair.publicKey === null || rsaKeyPair.privateKey === null) {
     postMessage(null);
   }
   postMessage(rsaKeyPair);
-  self.close();
-};
-
-function forgeGenerate() {
-
-  Promise.resolve()
-    .then(function() {
-
-      forgeKeys       = forge.rsa.generateKeyPair(RSA_KEY_SIZE, EXPONENT_NUM);
-      privateKeyAsn1  = forge.pki.privateKeyToAsn1(forgeKeys.privateKey);
-      publicKeyAsn1   = forge.pki.publicKeyToAsn1(forgeKeys.publicKey);
-      privateKeyAsDer = forge.asn1.toDer(privateKeyAsn1);
-      publicKeyAsDer  = forge.asn1.toDer(publicKeyAsn1);
-
-      rsaKeyPair.publicKey = publicKeyAsDer.data;
-      rsaKeyPair.privateKey = privateKeyAsDer.data;
-      return;
-    })
-    .catch(function(e) {
-      self.close();
-    });
 };
 
 function webCryptoGenerate() {
@@ -99,6 +76,6 @@ function webCryptoGenerate() {
       });
     })
     .catch(function(e) {
-      self.close();
+      rsaKeyPair = null;
     });
 };

@@ -2,11 +2,15 @@
 
 define 'kryptnostic.kryptnostic-workers-api', [
   'require',
+  'bluebird',
   'kryptnostic.fhe-keys-gen-worker-wrapper',
   'kryptnostic.rsa-keys-gen-worker-wrapper',
   'kryptnostic.object-indexing-worker-wrapper',
   'kryptnostic.logger'
 ], (require) ->
+
+  # libraries
+  Promise = require 'bluebird'
 
   # kryptnostic
   FHEKeysGenerationWorkerWrapper = require 'kryptnostic.fhe-keys-gen-worker-wrapper'

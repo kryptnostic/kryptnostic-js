@@ -9,6 +9,7 @@
     findNestedDependencies : true,
     paths                  : {
       'axios'         : '../../bower_components/axios/dist/axios.min',
+      'base64'        : '../../bower_components/base64/base64',
       'bluebird'      : '../../bower_components/bluebird/js/browser/bluebird',
       'forge'         : '../../bower_components/forge/js/forge.min',
       'function-name' : '../../bower_components/function-name/index',

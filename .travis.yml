@@ -3,15 +3,11 @@ language: node_js
 node_js:
   - "0.10"
 addons:
-  apt:
-    sources:
-    - google-chrome
-    packages:
-    - google-chrome-stable
+  firefox: latest
 before_script:
   - npm install -g bower
   - bower install
 before_install:
-  - google-chrome --product-version
+  - firefox --version 2>/dev/null
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start

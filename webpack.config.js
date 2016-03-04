@@ -9,7 +9,7 @@ var DIST_PATH = path.resolve(__dirname, 'dist');
 var BOWER_PATH = path.resolve(__dirname, 'bower_components');
 var NODE_PATH = path.resolve(__dirname, 'node_modules');
 
-var AXIOS_PATH = path.resolve('bower_components/axios/dist/axios.amd.js');
+var AXIOS_PATH = path.resolve('bower_components/axios/dist/axios.js');
 var FORGE_PATH = path.resolve('bower_components/forge/js/forge.bundle.js');
 
 module.exports = {
@@ -139,7 +139,12 @@ module.exports = {
       'kryptnostic.object-utils'                        : 'util/object-utils.coffee',
       'kryptnostic.requests'                            : 'util/requests.coffee',
       'kryptnostic.validators'                          : 'util/validators.coffee',
-      'kryptnostic.kryptnostic-workers-api'             : 'workers/KryptnosticWorkersApi.coffee'
+      'kryptnostic.kryptnostic-workers-api'             : 'workers/KryptnosticWorkersApi.coffee',
+      'kryptnostic.fhe-keys-gen-worker-wrapper'         : 'workers/FHEKeysGenerationWorkerWrapper.coffee',
+      'kryptnostic.kryptnostic-workers-api'             : 'workers/KryptnosticWorkersApi.coffee',
+      'kryptnostic.object-indexing-worker-wrapper'      : 'workers/ObjectIndexingWorkerWrapper.coffee',
+      'kryptnostic.rsa-keys-gen-worker-wrapper'         : 'workers/RSAKeysGenerationWorkerWrapper.coffee',
+      'kryptnostic.worker-wrapper'                      : 'workers/WorkerWrapper.coffee'
     }
   }
 }

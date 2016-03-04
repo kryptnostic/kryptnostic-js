@@ -12,8 +12,8 @@ module.exports = function(config) {
     browserDisconnectTimeout: 60000,
     browserNoActivityTimeout: 60000,
 
-    browsers: ['Chrome'],
-    reporters: ['progress'],
+    browsers: ['Firefox'],
+    reporters: ['mocha'],
 
     frameworks: [
       'jasmine',
@@ -45,6 +45,9 @@ module.exports = function(config) {
 
     // we want TravisCI to actually open an instance of Chrome when running these tests
     customLaunchers: {
+      FirefoxTravisCI: {
+        base: 'Firefox'
+      },
       ChromeTravisCI: {
         base: 'Chrome',
         flags: ['--no-sandbox']
@@ -54,6 +57,6 @@ module.exports = function(config) {
 
   // TravisCI integration when submitting a Pull Request to GitHub
   if (process.env.TRAVIS) {
-    config.browsers = ['ChromeTravisCI'];
+    config.browsers = ['FirefoxTravisCI'];
   }
 };

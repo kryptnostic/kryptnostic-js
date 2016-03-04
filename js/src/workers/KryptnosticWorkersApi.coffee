@@ -2,130 +2,36 @@
 
 define 'kryptnostic.kryptnostic-workers-api', [
   'require',
-  'forge',
+  'bluebird',
+  'kryptnostic.fhe-keys-gen-worker-wrapper',
+  'kryptnostic.rsa-keys-gen-worker-wrapper',
+  'kryptnostic.object-indexing-worker-wrapper',
   'kryptnostic.logger'
 ], (require) ->
 
   # libraries
-  forge = require 'forge'
+  Promise = require 'bluebird'
+
+  # kryptnostic
+  FHEKeysGenerationWorkerWrapper = require 'kryptnostic.fhe-keys-gen-worker-wrapper'
+  RSAKeysGenerationWorkerWrapper = require 'kryptnostic.rsa-keys-gen-worker-wrapper'
+  ObjectIndexingWorkerWrapper = require 'kryptnostic.object-indexing-worker-wrapper'
 
   # utils
   Logger = require 'kryptnostic.logger'
 
   logger = Logger.get('KryptnosticWorkersApi')
 
-  #
-  # internal classes
-  #
-
-  class KryptnosticWorker
-
-    constructor: ->
-      @scriptUrl = null
-      @webWorker = null
-
-    start: ->
-
-      if _.isEmpty(@scriptUrl)
-        return
-
-      if @webWorker?
-        return
-
-      @webWorker = new Worker(@scriptUrl)
-      @webWorker.postMessage({})
-
-    terminate: ->
-
-      if not @webWorker
-        return
-
-      @webWorker.terminate()
-      @webWorker = null
-      @scriptUrl = null
-
-    query: ->
-
-      if not @webWorker
-        return
-
-      @webWorker.postMessage({
-        query: true
-      })
-
-  class FHEKeysGenerationWorker extends KryptnosticWorker
-
-    constructor: ->
-      super()
-
-    query: ->
-
-      if not @webWorker
-        return
-
-      return new Promise (resolve, reject) =>
-
-        # handle query response
-        @webWorker.onmessage = (messageEvent) ->
-
-          fheKeys = null
-          if messageEvent and messageEvent.data
-            fheKeys = messageEvent.data
-
-          if fheKeys?
-            resolve(fheKeys)
-          else
-            resolve(null)
-
-        # execute query
-        super()
-        return
-
-  class RSAKeysGenerationWorker extends KryptnosticWorker
-
-    constructor: ->
-      super()
-
-    query: ->
-
-      if not @webWorker
-        return
-
-      return new Promise (resolve, reject) =>
-
-        # handle query response
-        @webWorker.onmessage = (messageEvent) ->
-
-          rsaKeyPair = null
-          if messageEvent and messageEvent.data
-            rsaKeyPair = messageEvent.data
-
-          if rsaKeyPair?
-            publicKey = new forge.util.ByteBuffer(rsaKeyPair.publicKey)
-            privateKey = new forge.util.ByteBuffer(rsaKeyPair.privateKey)
-            resolve({
-              publicKey,
-              privateKey
-            })
-          else
-            resolve(null)
-
-        # execute query
-        super()
-        return
-
-  #
-  # external API for interacting with web workers
-  #
-
   class KryptnosticWorkersApi
 
     @FHE_KEYS_GEN_WORKER = 'FHE_KEYS_GEN_WORKER'
     @RSA_KEYS_GEN_WORKER = 'RSA_KEYS_GEN_WORKER'
+    @OBJ_INDEXING_WORKER = 'OBJ_INDEXING_WORKER'
 
     WORKERS = {
-      FHE_KEYS_GEN_WORKER: new FHEKeysGenerationWorker()
-      RSA_KEYS_GEN_WORKER: new RSAKeysGenerationWorker()
+      FHE_KEYS_GEN_WORKER: new FHEKeysGenerationWorkerWrapper()
+      RSA_KEYS_GEN_WORKER: new RSAKeysGenerationWorkerWrapper()
+      OBJ_INDEXING_WORKER: new ObjectIndexingWorkerWrapper()
     }
 
     @setWorkerUrl: (workerKey, workerScriptUrl) ->
@@ -159,16 +65,16 @@ define 'kryptnostic.kryptnostic-workers-api', [
       kWorker = WORKERS[workerKey]
       kWorker.terminate()
 
-    @queryWebWorker: (workerKey) ->
+    @queryWebWorker: (workerKey, workerQuery) ->
 
       if not window.Worker
         logger.info('Web Workers API is not supported')
-        return
+        return Promise.reject()
 
       if not WORKERS[workerKey]
-        return
+        return Promise.reject()
 
       kWorker = WORKERS[workerKey]
-      return kWorker.query()
+      return kWorker.query(workerQuery)
 
   return KryptnosticWorkersApi

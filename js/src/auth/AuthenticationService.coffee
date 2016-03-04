@@ -82,6 +82,7 @@ define 'kryptnostic.authentication-service', [
       Promise.resolve()
       .then ->
         KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER)
+        .catch (e) -> return null
       .then (fheKeys) ->
         KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER)
         if not _.isEmpty(fheKeys)
@@ -93,7 +94,13 @@ define 'kryptnostic.authentication-service', [
         fhePrivateKey = keys.FHE_PRIVATE_KEY
         fheSearchPrivateKey = keys.FHE_SEARCH_PRIVATE_KEY
         KryptnosticEngineProvider.init({ fhePrivateKey, fheSearchPrivateKey })
+
         logger.info('KryptnosticEngine initialized')
+
+        KryptnosticWorkersApi.startWebWorker(
+          KryptnosticWorkersApi.OBJ_INDEXING_WORKER
+        )
+        return
 
     @destroy: ->
       credentialProvider = CredentialProviderLoader.load(Config.get('credentialProvider'))

@@ -28,7 +28,8 @@ define 'kryptnostic.object-api', [
   {
     validateId,
     validateUuid,
-    validateUuids
+    validateUuids,
+    validateVersionedObjectKey
   } = Validators
 
   DEFAULT_HEADERS = { 'Content-Type' : 'application/json' }
@@ -102,11 +103,11 @@ define 'kryptnostic.object-api', [
         )
       )
       .then (axiosResponse) ->
-        if axiosResponse? and axiosResponse.data?
+        if axiosResponse and axiosResponse.data
           # axiosResponse.data == com.kryptnostic.v2.storage.models.VersionedObjectKey
-          return axiosResponse.data;
-        else
-          return null
+          if validateVersionedObjectKey(axiosResponse.data)
+            return axiosResponse.data
+        return null
 
     getObjectMetadata: (objectId) ->
 

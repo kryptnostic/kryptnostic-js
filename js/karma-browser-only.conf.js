@@ -13,7 +13,7 @@ module.exports = function(config) {
     browserNoActivityTimeout: 60000,
 
     browsers: ['Firefox'],
-    reporters: ['progress'],
+    reporters: ['mocha'],
 
     frameworks: [
       'jasmine',

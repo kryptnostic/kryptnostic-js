@@ -12,6 +12,7 @@ define 'kryptnostic.registration-client', [
   CredentialService       = require 'kryptnostic.credential-service'
   UserRegistrationRequest = require 'kryptnostic.user-registration-request'
   KryptnosticWorkersApi   = require 'kryptnostic.kryptnostic-workers-api'
+  Promise                 = require 'bluebird'
 
   log = Logger.get('RegistrationClient')
 

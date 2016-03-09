@@ -1,8 +1,14 @@
 {
-  "preset": "airbnb",
   "esnext": true,
-  "requireTrailingComma": false,
+  "preset": "airbnb",
   "excludeFiles": [
     "dist/**"
-  ]
+  ],
+  "disallowKeywordsOnNewLine": [],
+  "maximumLineLength": 128,
+  "requireCurlyBraces": true,
+  "requireTrailingComma": false,
+  "requireSpacesInAnonymousFunctionExpression": {
+    "beforeOpeningCurlyBrace": true
+  }
 }

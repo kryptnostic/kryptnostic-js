@@ -1,6 +1,17 @@
 {
+  "extends": "airbnb/base",
   "parser": "babel-eslint",
   "rules": {
-    "strict": 0
+    "brace-style": [2, "stroustrup"],
+    "comma-dangle": [1, "never"],
+    "max-len": [
+      2,
+      {
+        "code": 128,
+        "tabWidth": 2,
+        "ignoreUrls": true,
+        "ignoreComments": false
+      }
+    ]
   }
 }

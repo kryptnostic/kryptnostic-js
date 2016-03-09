@@ -32,8 +32,11 @@
   "license": "Apache-2.0",
   "main": "dist/kryptnostic.js",
   "scripts": {
-    "build": "",
-    "test": ""
+    "build": "npm run eslint && npm run jscs && npm run webpack",
+    "test": "",
+    "eslint": "./node_modules/.bin/eslint --config .eslintrc src",
+    "jscs": "./node_modules/.bin/jscs --config .jscsrc src",
+    "webpack": "./node_modules/.bin/webpack --config webpack.config.js"
   },
   "dependencies": {
     "babel-polyfill": "^6.5.0",
@@ -52,11 +55,9 @@
     "babel-preset-react": "^6.5.0",
     "bluebird": "^3.2.2",
     "eslint": "^2.0.0",
+    "eslint-config-airbnb": "^6.1.0",
     "exports-loader": "^0.6.3",
     "jscs": "^2.10.1",
-    "json-loader": "^0.5.4",
-    "script-loader": "^0.6.1",
-    "uglify-loader": "^1.3.0",
     "webpack": "^1.12.13",
     "webpack-dev-server": "^1.14.1"
   }

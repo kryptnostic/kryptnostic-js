@@ -1,9 +1,9 @@
 /*
  * kryptnostic.js webpack config
  */
-var pkg = require('./package.json');
-var path = require('path');
-var webpack = require('webpack');
+const pkg = require('./package.json');
+const path = require('path');
+const webpack = require('webpack');
 
 /*
  *
@@ -11,18 +11,17 @@ var webpack = require('webpack');
  *
  */
 
-var FILES = {
-  KJS_ENTRY_POINT: path.join(__dirname, 'src/app.js'),
-  PACKAGE_JSON: path.join(__dirname, 'package.json')
+const FILES = {
+  KJS_ENTRY_POINT: path.join(__dirname, 'src/app.js')
 };
 
-var PATHS = {
+const PATHS = {
   DIST: path.join(__dirname, 'dist'),
   SOURCE: path.join(__dirname, 'src'),
   TEST: path.join(__dirname, 'test')
 };
 
-var KJS_BANNER = `
+const KJS_BANNER = `
 ${pkg.name} - v${pkg.version}
 ${pkg.description}
 ${pkg.homepage}
@@ -36,21 +35,21 @@ Copyright (c) 2014-2016, Kryptnostic, Inc. All rights reserved.
  *
  */
 
-var kjsBannerPlugin = new webpack.BannerPlugin(
+const kjsBannerPlugin = new webpack.BannerPlugin(
   KJS_BANNER,
   {
     entryOnly: true
   }
 );
 
-var kjsUglifyJsPlugin = new webpack.optimize.UglifyJsPlugin({
+const kjsDefinePlugin = new webpack.DefinePlugin({
+  __VERSION__: JSON.stringify(`v${pkg.version}`)
+});
+
+const kjsUglifyJsPlugin = new webpack.optimize.UglifyJsPlugin({
   compress: {
     warnings: true
   }
-});
-
-var kjsDefinePlugin = new webpack.DefinePlugin({
-  __VERSION__: JSON.stringify(`v${pkg.version}`)
 });
 
 /*
@@ -78,14 +77,6 @@ module.exports = {
           PATHS.SOURCE,
           PATHS.TEST
         ]
-      },
-      {
-        loader: 'exports',
-        test: /krypto\.js/,
-        exclude: [
-          PATHS.SOURCE,
-          PATHS.TEST
-        ]
       }
     ],
     noParse: [
@@ -97,7 +88,8 @@ module.exports = {
   },
   plugins: [
     kjsBannerPlugin,
-    kjsDefinePlugin
+    kjsDefinePlugin,
+    kjsUglifyJsPlugin
   ],
   bail: true
 };

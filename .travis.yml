@@ -4,21 +4,33 @@
 #
 # https://docs.travis-ci.com/
 # https://docs.travis-ci.com/user/getting-started
+# https://docs.travis-ci.com/user/customizing-the-build
 # https://docs.travis-ci.com/user/languages/javascript-with-nodejs
 #
+sudo: false
 language: node_js
 node_js:
   - "4.3"
 
 #
-# install Google Chrome
-# we need an actual browser for running some unit tests which are not compatible with PhantomJS
+# in the new Travis CI container-based infrastructure, "sudo" is no longer available, so we can't install Chrome via apt-get.
+# https://docs.travis-ci.com/user/installing-dependencies/#Installing-Packages-on-Container-Based-Infrastructure
 #
+# install Firefox since we need an actual browser for running unit tests that are not compatible with PhantomJS. Chrome is not
+# playing nicely... so we'll just use Firefox for now.
+#
+# TODO: get Chrome (not Chromium) working on Travis CI
+#
+addons:
+  firefox: latest
+  # apt:
+  #   sources:
+  #   - google-chrome
+  #   packages:
+  #   - google-chrome-stable
+
 before_install:
-  - wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-  - sudo sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq google-chrome-stable
-  - export CHROME_BIN=/usr/bin/google-chrome
+  # - google-chrome --product-version
+  - firefox --version 2>/dev/null
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start

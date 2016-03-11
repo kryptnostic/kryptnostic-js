@@ -59871,12 +59871,13 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2), __webpack_require__(61), __webpack_require__(20), __webpack_require__(63), __webpack_require__(38)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var CredentialService, KryptnosticWorkersApi, Logger, RegistrationApi, RegistrationClient, UserRegistrationRequest, log;
+	  var CredentialService, KryptnosticWorkersApi, Logger, Promise, RegistrationApi, RegistrationClient, UserRegistrationRequest, log;
 	  Logger = __webpack_require__(2);
 	  RegistrationApi = __webpack_require__(61);
 	  CredentialService = __webpack_require__(20);
 	  UserRegistrationRequest = __webpack_require__(63);
 	  KryptnosticWorkersApi = __webpack_require__(38);
+	  Promise = __webpack_require__(22);
 	  log = Logger.get('RegistrationClient');
 	  RegistrationClient = (function() {
 	    function RegistrationClient() {

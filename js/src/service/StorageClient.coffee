@@ -290,7 +290,7 @@ define 'kryptnostic.storage-client', [
 
     deleteObject: (objectId) ->
       if not validateUuid(objectId)
-        return Promise.resolve(null)
+        return Promise.resolve()
 
       return Promise.resolve(
         @objectApi.deleteObject(objectId)

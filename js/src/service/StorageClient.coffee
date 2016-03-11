@@ -292,11 +292,7 @@ define 'kryptnostic.storage-client', [
       if not validateUuid(objectId)
         return Promise.resolve(null)
 
-      Promise.resolve(
-        @objectApi.getLatestVersionedObjectKey(objectId)
-      )
-      .then (latestObjectKey) =>
-        @objectApi.deleteObject(objectId, latestObjectKey)
-        return
+      @objectApi.deleteObject(objectId)
+      return
 
   return StorageClient

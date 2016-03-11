@@ -227,12 +227,12 @@ define 'kryptnostic.object-api', [
         )
       )
 
-    deleteObject: (objectId, latestObjectKey) ->
+    deleteObject: (objectId) ->
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
             method  : 'DELETE'
-            url     : objectVersionUrl(objectId, latestObjectKey)
+            url     : objectIdUrl(objectId)
             headers : DEFAULT_HEADERS
           })
         )

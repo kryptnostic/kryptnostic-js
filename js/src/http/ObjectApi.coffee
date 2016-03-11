@@ -234,6 +234,7 @@ define 'kryptnostic.object-api', [
             method  : 'DELETE'
             url     : objectIdUrl(objectId)
             headers : DEFAULT_HEADERS
+            data    : objectId
           })
         )
       )

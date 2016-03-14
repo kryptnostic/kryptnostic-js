@@ -26,6 +26,7 @@ define 'kryptnostic.object-authorization-api', [
   ownersUrl  = (objectId) -> accessUrl() + '/owners/' + objectId
   readersUrl = (objectId) -> accessUrl() + '/readers/' + objectId
   writersUrl = (objectId) -> accessUrl() + '/writers/' + objectId
+  revokeUrl  = (objectId) -> accessUrl() + '/revoke/' + objectId
 
   logger = Logger.get('ObjectAuthorizationApi')
 
@@ -81,5 +82,15 @@ define 'kryptnostic.object-authorization-api', [
           return axiosResponse.data
         else
           return null
+
+    revokeAccessToObject: (objectId) ->
+      Promise.resolve(
+        axios(
+          @wrapCredentials({
+            method : 'GET'
+            url    : revokeUrl(objectId)
+          })
+        )
+      )
 
   return ObjectAuthorizationApi

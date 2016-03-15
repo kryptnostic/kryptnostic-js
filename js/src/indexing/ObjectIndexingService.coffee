@@ -74,16 +74,18 @@ define 'kryptnostic.indexing.object-indexing-service', [
           objectSearchPair = engine.generateObjectSearchPair()
           @sharingApi.addObjectSearchPair(parentObjectKey, objectSearchPair)
       .then =>
-        KryptnosticWorkersApi.queryWebWorker(
-          KryptnosticWorkersApi.OBJ_INDEXING_WORKER,
-          {
-            operation: 'index',
-            params: {
-              data,
-              objectKey,
-              parentObjectKey
+        Promise.resolve(
+          KryptnosticWorkersApi.queryWebWorker(
+            KryptnosticWorkersApi.OBJ_INDEXING_WORKER,
+            {
+              operation: 'index',
+              params: {
+                data,
+                objectKey,
+                parentObjectKey
+              }
             }
-          }
+          )
         )
         .catch (e) =>
           @index(data, objectKey, parentObjectKey)

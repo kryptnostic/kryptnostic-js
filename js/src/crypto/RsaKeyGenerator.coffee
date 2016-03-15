@@ -133,7 +133,9 @@ define 'kryptnostic.rsa-key-generator', [
       else
         Promise.resolve()
         .then ->
-          KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER)
+          Promise.resolve(
+            KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER)
+          )
           .catch (e) -> return null
         .then (rsaKeyPair) =>
 

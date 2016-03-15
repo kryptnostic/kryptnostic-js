@@ -1,5 +1,6 @@
 var window = self;
 
+importScripts('bluebird.min.js');
 importScripts('almond.js');
 importScripts('KryptnosticClient.js', 'kryptnostic.js');
 

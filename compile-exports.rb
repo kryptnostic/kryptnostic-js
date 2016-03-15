@@ -6,9 +6,9 @@
 #
 
 JS_LIB_EXPORTS = [
+  'bluebird',
   'axios',
   'base64',
-  'bluebird',
   'forge',
   'jscache',
   'lodash',

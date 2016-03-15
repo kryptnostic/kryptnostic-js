@@ -1,12 +1,12 @@
 var window = self;
 
-importScripts('bluebird.min.js');
 importScripts('almond.js');
 importScripts('KryptnosticClient.js', 'kryptnostic.js');
 
 // libraries
 require('base64');
 var Cache = require('jscache');
+var Promise = require('bluebird');
 
 // kryptnostic
 var ConfigService = require('kryptnostic.configuration');

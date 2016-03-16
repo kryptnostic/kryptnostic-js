@@ -288,10 +288,10 @@ define 'kryptnostic.key-storage-api', [
       publicKeyAsUint8 = BinaryUtils.stringToUint8(publicKey)
 
       #
-      # axios converts the Uint8Array into a DataView before sending the request. it's unclear why, but IE 11 transforms this
-      # DataView and sends the string "[Object object]" instead of the actual binary data. I've posted a question on
-      # StackOverflow to get an explanation of why IE 11 breaks in such a way.
+      # axios converts the Uint8Array into a DataView before sending the request. it's unclear why, but IE 11
+      # transforms this DataView and sends the string "[Object object]" instead of the actual binary data.
       #
+      # I've posted a question on StackOverflow to get an explanation of why IE 11 breaks in such a way.
       # http://stackoverflow.com/questions/36042069/cant-post-binary-data-as-a-dataview-in-ie-11
       #
       # as a workaround for this request, we'll avoid axios and use XMLHttpRequest directly with the Uint8Array

@@ -72,6 +72,8 @@ define 'kryptnostic.requests', [
         return null
 
   return {
+    PRINCIPAL_HEADER,
+    CREDENTIAL_HEADER,
     wrapCredentials,
     getAsUint8FromUrl,
     getBlockCiphertextFromUrl

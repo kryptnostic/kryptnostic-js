@@ -9,6 +9,7 @@ define 'kryptnostic.key-storage-api', [
   'kryptnostic.block-ciphertext',
   'kryptnostic.caching-service',
   'kryptnostic.configuration',
+  'kryptnostic.credential-loader',
   'kryptnostic.logger',
   'kryptnostic.requests',
   'kryptnostic.validators'
@@ -21,6 +22,7 @@ define 'kryptnostic.key-storage-api', [
 
   # Kryptnostic
   BlockCiphertext = require 'kryptnostic.block-ciphertext'
+  CredentialLoader = require 'kryptnostic.credential-loader'
 
   # utils
   BinaryUtils = require 'kryptnostic.binary-utils'
@@ -285,16 +287,24 @@ define 'kryptnostic.key-storage-api', [
 
       publicKeyAsUint8 = BinaryUtils.stringToUint8(publicKey)
 
-      Promise.resolve(
-        axios(
-          Requests.wrapCredentials({
-            method  : 'POST',
-            url     : setRSAPublicKeyUrl(),
-            data    : publicKeyAsUint8,
-            headers : DEFAULT_HEADERS
-          })
-        )
-      )
+      #
+      # axios converts the Uint8Array into a DataView before sending the request. it's unclear why, but IE 11 transforms this
+      # DataView and sends the string "[Object object]" instead of the actual binary data. I've posted a question on
+      # StackOverflow to get an explanation of why IE 11 breaks in such a way.
+      #
+      # http://stackoverflow.com/questions/36042069/cant-post-binary-data-as-a-dataview-in-ie-11
+      #
+      # as a workaround for this request, we'll avoid axios and use XMLHttpRequest directly with the Uint8Array
+      #
+      Promise.resolve()
+      .then ->
+        credentials = new CredentialLoader().getCredentials()
+        xhr = new XMLHttpRequest()
+        xhr.open('POST', setRSAPublicKeyUrl(), false) # false means synchronous
+        xhr.setRequestHeader(Requests.PRINCIPAL_HEADER, credentials.principal)
+        xhr.setRequestHeader(Requests.CREDENTIAL_HEADER, credentials.credential)
+        xhr.setRequestHeader('Content-Type', 'application/octet-stream')
+        xhr.send(publicKeyAsUint8)
 
     #
     # master AES crypto service

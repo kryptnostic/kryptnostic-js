@@ -81,7 +81,9 @@ define 'kryptnostic.authentication-service', [
 
       Promise.resolve()
       .then ->
-        KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER)
+        Promise.resolve(
+          KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER)
+        )
         .catch (e) -> return null
       .then (fheKeys) ->
         KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER)

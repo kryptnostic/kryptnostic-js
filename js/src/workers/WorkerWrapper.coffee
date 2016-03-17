@@ -1,7 +1,11 @@
 define 'kryptnostic.worker-wrapper', [
   'require',
+  'bluebird',
   'kryptnostic.logger'
 ], (require) ->
+
+  # libraries
+  Promise = require 'bluebird'
 
   # utils
   Logger = require 'kryptnostic.logger'

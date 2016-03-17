@@ -152,7 +152,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var searchCredentialService;
 	      searchCredentialService = new SearchCredentialService();
 	      return Promise.resolve().then(function() {
-	        return KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER)["catch"](function(e) {
+	        return Promise.resolve(KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER))["catch"](function(e) {
 	          return null;
 	        });
 	      }).then(function(fheKeys) {
@@ -43946,17 +43946,18 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(12), __webpack_require__(23), __webpack_require__(24), __webpack_require__(28), __webpack_require__(6), __webpack_require__(2), __webpack_require__(33), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var BinaryUtils, BlockCiphertext, Cache, Config, DEFAULT_HEADERS, KeyStorageApi, Logger, Promise, Requests, Validators, aesCryptoServiceUrl, aesUrl, axios, fheHashUrl, fheKeysUrl, fhePrivateKeyUrl, fheSearchPrivateKeyUrl, forge, getRSAPublicKeyBulkUrl, getRSAPublicKeyUrl, keyStorageApi, logger, rsaKeysUrl, rsaPrivateKeyUrl, saltUrl, setRSAPublicKeyUrl, toCacheId, validateObjectCryptoService, validateUuid, validateUuids, validateVersionedObjectKey;
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(12), __webpack_require__(23), __webpack_require__(24), __webpack_require__(28), __webpack_require__(6), __webpack_require__(33), __webpack_require__(2), __webpack_require__(34), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var BinaryUtils, BlockCiphertext, Cache, Config, CredentialLoader, DEFAULT_HEADERS, KeyStorageApi, Logger, Promise, Requests, Validators, aesCryptoServiceUrl, aesUrl, axios, fheHashUrl, fheKeysUrl, fhePrivateKeyUrl, fheSearchPrivateKeyUrl, forge, getRSAPublicKeyBulkUrl, getRSAPublicKeyUrl, keyStorageApi, logger, rsaKeysUrl, rsaPrivateKeyUrl, saltUrl, setRSAPublicKeyUrl, toCacheId, validateObjectCryptoService, validateUuid, validateUuids, validateVersionedObjectKey;
 	  axios = __webpack_require__(35);
 	  forge = __webpack_require__(12);
 	  Promise = __webpack_require__(22);
 	  BlockCiphertext = __webpack_require__(24);
+	  CredentialLoader = __webpack_require__(33);
 	  BinaryUtils = __webpack_require__(23);
 	  Cache = __webpack_require__(28);
 	  Config = __webpack_require__(6);
 	  Logger = __webpack_require__(2);
-	  Requests = __webpack_require__(33);
+	  Requests = __webpack_require__(34);
 	  Validators = __webpack_require__(36);
 	  DEFAULT_HEADERS = {
 	    'Content-Type': 'application/json'
@@ -44155,12 +44156,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return Promise.resolve();
 	      }
 	      publicKeyAsUint8 = BinaryUtils.stringToUint8(publicKey);
-	      return Promise.resolve(axios(Requests.wrapCredentials({
-	        method: 'POST',
-	        url: setRSAPublicKeyUrl(),
-	        data: publicKeyAsUint8,
-	        headers: DEFAULT_HEADERS
-	      })));
+	      return Promise.resolve().then(function() {
+	        var credentials, xhr;
+	        credentials = new CredentialLoader().getCredentials();
+	        xhr = new XMLHttpRequest();
+	        xhr.open('POST', setRSAPublicKeyUrl(), false);
+	        xhr.setRequestHeader(Requests.PRINCIPAL_HEADER, credentials.principal);
+	        xhr.setRequestHeader(Requests.CREDENTIAL_HEADER, credentials.credential);
+	        xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+	        return xhr.send(publicKeyAsUint8);
+	      });
 	    };
 
 	    KeyStorageApi.getMasterAesCryptoService = function() {
@@ -50526,13 +50531,40 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(24), __webpack_require__(34)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(6), __webpack_require__(7)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var Config, CredentialLoader, CredentialProviderLoader, Logger, log;
+	  Logger = __webpack_require__(2);
+	  Config = __webpack_require__(6);
+	  CredentialProviderLoader = __webpack_require__(7);
+	  log = Logger.get('CredentialLoader');
+	  CredentialLoader = (function() {
+	    function CredentialLoader() {}
+
+	    CredentialLoader.prototype.getCredentials = function() {
+	      var credentialProvider, providerUri;
+	      providerUri = Config.get('credentialProvider');
+	      credentialProvider = CredentialProviderLoader.load(providerUri);
+	      return credentialProvider.load();
+	    };
+
+	    return CredentialLoader;
+
+	  })();
+	  return CredentialLoader;
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+
+/***/ },
+/* 34 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(24), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  'use strict';
 	  var BlockCiphertext, CREDENTIAL_HEADER, CredentialLoader, PRINCIPAL_HEADER, Promise, axios, getAsUint8FromUrl, getBlockCiphertextFromUrl, wrapCredentials;
 	  axios = __webpack_require__(35);
 	  Promise = __webpack_require__(22);
 	  BlockCiphertext = __webpack_require__(24);
-	  CredentialLoader = __webpack_require__(34);
+	  CredentialLoader = __webpack_require__(33);
 	  PRINCIPAL_HEADER = 'X-Kryptnostic-Principal';
 	  CREDENTIAL_HEADER = 'X-Kryptnostic-Credential';
 	  wrapCredentials = function(request, credentials) {
@@ -50582,37 +50614,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	  };
 	  return {
+	    PRINCIPAL_HEADER: PRINCIPAL_HEADER,
+	    CREDENTIAL_HEADER: CREDENTIAL_HEADER,
 	    wrapCredentials: wrapCredentials,
 	    getAsUint8FromUrl: getAsUint8FromUrl,
 	    getBlockCiphertextFromUrl: getBlockCiphertextFromUrl
 	  };
-	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-
-/***/ },
-/* 34 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(6), __webpack_require__(7)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var Config, CredentialLoader, CredentialProviderLoader, Logger, log;
-	  Logger = __webpack_require__(2);
-	  Config = __webpack_require__(6);
-	  CredentialProviderLoader = __webpack_require__(7);
-	  log = Logger.get('CredentialLoader');
-	  CredentialLoader = (function() {
-	    function CredentialLoader() {}
-
-	    CredentialLoader.prototype.getCredentials = function() {
-	      var credentialProvider, providerUri;
-	      providerUri = Config.get('credentialProvider');
-	      credentialProvider = CredentialProviderLoader.load(providerUri);
-	      return credentialProvider.load();
-	    };
-
-	    return CredentialLoader;
-
-	  })();
-	  return CredentialLoader;
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 
@@ -51807,15 +51814,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return validateNonEmptyString(type, 'object type');
 	  };
 	  validateUuids = function(uuids) {
+	    var isValid;
 	    if (!_.isArray(uuids)) {
 	      return false;
 	    }
+	    isValid = true;
 	    _.forEach(uuids, function(uuid) {
 	      if (!validateUuid(uuid)) {
-	        return false;
+	        return isValid = false;
 	      }
 	    });
-	    return true;
+	    return isValid;
 	  };
 	  validateVersionedObjectKey = function(versionedObjectKey) {
 	    if (!_.isObject(versionedObjectKey)) {
@@ -51968,7 +51977,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return this.ieWebCryptoGenerate();
 	      } else {
 	        return Promise.resolve().then(function() {
-	          return KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER)["catch"](function(e) {
+	          return Promise.resolve(KryptnosticWorkersApi.queryWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER))["catch"](function(e) {
 	            return null;
 	          });
 	        }).then((function(_this) {
@@ -52134,8 +52143,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var Logger, WorkerWrapper, logger;
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var Logger, Promise, WorkerWrapper, logger;
+	  Promise = __webpack_require__(22);
 	  Logger = __webpack_require__(2);
 	  logger = Logger.get('WorkerWrapper');
 	  WorkerWrapper = (function() {
@@ -52248,11 +52258,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
 	  hasProp = {}.hasOwnProperty;
 
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(6), __webpack_require__(34), __webpack_require__(11), __webpack_require__(43), __webpack_require__(2), __webpack_require__(40)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(6), __webpack_require__(33), __webpack_require__(11), __webpack_require__(43), __webpack_require__(2), __webpack_require__(40)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var ConfigService, CredentialLoader, KeypairSerializer, KryptnosticEngineProvider, Logger, ObjectIndexingWorkerWrapper, Promise, WorkerWrapper, logger;
 	  Promise = __webpack_require__(22);
 	  ConfigService = __webpack_require__(6);
-	  CredentialLoader = __webpack_require__(34);
+	  CredentialLoader = __webpack_require__(33);
 	  KryptnosticEngineProvider = __webpack_require__(43);
 	  WorkerWrapper = __webpack_require__(40);
 	  KeypairSerializer = __webpack_require__(11);
@@ -52620,7 +52630,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(2), __webpack_require__(50), __webpack_require__(28), __webpack_require__(51), __webpack_require__(52), __webpack_require__(21), __webpack_require__(53), __webpack_require__(34)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(2), __webpack_require__(50), __webpack_require__(28), __webpack_require__(51), __webpack_require__(52), __webpack_require__(21), __webpack_require__(53), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  'use strict';
 	  var AesCryptoService, Cache, CredentialLoader, CryptoServiceLoader, CryptoServiceMarshaller, Cypher, DEFAULT_OPTS, EMPTY_BUFFER, INT_SIZE, KeyStorageApi, Logger, Promise, RsaCryptoService, log;
 	  Promise = __webpack_require__(22);
@@ -52631,7 +52641,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  KeyStorageApi = __webpack_require__(21);
 	  Logger = __webpack_require__(2);
 	  CryptoServiceMarshaller = __webpack_require__(53);
-	  CredentialLoader = __webpack_require__(34);
+	  CredentialLoader = __webpack_require__(33);
 	  INT_SIZE = 4;
 	  EMPTY_BUFFER = '';
 	  log = Logger.get('CryptoServiceLoader');
@@ -59564,14 +59574,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(2), __webpack_require__(6), __webpack_require__(28), __webpack_require__(33), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(2), __webpack_require__(6), __webpack_require__(28), __webpack_require__(34), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var Cache, Configuration, DEFAULT_HEADER, Logger, Promise, Requests, UserDirectoryApi, Validators, axios, getUserUrl, getUsersUrl, log, usersInRealmUrl, validateEmail, validateUuid, validateUuids;
 	  axios = __webpack_require__(35);
 	  Promise = __webpack_require__(22);
 	  Logger = __webpack_require__(2);
 	  Configuration = __webpack_require__(6);
 	  Cache = __webpack_require__(28);
-	  Requests = __webpack_require__(33);
+	  Requests = __webpack_require__(34);
 	  Validators = __webpack_require__(36);
 	  getUserUrl = function() {
 	    return Configuration.get('heraclesUrlV2') + '/directory/user';
@@ -59716,17 +59726,17 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(6), __webpack_require__(34), __webpack_require__(49), __webpack_require__(53), __webpack_require__(51), __webpack_require__(2), __webpack_require__(33), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(6), __webpack_require__(33), __webpack_require__(49), __webpack_require__(53), __webpack_require__(51), __webpack_require__(2), __webpack_require__(34), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var Config, CredentialLoader, CryptoServiceLoader, CryptoServiceMarshaller, CryptoServiceMigrator, DEFAULT_HEADERS, Logger, OBJECT_ID_WHITELIST, Promise, Requests, RsaCryptoService, Validators, aesCryptoServiceMigrationUrl, axios, getRSACryptoServicesForUser, keyStorageApi, logger, rsaCryptoServicesBulkUrl, setAesEncryptedObjectCryptoServiceForMigration, validateUuid;
 	  axios = __webpack_require__(35);
 	  Promise = __webpack_require__(22);
-	  CredentialLoader = __webpack_require__(34);
+	  CredentialLoader = __webpack_require__(33);
 	  CryptoServiceLoader = __webpack_require__(49);
 	  CryptoServiceMarshaller = __webpack_require__(53);
 	  RsaCryptoService = __webpack_require__(51);
 	  Config = __webpack_require__(6);
 	  Logger = __webpack_require__(2);
-	  Requests = __webpack_require__(33);
+	  Requests = __webpack_require__(34);
 	  Validators = __webpack_require__(36);
 	  OBJECT_ID_WHITELIST = {
 	    '58694df5-e76a-4053-8c98-281bd9f35167': true,

@@ -36,7 +36,7 @@ define 'kryptnostic.validators', [
       return false
 
     isValid = true
-    _.forEach(uuids, (uuid) =>
+    _.forEach(uuids, (uuid) ->
       if not validateUuid(uuid)
         isValid = false
     )

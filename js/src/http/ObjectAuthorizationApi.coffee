@@ -18,9 +18,14 @@ define 'kryptnostic.object-authorization-api', [
   Config   = require 'kryptnostic.configuration'
   Logger   = require 'kryptnostic.logger'
   Requests = require 'kryptnostic.requests'
+  Validators = require 'kryptnostic.validators'
 
   # constants
   DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
+
+  {
+    validateUuid
+  } = Validators
 
   accessUrl  = -> Config.get('servicesUrlV2') + '/access'
   ownersUrl  = (objectId) -> accessUrl() + '/owners/' + objectId
@@ -84,6 +89,10 @@ define 'kryptnostic.object-authorization-api', [
           return null
 
     revokeAccessToObject: (objectId) ->
+
+      if not validateUuid(objectId)
+        return Promise.reject(new Error('invalid object UUID'))
+
       Promise.resolve(
         axios(
           @wrapCredentials({

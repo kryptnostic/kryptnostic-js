@@ -35,12 +35,13 @@ define 'kryptnostic.validators', [
     if not _.isArray(uuids)
       return false
 
-    _.forEach(uuids, (uuid) ->
+    isValid = true
+    _.forEach(uuids, (uuid) =>
       if not validateUuid(uuid)
-        return false
+        isValid = false
     )
 
-    return true
+    return isValid
 
   validateVersionedObjectKey = (versionedObjectKey) ->
 

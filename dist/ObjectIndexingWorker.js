@@ -6,6 +6,7 @@ importScripts('KryptnosticClient.js', 'kryptnostic.js');
 // libraries
 require('base64');
 var Cache = require('jscache');
+var Promise = require('bluebird');
 
 // kryptnostic
 var ConfigService = require('kryptnostic.configuration');
@@ -70,6 +71,5 @@ function index(queryParams) {
   var objectKey = queryParams.objectKey;
   var parentObjectKey = queryParams.parentObjectKey;
 
-  // ToDo - indexing queue
   objectIndexingService.index(data, objectKey, parentObjectKey);
 };

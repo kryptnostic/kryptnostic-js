@@ -20,7 +20,7 @@ define [
   KeyStorageApi = require 'kryptnostic.key-storage-api'
 
   # kryptnostic
-  AuthenticationStage   = require 'kryptnostic.authentication-stage'
+  AuthenticationStage = require 'kryptnostic.authentication-stage'
   CredentialService = require 'kryptnostic.credential-service'
 
   # utils

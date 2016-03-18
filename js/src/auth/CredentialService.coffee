@@ -85,7 +85,7 @@ define 'kryptnostic.credential-service', [
         KeyStorageApi.setEncryptedSalt(uuid, credential, encryptedSalt)
       )
 
-    initializeKeypair : ({ password }, notifier = ->) ->
+    initializeKeypair : ( { password }, notifier = -> ) ->
       { publicKey, privateKey, keypair } = {}
 
       Promise.resolve(
@@ -120,7 +120,7 @@ define 'kryptnostic.credential-service', [
         log.error(e)
         log.error('keypair generation failed!', e)
 
-    deriveKeyPair : ({ password }, notifier = ->) ->
+    deriveKeyPair : ( { password }, notifier = -> ) ->
       Promise.resolve(
         KeyStorageApi.getRSAPrivateKey()
       )

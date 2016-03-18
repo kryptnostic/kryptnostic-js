@@ -4,6 +4,7 @@ define [
   'require'
   'forge'
   'sinon'
+  'kryptnostic.authentication-stage'
   'kryptnostic.binary-utils'
   'kryptnostic.credential-service'
   'kryptnostic.key-storage-api'
@@ -19,6 +20,7 @@ define [
   KeyStorageApi = require 'kryptnostic.key-storage-api'
 
   # kryptnostic
+  AuthenticationStage   = require 'kryptnostic.authentication-stage'
   CredentialService = require 'kryptnostic.credential-service'
 
   # utils
@@ -208,9 +210,12 @@ define [
         sinon.stub(credentialService.rsaKeyGenerator, 'generateKeypair')
           .returns(Promise.resolve(MOCK_RSA_KEY_PAIR_AS_DER()))
 
-        credentialService.initializeKeypair({
-          password: MOCK_PASSWORD
-        })
+        rsaKeyPairGenCompleteCallbackSpy = sinon.spy()
+
+        credentialService.initializeKeypair(
+          { password: MOCK_PASSWORD },
+          rsaKeyPairGenCompleteCallbackSpy
+        )
         .then (rsaKeyPair) ->
 
           assertKeyPairEquality(rsaKeyPair, MOCK_RSA_KEY_PAIR_AS_PEM)
@@ -222,6 +227,11 @@ define [
           sinon.assert.calledOnce(setPrivateKeyStub)
           # ToDo - check that KeyStorageApi.setRSAPrivateKey() was called with the correct private key
           # sinon.assert.calledWith(spy, arg1)
+
+          sinon.assert.calledWith(
+            rsaKeyPairGenCompleteCallbackSpy,
+            AuthenticationStage.KEYPAIR_GEN_COMPLETE
+          )
 
           done()
 
@@ -241,13 +251,20 @@ define [
         sinon.stub(credentialService.rsaKeyGenerator, 'generateKeypair')
           .returns(Promise.resolve(MOCK_RSA_KEY_PAIR_AS_DER()))
 
-        credentialService.deriveKeyPair({
-          password: MOCK_PASSWORD
-        })
+        rsaKeyPairGenCompleteCallbackSpy = sinon.spy()
+
+        credentialService.deriveKeyPair(
+          { password: MOCK_PASSWORD },
+          rsaKeyPairGenCompleteCallbackSpy
+        )
         .then (rsaKeyPair) ->
           assertKeyPairEquality(rsaKeyPair, MOCK_RSA_KEY_PAIR_AS_PEM)
           sinon.assert.calledOnce(setPublicKeyStub)
           sinon.assert.calledOnce(setPrivateKeyStub)
+          sinon.assert.calledWith(
+            rsaKeyPairGenCompleteCallbackSpy,
+            AuthenticationStage.KEYPAIR_GEN_COMPLETE
+          )
           done()
         .catch (e) ->
           done.fail(e)
@@ -256,15 +273,19 @@ define [
 
         getPrivateKeyStub.returns(Promise.resolve(MOCK_RSA_PRIVATE_KEY_ENCRYPTED))
 
+        rsaKeyPairGenCompleteCallbackSpy = sinon.spy()
+
         credentialService = new CredentialService()
-        credentialService.deriveKeyPair({
-          password: MOCK_PASSWORD
-        })
+        credentialService.deriveKeyPair(
+          { password: MOCK_PASSWORD },
+          rsaKeyPairGenCompleteCallbackSpy
+        )
         .then (rsaKeyPair) ->
           assertKeyPairEquality(rsaKeyPair, MOCK_RSA_KEY_PAIR_AS_PEM)
           sinon.assert.notCalled(setPublicKeyStub)
           sinon.assert.notCalled(setPrivateKeyStub)
           sinon.assert.calledOnce(getPrivateKeyStub)
+          sinon.assert.notCalled(rsaKeyPairGenCompleteCallbackSpy)
           done()
         .catch (e) ->
           done.fail(e)

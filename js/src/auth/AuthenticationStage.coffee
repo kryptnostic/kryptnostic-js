@@ -15,6 +15,7 @@ define 'kryptnostic.authentication-stage', [
     SEARCH_KEYGEN     : 'initializing search key'
     CLIENT_HASH_GEN   : 'initializing hash function'
     COMPLETED         : 'authentication complete'
+    KEYPAIR_GEN_COMPLETE : 'rsa keypair generated and uploaded'
   }
 
   return AuthenticationStage

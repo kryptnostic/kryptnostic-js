@@ -6,6 +6,7 @@ define 'kryptnostic.credential-service', [
   'forge'
   'kryptnostic.logger'
   'kryptnostic.key-storage-api'
+  'kryptnostic.authentication-stage'
   'kryptnostic.binary-utils'
   'kryptnostic.rsa-key-generator'
   'kryptnostic.password-crypto-service'
@@ -16,6 +17,8 @@ define 'kryptnostic.credential-service', [
   Logger                = require 'kryptnostic.logger'
   Forge                 = require 'forge'
   Promise               = require 'bluebird'
+
+  AuthenticationStage   = require 'kryptnostic.authentication-stage'
   BinaryUtils           = require 'kryptnostic.binary-utils'
   KeyStorageApi         = require 'kryptnostic.key-storage-api'
   PasswordCryptoService = require 'kryptnostic.password-crypto-service'
@@ -82,7 +85,7 @@ define 'kryptnostic.credential-service', [
         KeyStorageApi.setEncryptedSalt(uuid, credential, encryptedSalt)
       )
 
-    initializeKeypair : ({ password }) ->
+    initializeKeypair : ( { password }, notifier = -> ) ->
       { publicKey, privateKey, keypair } = {}
 
       Promise.resolve(
@@ -108,12 +111,16 @@ define 'kryptnostic.credential-service', [
         KeyStorageApi.setRSAPublicKey(publicKey)
       .then ->
         log.info('keypair initialization complete')
+        if _.isFunction(notifier)
+          Promise.resolve(
+            notifier(AuthenticationStage.KEYPAIR_GEN_COMPLETE)
+          )
         return keypair
       .catch (e) ->
         log.error(e)
         log.error('keypair generation failed!', e)
 
-    deriveKeyPair : ({ password }) ->
+    deriveKeyPair : ( { password }, notifier = -> ) ->
       Promise.resolve(
         KeyStorageApi.getRSAPrivateKey()
       )
@@ -121,7 +128,7 @@ define 'kryptnostic.credential-service', [
         if _.isEmpty(blockCiphertext)
           log.info('no keypair exists, generating on-the-fly')
           return Promise.resolve(
-            @initializeKeypair({ password })
+            @initializeKeypair({ password }, notifier)
           )
         else
           log.info('using existing keypair')

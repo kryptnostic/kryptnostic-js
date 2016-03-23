@@ -56,9 +56,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var AuthenticationService = __webpack_require__(1);
 	var ConfigurationService  = __webpack_require__(6);
-	var RegistrationApi       = __webpack_require__(61);
-	var RegistrationClient    = __webpack_require__(62);
-	var UserDirectoryApi      = __webpack_require__(59);
+	var RegistrationApi       = __webpack_require__(60);
+	var RegistrationClient    = __webpack_require__(61);
+	var UserDirectoryApi      = __webpack_require__(58);
 
 	module.exports = {
 	  'AuthenticationService' : AuthenticationService,
@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(2), __webpack_require__(6), __webpack_require__(7), __webpack_require__(20), __webpack_require__(50), __webpack_require__(57), __webpack_require__(37), __webpack_require__(59), __webpack_require__(44), __webpack_require__(60), __webpack_require__(39)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(2), __webpack_require__(6), __webpack_require__(7), __webpack_require__(20), __webpack_require__(50), __webpack_require__(57), __webpack_require__(37), __webpack_require__(58), __webpack_require__(44), __webpack_require__(59), __webpack_require__(39)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var AuthenticationService, AuthenticationStage, Config, CredentialProviderLoader, CredentialService, CryptoServiceLoader, CryptoServiceMigrator, KryptnosticEngineProvider, KryptnosticWorkersApi, LOGIN_FAILURE_MESSAGE, Logger, Promise, SearchCredentialService, UserDirectoryApi, logger;
 	  Promise = __webpack_require__(22);
 	  Logger = __webpack_require__(2);
@@ -83,9 +83,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  CryptoServiceLoader = __webpack_require__(50);
 	  SearchCredentialService = __webpack_require__(57);
 	  AuthenticationStage = __webpack_require__(37);
-	  UserDirectoryApi = __webpack_require__(59);
+	  UserDirectoryApi = __webpack_require__(58);
 	  KryptnosticEngineProvider = __webpack_require__(44);
-	  CryptoServiceMigrator = __webpack_require__(60);
+	  CryptoServiceMigrator = __webpack_require__(59);
 	  KryptnosticWorkersApi = __webpack_require__(39);
 	  logger = Logger.get('AuthenticationService');
 	  LOGIN_FAILURE_MESSAGE = 'invalid credentials';
@@ -43731,10 +43731,8 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 18 */
 /***/ function(module, exports) {
 
-	var toString = {}.toString;
-
 	module.exports = Array.isArray || function (arr) {
-	  return toString.call(arr) == '[object Array]';
+	  return Object.prototype.toString.call(arr) == '[object Array]';
 	};
 
 
@@ -52354,23 +52352,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	    KryptnosticEngineProvider.init = function(arg) {
 	      var ref;
 	      ref = arg != null ? arg : {}, this.fhePrivateKey = ref.fhePrivateKey, this.fheSearchPrivateKey = ref.fheSearchPrivateKey;
-	      logger.debug('initializing KryptnosticEngine with keys');
+	      logger.debug('initializing KryptnosticEngine');
+	      if (_engine != null) {
+	        throw new Error('KryptnosticEngine has already been initialized');
+	      }
 	      if (_engine == null) {
 	        _engine = new KryptnosticEngine({
 	          fhePrivateKey: this.fhePrivateKey,
 	          fheSearchPrivateKey: this.fheSearchPrivateKey
 	        });
 	      }
-	      return _engine;
 	    };
 
 	    KryptnosticEngineProvider.getEngine = function() {
 	      if (_engine != null) {
 	        return _engine;
-	      } else {
-	        logger.debug('initializing a new KryptnosticEngine without keys...');
-	        return this.init();
 	      }
+	      throw new Error('KryptnosticEngine has not been initialized');
 	    };
 
 	    return KryptnosticEngineProvider;
@@ -59406,16 +59404,16 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(3), __webpack_require__(22), __webpack_require__(2), __webpack_require__(37), __webpack_require__(58), __webpack_require__(21), __webpack_require__(45), __webpack_require__(50)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var AuthenticationStage, CredentialType, CryptoServiceLoader, FHE_PRIVATE_KEY, FHE_SEARCH_PRIVATE_KEY, KeyStorageApi, KryptnosticEngine, Logger, Promise, SearchCredentialService, SearchKeyGenerator, _, logger;
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(3), __webpack_require__(22), __webpack_require__(2), __webpack_require__(37), __webpack_require__(21), __webpack_require__(45), __webpack_require__(50)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var AuthenticationStage, CredentialType, CryptoServiceLoader, FHE_PRIVATE_KEY, FHE_SEARCH_PRIVATE_KEY, KeyStorageApi, KryptnosticEngine, KryptnosticEngineProvider, Logger, Promise, SearchCredentialService, _, logger;
 	  _ = __webpack_require__(3);
 	  Promise = __webpack_require__(22);
-	  Logger = __webpack_require__(2);
 	  AuthenticationStage = __webpack_require__(37);
+	  CryptoServiceLoader = __webpack_require__(50);
 	  KeyStorageApi = __webpack_require__(21);
 	  KryptnosticEngine = __webpack_require__(45);
-	  SearchKeyGenerator = __webpack_require__(58);
-	  CryptoServiceLoader = __webpack_require__(50);
+	  KryptnosticEngineProvider = __webpack_require__(44);
+	  Logger = __webpack_require__(2);
 	  logger = Logger.get('SearchCredentialService');
 	  FHE_PRIVATE_KEY = 'FHE_PRIVATE_KEY';
 	  FHE_SEARCH_PRIVATE_KEY = 'FHE_SEARCH_PRIVATE_KEY';
@@ -59465,7 +59463,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	  SearchCredentialService = (function() {
 	    function SearchCredentialService() {
-	      this.searchKeyGenerator = new SearchKeyGenerator();
 	      this.cryptoServiceLoader = new CryptoServiceLoader();
 	    }
 
@@ -59506,15 +59503,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	        fheKeys = {};
 	      }
 	      clientKeys = {}.clientKeys;
-	      return Promise.resolve().then((function(_this) {
-	        return function() {
-	          if (!_.isEmpty(fheKeys) && KryptnosticEngine.isValidFHEPrivateKey(fheKeys.FHE_PRIVATE_KEY) && KryptnosticEngine.isValidFHESearchPrivateKey(fheKeys.FHE_SEARCH_PRIVATE_KEY) && KryptnosticEngine.isValidFHEHashFunction(fheKeys.FHE_HASH_FUNCTION)) {
-	            return clientKeys = fheKeys;
-	          } else {
-	            return clientKeys = _this.searchKeyGenerator.generateClientKeys();
-	          }
-	        };
-	      })(this)).then((function(_this) {
+	      return Promise.resolve().then(function() {
+	        var engine;
+	        if (!_.isEmpty(fheKeys) && KryptnosticEngine.isValidFHEPrivateKey(fheKeys.FHE_PRIVATE_KEY) && KryptnosticEngine.isValidFHESearchPrivateKey(fheKeys.FHE_SEARCH_PRIVATE_KEY) && KryptnosticEngine.isValidFHEHashFunction(fheKeys.FHE_HASH_FUNCTION)) {
+	          return clientKeys = fheKeys;
+	        } else {
+	          KryptnosticEngineProvider.init();
+	          engine = KryptnosticEngineProvider.getEngine();
+	          return clientKeys = {
+	            FHE_PRIVATE_KEY: engine.getPrivateKey(),
+	            FHE_SEARCH_PRIVATE_KEY: engine.getSearchPrivateKey(),
+	            FHE_HASH_FUNCTION: engine.calculateClientHashFunction()
+	          };
+	        }
+	      }).then((function(_this) {
 	        return function() {
 	          return _this.initializeKey(CredentialType.FHE_PRIVATE_KEY, clientKeys);
 	        };
@@ -59552,35 +59554,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 58 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2), __webpack_require__(44)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var KryptnosticEngineProvider, Logger, SearchKeyGenerator, logger;
-	  KryptnosticEngineProvider = __webpack_require__(44);
-	  Logger = __webpack_require__(2);
-	  logger = Logger.get('SearchKeyGenerator');
-	  SearchKeyGenerator = (function() {
-	    function SearchKeyGenerator() {}
-
-	    SearchKeyGenerator.prototype.generateClientKeys = function() {
-	      var engine;
-	      engine = KryptnosticEngineProvider.getEngine();
-	      return {
-	        FHE_PRIVATE_KEY: engine.getPrivateKey(),
-	        FHE_SEARCH_PRIVATE_KEY: engine.getSearchPrivateKey(),
-	        FHE_HASH_FUNCTION: engine.calculateClientHashFunction()
-	      };
-	    };
-
-	    return SearchKeyGenerator;
-
-	  })();
-	  return SearchKeyGenerator;
-	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-
-/***/ },
-/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
@@ -59734,7 +59707,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 60 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(6), __webpack_require__(33), __webpack_require__(50), __webpack_require__(54), __webpack_require__(52), __webpack_require__(2), __webpack_require__(34), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
@@ -59848,7 +59821,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 61 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(6)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
@@ -59888,15 +59861,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 62 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2), __webpack_require__(61), __webpack_require__(20), __webpack_require__(63), __webpack_require__(39)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2), __webpack_require__(60), __webpack_require__(20), __webpack_require__(62), __webpack_require__(39)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var CredentialService, KryptnosticWorkersApi, Logger, Promise, RegistrationApi, RegistrationClient, UserRegistrationRequest, log;
 	  Logger = __webpack_require__(2);
-	  RegistrationApi = __webpack_require__(61);
+	  RegistrationApi = __webpack_require__(60);
 	  CredentialService = __webpack_require__(20);
-	  UserRegistrationRequest = __webpack_require__(63);
+	  UserRegistrationRequest = __webpack_require__(62);
 	  KryptnosticWorkersApi = __webpack_require__(39);
 	  Promise = __webpack_require__(22);
 	  log = Logger.get('RegistrationClient');
@@ -59949,13 +59922,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 63 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(25), __webpack_require__(64)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(25), __webpack_require__(63)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var DEFAULTS, SCHEMA, UserRegistrationRequest, validator;
 	  validator = __webpack_require__(25);
-	  SCHEMA = __webpack_require__(64);
+	  SCHEMA = __webpack_require__(63);
 	  DEFAULTS = {
 	    confirmationEmailNeeded: false
 	  };
@@ -59977,7 +59950,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 64 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function() {

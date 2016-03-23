@@ -92,7 +92,7 @@ define 'kryptnostic.storage-client', [
       ))
       .then (inspections) ->
         objectKeys = []
-        _.forEach(inspections, (inspection) =>
+        _.forEach(inspections, (inspection) ->
           if inspection.isFulfilled()
             objectKeys.push(inspection.value())
           else
@@ -136,7 +136,7 @@ define 'kryptnostic.storage-client', [
           )
           return result
         .catch (error) ->
-          logger.error( 'Failed to get objects')
+          logger.error('Failed to get objects')
 
     getChildObjects: (objectIds, parentObjectId) ->
 

@@ -4,20 +4,24 @@ define 'kryptnostic.search-credential-service', [
   'bluebird'
   'kryptnostic.logger'
   'kryptnostic.authentication-stage'
-  'kryptnostic.search-key-generator'
   'kryptnostic.key-storage-api'
   'kryptnostic.kryptnostic-engine'
   'kryptnostic.crypto-service-loader'
 ], (require) ->
 
+  # libraries
   _                   = require 'lodash'
   Promise             = require 'bluebird'
+
+  # kryptnostic
+  AuthenticationStage       = require 'kryptnostic.authentication-stage'
+  CryptoServiceLoader       = require 'kryptnostic.crypto-service-loader'
+  KeyStorageApi             = require 'kryptnostic.key-storage-api'
+  KryptnosticEngine         = require 'kryptnostic.kryptnostic-engine'
+  KryptnosticEngineProvider = require 'kryptnostic.kryptnostic-engine-provider'
+
+  # utils
   Logger              = require 'kryptnostic.logger'
-  AuthenticationStage = require 'kryptnostic.authentication-stage'
-  KeyStorageApi       = require 'kryptnostic.key-storage-api'
-  KryptnosticEngine   = require 'kryptnostic.kryptnostic-engine'
-  SearchKeyGenerator  = require 'kryptnostic.search-key-generator'
-  CryptoServiceLoader = require 'kryptnostic.crypto-service-loader'
 
   logger = Logger.get('SearchCredentialService')
 
@@ -58,15 +62,14 @@ define 'kryptnostic.search-credential-service', [
   }
 
   #
-  # loads or generates credentials produced by the SearchKeyGenerator, including:
-  #   - fhe private key
-  #   - search private key
-  #   - client hash function
+  # loads or generates FHE keys
+  #   - FHE private key
+  #   - FHE search private key
+  #   - FHE hash function
   #
   class SearchCredentialService
 
     constructor: ->
-      @searchKeyGenerator  = new SearchKeyGenerator()
       @cryptoServiceLoader = new CryptoServiceLoader()
 
     #
@@ -116,14 +119,20 @@ define 'kryptnostic.search-credential-service', [
     initializeKeys: (fheKeys = {}) ->
       { clientKeys } = {}
       Promise.resolve()
-      .then =>
+      .then ->
         if not _.isEmpty(fheKeys) and
             KryptnosticEngine.isValidFHEPrivateKey(fheKeys.FHE_PRIVATE_KEY) and
             KryptnosticEngine.isValidFHESearchPrivateKey(fheKeys.FHE_SEARCH_PRIVATE_KEY) and
             KryptnosticEngine.isValidFHEHashFunction(fheKeys.FHE_HASH_FUNCTION)
           clientKeys = fheKeys
         else
-          clientKeys = @searchKeyGenerator.generateClientKeys()
+          KryptnosticEngineProvider.init()
+          engine = KryptnosticEngineProvider.getEngine()
+          clientKeys = {
+            FHE_PRIVATE_KEY        : engine.getPrivateKey()
+            FHE_SEARCH_PRIVATE_KEY : engine.getSearchPrivateKey()
+            FHE_HASH_FUNCTION      : engine.calculateClientHashFunction()
+          }
       .then =>
         @initializeKey(CredentialType.FHE_PRIVATE_KEY, clientKeys)
       .then =>

@@ -87,9 +87,19 @@ define 'kryptnostic.storage-client', [
         )
       )
 
-      Promise.all(objectKeyPromises)
+      Promise.all(_.map(objectKeyPromises, (promise) ->
+        return promise.reflect()
+      ))
+      .then (inspections) ->
+        objectKeys = []
+        _.forEach(inspections, (inspection) ->
+          if inspection.isFulfilled()
+            objectKeys.push(inspection.value())
+          else
+            logger.error('could not get latest versioned object key', inspection.reason())
+        )
+        return objectKeys
       .then (objectKeys) =>
-
         promises = []
         _.forEach(objectKeys, (objectKey) =>
           promise = Promise.join(
@@ -126,7 +136,7 @@ define 'kryptnostic.storage-client', [
           )
           return result
         .catch (error) ->
-          logger.error( 'Failed  to get objects')
+          logger.error('Failed to get objects')
 
     getChildObjects: (objectIds, parentObjectId) ->
 

@@ -159,6 +159,7 @@ define 'kryptnostic.sharing-client', [
       .then ({ incomingShares, masterAesCryptoService }) =>
         rsaCryptoService = @cryptoServiceLoader.getRsaCryptoService()
         _.forEach(incomingShares, (sharedObject) =>
+          objectKey = sharedObject.id
           try
             if sharedObject.sharingPair
               encodedEncryptedMarshalledCryptoService = sharedObject.publicKeyEncryptedCryptoService
@@ -172,12 +173,19 @@ define 'kryptnostic.sharing-client', [
               engine = KryptnosticEngineProvider.getEngine()
               objectSearchPair = engine.calculateObjectSearchPairFromObjectSharePair(decryptedSharePair)
 
-              objectKey = sharedObject.id
-              @sharingApi.addObjectSearchPair(objectKey, objectSearchPair)
-              @cryptoServiceLoader.setObjectCryptoServiceV2(objectKey, objectCryptoService, masterAesCryptoService)
+              Promise.all([
+                @sharingApi.addObjectSearchPair(objectKey, objectSearchPair),
+                @cryptoServiceLoader.setObjectCryptoServiceV2(objectKey, objectCryptoService, masterAesCryptoService)
+              ])
+              .then =>
+                @sharingApi.removeIncomingShare(objectKey)
+              .catch (e) ->
+                logger.error('failed to process incoming share - ' + objectKey.objectId)
+                return
+
           catch e
-            logger.error('failed to process incoming share')
-            logger.error(e)
+            logger.error('failed to process incoming share - ' + objectKey.objectId)
+            return
         )
       .catch (e) ->
         # DOTO - how do we handle failure when processing incoming shares?

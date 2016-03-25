@@ -30,10 +30,13 @@ define 'kryptnostic.sharing-api', [
   logger = Logger.get('SharingApi')
 
   sharingUrl             = -> Config.get('servicesUrlV2') + '/share'
+  shareKeysUrl           = -> sharingUrl() + '/keys'
   shareObjectUrl         = -> sharingUrl() + '/object'
-  revokeObjectUrl        = -> sharingUrl() + '/object'
-  incomingSharesUrl      = -> sharingUrl() + '/object'
-  addObjectSearchPairUrl = -> sharingUrl() + '/keys'
+  revokeObjectUrl        = -> shareObjectUrl()
+  incomingSharesUrl      = -> shareObjectUrl()
+  removeIncomingShareUrl = (objectId, objectVersion) ->
+    shareObjectUrl() + '/id/' + objectId + '/' + objectVersion
+  addObjectSearchPairUrl = -> shareKeysUrl()
   getObjectSearchPairUrl = (objectId, objectVersion) ->
     sharingUrl() + '/keys/id/' + objectId + '/' + objectVersion
 
@@ -55,6 +58,21 @@ define 'kryptnostic.sharing-api', [
           return axiosResponse.data;
         else
           return null
+
+    removeIncomingShare: (versionedObjectKey) ->
+
+      if not validateVersionedObjectKey(versionedObjectKey)
+        return Promise.resolve()
+
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method  : 'DELETE'
+            url     : removeIncomingShareUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
+            headers : DEFAULT_HEADERS
+          })
+        )
+      )
 
     # share an object
     shareObject: (sharingRequest) ->

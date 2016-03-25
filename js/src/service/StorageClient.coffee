@@ -95,8 +95,6 @@ define 'kryptnostic.storage-client', [
         _.forEach(inspections, (inspection) ->
           if inspection.isFulfilled()
             objectKeys.push(inspection.value())
-          else
-            logger.error('could not get latest versioned object key', inspection.reason())
         )
         return objectKeys
       .then (objectKeys) =>

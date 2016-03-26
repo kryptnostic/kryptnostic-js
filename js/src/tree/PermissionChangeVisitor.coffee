@@ -60,6 +60,20 @@ define 'kryptnostic.permission-change-visitor', [
       .then =>
         @changedUsers[objectId] = { added: uuidsAdd, removed: uuidsRemove }
 
+    addSingleUser: (uuidAdd, objectId) ->
+      Promise.resolve(
+        @sharingClient.shareObject(objectId, [uuidAdd])
+      )
+      .then =>
+        @changedUsers[objectId] = { added: [uuidAdd], removed: [] }
+
+    removeSingleUser: (uuidRemove, objectId) ->
+      Promise.resolve(
+        @sharingClient.revokeObject(objectId, [uuidRemove])
+      )
+      .then =>
+        @changedUsers[objectId] = { added: [], removed: [uuidRemove] }
+
     getParticipants: (objectMetadataTree) ->
       objectId = objectMetadataTree.metadata.id
       Promise.props({

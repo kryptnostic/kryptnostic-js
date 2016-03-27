@@ -60,19 +60,31 @@ define 'kryptnostic.permission-change-visitor', [
       .then =>
         @changedUsers[objectId] = { added: uuidsAdd, removed: uuidsRemove }
 
-    addSingleUser: (uuidAdd, objectId) ->
+    addUsers: (uuidsAdd, objectId) ->
       Promise.resolve(
-        @sharingClient.shareObject(objectId, [uuidAdd])
+        @sharingClient.shareObject(objectId, uuidsAdd)
       )
       .then =>
-        @changedUsers[objectId] = { added: [uuidAdd], removed: [] }
+        @changedUsers[objectId] = { added: uuidsAdd, removed: [] }
+      .then =>
+        @changed.push(objectId)
+      .catch (e) =>
+        log.error('failed to change permissions', { objectId })
+        log.error('error', _.extend({}, e, { msg: e.message, stack: e.stack }))
+        @failed.push(objectId)
 
-    removeSingleUser: (uuidRemove, objectId) ->
+    removeUsers: (uuidsRemove, objectId) ->
       Promise.resolve(
-        @sharingClient.revokeObject(objectId, [uuidRemove])
+        @sharingClient.revokeObject(objectId, uuidsRemove)
       )
       .then =>
-        @changedUsers[objectId] = { added: [], removed: [uuidRemove] }
+        @changedUsers[objectId] = { added: [], removed: uuidsRemove }
+      .then =>
+        @changed.push(objectId)
+      .catch (e) =>
+        log.error('failed to change permissions', { objectId })
+        log.error('error', _.extend({}, e, { msg: e.message, stack: e.stack }))
+        @failed.push(objectId)
 
     getParticipants: (objectMetadataTree) ->
       objectId = objectMetadataTree.metadata.id

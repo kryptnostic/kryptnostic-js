@@ -11,9 +11,18 @@ const webpack = require('webpack');
  *
  */
 
+// process.env.NODE_ENV is expected to be defined externally (see package.json)
+const NODE_ENV = process.env.NODE_ENV;
+const PROD_ENV = 'PROD';
+
 const FILES = {
   KJS_ENTRY_POINT: path.join(__dirname, 'src/app.js')
 };
+
+const KJS_LIB_TARGET = 'umd';
+const KJS_LIB_NAMESPACE = 'KJS';
+const KJS_LIB_FILENAME = (NODE_ENV === PROD_ENV) ? 'kryptnostic.min.js' : 'kryptnostic.js';
+const KJS_LIB_SOURCEMAP_FILENAME = `${KJS_LIB_FILENAME}.map`;
 
 const PATHS = {
   DIST: path.join(__dirname, 'dist'),
@@ -47,49 +56,90 @@ const kjsDefinePlugin = new webpack.DefinePlugin({
 });
 
 const kjsUglifyJsPlugin = new webpack.optimize.UglifyJsPlugin({
+  sourceMap: true,
   compress: {
+    screw_ie8: true, // jscs:ignore
     warnings: true
   }
 });
 
+function getPlugins() {
+
+  const plugins = [
+    kjsDefinePlugin,
+    new webpack.NoErrorsPlugin()
+  ];
+
+  if (NODE_ENV === PROD_ENV) {
+    plugins.push(kjsBannerPlugin);
+    plugins.push(kjsUglifyJsPlugin);
+  }
+
+  return plugins;
+}
+
 /*
  *
- * config
+ * loaders
  *
  */
 
-module.exports = {
-  entry: FILES.KJS_ENTRY_POINT,
+const BABEL_LOADER = {
+  loader: 'babel',
+  test: /\.js$/,
+  include: [
+    PATHS.SOURCE,
+    PATHS.TEST
+  ]
+};
+
+function getLoaders() {
+
+  const loaders = [
+    BABEL_LOADER
+  ];
+
+  const preLoaders = [];
+  const postLoaders = [];
+
+  return {
+    loaders,
+    preLoaders,
+    postLoaders
+  };
+}
+
+/*
+ *
+ * webpack config
+ *
+ */
+
+const kjsWebpackConfig = {
   context: PATHS.SOURCE,
+  entry: FILES.KJS_ENTRY_POINT,
   output: {
     path: PATHS.DIST,
-    library: 'KJS',
-    libraryTarget: 'umd',
-    filename: 'kryptnostic.js',
-    sourceMapFilename: 'kryptnostic.js.map'
+    library: KJS_LIB_NAMESPACE,
+    libraryTarget: KJS_LIB_TARGET,
+    filename: KJS_LIB_FILENAME,
+    sourceMapFilename: KJS_LIB_SOURCEMAP_FILENAME
   },
   module: {
-    loaders: [
-      {
-        loader: 'babel',
-        test: /\.js$/,
-        include: [
-          PATHS.SOURCE,
-          PATHS.TEST
-        ]
-      }
-    ],
+    loaders: getLoaders().loaders,
     noParse: [
       /krypto\.js$/
     ]
   },
   resolve: {
+    root: [
+      PATHS.SOURCE,
+      PATHS.TEST
+    ],
     extensions: ['', '.js']
   },
-  plugins: [
-    kjsBannerPlugin,
-    kjsDefinePlugin,
-    kjsUglifyJsPlugin
-  ],
+  plugins: getPlugins(),
   bail: true
 };
+
+module.exports = kjsWebpackConfig;

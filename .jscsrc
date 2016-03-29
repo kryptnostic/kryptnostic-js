@@ -7,8 +7,19 @@
   "disallowKeywordsOnNewLine": [],
   "maximumLineLength": 128,
   "requireCurlyBraces": true,
-  "requireTrailingComma": false,
+  "requirePaddingNewlinesInBlocks": {
+    "close": false,
+    "open": true,
+    "allExcept": [
+      "conditionals"
+    ]
+  },
   "requireSpacesInAnonymousFunctionExpression": {
     "beforeOpeningCurlyBrace": true
-  }
+  },
+  "requireTrailingComma": false,
+  "safeContextKeyword": [
+    "_this",
+    "self"
+  ],
 }

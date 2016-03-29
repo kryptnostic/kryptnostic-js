@@ -1,7 +1,11 @@
 {
+  "plugins": [
+    "syntax-class-properties",
+    "syntax-flow",
+    "transform-class-properties",
+    "transform-flow-strip-types"
+  ],
   "presets": [
-    "es2015",
-    "react"
+    "es2015"
   ]
 }
-

@@ -1,9 +1,21 @@
 {
   "extends": "airbnb/base",
   "parser": "babel-eslint",
+  "env": {
+      "browser": true,
+      "jasmine": true,
+      "node": true
+  },
+  "plugins": [
+    "jasmine"
+  ],
   "rules": {
+    "jasmine/no-focused-tests": 2,
+    "jasmine/no-disabled-tests": 2,
+    "jasmine/no-spec-dupes": [2, "branch"],
+    "jasmine/no-suite-dupes": [2, "branch"],
     "brace-style": [2, "stroustrup"],
-    "comma-dangle": [1, "never"],
+    "comma-dangle": [2, "never"],
     "max-len": [
       2,
       {
@@ -12,6 +24,8 @@
         "ignoreUrls": true,
         "ignoreComments": false
       }
-    ]
+    ],
+    "padded-blocks": 0,
+    "space-before-function-paren": [2, "never"]
   }
 }

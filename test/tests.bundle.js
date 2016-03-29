@@ -5,5 +5,7 @@
  * https://github.com/webpack/karma-webpack#alternative-usage
  * http://webpack.github.io/docs/context.html#require-context
  */
-const testContext = require.context('.', true, /\.test\.js$/);
+
+// match all "*.test.js" files, except "KryptoEngine*.test.js" files
+const testContext = require.context('.', true, /\/(?!KryptoEngine).*\.test\.js$/);
 testContext.keys().forEach(testContext);

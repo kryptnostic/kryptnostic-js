@@ -3,9 +3,9 @@
  */
 
 /*
- * importing and referencing KryptoJS is ugly, but the webpack exports-loader makes it much nicer. specifically, we can export
- * global variables from inside krypto.js into the webpack global context under a new interface, "Krypto". now, we are able to
- * get a Krypto instance in two easy ways:
+ * importing and referencing KryptoJS is ugly, but the webpack exports-loader makes it much nicer. the loader lets us
+ * export global variables from inside krypto.js into the webpack global context under a new interface, "Krypto".
+ * now, we are able to get a Krypto instance in two easy ways:
  *
  *   1.
  *     import { Krypto } from 'exports?Krypto=Module.KryptnosticClient!krypto-js';
@@ -28,7 +28,7 @@ import { Krypto } from 'exports?Krypto=Module.KryptnosticClient!krypto-js';
 let kryptoEngineInstance = null;
 
 /*
- * KryptoEngine is a singleton wrapper around KryptoJS. it exposes core functionality and adds convenient helper methods.
+ * KryptoEngine is a singleton wrapper around KryptoJS, exposing core functionality and convenient helper methods
  */
 class KryptoEngine {
 

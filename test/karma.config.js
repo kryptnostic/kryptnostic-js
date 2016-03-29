@@ -27,9 +27,9 @@ const BABEL_LOADER = {
 module.exports = function kjsKarmaConfig(config) {
 
   /*
-   * when we execute tests in a "TEST" environment, such as Travis CI or "npm test", we'll always run all of the tests, never
-   * an individual test. in this case, we can have a more performant configuration by having webpack generate a single bundle
-   * that contains all test files, instead of a distinct bundle for each test file.
+   * when we execute tests in a "TEST" environment, such as Travis CI or "npm test", we'll always run all of the tests,
+   * never an individual test. in this case, we can have a more performant configuration by having webpack generate a
+   * single bundle that contains all test files, instead of a distinct bundle for each test file.
    */
   const testFiles = [];
   if (NODE_ENV === TEST_ENV) {
@@ -105,8 +105,8 @@ module.exports = function kjsKarmaConfig(config) {
     },
 
     /*
-     * the keys in the "preprocessors" config filter the matching files specified in the "files" config for processing before
-     * serving them to the browser
+     * the keys in the "preprocessors" config filter the matching files specified in the "files" config for processing
+     * before serving them to the browser
      *
      * http://karma-runner.github.io/0.13/config/preprocessors.html
      * https://npmjs.org/browse/keyword/karma-preprocessor
@@ -143,8 +143,8 @@ module.exports = function kjsKarmaConfig(config) {
 
     /*
      * continuous integration mode
-     * if true, Karma will start and capture all configured browsers, run the tests, and then exit with an exit code of 0 or 1,
-     * 0 if all tests passed, and 1 if any tests failed
+     * if true, Karma will start and capture all configured browsers, run the tests, and then exit with an exit code of
+     * 0 or 1; 0 if all tests passed, 1 if any tests failed
      */
     singleRun: true,
 

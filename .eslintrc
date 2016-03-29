@@ -19,7 +19,7 @@
     "max-len": [
       2,
       {
-        "code": 128,
+        "code": 120,
         "tabWidth": 2,
         "ignoreUrls": true,
         "ignoreComments": false

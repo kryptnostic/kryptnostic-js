@@ -5,7 +5,7 @@
     "dist/**"
   ],
   "disallowKeywordsOnNewLine": [],
-  "maximumLineLength": 128,
+  "maximumLineLength": 120,
   "requireCurlyBraces": true,
   "requirePaddingNewlinesInBlocks": {
     "close": false,

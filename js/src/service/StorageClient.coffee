@@ -296,6 +296,15 @@ define 'kryptnostic.storage-client', [
           )
           return
 
+    updateObjectType: (objectId, type) ->
+      if not validateUuid(objectId)
+        logger.error('invalid object UUID')
+        return Promise.reject()
+
+      Promise.resolve(
+        @objectApi.updateType(objectId, type)
+      )
+
     deleteObject: (objectId) ->
       if not validateUuid(objectId)
         return Promise.resolve()

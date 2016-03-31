@@ -20,7 +20,7 @@ define 'kryptnostic.user-directory-api', [
 
   getUserUrl   = -> Configuration.get('heraclesUrlV2') + '/directory/user'
   getUsersUrl  = -> Configuration.get('heraclesUrlV2') + '/directory/users'
-  usersInRealmUrl = -> Configuration.get('servicesUrl') + '/directory'
+  usersInRealmUrl = -> Configuration.get('servicesUrlV2') + '/directory'
 
   log = Logger.get('UserDirectoryApi')
 

@@ -242,10 +242,10 @@ define 'kryptnostic.object-api', [
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
-              method: 'POST',
-              url: objectIdUrl(objectId) + '/type'
-              headers: DEFAULT_HEADERS
-              data: type
+            method: 'POST',
+            url: objectIdUrl(objectId) + '/type'
+            headers: DEFAULT_HEADERS
+            data: type
           })
         )
       )

@@ -209,6 +209,8 @@ define [
 
         sinon.stub(credentialService.rsaKeyGenerator, 'generateKeypair')
           .returns(Promise.resolve(MOCK_RSA_KEY_PAIR_AS_DER()))
+        sinon.stub(credentialService.userDirectoryApi, 'notifyFirstLogin')
+          .returns(Promise.resolve())
 
         rsaKeyPairGenCompleteCallbackSpy = sinon.spy()
 
@@ -250,6 +252,8 @@ define [
         credentialService = new CredentialService()
         sinon.stub(credentialService.rsaKeyGenerator, 'generateKeypair')
           .returns(Promise.resolve(MOCK_RSA_KEY_PAIR_AS_DER()))
+        sinon.stub(credentialService.userDirectoryApi, 'notifyFirstLogin')
+          .returns(Promise.resolve())
 
         rsaKeyPairGenCompleteCallbackSpy = sinon.spy()
 

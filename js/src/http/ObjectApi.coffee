@@ -238,4 +238,16 @@ define 'kryptnostic.object-api', [
         )
       )
 
+    updateType: (objectId, type) ->
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method: 'POST',
+            url: objectIdUrl(objectId) + '/type'
+            headers: DEFAULT_HEADERS
+            data: type
+          })
+        )
+      )
+
   return ObjectApi

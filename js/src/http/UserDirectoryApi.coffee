@@ -21,6 +21,7 @@ define 'kryptnostic.user-directory-api', [
   getUserUrl   = -> Configuration.get('heraclesUrlV2') + '/directory/user'
   getUsersUrl  = -> Configuration.get('heraclesUrlV2') + '/directory/users'
   usersInRealmUrl = -> Configuration.get('servicesUrl') + '/directory'
+  setFirstLoginUrl = -> Configuration.get('heraclesUrlV2') + '/directory/setlogin'
 
   log = Logger.get('UserDirectoryApi')
 
@@ -122,5 +123,13 @@ define 'kryptnostic.user-directory-api', [
       .then (response) ->
         uuids = response.data
         return uuids
+
+    notifyFirstLogin: ->
+      Promise.resolve(axios(
+        Requests.wrapCredentials({
+          url: setFirstLoginUrl()
+          method: 'POST'
+        })
+      ))
 
   return UserDirectoryApi

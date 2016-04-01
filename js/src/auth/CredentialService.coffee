@@ -12,6 +12,7 @@ define 'kryptnostic.credential-service', [
   'kryptnostic.password-crypto-service'
   'kryptnostic.salt-generator'
   'kryptnostic.validators'
+  'kryptnostic.user-directory-api'
 ], (require) ->
 
   Logger                = require 'kryptnostic.logger'
@@ -25,6 +26,7 @@ define 'kryptnostic.credential-service', [
   RsaKeyGenerator       = require 'kryptnostic.rsa-key-generator'
   SaltGenerator         = require 'kryptnostic.salt-generator'
   Validators            = require 'kryptnostic.validators'
+  UserDirectoryApi      = require 'kryptnostic.user-directory-api'
 
   DEFAULT_ITERATIONS = 1000
   DEFAULT_KEY_SIZE   = 256
@@ -48,6 +50,7 @@ define 'kryptnostic.credential-service', [
 
     constructor: ->
       @rsaKeyGenerator = new RsaKeyGenerator()
+      @userDirectoryApi = new UserDirectoryApi()
 
     deriveCredential : ({ principal, password }) ->
       Promise.resolve(
@@ -89,8 +92,10 @@ define 'kryptnostic.credential-service', [
       { publicKey, privateKey, keypair } = {}
 
       Promise.resolve(
-        @rsaKeyGenerator.generateKeypair()
+        @userDirectoryApi.notifyFirstLogin()
       )
+      .then =>
+        @rsaKeyGenerator.generateKeypair()
       .then (keypairBuffer) ->
 
         keypair         = {}

@@ -1,6 +1,6 @@
-import KryptoEngine from '../src/KryptoEngine';
+import KryptoEngine from '../../src/KryptoEngine';
 
-describe('KryptoEngine - Singleton', () => {
+describe('KryptoEngine', () => {
 
   it('should behave like a singleton', () => {
 

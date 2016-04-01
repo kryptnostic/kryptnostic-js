@@ -31,6 +31,10 @@ module.exports = function kjsKarmaConfig(config) {
    * when we execute tests in a "TEST" environment, such as Travis CI or "npm test", we'll always run all of the tests,
    * never an individual test. in this case, we can have a more performant configuration by having webpack generate a
    * single bundle that contains all test files, instead of a distinct bundle for each test file.
+   *
+   * the exception to this is any test file that is testing KryptoEngine. since KryptoEngine is a singleton, tests will
+   * break when multiple files need to initialize KryptoEngine. as such, any test file that needs its own instance of
+   * KryptoEngine will have to be bundled seperately.
    */
   const testFiles = [];
   if (NODE_ENV === TEST_ENV) {

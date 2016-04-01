@@ -44,6 +44,7 @@
     "test:karma:watch": "karma start test/karma.config.js --singleRun=false --autoWatch=true",
     "test:karma:browser": "karma start test/karma.config.js --singleRun=false --autoWatch=true --browsers=Chrome --reporters=kjhtml",
     "webpack:dev": "NODE_ENV=DEV webpack --config webpack.config.js",
+    "webpack:dev:watch": "NODE_ENV=DEV webpack --config webpack.config.js --watch",
     "webpack:prod": "NODE_ENV=PROD webpack --config webpack.config.js"
   },
   "dependencies": {

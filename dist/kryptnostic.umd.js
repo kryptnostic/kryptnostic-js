@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var ConfigurationService  = __webpack_require__(6);
 	var RegistrationApi       = __webpack_require__(60);
 	var RegistrationClient    = __webpack_require__(61);
-	var UserDirectoryApi      = __webpack_require__(58);
+	var UserDirectoryApi      = __webpack_require__(50);
 
 	module.exports = {
 	  'AuthenticationService' : AuthenticationService,
@@ -73,17 +73,17 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(2), __webpack_require__(6), __webpack_require__(7), __webpack_require__(20), __webpack_require__(50), __webpack_require__(57), __webpack_require__(37), __webpack_require__(58), __webpack_require__(44), __webpack_require__(59), __webpack_require__(39)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(2), __webpack_require__(6), __webpack_require__(7), __webpack_require__(20), __webpack_require__(51), __webpack_require__(58), __webpack_require__(37), __webpack_require__(50), __webpack_require__(44), __webpack_require__(59), __webpack_require__(39)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var AuthenticationService, AuthenticationStage, Config, CredentialProviderLoader, CredentialService, CryptoServiceLoader, CryptoServiceMigrator, KryptnosticEngineProvider, KryptnosticWorkersApi, LOGIN_FAILURE_MESSAGE, Logger, Promise, SearchCredentialService, UserDirectoryApi, logger;
 	  Promise = __webpack_require__(22);
 	  Logger = __webpack_require__(2);
 	  Config = __webpack_require__(6);
 	  CredentialProviderLoader = __webpack_require__(7);
 	  CredentialService = __webpack_require__(20);
-	  CryptoServiceLoader = __webpack_require__(50);
-	  SearchCredentialService = __webpack_require__(57);
+	  CryptoServiceLoader = __webpack_require__(51);
+	  SearchCredentialService = __webpack_require__(58);
 	  AuthenticationStage = __webpack_require__(37);
-	  UserDirectoryApi = __webpack_require__(58);
+	  UserDirectoryApi = __webpack_require__(50);
 	  KryptnosticEngineProvider = __webpack_require__(44);
 	  CryptoServiceMigrator = __webpack_require__(59);
 	  KryptnosticWorkersApi = __webpack_require__(39);
@@ -43779,8 +43779,8 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(12), __webpack_require__(2), __webpack_require__(21), __webpack_require__(37), __webpack_require__(23), __webpack_require__(38), __webpack_require__(46), __webpack_require__(49), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var AuthenticationStage, BITS_PER_BYTE, BinaryUtils, CredentialService, DEFAULT_ITERATIONS, DEFAULT_KEY_SIZE, Forge, KeyStorageApi, Logger, PasswordCryptoService, Promise, RsaKeyGenerator, SaltGenerator, Validators, log, validateUuid;
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(12), __webpack_require__(2), __webpack_require__(21), __webpack_require__(37), __webpack_require__(23), __webpack_require__(38), __webpack_require__(46), __webpack_require__(49), __webpack_require__(36), __webpack_require__(50)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var AuthenticationStage, BITS_PER_BYTE, BinaryUtils, CredentialService, DEFAULT_ITERATIONS, DEFAULT_KEY_SIZE, Forge, KeyStorageApi, Logger, PasswordCryptoService, Promise, RsaKeyGenerator, SaltGenerator, UserDirectoryApi, Validators, log, validateUuid;
 	  Logger = __webpack_require__(2);
 	  Forge = __webpack_require__(12);
 	  Promise = __webpack_require__(22);
@@ -43791,6 +43791,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  RsaKeyGenerator = __webpack_require__(38);
 	  SaltGenerator = __webpack_require__(49);
 	  Validators = __webpack_require__(36);
+	  UserDirectoryApi = __webpack_require__(50);
 	  DEFAULT_ITERATIONS = 1000;
 	  DEFAULT_KEY_SIZE = 256;
 	  BITS_PER_BYTE = 8;
@@ -43799,6 +43800,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  CredentialService = (function() {
 	    function CredentialService() {
 	      this.rsaKeyGenerator = new RsaKeyGenerator();
+	      this.userDirectoryApi = new UserDirectoryApi();
 	    }
 
 	    CredentialService.prototype.deriveCredential = function(arg) {
@@ -43858,7 +43860,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        notifier = function() {};
 	      }
 	      ref = {}, publicKey = ref.publicKey, privateKey = ref.privateKey, keypair = ref.keypair;
-	      return Promise.resolve(this.rsaKeyGenerator.generateKeypair()).then(function(keypairBuffer) {
+	      return Promise.resolve(this.userDirectoryApi.notifyFirstLogin()).then((function(_this) {
+	        return function() {
+	          return _this.rsaKeyGenerator.generateKeypair();
+	        };
+	      })(this)).then(function(keypairBuffer) {
 	        var passwordCrypto, privateKeyAsn1, privateKeyBytes, publicKeyAsn1, publicKeyBytes;
 	        keypair = {};
 	        passwordCrypto = new PasswordCryptoService();
@@ -52660,17 +52666,181 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(2), __webpack_require__(51), __webpack_require__(28), __webpack_require__(52), __webpack_require__(53), __webpack_require__(21), __webpack_require__(54), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(2), __webpack_require__(6), __webpack_require__(28), __webpack_require__(34), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var Cache, Configuration, DEFAULT_HEADER, Logger, Promise, Requests, UserDirectoryApi, Validators, axios, getUserUrl, getUsersUrl, log, setFirstLoginUrl, usersInRealmUrl, validateEmail, validateUuid, validateUuids;
+	  axios = __webpack_require__(35);
+	  Promise = __webpack_require__(22);
+	  Logger = __webpack_require__(2);
+	  Configuration = __webpack_require__(6);
+	  Cache = __webpack_require__(28);
+	  Requests = __webpack_require__(34);
+	  Validators = __webpack_require__(36);
+	  getUserUrl = function() {
+	    return Configuration.get('heraclesUrlV2') + '/directory/user';
+	  };
+	  getUsersUrl = function() {
+	    return Configuration.get('heraclesUrlV2') + '/directory/users';
+	  };
+	  usersInRealmUrl = function() {
+	    return Configuration.get('servicesUrl') + '/directory';
+	  };
+	  setFirstLoginUrl = function() {
+	    return Configuration.get('heraclesUrlV2') + '/directory/setlogin';
+	  };
+	  log = Logger.get('UserDirectoryApi');
+	  DEFAULT_HEADER = {
+	    'Content-Type': 'application/json'
+	  };
+	  validateUuids = Validators.validateUuids;
+	  validateEmail = function(email) {
+	    if (_.isEmpty(email)) {
+	      log.error('illegal email address', email);
+	      throw new Error('illegal email address');
+	    }
+	  };
+	  validateUuid = function(uuid) {
+	    if (_.isEmpty(uuid)) {
+	      log.error('illegal uuid', uuid);
+	      throw new Error('illegal uuid');
+	    }
+	  };
+	  UserDirectoryApi = (function() {
+	    function UserDirectoryApi() {
+	      this.getUserName = bind(this.getUserName, this);
+	    }
+
+	    UserDirectoryApi.prototype.getUserName = function(uuid) {
+	      return this.getUser(uuid).then(function(user) {
+	        return user.name;
+	      });
+	    };
+
+	    UserDirectoryApi.prototype.resolve = function(arg) {
+	      var email;
+	      email = arg.email;
+	      return Promise.resolve().then(function() {
+	        validateEmail(email);
+	        return axios({
+	          url: getUserUrl() + '/email/' + email,
+	          method: 'GET'
+	        });
+	      }).then(function(response) {
+	        var uuid;
+	        uuid = response.data;
+	        if (uuid === 'null' || !uuid) {
+	          return void 0;
+	        } else {
+	          return uuid;
+	        }
+	      });
+	    };
+
+	    UserDirectoryApi.prototype.getUser = function(uuid) {
+	      var cached;
+	      cached = Cache.get(Cache.USERS, uuid);
+	      if (cached != null) {
+	        return Promise.resolve().then(function() {
+	          return cached;
+	        });
+	      }
+	      return Promise.resolve().then(function() {
+	        validateUuid(uuid);
+	        return axios({
+	          url: getUserUrl() + '/' + uuid,
+	          method: 'GET'
+	        });
+	      }).then(function(axiosResponse) {
+	        var user;
+	        if ((axiosResponse != null) && (axiosResponse.data != null)) {
+	          user = axiosResponse.data;
+	          Cache.store(Cache.USERS, uuid, user);
+	          return user;
+	        } else {
+	          return null;
+	        }
+	      });
+	    };
+
+	    UserDirectoryApi.prototype.getUsers = function(initialUUIDs) {
+	      var cached, searchResults, uuids;
+	      if (!validateUuids(initialUUIDs)) {
+	        return Promise.resolve([]);
+	      }
+	      searchResults = Cache.search(Cache.USERS, initialUUIDs);
+	      uuids = searchResults['uncached'];
+	      cached = searchResults['cached'];
+	      if (uuids && uuids.length === 0) {
+	        return Promise.resolve(cached);
+	      }
+	      return Promise.resolve().then(function() {
+	        var i, len, uuid;
+	        for (i = 0, len = uuids.length; i < len; i++) {
+	          uuid = uuids[i];
+	          validateUuid(uuid);
+	        }
+	        return axios({
+	          url: getUsersUrl(),
+	          method: 'POST',
+	          data: uuids
+	        });
+	      }).then(function(response) {
+	        var i, len, user, users;
+	        users = response.data;
+	        if (users === 'null' || !users) {
+	          return void 0;
+	        }
+	        for (i = 0, len = users.length; i < len; i++) {
+	          user = users[i];
+	          Cache.store(Cache.USERS, user.id, user);
+	        }
+	        return cached.concat(users);
+	      });
+	    };
+
+	    UserDirectoryApi.prototype.getInitializedUsers = function(arg) {
+	      var realm;
+	      realm = arg.realm;
+	      return Promise.resolve(axios(Requests.wrapCredentials({
+	        url: usersInRealmUrl() + '/initialized/' + realm,
+	        method: 'GET'
+	      }))).then(function(response) {
+	        var uuids;
+	        uuids = response.data;
+	        return uuids;
+	      });
+	    };
+
+	    UserDirectoryApi.prototype.notifyFirstLogin = function() {
+	      return Promise.resolve(axios(Requests.wrapCredentials({
+	        url: setFirstLoginUrl(),
+	        method: 'POST'
+	      })));
+	    };
+
+	    return UserDirectoryApi;
+
+	  })();
+	  return UserDirectoryApi;
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+
+/***/ },
+/* 51 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(22), __webpack_require__(2), __webpack_require__(52), __webpack_require__(28), __webpack_require__(53), __webpack_require__(54), __webpack_require__(21), __webpack_require__(55), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  'use strict';
 	  var AesCryptoService, Cache, CredentialLoader, CryptoServiceLoader, CryptoServiceMarshaller, Cypher, DEFAULT_OPTS, EMPTY_BUFFER, INT_SIZE, KeyStorageApi, Logger, Promise, RsaCryptoService, log;
 	  Promise = __webpack_require__(22);
-	  RsaCryptoService = __webpack_require__(52);
-	  AesCryptoService = __webpack_require__(53);
+	  RsaCryptoService = __webpack_require__(53);
+	  AesCryptoService = __webpack_require__(54);
 	  Cache = __webpack_require__(28);
-	  Cypher = __webpack_require__(51);
+	  Cypher = __webpack_require__(52);
 	  KeyStorageApi = __webpack_require__(21);
 	  Logger = __webpack_require__(2);
-	  CryptoServiceMarshaller = __webpack_require__(54);
+	  CryptoServiceMarshaller = __webpack_require__(55);
 	  CredentialLoader = __webpack_require__(33);
 	  INT_SIZE = 4;
 	  EMPTY_BUFFER = '';
@@ -52781,7 +52951,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 51 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
@@ -52797,7 +52967,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 52 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
@@ -52841,7 +53011,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 53 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12), __webpack_require__(47), __webpack_require__(2), __webpack_require__(24)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
@@ -52919,13 +53089,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 54 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(55), __webpack_require__(53)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(56), __webpack_require__(54)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var AesCryptoService, CryptoServiceMarshaller, DeflatingMarshaller;
-	  DeflatingMarshaller = __webpack_require__(55);
-	  AesCryptoService = __webpack_require__(53);
+	  DeflatingMarshaller = __webpack_require__(56);
+	  AesCryptoService = __webpack_require__(54);
 	  CryptoServiceMarshaller = (function() {
 	    function CryptoServiceMarshaller() {
 	      this.deflatingMarshaller = new DeflatingMarshaller();
@@ -52967,12 +53137,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 55 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(56), __webpack_require__(12), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(57), __webpack_require__(12), __webpack_require__(3)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var DeflatingMarshaller, EMPTY_BUFFER, Forge, INTEGER_BYTE_COUNT, Pako, _, countBytes, validateBytes;
-	  Pako = __webpack_require__(56);
+	  Pako = __webpack_require__(57);
 	  Forge = __webpack_require__(12);
 	  _ = __webpack_require__(3);
 	  EMPTY_BUFFER = '';
@@ -53025,7 +53195,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 56 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var require;var require;/* pako 0.2.6 nodeca/pako */(function(f){if(true){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.pako = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return require(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
@@ -59403,15 +59573,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 /***/ },
-/* 57 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(3), __webpack_require__(22), __webpack_require__(2), __webpack_require__(37), __webpack_require__(21), __webpack_require__(45), __webpack_require__(50)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(3), __webpack_require__(22), __webpack_require__(2), __webpack_require__(37), __webpack_require__(21), __webpack_require__(45), __webpack_require__(51)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var AuthenticationStage, CredentialType, CryptoServiceLoader, FHE_PRIVATE_KEY, FHE_SEARCH_PRIVATE_KEY, KeyStorageApi, KryptnosticEngine, KryptnosticEngineProvider, Logger, Promise, SearchCredentialService, _, logger;
 	  _ = __webpack_require__(3);
 	  Promise = __webpack_require__(22);
 	  AuthenticationStage = __webpack_require__(37);
-	  CryptoServiceLoader = __webpack_require__(50);
+	  CryptoServiceLoader = __webpack_require__(51);
 	  KeyStorageApi = __webpack_require__(21);
 	  KryptnosticEngine = __webpack_require__(45);
 	  KryptnosticEngineProvider = __webpack_require__(44);
@@ -59555,171 +59725,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 58 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(2), __webpack_require__(6), __webpack_require__(28), __webpack_require__(34), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var Cache, Configuration, DEFAULT_HEADER, Logger, Promise, Requests, UserDirectoryApi, Validators, axios, getUserUrl, getUsersUrl, log, usersInRealmUrl, validateEmail, validateUuid, validateUuids;
-	  axios = __webpack_require__(35);
-	  Promise = __webpack_require__(22);
-	  Logger = __webpack_require__(2);
-	  Configuration = __webpack_require__(6);
-	  Cache = __webpack_require__(28);
-	  Requests = __webpack_require__(34);
-	  Validators = __webpack_require__(36);
-	  getUserUrl = function() {
-	    return Configuration.get('heraclesUrlV2') + '/directory/user';
-	  };
-	  getUsersUrl = function() {
-	    return Configuration.get('heraclesUrlV2') + '/directory/users';
-	  };
-	  usersInRealmUrl = function() {
-	    return Configuration.get('servicesUrl') + '/directory';
-	  };
-	  log = Logger.get('UserDirectoryApi');
-	  DEFAULT_HEADER = {
-	    'Content-Type': 'application/json'
-	  };
-	  validateUuids = Validators.validateUuids;
-	  validateEmail = function(email) {
-	    if (_.isEmpty(email)) {
-	      log.error('illegal email address', email);
-	      throw new Error('illegal email address');
-	    }
-	  };
-	  validateUuid = function(uuid) {
-	    if (_.isEmpty(uuid)) {
-	      log.error('illegal uuid', uuid);
-	      throw new Error('illegal uuid');
-	    }
-	  };
-	  UserDirectoryApi = (function() {
-	    function UserDirectoryApi() {
-	      this.getUserName = bind(this.getUserName, this);
-	    }
-
-	    UserDirectoryApi.prototype.getUserName = function(uuid) {
-	      return this.getUser(uuid).then(function(user) {
-	        return user.name;
-	      });
-	    };
-
-	    UserDirectoryApi.prototype.resolve = function(arg) {
-	      var email;
-	      email = arg.email;
-	      return Promise.resolve().then(function() {
-	        validateEmail(email);
-	        return axios({
-	          url: getUserUrl() + '/email/' + email,
-	          method: 'GET'
-	        });
-	      }).then(function(response) {
-	        var uuid;
-	        uuid = response.data;
-	        if (uuid === 'null' || !uuid) {
-	          return void 0;
-	        } else {
-	          return uuid;
-	        }
-	      });
-	    };
-
-	    UserDirectoryApi.prototype.getUser = function(uuid) {
-	      var cached;
-	      cached = Cache.get(Cache.USERS, uuid);
-	      if (cached != null) {
-	        return Promise.resolve().then(function() {
-	          return cached;
-	        });
-	      }
-	      return Promise.resolve().then(function() {
-	        validateUuid(uuid);
-	        return axios({
-	          url: getUserUrl() + '/' + uuid,
-	          method: 'GET'
-	        });
-	      }).then(function(axiosResponse) {
-	        var user;
-	        if ((axiosResponse != null) && (axiosResponse.data != null)) {
-	          user = axiosResponse.data;
-	          Cache.store(Cache.USERS, uuid, user);
-	          return user;
-	        } else {
-	          return null;
-	        }
-	      });
-	    };
-
-	    UserDirectoryApi.prototype.getUsers = function(initialUUIDs) {
-	      var cached, searchResults, uuids;
-	      if (!validateUuids(initialUUIDs)) {
-	        return Promise.resolve([]);
-	      }
-	      searchResults = Cache.search(Cache.USERS, initialUUIDs);
-	      uuids = searchResults['uncached'];
-	      cached = searchResults['cached'];
-	      if (uuids && uuids.length === 0) {
-	        return Promise.resolve(cached);
-	      }
-	      return Promise.resolve().then(function() {
-	        var i, len, uuid;
-	        for (i = 0, len = uuids.length; i < len; i++) {
-	          uuid = uuids[i];
-	          validateUuid(uuid);
-	        }
-	        return axios({
-	          url: getUsersUrl(),
-	          method: 'POST',
-	          data: uuids
-	        });
-	      }).then(function(response) {
-	        var i, len, user, users;
-	        users = response.data;
-	        if (users === 'null' || !users) {
-	          return void 0;
-	        }
-	        for (i = 0, len = users.length; i < len; i++) {
-	          user = users[i];
-	          Cache.store(Cache.USERS, user.id, user);
-	        }
-	        return cached.concat(users);
-	      });
-	    };
-
-	    UserDirectoryApi.prototype.getInitializedUsers = function(arg) {
-	      var realm;
-	      realm = arg.realm;
-	      return Promise.resolve(axios(Requests.wrapCredentials({
-	        url: usersInRealmUrl() + '/initialized/' + realm,
-	        method: 'GET'
-	      }))).then(function(response) {
-	        var uuids;
-	        uuids = response.data;
-	        return uuids;
-	      });
-	    };
-
-	    return UserDirectoryApi;
-
-	  })();
-	  return UserDirectoryApi;
-	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-
-/***/ },
 /* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(6), __webpack_require__(33), __webpack_require__(50), __webpack_require__(54), __webpack_require__(52), __webpack_require__(2), __webpack_require__(34), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(6), __webpack_require__(33), __webpack_require__(51), __webpack_require__(55), __webpack_require__(53), __webpack_require__(2), __webpack_require__(34), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  var Config, CredentialLoader, CryptoServiceLoader, CryptoServiceMarshaller, CryptoServiceMigrator, DEFAULT_HEADERS, Logger, OBJECT_ID_WHITELIST, Promise, Requests, RsaCryptoService, Validators, aesCryptoServiceMigrationUrl, axios, getRSACryptoServicesForUser, keyStorageApi, logger, rsaCryptoServicesBulkUrl, setAesEncryptedObjectCryptoServiceForMigration, validateUuid;
 	  axios = __webpack_require__(35);
 	  Promise = __webpack_require__(22);
 	  CredentialLoader = __webpack_require__(33);
-	  CryptoServiceLoader = __webpack_require__(50);
-	  CryptoServiceMarshaller = __webpack_require__(54);
-	  RsaCryptoService = __webpack_require__(52);
+	  CryptoServiceLoader = __webpack_require__(51);
+	  CryptoServiceMarshaller = __webpack_require__(55);
+	  RsaCryptoService = __webpack_require__(53);
 	  Config = __webpack_require__(6);
 	  Logger = __webpack_require__(2);
 	  Requests = __webpack_require__(34);

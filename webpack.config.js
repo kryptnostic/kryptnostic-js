@@ -127,7 +127,6 @@ module.exports = {
       'kryptnostic.caching-service'                     : 'service/caching-provider/CachingService.coffee',
       'kryptnostic.caching-provider.memory'             : 'service/caching-provider/InMemoryCachingProvider.coffee',
       'kryptnostic.caching-provider.jscache'            : 'service/caching-provider/JscacheCachingProvider.coffee',
-      'kryptnostic.permission-change-visitor'           : 'tree/PermissionChangeVisitor.coffee',
       'kryptnostic.tree-loader'                         : 'tree/TreeLoader.coffee',
       'kryptnostic.tree-node'                           : 'tree/TreeNode.coffee',
       'kryptnostic.logger'                              : 'util/Logger.coffee',

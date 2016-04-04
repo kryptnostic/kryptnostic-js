@@ -8,7 +8,7 @@ define 'kryptnostic.aes-crypto-service', [
   'use strict'
 
   # libraries
-  Forge = require 'forge'
+  forge = require 'forge'
 
   # kryptnostic
   AbstractCryptoService = require 'kryptnostic.abstract-crypto-service'
@@ -23,8 +23,26 @@ define 'kryptnostic.aes-crypto-service', [
 
   # constants
   BITS_PER_BYTE = 8
+  HMAC_HASH_FUNCTION = 'sha256'
 
   logger = Logger.get('AesCryptoService')
+
+  computeHMAC = (key, iv, salt, ciphertext) ->
+    try
+      hmac = forge.hmac.create()
+      hmac.start(HMAC_HASH_FUNCTION, key)
+      hmac.update(iv)
+      hmac.update(salt)
+      hmac.update(ciphertext)
+      hmacHash = hmac.digest().getBytes()
+      return hmacHash
+    catch e
+      console.error('caught exception while computing HMAC')
+      return null
+
+  checkDataIntegrity = (key, iv, salt, ciphertext, tag) ->
+    hmacHash = computeHMAC(key, iv, salt, ciphertext)
+    return tag == hmacHash
 
   class AesCryptoService
 
@@ -40,39 +58,61 @@ define 'kryptnostic.aes-crypto-service', [
 
       if not @key
         logger.info('no key passed! generating a key.')
-        @key = Forge.random.getBytesSync(@cypher.keySize / BITS_PER_BYTE)
+        @key = forge.random.getBytesSync(@cypher.keySize / BITS_PER_BYTE) 
       @abstractCryptoService = new AbstractCryptoService(@cypher)
 
     encrypt: (plaintext) ->
 
-      iv         = Forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
+      iv         = forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
+      salt       = forge.random.getBytesSync(0)
       ciphertext = @abstractCryptoService.encrypt(@key, iv, plaintext)
-
-      return new BlockCiphertext {
+      props = {
         iv       : btoa(iv)
-        salt     : btoa(Forge.random.getBytesSync(0))
+        salt     : btoa(salt)
         contents : btoa(ciphertext)
       }
+
+      hmacHash = computeHMAC(@key, iv, salt, ciphertext)
+      if hmacHash?
+        props.tag = btoa(hmacHash)
+
+      return new BlockCiphertext(props)
 
     encryptUint8Array: (uint8) ->
 
-      iv         = Forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
-      buffer     = Forge.util.createBuffer(uint8)
+      iv         = forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
+      salt       = forge.random.getBytesSync(0)
+      buffer     = forge.util.createBuffer(uint8)
       ciphertext = @abstractCryptoService.encryptBuffer(@key, iv, buffer)
-
-      return new BlockCiphertext {
+      props = {
         iv       : btoa(iv)
-        salt     : btoa(Forge.random.getBytesSync(0))
+        salt     : btoa(salt)
         contents : btoa(ciphertext)
       }
+
+      hmacHash = computeHMAC(@key, iv, salt, ciphertext)
+      if hmacHash?
+        props.tag = btoa(hmacHash)
+
+      return new BlockCiphertext(props)
 
     decrypt: (blockCipherText) ->
 
       Validator.validate(blockCipherText, BlockCiphertext, BLOCK_CIPHERTEXT_SCHEMA)
 
-      iv       = atob(blockCipherText.iv)
-      contents = atob(blockCipherText.contents)
-      return @abstractCryptoService.decrypt(@key, iv, contents)
+      iv         = atob(blockCipherText.iv)
+      salt       = atob(blockCipherText.salt)
+      ciphertext = atob(blockCipherText.contents)
+
+      if _.isEmpty(blockCipherText.tag)
+        logger.warn('BlockCipherText tag missing')
+      else
+        tag = atob(blockCipherText.tag)
+        isValid = checkDataIntegrity(@key, iv, salt, ciphertext, tag)
+        if not isValid
+          throw new Error('BlockCipherText data integrity check failed')
+
+      return @abstractCryptoService.decrypt(@key, iv, ciphertext)
 
     decryptToUint8Array: (blockCipherText) ->
 

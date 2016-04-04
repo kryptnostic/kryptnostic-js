@@ -2,8 +2,9 @@ define 'kryptnostic.aes-crypto-service', [
   'require'
   'forge'
   'kryptnostic.abstract-crypto-service'
-  'kryptnostic.logger'
   'kryptnostic.block-ciphertext'
+  'kryptnostic.cypher'
+  'kryptnostic.logger'
 ], (require) ->
   'use strict'
 
@@ -13,6 +14,7 @@ define 'kryptnostic.aes-crypto-service', [
   # kryptnostic
   AbstractCryptoService = require 'kryptnostic.abstract-crypto-service'
   BlockCiphertext       = require 'kryptnostic.block-ciphertext'
+  Cypher                = require 'kryptnostic.cypher'
 
   # schemas
   BLOCK_CIPHERTEXT_SCHEMA = require 'kryptnostic.schema.block-ciphertext'
@@ -63,90 +65,73 @@ define 'kryptnostic.aes-crypto-service', [
 
     encrypt: (plaintext) ->
 
-      # GCM
-      # ================================
-      # iv         = Forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
-      # cipherOutput = @abstractCryptoService.encrypt(@key, iv, plaintext)
-      #
-      # return new BlockCiphertext {
-      #   iv       : btoa(iv)
-      #   salt     : btoa(Forge.random.getBytesSync(0))
-      #   contents : btoa(cipherOutput.ciphertext)
-      #   tag      : btoa(cipherOutput.tag)
+      { iv, salt, ciphertext, tag } = {}
 
-      iv         = forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
-      salt       = forge.random.getBytesSync(0)
-      ciphertext = @abstractCryptoService.encrypt(@key, iv, plaintext)
-      props = {
+      iv = forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
+      salt = forge.random.getBytesSync(0)
+
+      if @cypher.mode is Cypher.AES_GCM_128.mode
+        cipherOutput = @abstractCryptoService.encrypt(@key, iv, plaintext)
+        ciphertext = cipherOutput.ciphertext
+        tag = cipherOutput.tag
+      else if @cypher.mode is Cypher.AES_CTR_128.mode
+        ciphertext = @abstractCryptoService.encrypt(@key, iv, plaintext)
+        hmacHash = computeHMAC(@key, iv, salt, ciphertext)
+        if hmacHash?
+          tag = hmacHash
+
+      return new BlockCiphertext({
         iv       : btoa(iv)
         salt     : btoa(salt)
         contents : btoa(ciphertext)
-      }
-
-      hmacHash = computeHMAC(@key, iv, salt, ciphertext)
-      if hmacHash?
-        props.tag = btoa(hmacHash)
-
-      return new BlockCiphertext(props)
+        tag      : btoa(tag)
+      })
 
     encryptUint8Array: (uint8) ->
 
-      # GCM
-      # ================================
-      # iv         = Forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
-      # buffer     = Forge.util.createBuffer(uint8)
-      # cipherOutput = @abstractCryptoService.encryptBuffer(@key, iv, buffer)
-      # logger.debug( cipherOutput.tag )
-      #
-      # return new BlockCiphertext {
-      #   iv       : btoa(iv)
-      #   salt     : btoa(Forge.random.getBytesSync(0))
-      #   contents : btoa(cipherOutput.ciphertext)
-      #   tag      : btoa(cipherOutput.tag)
+      { iv, salt, ciphertext, tag } = {}
 
-      iv         = forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
-      salt       = forge.random.getBytesSync(0)
-      buffer     = forge.util.createBuffer(uint8)
-      ciphertext = @abstractCryptoService.encryptBuffer(@key, iv, buffer)
-      props = {
+      iv = forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
+      salt = forge.random.getBytesSync(0)
+      buffer = forge.util.createBuffer(uint8)
+
+      if @cypher.mode is Cypher.AES_GCM_128.mode
+        cipherOutput = @abstractCryptoService.encryptBuffer(@key, iv, buffer)
+        ciphertext = cipherOutput.ciphertext
+        tag = cipherOutput.tag
+      else if @cypher.mode is Cypher.AES_CTR_128.mode
+        ciphertext = @abstractCryptoService.encryptBuffer(@key, iv, buffer)
+        hmacHash = computeHMAC(@key, iv, salt, ciphertext)
+        if hmacHash?
+          tag = hmacHash
+
+      return new BlockCiphertext({
         iv       : btoa(iv)
         salt     : btoa(salt)
         contents : btoa(ciphertext)
-      }
-
-      hmacHash = computeHMAC(@key, iv, salt, ciphertext)
-      if hmacHash?
-        props.tag = btoa(hmacHash)
-
-      return new BlockCiphertext(props)
+        tag      : btoa(tag)
+      })
 
     decrypt: (blockCipherText) ->
 
       Validator.validate(blockCipherText, BlockCiphertext, BLOCK_CIPHERTEXT_SCHEMA)
 
-      # GCM
-      # ================================
-      # iv       = atob(blockCipherText.iv)
-      # contents = atob(blockCipherText.contents)
-      # if blockCipherText.tag?
-      #   tag = atob(blockCipherText.tag)
-      #   return @abstractCryptoService.decrypt(@key, iv, contents, tag)
-      #
-      # return @abstractCryptoService.decrypt(@key, iv, contents)
+      { iv, salt, ciphertext, tag } = {}
 
       iv         = atob(blockCipherText.iv)
       salt       = atob(blockCipherText.salt)
       ciphertext = atob(blockCipherText.contents)
 
-      if _.isEmpty(blockCipherText.tag)
-        logger.warn('BlockCipherText tag missing')
-      else
+      if not _.isEmpty(blockCipherText.tag)
         tag = atob(blockCipherText.tag)
+
+      if @cypher.mode is Cypher.AES_GCM_128.mode
+        return @abstractCryptoService.decrypt(@key, iv, ciphertext, tag)
+      else if @cypher.mode is Cypher.AES_CTR_128.mode
         isValid = checkDataIntegrity(@key, iv, salt, ciphertext, tag)
         if not isValid
           throw new Error('BlockCipherText data integrity check failed')
-
-      return @abstractCryptoService.decrypt(@key, iv, ciphertext)
+        return @abstractCryptoService.decrypt(@key, iv, ciphertext)
 
     decryptToUint8Array: (blockCipherText) ->
 

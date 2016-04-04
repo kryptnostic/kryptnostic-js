@@ -37,7 +37,7 @@ define 'kryptnostic.aes-crypto-service', [
       hmacHash = hmac.digest().getBytes()
       return hmacHash
     catch e
-      console.error('caught exception while computing HMAC')
+      logger.error('caught exception while computing HMAC')
       return null
 
   checkDataIntegrity = (key, iv, salt, ciphertext, tag) ->

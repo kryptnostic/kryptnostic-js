@@ -73,7 +73,7 @@ define 'kryptnostic.aes-crypto-service', [
       if @cypher.mode is Cypher.AES_GCM_128.mode
         cipherOutput = @abstractCryptoService.encrypt(@key, iv, plaintext)
         ciphertext = cipherOutput.ciphertext
-        tag = cipherOutput.tag
+        tag = cipherOutput.tag.getBytes()
       else if @cypher.mode is Cypher.AES_CTR_128.mode
         ciphertext = @abstractCryptoService.encrypt(@key, iv, plaintext)
         hmacHash = computeHMAC(@key, iv, salt, ciphertext)
@@ -98,7 +98,7 @@ define 'kryptnostic.aes-crypto-service', [
       if @cypher.mode is Cypher.AES_GCM_128.mode
         cipherOutput = @abstractCryptoService.encryptBuffer(@key, iv, buffer)
         ciphertext = cipherOutput.ciphertext
-        tag = cipherOutput.tag
+        tag = cipherOutput.tag.getBytes()
       else if @cypher.mode is Cypher.AES_CTR_128.mode
         ciphertext = @abstractCryptoService.encryptBuffer(@key, iv, buffer)
         hmacHash = computeHMAC(@key, iv, salt, ciphertext)
@@ -128,9 +128,10 @@ define 'kryptnostic.aes-crypto-service', [
       if @cypher.mode is Cypher.AES_GCM_128.mode
         return @abstractCryptoService.decrypt(@key, iv, ciphertext, tag)
       else if @cypher.mode is Cypher.AES_CTR_128.mode
-        isValid = checkDataIntegrity(@key, iv, salt, ciphertext, tag)
-        if not isValid
-          throw new Error('BlockCipherText data integrity check failed')
+        if not _.isEmpty(tag)
+          isValid = checkDataIntegrity(@key, iv, salt, ciphertext, tag)
+          if not isValid
+            logger.error('BlockCipherText data integrity check failed')
         return @abstractCryptoService.decrypt(@key, iv, ciphertext)
 
     decryptToUint8Array: (blockCipherText) ->

@@ -28,7 +28,10 @@ define 'kryptnostic.abstract-crypto-service', [
       cipher.start({ iv })
       cipher.update(buffer)
       cipher.finish()
-      return { 'ciphertext': cipher.output.data, 'tag': cipher.mode.tag }
+      if @mode is 'GCM'
+        return { 'ciphertext': cipher.output.data, 'tag': cipher.mode.tag }
+      else
+        return cipher.output.data
 
     decrypt: (key, iv, ciphertext, tag) =>
       if tag? && @mode is not 'GCM'

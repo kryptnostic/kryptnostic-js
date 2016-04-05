@@ -96,7 +96,7 @@ define 'kryptnostic.crypto-service-loader', [
         objectCryptoService = {}
         if !cryptoServiceBlockCiphertext && expectMiss
           log.info('no cryptoService exists for this object. creating one on-the-fly', { objectId })
-          objectCryptoService = new AesCryptoService( Cypher.AES_GCM_128 )
+          objectCryptoService = new AesCryptoService(Cypher.AES_GCM_128)
           @setObjectCryptoServiceV2(versionedObjectKey, objectCryptoService, masterAesCryptoService)
         else if !cryptoServiceBlockCiphertext && !expectMiss
           log.error('no cryptoservice exists for this object, but a miss was not expected')

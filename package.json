@@ -1,6 +1,6 @@
 {
   "name"        : "kryptnostic-js",
-  "version"     : "0.8.6",
+  "version"     : "0.8.7",
   "description" : "JavaScript SDK for storing, sharing, and searching FHE-encrypted data.",
   "main"        : "dist/kryptnostic.umd.js",
   "homepage"    : "https://github.com/kryptnostic/kryptnostic-js",

@@ -22,7 +22,6 @@ define 'kryptnostic.key-storage-api', [
 
   # Kryptnostic
   BlockCiphertext = require 'kryptnostic.block-ciphertext'
-  CredentialLoader = require 'kryptnostic.credential-loader'
 
   # utils
   BinaryUtils = require 'kryptnostic.binary-utils'
@@ -144,16 +143,7 @@ define 'kryptnostic.key-storage-api', [
 
     @setFHEHashFunction: (fheHashFunction) ->
       # ToDo - validate FHE hash function is Uint8Array
-      Promise.resolve(
-        axios(
-          Requests.wrapCredentials({
-            method  : 'POST',
-            url     : fheHashUrl(),
-            data    : fheHashFunction,
-            headers : DEFAULT_HEADERS
-          })
-        )
-      )
+      Requests.xhrPost(fheHashFunction, fheHashUrl())
 
     #
     # encrypted salt
@@ -296,15 +286,7 @@ define 'kryptnostic.key-storage-api', [
       #
       # as a workaround for this request, we'll avoid axios and use XMLHttpRequest directly with the Uint8Array
       #
-      Promise.resolve()
-      .then ->
-        credentials = new CredentialLoader().getCredentials()
-        xhr = new XMLHttpRequest()
-        xhr.open('POST', setRSAPublicKeyUrl(), false) # false means synchronous
-        xhr.setRequestHeader(Requests.PRINCIPAL_HEADER, credentials.principal)
-        xhr.setRequestHeader(Requests.CREDENTIAL_HEADER, credentials.credential)
-        xhr.setRequestHeader('Content-Type', 'application/octet-stream')
-        xhr.send(publicKeyAsUint8)
+      Requests.xhrPost(publicKeyAsUint8, setRSAPublicKeyUrl())
 
     #
     # master AES crypto service

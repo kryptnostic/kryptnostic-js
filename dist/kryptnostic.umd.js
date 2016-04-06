@@ -43963,12 +43963,11 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(12), __webpack_require__(23), __webpack_require__(24), __webpack_require__(28), __webpack_require__(6), __webpack_require__(33), __webpack_require__(2), __webpack_require__(34), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var BinaryUtils, BlockCiphertext, Cache, Config, CredentialLoader, DEFAULT_HEADERS, KeyStorageApi, Logger, Promise, Requests, Validators, aesCryptoServiceUrl, aesUrl, axios, fheHashUrl, fheKeysUrl, fhePrivateKeyUrl, fheSearchPrivateKeyUrl, forge, getRSAPublicKeyBulkUrl, getRSAPublicKeyUrl, keyStorageApi, logger, rsaKeysUrl, rsaPrivateKeyUrl, saltUrl, setRSAPublicKeyUrl, toCacheId, validateObjectCryptoService, validateUuid, validateUuids, validateVersionedObjectKey;
+	  var BinaryUtils, BlockCiphertext, Cache, Config, DEFAULT_HEADERS, KeyStorageApi, Logger, Promise, Requests, Validators, aesCryptoServiceUrl, aesUrl, axios, fheHashUrl, fheKeysUrl, fhePrivateKeyUrl, fheSearchPrivateKeyUrl, forge, getRSAPublicKeyBulkUrl, getRSAPublicKeyUrl, keyStorageApi, logger, rsaKeysUrl, rsaPrivateKeyUrl, saltUrl, setRSAPublicKeyUrl, toCacheId, validateObjectCryptoService, validateUuid, validateUuids, validateVersionedObjectKey;
 	  axios = __webpack_require__(35);
 	  forge = __webpack_require__(12);
 	  Promise = __webpack_require__(22);
 	  BlockCiphertext = __webpack_require__(24);
-	  CredentialLoader = __webpack_require__(33);
 	  BinaryUtils = __webpack_require__(23);
 	  Cache = __webpack_require__(28);
 	  Config = __webpack_require__(6);
@@ -44056,12 +44055,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    KeyStorageApi.setFHEHashFunction = function(fheHashFunction) {
-	      return Promise.resolve(axios(Requests.wrapCredentials({
-	        method: 'POST',
-	        url: fheHashUrl(),
-	        data: fheHashFunction,
-	        headers: DEFAULT_HEADERS
-	      })));
+	      return Requests.xhrPost(fheHashFunction, fheHashUrl());
 	    };
 
 	    KeyStorageApi.getEncryptedSalt = function(userId) {
@@ -44172,16 +44166,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return Promise.resolve();
 	      }
 	      publicKeyAsUint8 = BinaryUtils.stringToUint8(publicKey);
-	      return Promise.resolve().then(function() {
-	        var credentials, xhr;
-	        credentials = new CredentialLoader().getCredentials();
-	        xhr = new XMLHttpRequest();
-	        xhr.open('POST', setRSAPublicKeyUrl(), false);
-	        xhr.setRequestHeader(Requests.PRINCIPAL_HEADER, credentials.principal);
-	        xhr.setRequestHeader(Requests.CREDENTIAL_HEADER, credentials.credential);
-	        xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-	        return xhr.send(publicKeyAsUint8);
-	      });
+	      return Requests.xhrPost(publicKeyAsUint8, setRSAPublicKeyUrl());
 	    };
 
 	    KeyStorageApi.getMasterAesCryptoService = function() {
@@ -50576,7 +50561,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(24), __webpack_require__(33)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  'use strict';
-	  var BlockCiphertext, CREDENTIAL_HEADER, CredentialLoader, PRINCIPAL_HEADER, Promise, axios, getAsUint8FromUrl, getBlockCiphertextFromUrl, wrapCredentials;
+	  var BlockCiphertext, CREDENTIAL_HEADER, CredentialLoader, PRINCIPAL_HEADER, Promise, axios, getAsUint8FromUrl, getBlockCiphertextFromUrl, wrapCredentials, xhrPost;
 	  axios = __webpack_require__(35);
 	  Promise = __webpack_require__(22);
 	  BlockCiphertext = __webpack_require__(24);
@@ -50629,12 +50614,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    });
 	  };
+	  xhrPost = function(data, url) {
+	    return Promise.resolve().then(function() {
+	      var credentials, xhr;
+	      credentials = new CredentialLoader().getCredentials();
+	      xhr = new XMLHttpRequest();
+	      xhr.open('POST', url, false);
+	      xhr.setRequestHeader(PRINCIPAL_HEADER, credentials.principal);
+	      xhr.setRequestHeader(CREDENTIAL_HEADER, credentials.credential);
+	      xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+	      return xhr.send(data);
+	    });
+	  };
 	  return {
 	    PRINCIPAL_HEADER: PRINCIPAL_HEADER,
 	    CREDENTIAL_HEADER: CREDENTIAL_HEADER,
 	    wrapCredentials: wrapCredentials,
 	    getAsUint8FromUrl: getAsUint8FromUrl,
-	    getBlockCiphertextFromUrl: getBlockCiphertextFromUrl
+	    getBlockCiphertextFromUrl: getBlockCiphertextFromUrl,
+	    xhrPost: xhrPost
 	  };
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 

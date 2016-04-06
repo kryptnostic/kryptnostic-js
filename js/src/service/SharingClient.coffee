@@ -75,8 +75,7 @@ define 'kryptnostic.sharing-client', [
       return Promise.resolve(objectKeyPromise)
         .then (latestVersionedObjectKey) ->
           if latestVersionedObjectKey?
-            share(latestVersionedObjectKey, uuids, isSearchable)
-          return
+            share(latestVersionedObjectKey, uuids)
 
     #
     # parameters to a private function are assumed valid since it is expected for the calling function to validate
@@ -129,7 +128,6 @@ define 'kryptnostic.sharing-client', [
             })
 
           sharingApi.shareObject(sharingRequest)
-          return
       )
 
     revokeObject: (objectId, uuids) ->

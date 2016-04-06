@@ -71,10 +71,23 @@ define 'kryptnostic.requests', [
       else
         return null
 
+  # data must be a Uint8Array
+  xhrPost = (data, url) ->
+    Promise.resolve()
+    .then ->
+      credentials = new CredentialLoader().getCredentials()
+      xhr = new XMLHttpRequest()
+      xhr.open('POST', url, false) # false means synchronous
+      xhr.setRequestHeader(PRINCIPAL_HEADER, credentials.principal)
+      xhr.setRequestHeader(CREDENTIAL_HEADER, credentials.credential)
+      xhr.setRequestHeader('Content-Type', 'application/octet-stream')
+      xhr.send(data)
+
   return {
     PRINCIPAL_HEADER,
     CREDENTIAL_HEADER,
     wrapCredentials,
     getAsUint8FromUrl,
-    getBlockCiphertextFromUrl
+    getBlockCiphertextFromUrl,
+    xhrPost
   }

@@ -2,6 +2,7 @@ define 'kryptnostic.aes-crypto-service', [
   'require'
   'forge'
   'kryptnostic.abstract-crypto-service'
+  'kryptnostic.binary-utils'
   'kryptnostic.block-ciphertext'
   'kryptnostic.cypher'
   'kryptnostic.logger'
@@ -20,10 +21,12 @@ define 'kryptnostic.aes-crypto-service', [
   BLOCK_CIPHERTEXT_SCHEMA = require 'kryptnostic.schema.block-ciphertext'
 
   # utils
-  Logger    = require 'kryptnostic.logger'
-  Validator = require 'kryptnostic.schema.validator'
+  BinaryUtils = require 'kryptnostic.binary-utils'
+  Logger      = require 'kryptnostic.logger'
+  Validator   = require 'kryptnostic.schema.validator'
 
   # constants
+  EMPTY_STRING = ''
   BITS_PER_BYTE = 8
   HMAC_HASH_FUNCTION = 'sha256'
 
@@ -68,7 +71,7 @@ define 'kryptnostic.aes-crypto-service', [
       { iv, salt, ciphertext, tag } = {}
 
       iv = forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
-      salt = forge.random.getBytesSync(0)
+      salt = EMPTY_STRING
 
       if @cypher.mode is Cypher.AES_GCM_128.mode
         cipherOutput = @abstractCryptoService.encrypt(@key, iv, plaintext)
@@ -87,30 +90,10 @@ define 'kryptnostic.aes-crypto-service', [
         tag      : btoa(tag)
       })
 
-    encryptUint8Array: (uint8) ->
+    encryptUint8Array: (plaintextAsUint8) ->
 
-      { iv, salt, ciphertext, tag } = {}
-
-      iv = forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE)
-      salt = forge.random.getBytesSync(0)
-      buffer = forge.util.createBuffer(uint8)
-
-      if @cypher.mode is Cypher.AES_GCM_128.mode
-        cipherOutput = @abstractCryptoService.encryptBuffer(@key, iv, buffer)
-        ciphertext = cipherOutput.ciphertext
-        tag = cipherOutput.tag.getBytes()
-      else if @cypher.mode is Cypher.AES_CTR_128.mode
-        ciphertext = @abstractCryptoService.encryptBuffer(@key, iv, buffer)
-        hmacHash = computeHMAC(@key, iv, salt, ciphertext)
-        if hmacHash?
-          tag = hmacHash
-
-      return new BlockCiphertext({
-        iv       : btoa(iv)
-        salt     : btoa(salt)
-        contents : btoa(ciphertext)
-        tag      : btoa(tag)
-      })
+      plaintext = BinaryUtils.uint8ToString(plaintextAsUint8)
+      return @encrypt(plaintext)
 
     decrypt: (blockCipherText) ->
 
@@ -128,10 +111,11 @@ define 'kryptnostic.aes-crypto-service', [
       if @cypher.mode is Cypher.AES_GCM_128.mode
         return @abstractCryptoService.decrypt(@key, iv, ciphertext, tag)
       else if @cypher.mode is Cypher.AES_CTR_128.mode
+        isValid = true
         if not _.isEmpty(tag)
           isValid = checkDataIntegrity(@key, iv, salt, ciphertext, tag)
-          if not isValid
-            logger.error('BlockCipherText data integrity check failed')
+        if not isValid
+          throw new Error('BlockCipherText data integrity check failed')
         return @abstractCryptoService.decrypt(@key, iv, ciphertext)
 
     decryptToUint8Array: (blockCipherText) ->

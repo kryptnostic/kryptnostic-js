@@ -3,12 +3,8 @@ define [
   'forge',
   'sinon',
   'kryptnostic.aes-crypto-service',
-  'kryptnostic.block-ciphertext',
   'kryptnostic.binary-utils'
-  'kryptnostic.crypto-service-marshaller',
-  'kryptnostic.cypher',
-  'kryptnostic.mock.mock-data-utils',
-  'kryptnostic.rsa-crypto-service'
+  'kryptnostic.cypher'
 ], (require) ->
 
   # libraries
@@ -17,14 +13,10 @@ define [
 
   # kryptnostic
   AesCryptoService = require 'kryptnostic.aes-crypto-service'
-  BlockCiphertext = require 'kryptnostic.block-ciphertext'
-  CryptoServiceMarshaller = require 'kryptnostic.crypto-service-marshaller'
   Cypher = require 'kryptnostic.cypher'
-  RsaCryptoService = require 'kryptnostic.rsa-crypto-service'
 
   # utils
   BinaryUtils = require 'kryptnostic.binary-utils'
-  MockDataUtils = require 'kryptnostic.mock.mock-data-utils'
 
   #
   # constants
@@ -385,19 +377,3 @@ define [
         expect( ->
           aesCryptoService.decrypt(blockCipherText)
         ).toThrow()
-
-    # describe '#encrypt', ->
-    #
-    #   it 'should produce a block ciphertext', ->
-    #     plaintext       = 'convert to block ciphertext'
-    #     blockCiphertext = cryptoService.encrypt(plaintext)
-    #     expect(blockCiphertext.constructor.name).toBe('BlockCiphertext')
-    #     expect(blockCiphertext.iv).toBeDefined()
-    #     expect(blockCiphertext.contents).toBeDefined()
-    #
-    #   it 'should produce an initialization vector in base 64 with a binary length of 16 bytes', ->
-    #     plaintext       = 'convert to block ciphertext'
-    #     blockCiphertext = cryptoService.encrypt(plaintext)
-    #     byteCount       = forge.util.createBuffer(atob(blockCiphertext.iv), 'raw').length()
-    #     expect(byteCount).toBe(16)
-    #

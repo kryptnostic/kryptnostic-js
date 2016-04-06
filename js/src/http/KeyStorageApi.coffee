@@ -22,7 +22,6 @@ define 'kryptnostic.key-storage-api', [
 
   # Kryptnostic
   BlockCiphertext = require 'kryptnostic.block-ciphertext'
-  CredentialLoader = require 'kryptnostic.credential-loader'
 
   # utils
   BinaryUtils = require 'kryptnostic.binary-utils'

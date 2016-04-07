@@ -43,7 +43,8 @@ module.exports = function(config) {
       { pattern: 'test/mocks/MockDataUtils.coffee', included: false },
       { pattern: 'test/auth/CredentialService-test.coffee', included: false },
       { pattern: 'test/indexing/ObjectIndexer-test.coffee', included: false },
-      { pattern: 'test/indexing/ObjectTokenizer-test.coffee', included: false }
+      { pattern: 'test/indexing/ObjectTokenizer-test.coffee', included: false },
+      { pattern: 'test/crypto/AesCryptoService-test.coffee', included: false }
     ],
 
     // list of files to exclude

@@ -23,33 +23,40 @@ define [
   #
 
   EMPTY_STRING = ''
-  AES_BLOCK_SIZE_IN_BYTES = 16
+  GET_RANDOM_BYTES_12 = 12 # 96 / 8
+  GET_RANDOM_BYTES_16 = 16 # 128 / 8
 
   #
   # mock data
   #
 
-  MOCK_AES_KEY_AS_BASE64 = 'oVnwGOr+KQXdHpfnMGzmrA=='
-  MOCK_AES_KEY_BYTES = atob(MOCK_AES_KEY_AS_BASE64)
+  MOCK_AES_CTR_128_KEY_AS_BASE64 = 'WgA4WGdgvmPwdMukW0ot+Q=='
+  MOCK_AES_CTR_128_KEY = atob(MOCK_AES_CTR_128_KEY_AS_BASE64)
 
-  MOCK_AES_IV_AS_BASE64 = 'K1T2Tch7ad/rZCMzzk+5IA=='
-  MOCK_AES_IV_BYTES = atob(MOCK_AES_IV_AS_BASE64)
+  MOCK_AES_GCM_256_KEY_AS_BASE64 = 'h98aH2Pzo4Tf09dKb/izZ2gbGFvJZjVh79vQnjj3HeU='
+  MOCK_AES_GCM_256_KEY = atob(MOCK_AES_GCM_256_KEY_AS_BASE64)
+
+  MOCK_IV_96_AS_BASE64 = '96G3gwlt831ChB/q'
+  MOCK_IV_96 = atob(MOCK_IV_96_AS_BASE64)
+
+  MOCK_IV_128_AS_BASE64 = 'NcPueGQak7uM0VoAcbn+kw=='
+  MOCK_IV_128 = atob(MOCK_IV_128_AS_BASE64)
 
   MOCK_DATA = [
     {
       PLAINTEXT: 'The Unforgiven',
       CIPHERTEXT: {
         AES_CTR_128: {
-          iv: MOCK_AES_IV_AS_BASE64,
+          iv: MOCK_IV_128_AS_BASE64,
           salt: '',
-          contents: 'TqY2Bki3oPgxXugPNgY=',
-          tag: 'AKDk/PrlMnbNaVGEsUxyZsrvqJZSVl5JkY6m7hI2p8U='
+          contents: 'KS3FjmKkaGNOrbhnbsA=',
+          tag: 'DzTZtLRUr8QGdsuwKmAeSacqbF7owDJmcsx7Eq3Oufw='
         },
-        AES_GCM_128: {
-          iv: MOCK_AES_IV_AS_BASE64,
+        AES_GCM_256: {
+          iv: MOCK_IV_96_AS_BASE64,
           salt: '',
-          contents: 'ycjc4qObTVmZz6BbTF8=',
-          tag: 'b1vKlrktzLltiS/BPHwAXg=='
+          contents: '/My9PVhY+sjQvnd6+gU=',
+          tag: 'T3lx5qd1evCP4gq6t492QQ=='
         }
       }
     },
@@ -57,16 +64,16 @@ define [
       PLAINTEXT: 'What Ive felt. What Ive known. Never shined through in what Ive shown.',
       CIPHERTEXT: {
         AES_CTR_128: {
-          iv: MOCK_AES_IV_AS_BASE64,
+          iv: MOCK_IV_128_AS_BASE64,
           salt: '',
-          contents: 'TaYyUj2QsPJjX+QVJ0ZRyx46DCWQ/VdZaecQrjIWy5dpTydNjdmIfYZn2/ieGtqDvGz+4ZPkIKCWX8yJoXq5xh/px50w5g==',
-          tag: 'vLpqLNi/dbxTCUikF2w2waeRxCu/rSjDUQsFApWWKpY='
+          contents: 'Ki3B2heDeGkcrLR9f4CLi6ZCyItariB6JK+RHcA1fo9o5P4UGPNQiKnj+ZST0hYMRECvDxjsTp+2Lo2qvLjiwtD1bfbuXQ==',
+          tag: 'jRKRvFQBdbkiuECJhmbHcYClz8jzhc0heEDxFGRAmhU='
         },
-        AES_GCM_128: {
-          iv: MOCK_AES_IV_AS_BASE64,
+        AES_GCM_256: {
+          iv: MOCK_IV_96_AS_BASE64,
           salt: '',
-          contents: 'ysjYtta8XVPLzqxBXR8nwjVv4hPHdQGKYL5WFzglTziTuRXtjqpN6WpA/90TegjZZP1dEX9OyIAIYFm13NfbvC0MHOZHOw==',
-          tag: 'ZRnG1lkAi85RWH4Wvf7jpg=='
+          contents: '/8y5aS1/6sKCv3tg60UV4JJFpnSV0QRj3wUku7XQ0ngmMda3zu8d6C3X6WO+Yepj89KDjHWe1WwY9kdIhc/tjUGY+2rHuQ==',
+          tag: 'jwOs3T8WcL5u0fNnHh1XfA=='
         }
       }
     }
@@ -124,8 +131,8 @@ define [
 
       aesCryptoService1 = new AesCryptoService(Cypher.AES_CTR_128)
       aesCryptoService2 = new AesCryptoService(Cypher.AES_CTR_128)
-      aesCryptoService3 = new AesCryptoService(Cypher.AES_GCM_128)
-      aesCryptoService4 = new AesCryptoService(Cypher.AES_GCM_128)
+      aesCryptoService3 = new AesCryptoService(Cypher.AES_GCM_256)
+      aesCryptoService4 = new AesCryptoService(Cypher.AES_GCM_256)
 
       expect(aesCryptoService1.key).not.toEqual(aesCryptoService2.key)
       expect(aesCryptoService3.key).not.toEqual(aesCryptoService4.key)
@@ -141,12 +148,12 @@ define [
       aesCryptoService1.decrypt(blockCipherText1)
       expect(aesCryptoService1.cypher).toEqual(Cypher.AES_CTR_128)
 
-      aesCryptoService2 = new AesCryptoService(Cypher.AES_GCM_128)
-      expect(aesCryptoService2.cypher).toEqual(Cypher.AES_GCM_128)
+      aesCryptoService2 = new AesCryptoService(Cypher.AES_GCM_256)
+      expect(aesCryptoService2.cypher).toEqual(Cypher.AES_GCM_256)
       blockCipherText2 = aesCryptoService2.encrypt('plaintext')
-      expect(aesCryptoService2.cypher).toEqual(Cypher.AES_GCM_128)
+      expect(aesCryptoService2.cypher).toEqual(Cypher.AES_GCM_256)
       aesCryptoService2.decrypt(blockCipherText2)
-      expect(aesCryptoService2.cypher).toEqual(Cypher.AES_GCM_128)
+      expect(aesCryptoService2.cypher).toEqual(Cypher.AES_GCM_256)
 
     describe 'AES_CTR_128', ->
 
@@ -162,10 +169,10 @@ define [
         forge.random.getBytesSync.restore()
 
       beforeEach ->
-        aesCryptoService = new AesCryptoService(Cypher.AES_CTR_128, MOCK_AES_KEY_BYTES)
+        aesCryptoService = new AesCryptoService(Cypher.AES_CTR_128, MOCK_AES_CTR_128_KEY)
         forgeGetBytesSyncStub
-          .withArgs(AES_BLOCK_SIZE_IN_BYTES)
-          .returns(MOCK_AES_IV_BYTES)
+          .withArgs(GET_RANDOM_BYTES_16)
+          .returns(MOCK_IV_128)
 
       afterEach ->
         forgeHmacSpy.reset()
@@ -268,7 +275,7 @@ define [
           aesCryptoService.decrypt(blockCipherText)
         ).toThrow()
 
-    describe 'AES_GCM_128', ->
+    describe 'AES_GCM_256', ->
 
       forgeGetBytesSyncStub = null
 
@@ -279,10 +286,10 @@ define [
         forge.random.getBytesSync.restore()
 
       beforeEach ->
-        aesCryptoService = new AesCryptoService(Cypher.AES_GCM_128, MOCK_AES_KEY_BYTES)
+        aesCryptoService = new AesCryptoService(Cypher.AES_GCM_256, MOCK_AES_GCM_256_KEY)
         forgeGetBytesSyncStub
-          .withArgs(AES_BLOCK_SIZE_IN_BYTES)
-          .returns(MOCK_AES_IV_BYTES)
+          .withArgs(GET_RANDOM_BYTES_12)
+          .returns(MOCK_IV_96)
 
       afterEach ->
         forgeGetBytesSyncStub.reset()
@@ -292,7 +299,7 @@ define [
         plaintext = MOCK_DATA[0].PLAINTEXT
         resultBCT = aesCryptoService.encrypt(plaintext)
 
-        expectedBCT = MOCK_DATA[0].CIPHERTEXT.AES_GCM_128
+        expectedBCT = MOCK_DATA[0].CIPHERTEXT.AES_GCM_256
         expect(resultBCT).toEqualBlockCipherText(expectedBCT)
 
       it 'single AES block - encryptUint8Array()', ->
@@ -301,12 +308,12 @@ define [
         plaintextAsUint8 = BinaryUtils.stringToUint8(plaintext)
         resultBCT = aesCryptoService.encryptUint8Array(plaintextAsUint8)
 
-        expectedBCT = MOCK_DATA[0].CIPHERTEXT.AES_GCM_128
+        expectedBCT = MOCK_DATA[0].CIPHERTEXT.AES_GCM_256
         expect(resultBCT).toEqualBlockCipherText(expectedBCT)
 
       it 'single AES block - decrypt()', ->
 
-        blockCipherText = MOCK_DATA[0].CIPHERTEXT.AES_GCM_128
+        blockCipherText = MOCK_DATA[0].CIPHERTEXT.AES_GCM_256
         plaintext = aesCryptoService.decrypt(blockCipherText)
 
         expectedPlaintext = MOCK_DATA[0].PLAINTEXT
@@ -314,7 +321,7 @@ define [
 
       it 'single AES block - decryptToUint8Array()', ->
 
-        blockCipherText = MOCK_DATA[0].CIPHERTEXT.AES_GCM_128
+        blockCipherText = MOCK_DATA[0].CIPHERTEXT.AES_GCM_256
         plaintextAsUint8 = aesCryptoService.decryptToUint8Array(blockCipherText)
 
         expectedPlaintext = MOCK_DATA[0].PLAINTEXT
@@ -326,7 +333,7 @@ define [
         plaintext = MOCK_DATA[1].PLAINTEXT
         resultBCT = aesCryptoService.encrypt(plaintext)
 
-        expectedBCT = MOCK_DATA[1].CIPHERTEXT.AES_GCM_128
+        expectedBCT = MOCK_DATA[1].CIPHERTEXT.AES_GCM_256
         expect(resultBCT).toEqualBlockCipherText(expectedBCT)
 
       it 'multiple AES blocks - encryptUint8Array()', ->
@@ -335,12 +342,12 @@ define [
         plaintextAsUint8 = BinaryUtils.stringToUint8(plaintext)
         resultBCT = aesCryptoService.encryptUint8Array(plaintextAsUint8)
 
-        expectedBCT = MOCK_DATA[1].CIPHERTEXT.AES_GCM_128
+        expectedBCT = MOCK_DATA[1].CIPHERTEXT.AES_GCM_256
         expect(resultBCT).toEqualBlockCipherText(expectedBCT)
 
       it 'multiple AES blocks - decrypt()', ->
 
-        blockCipherText = MOCK_DATA[1].CIPHERTEXT.AES_GCM_128
+        blockCipherText = MOCK_DATA[1].CIPHERTEXT.AES_GCM_256
         plaintext = aesCryptoService.decrypt(blockCipherText)
 
         expectedPlaintext = MOCK_DATA[1].PLAINTEXT
@@ -348,7 +355,7 @@ define [
 
       it 'multiple AES blocks - decryptToUint8Array()', ->
 
-        blockCipherText = MOCK_DATA[1].CIPHERTEXT.AES_GCM_128
+        blockCipherText = MOCK_DATA[1].CIPHERTEXT.AES_GCM_256
         plaintextAsUint8 = aesCryptoService.decryptToUint8Array(blockCipherText)
 
         expectedPlaintext = MOCK_DATA[1].PLAINTEXT
@@ -357,21 +364,21 @@ define [
 
       it 'missing or empty or incorrect tag is not ok', ->
 
-        blockCipherText = _.cloneDeep(MOCK_DATA[0].CIPHERTEXT.AES_GCM_128)
+        blockCipherText = _.cloneDeep(MOCK_DATA[0].CIPHERTEXT.AES_GCM_256)
         delete blockCipherText.tag
 
         expect( ->
           aesCryptoService.decrypt(blockCipherText)
         ).toThrow()
 
-        blockCipherText = _.cloneDeep(MOCK_DATA[0].CIPHERTEXT.AES_GCM_128)
+        blockCipherText = _.cloneDeep(MOCK_DATA[0].CIPHERTEXT.AES_GCM_256)
         blockCipherText.tag = ''
 
         expect( ->
           aesCryptoService.decrypt(blockCipherText)
         ).toThrow()
 
-        blockCipherText = _.cloneDeep(MOCK_DATA[0].CIPHERTEXT.AES_GCM_128)
+        blockCipherText = _.cloneDeep(MOCK_DATA[0].CIPHERTEXT.AES_GCM_256)
         blockCipherText.tag = 'invalid'
 
         expect( ->

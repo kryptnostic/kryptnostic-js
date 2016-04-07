@@ -20,7 +20,6 @@ define 'kryptnostic.aes-crypto-service', [
   # utils
   BinaryUtils = require 'kryptnostic.binary-utils'
   Logger      = require 'kryptnostic.logger'
-  Validator   = require 'kryptnostic.schema.validator'
 
   # constants
   EMPTY_STRING = ''

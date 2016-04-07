@@ -87,7 +87,7 @@ define 'kryptnostic.sharing-client', [
     #
     share = (objectKey, uuids) ->
 
-      { objectSearchPair, addObjectSearchPairPromise, sharingRequest } = {}
+      { objectSearchPair, sharingRequest } = {}
 
       engine = KryptnosticEngineProvider.getEngine()
 

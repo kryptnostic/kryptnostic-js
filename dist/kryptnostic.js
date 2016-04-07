@@ -30105,7 +30105,7 @@ define("function-name", function(){});
         this.cryptoServiceLoader = new CryptoServiceLoader();
       }
 
-      SharingClient.prototype.shareObject = function(objectIdOrKey, uuids, isSearchable) {
+      SharingClient.prototype.shareObject = function(objectIdOrKey, uuids) {
         var objectKeyPromise;
         if (_.isEmpty(uuids) || !validateUuids(uuids)) {
           return Promise.resolve();
@@ -30120,14 +30120,14 @@ define("function-name", function(){});
         }
         return Promise.resolve(objectKeyPromise).then(function(latestVersionedObjectKey) {
           if (latestVersionedObjectKey != null) {
-            share(latestVersionedObjectKey, uuids, isSearchable);
+            return share(latestVersionedObjectKey, uuids);
           }
         });
       };
 
-      share = function(objectKey, uuids, isSearchable) {
-        var addObjectSearchPairPromise, cryptoServiceLoader, cryptoServiceMarshaller, engine, objectSearchPair, sharingApi, sharingRequest, _ref;
-        _ref = {}, objectSearchPair = _ref.objectSearchPair, addObjectSearchPairPromise = _ref.addObjectSearchPairPromise, sharingRequest = _ref.sharingRequest;
+      share = function(objectKey, uuids) {
+        var cryptoServiceLoader, cryptoServiceMarshaller, engine, objectSearchPair, sharingApi, sharingRequest, _ref;
+        _ref = {}, objectSearchPair = _ref.objectSearchPair, sharingRequest = _ref.sharingRequest;
         engine = KryptnosticEngineProvider.getEngine();
         cryptoServiceLoader = new CryptoServiceLoader();
         cryptoServiceMarshaller = new CryptoServiceMarshaller();
@@ -30160,7 +30160,7 @@ define("function-name", function(){});
               users: seals
             });
           }
-          sharingApi.shareObject(sharingRequest);
+          return sharingApi.shareObject(sharingRequest);
         });
       };
 

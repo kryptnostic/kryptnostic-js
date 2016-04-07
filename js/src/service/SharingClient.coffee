@@ -58,9 +58,8 @@ define 'kryptnostic.sharing-client', [
     # @public
     # @param objectIdOrKey - the UUID or latest VersionedObjectKey of the object to share
     # @param uuids - the UUIDs with which to share the object
-    # @param isSearchable - boolean flag for deciding whether or not the object (and its children) should be searchable
     #
-    shareObject: (objectIdOrKey, uuids, isSearchable) =>
+    shareObject: (objectIdOrKey, uuids) =>
 
       if _.isEmpty(uuids) or not validateUuids(uuids)
         return Promise.resolve()
@@ -76,8 +75,7 @@ define 'kryptnostic.sharing-client', [
       return Promise.resolve(objectKeyPromise)
         .then (latestVersionedObjectKey) ->
           if latestVersionedObjectKey?
-            share(latestVersionedObjectKey, uuids, isSearchable)
-          return
+            share(latestVersionedObjectKey, uuids)
 
     #
     # parameters to a private function are assumed valid since it is expected for the calling function to validate
@@ -85,11 +83,11 @@ define 'kryptnostic.sharing-client', [
     # @private
     # @param objectKey - the latest VersionedObjectKey of the object to share
     # @param uuids - the UUIDs with which to share the object
-    # @param isSearchable - boolean flag for deciding whether or not the object (and its children) should be searchable
+    # @return Promise - resolves on successful sharing request
     #
-    share = (objectKey, uuids, isSearchable) ->
+    share = (objectKey, uuids) ->
 
-      { objectSearchPair, addObjectSearchPairPromise, sharingRequest } = {}
+      { objectSearchPair, sharingRequest } = {}
 
       engine = KryptnosticEngineProvider.getEngine()
 
@@ -130,7 +128,6 @@ define 'kryptnostic.sharing-client', [
             })
 
           sharingApi.shareObject(sharingRequest)
-          return
       )
 
     revokeObject: (objectId, uuids) ->

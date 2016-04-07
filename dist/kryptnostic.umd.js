@@ -52583,10 +52583,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    AbstractCryptoService._CLASS_NAME = 'AbstractCryptoService';
 
 	    function AbstractCryptoService(arg) {
+	      var ref;
 	      this.algorithm = arg.algorithm, this.mode = arg.mode;
 	      this.decrypt = bind(this.decrypt, this);
 	      this.encrypt = bind(this.encrypt, this);
-	      if (!(this.algorithm === CryptoAlgorithm.AES && this.mode === 'CTR')) {
+	      if (!(this.algorithm === CryptoAlgorithm.AES && ((ref = this.mode) === 'CTR' || ref === 'GCM'))) {
 	        throw new Error('cypher not implemented');
 	      }
 	    }
@@ -52605,21 +52606,45 @@ return /******/ (function(modules) { // webpackBootstrap
 	      });
 	      cipher.update(buffer);
 	      cipher.finish();
-	      return cipher.output.data;
+	      if (this.mode === 'GCM') {
+	        return {
+	          'ciphertext': cipher.output.data,
+	          'tag': cipher.mode.tag
+	        };
+	      } else {
+	        return cipher.output.data;
+	      }
 	    };
 
-	    AbstractCryptoService.prototype.decrypt = function(key, iv, ciphertext) {
+	    AbstractCryptoService.prototype.decrypt = function(key, iv, ciphertext, tag) {
 	      var buffer;
-	      buffer = this.decryptToBuffer(key, iv, Forge.util.createBuffer(ciphertext));
+	      if (this.mode === 'GCM' && (tag == null)) {
+	        throw new Error('GCM requires an auth tag for decryption');
+	      }
+	      if (this.mode === 'GCM') {
+	        buffer = this.decryptToBuffer(key, iv, Forge.util.createBuffer(ciphertext), tag);
+	      } else {
+	        buffer = this.decryptToBuffer(key, iv, Forge.util.createBuffer(ciphertext));
+	      }
 	      return buffer.data;
 	    };
 
-	    AbstractCryptoService.prototype.decryptToBuffer = function(key, iv, buffer) {
+	    AbstractCryptoService.prototype.decryptToBuffer = function(key, iv, buffer, tag) {
 	      var decipher;
+	      if (this.mode === 'GCM' && (tag == null)) {
+	        throw new Error('GCM requires an auth tag for decryption');
+	      }
 	      decipher = Forge.cipher.createDecipher(this.algorithm + '-' + this.mode, key);
-	      decipher.start({
-	        iv: iv
-	      });
+	      if (this.mode === 'GCM') {
+	        decipher.start({
+	          'iv': iv,
+	          'tag': tag
+	        });
+	      } else {
+	        decipher.start({
+	          iv: iv
+	        });
+	      }
 	      decipher.update(buffer);
 	      decipher.finish();
 	      return decipher.output;
@@ -52682,7 +52707,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return Configuration.get('heraclesUrlV2') + '/directory/users';
 	  };
 	  usersInRealmUrl = function() {
-	    return Configuration.get('servicesUrl') + '/directory';
+	    return Configuration.get('heraclesUrlV2') + '/directory';
 	  };
 	  setFirstLoginUrl = function() {
 	    return Configuration.get('heraclesUrlV2') + '/directory/setlogin';
@@ -52856,7 +52881,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return Promise.resolve(KeyStorageApi.getMasterAesCryptoService()).then(function(_masterAesCryptoService) {
 	        var credentialLoader, cryptoServiceMarshaller, encryptedMasterAesCryptoService, marshalledCryptoService, rsaCryptoService;
 	        if (!_masterAesCryptoService) {
-	          _masterAesCryptoService = new AesCryptoService(Cypher.AES_CTR_128);
+	          _masterAesCryptoService = new AesCryptoService(Cypher.AES_GCM_256);
 	          Cache.store(Cache.CRYPTO_SERVICES, Cache.MASTER_AES_CRYPTO_SERVICE, _masterAesCryptoService);
 	          cryptoServiceMarshaller = new CryptoServiceMarshaller();
 	          marshalledCryptoService = cryptoServiceMarshaller.marshall(_masterAesCryptoService);
@@ -52912,7 +52937,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            log.info('no cryptoService exists for this object. creating one on-the-fly', {
 	              objectId: objectId
 	            });
-	            objectCryptoService = new AesCryptoService(Cypher.AES_CTR_128);
+	            objectCryptoService = new AesCryptoService(Cypher.AES_GCM_256);
 	            _this.setObjectCryptoServiceV2(versionedObjectKey, objectCryptoService, masterAesCryptoService);
 	          } else if (!cryptoServiceBlockCiphertext && !expectMiss) {
 	            log.error('no cryptoservice exists for this object, but a miss was not expected');
@@ -52959,6 +52984,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	      mode: 'CTR',
 	      padding: 'NoPadding',
 	      keySize: 128
+	    },
+	    AES_GCM_256: {
+	      algorithm: 'AES',
+	      mode: 'GCM',
+	      padding: 'NoPadding',
+	      keySize: 256
 	    }
 	  };
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -53012,63 +53043,114 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12), __webpack_require__(47), __webpack_require__(2), __webpack_require__(24)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12), __webpack_require__(47), __webpack_require__(23), __webpack_require__(24), __webpack_require__(52), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  'use strict';
-	  var AbstractCryptoService, AesCryptoService, BITS_PER_BYTE, BLOCK_CIPHERTEXT_SCHEMA, BlockCiphertext, Forge, Logger, Validator, logger;
-	  Forge = __webpack_require__(12);
+	  var AbstractCryptoService, AesCryptoService, BITS_PER_BYTE, BinaryUtils, BlockCiphertext, Cypher, EMPTY_STRING, HMAC_HASH_FUNCTION, IV_128, IV_96, Logger, checkDataIntegrity, computeHMAC, forge, logger;
+	  forge = __webpack_require__(12);
 	  AbstractCryptoService = __webpack_require__(47);
 	  BlockCiphertext = __webpack_require__(24);
-	  BLOCK_CIPHERTEXT_SCHEMA = __webpack_require__(27);
+	  Cypher = __webpack_require__(52);
+	  BinaryUtils = __webpack_require__(23);
 	  Logger = __webpack_require__(2);
-	  Validator = __webpack_require__(25);
+	  EMPTY_STRING = '';
 	  BITS_PER_BYTE = 8;
+	  HMAC_HASH_FUNCTION = 'sha256';
+	  IV_96 = 96;
+	  IV_128 = 128;
 	  logger = Logger.get('AesCryptoService');
+	  computeHMAC = function(key, iv, salt, ciphertext) {
+	    var e, hmac, hmacHash;
+	    try {
+	      hmac = forge.hmac.create();
+	      hmac.start(HMAC_HASH_FUNCTION, key);
+	      hmac.update(iv);
+	      hmac.update(salt);
+	      hmac.update(ciphertext);
+	      hmacHash = hmac.digest().getBytes();
+	      return hmacHash;
+	    } catch (_error) {
+	      e = _error;
+	      logger.error('caught exception while computing HMAC');
+	      return null;
+	    }
+	  };
+	  checkDataIntegrity = function(key, iv, salt, ciphertext, tag) {
+	    var hmacHash;
+	    hmacHash = computeHMAC(key, iv, salt, ciphertext);
+	    return tag === hmacHash;
+	  };
 	  AesCryptoService = (function() {
 	    AesCryptoService.prototype._CLASS_NAME = 'AesCryptoService';
 
 	    AesCryptoService._CLASS_NAME = 'AesCryptoService';
 
-	    AesCryptoService.BLOCK_CIPHER_KEY_SIZE = 16;
-
-	    function AesCryptoService(cypher, key) {
+	    function AesCryptoService(cypher, key1) {
 	      this.cypher = cypher;
-	      this.key = key;
+	      this.key = key1;
+	      if (!this.cypher) {
+	        this.cypher = Cypher.AES_CTR_128;
+	      }
 	      if (!this.key) {
-	        logger.info('no key passed! generating a key.');
-	        this.key = Forge.random.getBytesSync(this.cypher.keySize / BITS_PER_BYTE);
+	        this.key = forge.random.getBytesSync(this.cypher.keySize / BITS_PER_BYTE);
 	      }
 	      this.abstractCryptoService = new AbstractCryptoService(this.cypher);
 	    }
 
 	    AesCryptoService.prototype.encrypt = function(plaintext) {
-	      var ciphertext, iv;
-	      iv = Forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE);
-	      ciphertext = this.abstractCryptoService.encrypt(this.key, iv, plaintext);
+	      var cipherOutput, ciphertext, hmacHash, iv, ref, salt, tag;
+	      ref = {}, iv = ref.iv, salt = ref.salt, ciphertext = ref.ciphertext, tag = ref.tag;
+	      salt = EMPTY_STRING;
+	      if (this.cypher.mode === Cypher.AES_GCM_256.mode) {
+	        iv = forge.random.getBytesSync(IV_96 / BITS_PER_BYTE);
+	      } else {
+	        iv = forge.random.getBytesSync(IV_128 / BITS_PER_BYTE);
+	      }
+	      if (this.cypher.mode === Cypher.AES_GCM_256.mode) {
+	        cipherOutput = this.abstractCryptoService.encrypt(this.key, iv, plaintext);
+	        ciphertext = cipherOutput.ciphertext;
+	        tag = cipherOutput.tag.getBytes();
+	      } else {
+	        ciphertext = this.abstractCryptoService.encrypt(this.key, iv, plaintext);
+	        hmacHash = computeHMAC(this.key, iv, salt, ciphertext);
+	        if (hmacHash != null) {
+	          tag = hmacHash;
+	        }
+	      }
 	      return new BlockCiphertext({
 	        iv: btoa(iv),
-	        salt: btoa(Forge.random.getBytesSync(0)),
-	        contents: btoa(ciphertext)
+	        salt: btoa(salt),
+	        contents: btoa(ciphertext),
+	        tag: btoa(tag)
 	      });
 	    };
 
-	    AesCryptoService.prototype.encryptUint8Array = function(uint8) {
-	      var buffer, ciphertext, iv;
-	      iv = Forge.random.getBytesSync(AesCryptoService.BLOCK_CIPHER_KEY_SIZE);
-	      buffer = Forge.util.createBuffer(uint8);
-	      ciphertext = this.abstractCryptoService.encryptBuffer(this.key, iv, buffer);
-	      return new BlockCiphertext({
-	        iv: btoa(iv),
-	        salt: btoa(Forge.random.getBytesSync(0)),
-	        contents: btoa(ciphertext)
-	      });
+	    AesCryptoService.prototype.encryptUint8Array = function(plaintextAsUint8) {
+	      var plaintext;
+	      plaintext = BinaryUtils.uint8ToString(plaintextAsUint8);
+	      return this.encrypt(plaintext);
 	    };
 
 	    AesCryptoService.prototype.decrypt = function(blockCipherText) {
-	      var contents, iv;
-	      Validator.validate(blockCipherText, BlockCiphertext, BLOCK_CIPHERTEXT_SCHEMA);
+	      var ciphertext, isValid, iv, ref, salt, tag;
+	      ref = {}, iv = ref.iv, salt = ref.salt, ciphertext = ref.ciphertext, tag = ref.tag;
 	      iv = atob(blockCipherText.iv);
-	      contents = atob(blockCipherText.contents);
-	      return this.abstractCryptoService.decrypt(this.key, iv, contents);
+	      salt = atob(blockCipherText.salt);
+	      ciphertext = atob(blockCipherText.contents);
+	      if (!_.isEmpty(blockCipherText.tag)) {
+	        tag = atob(blockCipherText.tag);
+	      }
+	      if (this.cypher.mode === Cypher.AES_GCM_256.mode) {
+	        return this.abstractCryptoService.decrypt(this.key, iv, ciphertext, tag);
+	      } else {
+	        isValid = true;
+	        if (!_.isEmpty(tag)) {
+	          isValid = checkDataIntegrity(this.key, iv, salt, ciphertext, tag);
+	        }
+	        if (!isValid) {
+	          throw new Error('BlockCipherText data integrity check failed');
+	        }
+	        return this.abstractCryptoService.decrypt(this.key, iv, ciphertext);
+	      }
 	    };
 
 	    AesCryptoService.prototype.decryptToUint8Array = function(blockCipherText) {

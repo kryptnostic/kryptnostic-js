@@ -1,3 +1,5 @@
+# coffeelint: disable=cyclomatic_complexity
+
 define 'kryptnostic.abstract-crypto-service', [
   'require'
   'forge'
@@ -16,27 +18,49 @@ define 'kryptnostic.abstract-crypto-service', [
     @_CLASS_NAME: 'AbstractCryptoService'
 
     constructor: ({ @algorithm, @mode }) ->
-      unless @algorithm is CryptoAlgorithm.AES and @mode is 'CTR'
+      unless @algorithm is CryptoAlgorithm.AES and @mode in ['CTR', 'GCM']
         throw new Error 'cypher not implemented'
 
     encrypt: (key, iv, plaintext) =>
+
       ciphertext = @encryptBuffer( key, iv, Forge.util.createBuffer(plaintext) )
       return ciphertext
 
     encryptBuffer: (key, iv, buffer) ->
+
       cipher = Forge.cipher.createCipher(@algorithm + '-' + @mode, key)
       cipher.start({ iv })
       cipher.update(buffer)
       cipher.finish()
-      return cipher.output.data
 
-    decrypt: (key, iv, ciphertext) =>
-      buffer = @decryptToBuffer(key, iv, Forge.util.createBuffer(ciphertext))
+      if @mode is 'GCM'
+        return { 'ciphertext': cipher.output.data, 'tag': cipher.mode.tag }
+      else
+        return cipher.output.data
+
+    decrypt: (key, iv, ciphertext, tag) =>
+
+      if @mode is 'GCM' && !tag?
+        throw new Error 'GCM requires an auth tag for decryption'
+
+      if @mode is 'GCM'
+        buffer = @decryptToBuffer(key, iv, Forge.util.createBuffer(ciphertext), tag)
+      else
+        buffer = @decryptToBuffer(key, iv, Forge.util.createBuffer(ciphertext))
+
       return buffer.data
 
-    decryptToBuffer: (key, iv, buffer) ->
+    decryptToBuffer: (key, iv, buffer, tag) ->
+
+      if @mode is 'GCM' && !tag?
+        throw new Error 'GCM requires an auth tag for decryption'
+
       decipher = Forge.cipher.createDecipher(@algorithm + '-' + @mode, key)
-      decipher.start({ iv })
+      if @mode is 'GCM'
+        decipher.start({ 'iv': iv, 'tag': tag })
+      else
+        decipher.start({ iv })
+
       decipher.update(buffer)
       decipher.finish()
       return decipher.output

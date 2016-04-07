@@ -9,7 +9,7 @@ define 'kryptnostic.create-object-request', [
   SCHEMA       = require 'kryptnostic.schema.create-object-request'
   validator    = require 'kryptnostic.schema.validator'
 
-  DEFAULT_OPTS = { cypher: 'AES_CTR_128' }
+  DEFAULT_OPTS = { cypher: 'AES_GCM_128' }
 
   class CreateObjectRequest
 

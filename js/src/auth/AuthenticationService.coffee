@@ -106,6 +106,9 @@ define 'kryptnostic.authentication-service', [
 
     @destroy: ->
       credentialProvider = CredentialProviderLoader.load(Config.get('credentialProvider'))
-      return credentialProvider.destroy()
+      credentialProvider.destroy()
+      KryptnosticEngineProvider.destroy()
+      KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.OBJ_INDEXING_WORKER)
+      return
 
   return AuthenticationService

@@ -27347,7 +27347,9 @@ define("function-name", function(){});
       };
 
       KryptnosticEngineProvider.destroy = function() {
-        _engine.krypto["delete"]();
+        if (_engine && _engine.krypto && _engine.krypto["delete"]) {
+          _engine.krypto["delete"]();
+        }
         _engine = null;
       };
 

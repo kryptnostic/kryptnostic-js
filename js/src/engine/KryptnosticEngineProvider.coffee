@@ -26,7 +26,7 @@ define 'kryptnostic.kryptnostic-engine-provider', [
       throw new Error('KryptnosticEngine has not been initialized')
 
     @destroy: ->
-      if _engine.krypto and _engine.krypto.delete
+      if _engine and _engine.krypto and _engine.krypto.delete
         _engine.krypto.delete()
       _engine = null
       return

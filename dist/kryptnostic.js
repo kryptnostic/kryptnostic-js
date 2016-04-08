@@ -25452,7 +25452,9 @@ define("function-name", function(){});
       AuthenticationService.destroy = function() {
         var credentialProvider;
         credentialProvider = CredentialProviderLoader.load(Config.get('credentialProvider'));
-        return credentialProvider.destroy();
+        credentialProvider.destroy();
+        KryptnosticEngineProvider.destroy();
+        KryptnosticWorkersApi.terminateWebWorker(KryptnosticWorkersApi.OBJ_INDEXING_WORKER);
       };
 
       return AuthenticationService;
@@ -27342,6 +27344,11 @@ define("function-name", function(){});
           return _engine;
         }
         throw new Error('KryptnosticEngine has not been initialized');
+      };
+
+      KryptnosticEngineProvider.destroy = function() {
+        _engine.krypto["delete"]();
+        _engine = null;
       };
 
       return KryptnosticEngineProvider;

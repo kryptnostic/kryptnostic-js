@@ -251,7 +251,7 @@ define 'kryptnostic.indexing.object-indexing-service', [
       currentIndex = data.length
       while (currentIndex)
         webCrypto = window.crypto or window.msCrypto
-        randomInt = webCrypto.getRandomValues(new Uint32Array(1))[0];
+        randomInt = webCrypto.getRandomValues(new Uint32Array(1))[0]
         randomFloat = randomInt / Math.pow(2, 32)
         randomIndex = Math.floor(randomFloat * currentIndex)
         currentIndex--

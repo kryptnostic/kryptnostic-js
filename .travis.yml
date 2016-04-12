@@ -5,9 +5,14 @@ node_js:
 addons:
   firefox: latest
 before_script:
+  - npm set progress=false
   - npm install -g bower
   - bower install
 before_install:
   - firefox --version 2>/dev/null
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
+cache:
+  directories:
+    - bower_components
+    - node_modules

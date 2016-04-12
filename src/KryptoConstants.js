@@ -1,0 +1,14 @@
+/*
+ * @flow
+ */
+
+export const FHE_PRIVATE_KEY_SIZE = 329760;
+export const FHE_SEARCH_PRIVATE_KEY_SIZE = 4096;
+export const FHE_HASH_FUNCTION_SIZE = 1060896;
+
+export const OBJECT_INDEX_PAIR_SIZE = 2064;
+export const OBJECT_SEARCH_PAIR_SIZE = 2080;
+export const OBJECT_SHARE_PAIR_SIZE = 2064;
+
+export const ENCRYPTED_SEARCH_TOKEN_SIZE = 32;
+export const METADATA_ADDRESS_SIZE = 16;

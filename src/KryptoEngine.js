@@ -21,6 +21,12 @@
  * https://github.com/webpack/exports-loader
  */
 import { Krypto } from 'exports?Krypto=Module.KryptnosticClient!krypto-js';
+import * as KryptoUtils from './KryptoUtils';
+
+/*
+ * the Krypto singleton instance, guarded by the KryptoEngine singleton instance
+ */
+let kryptoInstance :Krypto = null;
 
 /*
  * the KryptoEngine singleton instance
@@ -32,32 +38,77 @@ let kryptoEngineInstance = null;
  */
 class KryptoEngine {
 
-  krypto :Krypto;
-
-  constructor(krypto :Krypto) {
+  constructor(fhePrivateKey :?Uint8Array = null, fheSearchPrivateKey :?Uint8Array = null) {
 
     if (kryptoEngineInstance !== null) {
       throw new Error('KryptoEngine has already been initialized');
     }
 
-    this.krypto = krypto;
+    if (KryptoUtils.isValidFHEPrivateKey(fhePrivateKey)
+        && KryptoUtils.isValidFHESearchPrivateKey(fheSearchPrivateKey)) {
+      kryptoInstance = new Krypto(fhePrivateKey, fheSearchPrivateKey);
+    }
+    else {
+      kryptoInstance = new Krypto();
+    }
   }
 
   getFHEPrivateKey() :Uint8Array {
 
-    return new Uint8Array(this.krypto.getPrivateKey());
+    return new Uint8Array(kryptoInstance.getPrivateKey());
   }
 
   getFHESearchPrivateKey() :Uint8Array {
 
-    return new Uint8Array(this.krypto.getSearchPrivateKey());
+    return new Uint8Array(kryptoInstance.getSearchPrivateKey());
   }
 
   getFHEHashFunction() :Uint8Array {
 
-    return new Uint8Array(this.krypto.calculateClientHashFunction());
+    return new Uint8Array(kryptoInstance.calculateClientHashFunction());
   }
 
+  generateObjectIndexPair() :Uint8Array {
+
+    return new Uint8Array(kryptoInstance.generateObjectIndexPair());
+  }
+
+  generateObjectSearchPair() :Uint8Array {
+
+    const objIndexPair = this.generateObjectIndexPair();
+    const objSearchPair = this.calculateObjectSearchPairFromObjectIndexPair(objIndexPair);
+    return objSearchPair;
+  }
+
+  calculateObjectIndexPairFromObjectSearchPair(objSearchPair :Uint8Array) :Uint8Array {
+
+    return new Uint8Array(kryptoInstance.calculateObjectIndexPairFromObjectSearchPair(objSearchPair));
+  }
+
+  calculateObjectSearchPairFromObjectIndexPair(objIndexPair :Uint8Array) :Uint8Array {
+
+    return new Uint8Array(kryptoInstance.calculateObjectSearchPairFromObjectIndexPair(objIndexPair));
+  }
+
+  calculateObjectSearchPairFromObjectSharePair(objSharePair :Uint8Array) :Uint8Array {
+
+    return new Uint8Array(kryptoInstance.calculateObjectSearchPairFromObjectSharePair(objSharePair));
+  }
+
+  calculateObjectSharePairFromObjectSearchPair(objSearchPair :Uint8Array) :Uint8Array {
+
+    return new Uint8Array(kryptoInstance.calculateObjectSharePairFromObjectSearchPair(objSearchPair));
+  }
+
+  calculateEncryptedSearchToken(token :Uint8Array) :Uint8Array {
+
+    return new Uint8Array(kryptoInstance.calculateEncryptedSearchToken(token));
+  }
+
+  calculateMetadataAddress(objIndexPair :Uint8Array, token :Uint8Array) :Uint8Array {
+
+    return new Uint8Array(kryptoInstance.calculateMetadataAddress(objIndexPair, token));
+  }
 }
 
 function init(fhePrivateKey :?Uint8Array = null, fheSearchPrivateKey :?Uint8Array = null) {
@@ -66,15 +117,7 @@ function init(fhePrivateKey :?Uint8Array = null, fheSearchPrivateKey :?Uint8Arra
     throw new Error('KryptoEngine has already been initialized');
   }
 
-  let krypto = null;
-  if (fhePrivateKey && fheSearchPrivateKey) {
-    krypto = new Krypto(fhePrivateKey, fheSearchPrivateKey);
-  }
-  else {
-    krypto = new Krypto();
-  }
-
-  kryptoEngineInstance = new KryptoEngine(krypto);
+  kryptoEngineInstance = new KryptoEngine(fhePrivateKey, fheSearchPrivateKey);
 }
 
 function getEngine() :KryptoEngine {

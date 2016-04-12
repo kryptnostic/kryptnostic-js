@@ -8,9 +8,15 @@ const TEST_ENV = 'TEST';
 const NODE_ENV = process.env.NODE_ENV;
 
 const FILES = {
-  ALL_TESTS: './**/*\.test\.js',
-  BUNDLED_TESTS: './tests.bundle.js',
-  KRYPTO_ENGINE_TESTS: './**/KryptoEngine*\.test\.js'
+
+  // match all test files: *.test.js, *.isotest.js
+  ALL_TESTS: './**/*\.?(iso)test\.js',
+
+  // match all test files that will run in a single bundle: webpack.testing.context.js
+  BUNDLED_TESTS: './webpack.testing.context.js',
+
+  // match all test files that must run in an individual (dedicated) bundle (KryptoEngine tests): *.isotest.js
+  ISOLATED_TESTS: './**/*\.isotest\.js'
 };
 
 const BABEL_LOADER = {
@@ -39,7 +45,7 @@ module.exports = function kjsKarmaConfig(config) {
   const testFiles = [];
   if (NODE_ENV === TEST_ENV) {
     testFiles.push(
-      { pattern: FILES.KRYPTO_ENGINE_TESTS, included: true, watched: false },
+      { pattern: FILES.ISOLATED_TESTS, included: true, watched: false },
       { pattern: FILES.BUNDLED_TESTS, included: true, watched: false }
     );
   }
@@ -51,7 +57,7 @@ module.exports = function kjsKarmaConfig(config) {
 
   const filePreProcessors = {};
   if (NODE_ENV === TEST_ENV) {
-    filePreProcessors[FILES.KRYPTO_ENGINE_TESTS] = ['webpack'];
+    filePreProcessors[FILES.ISOLATED_TESTS] = ['webpack'];
     filePreProcessors[FILES.BUNDLED_TESTS] = ['webpack'];
   }
   else {

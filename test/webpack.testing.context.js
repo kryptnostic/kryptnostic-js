@@ -6,6 +6,7 @@
  * http://webpack.github.io/docs/context.html#require-context
  */
 
-// match all "*.test.js" files, except "KryptoEngine*.test.js" files
-const testContext = require.context('.', true, /\/(?!KryptoEngine).*\.test\.js$/);
+// match all "*.test.js" files
+// require.context(directory, useSubdirectories = false, regExp = /^\.\//)
+const testContext = require.context('.', true, /\.test\.js$/);
 testContext.keys().forEach(testContext);

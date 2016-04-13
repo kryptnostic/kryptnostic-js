@@ -45,7 +45,14 @@ define 'kryptnostic.aes-crypto-service', [
 
   checkDataIntegrity = (key, iv, salt, ciphertext, tag) ->
     hmacHash = computeHMAC(key, iv, salt, ciphertext)
-    return tag == hmacHash
+    if tag.length != hmacHash.length
+      return false
+    index = 0
+    xorSum = 0
+    while index < tag.length
+      xorSum |= tag.charCodeAt(index) ^ hmacHash.charCodeAt(index)
+      index++
+    return xorSum == 0
 
   class AesCryptoService
 

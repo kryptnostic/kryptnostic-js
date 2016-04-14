@@ -1,20 +1,18 @@
 define 'kryptnostic.storage-request', [
   'require'
   'lodash'
+  'kryptnostic.cypher'
   'kryptnostic.schema.storage-request'
   'kryptnostic.schema.validator'
 ], (require) ->
 
   _            = require 'lodash'
+  Cypher       = require 'kryptnostic.cypher'
   SCHEMA       = require 'kryptnostic.schema.storage-request'
   validator    = require 'kryptnostic.schema.validator'
 
-  DEFAULT_OPTS = { type: 'object', version: 0, cypher: 'AES_GCM_128' }
+  DEFAULT_OPTS = { type: 'object', version: 0, cypher: Cypher.AES_GCM_256.toString() }
 
-  #
-  # JSON request to store an object in Kryptnostic services.
-  # Author: rbuckheit
-  #
   class StorageRequest
 
     constructor: (opts) ->

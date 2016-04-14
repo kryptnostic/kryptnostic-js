@@ -97,7 +97,7 @@ define 'kryptnostic.sharing-client', [
 
       Promise.join(
         sharingApi.getObjectSearchPair(objectKey),
-        cryptoServiceLoader.getObjectCryptoServiceV2(objectKey),
+        cryptoServiceLoader.getObjectCryptoService(objectKey),
         KeyStorageApi.getRSAPublicKeys(uuids),
         (objectSearchPair, objectCryptoService, uuidsToRsaPublicKeys) ->
 
@@ -172,7 +172,7 @@ define 'kryptnostic.sharing-client', [
 
               Promise.all([
                 @sharingApi.addObjectSearchPair(objectKey, objectSearchPair),
-                @cryptoServiceLoader.setObjectCryptoServiceV2(objectKey, objectCryptoService, masterAesCryptoService)
+                @cryptoServiceLoader.setObjectCryptoService(objectKey, objectCryptoService, masterAesCryptoService)
               ])
               .then =>
                 @sharingApi.removeIncomingShare(objectKey)

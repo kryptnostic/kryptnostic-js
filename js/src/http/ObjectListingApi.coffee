@@ -21,7 +21,7 @@ define 'kryptnostic.object-listing-api', [
 
   logger = Logger.get('ObjectListingApi')
 
-  objectListingApi    = -> Config.get('servicesUrlV2') + '/listing'
+  objectListingApi    = -> Config.get('servicesUrl') + '/listing'
   objectsUrl          = -> objectListingApi() + '/objects'
   versionedObjectsUrl = -> objectListingApi() + '/versioned/objects'
 

@@ -36,7 +36,7 @@ define 'kryptnostic.object-api', [
 
   logger = Logger.get('ObjectApi')
 
-  objectUrl         = -> Config.get('servicesUrlV2') + '/object'
+  objectUrl         = -> Config.get('servicesUrl') + '/object'
   objectsUrl        = -> objectUrl() + '/bulk'
   objectIdUrl       = (objectId) -> objectUrl() + '/id/' + objectId
   latestObjectIdUrl = (objectId) -> objectUrl() + '/latest/id/' + objectId

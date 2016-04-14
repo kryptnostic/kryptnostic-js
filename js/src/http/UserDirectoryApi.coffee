@@ -18,11 +18,11 @@ define 'kryptnostic.user-directory-api', [
   Requests      = require 'kryptnostic.requests'
   Validators    = require 'kryptnostic.validators'
 
-  getUserUrl   = -> Configuration.get('heraclesUrlV2') + '/directory/user'
-  getUsersUrl  = -> Configuration.get('heraclesUrlV2') + '/directory/users'
-  usersInRealmUrl = -> Configuration.get('heraclesUrlV2') + '/directory'
-  setFirstLoginUrl = -> Configuration.get('heraclesUrlV2') + '/directory/setlogin'
-  getUserIdFromEmail = (email) -> Configuration.get('heraclesUrlV2') + '/directory/validate/sharing/email/' + email
+  getUserUrl   = -> Configuration.get('heraclesUrl') + '/directory/user'
+  getUsersUrl  = -> Configuration.get('heraclesUrl') + '/directory/users'
+  usersInRealmUrl = -> Configuration.get('heraclesUrl') + '/directory'
+  setFirstLoginUrl = -> Configuration.get('heraclesUrl') + '/directory/setlogin'
+  getUserIdFromEmail = (email) -> Configuration.get('heraclesUrl') + '/directory/validate/sharing/email/' + email
 
   log = Logger.get('UserDirectoryApi')
 

@@ -43,7 +43,7 @@ define 'kryptnostic.key-storage-api', [
 
   logger = Logger.get('KeyStorageApi')
 
-  keyStorageApi = -> Config.get('servicesUrlV2') + '/keys'
+  keyStorageApi = -> Config.get('servicesUrl') + '/keys'
 
   #
   # FHE endpoints

@@ -110,7 +110,7 @@ define 'kryptnostic.indexing.object-indexing-service', [
       # 3. reserve a range of integers for each inverted index segment
       Promise.props({
         objectSearchPair: @sharingApi.getObjectSearchPair(parentObjectKey),
-        objectCryptoService: @cryptoServiceLoader.getObjectCryptoServiceV2(parentObjectKey),
+        objectCryptoService: @cryptoServiceLoader.getObjectCryptoService(parentObjectKey),
         segmentRangeStartIndex: SearchApi.reserveSegmentRange(parentObjectKey, invertedIndexSegments.length)
       })
       .then ({ objectSearchPair, objectCryptoService, segmentRangeStartIndex }) =>

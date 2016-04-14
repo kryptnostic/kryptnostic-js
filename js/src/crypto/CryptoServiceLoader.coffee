@@ -79,7 +79,7 @@ define 'kryptnostic.crypto-service-loader', [
         Cache.store(Cache.CRYPTO_SERVICES, Cache.MASTER_AES_CRYPTO_SERVICE, masterAesCryptoService)
         return masterAesCryptoService
 
-    getObjectCryptoServiceV2: (versionedObjectKey, options) ->
+    getObjectCryptoService: (versionedObjectKey, options) ->
       options        = _.defaults({}, options, DEFAULT_OPTS)
       { expectMiss } = options
 
@@ -97,7 +97,7 @@ define 'kryptnostic.crypto-service-loader', [
         if !cryptoServiceBlockCiphertext && expectMiss
           log.info('no cryptoService exists for this object. creating one on-the-fly', { objectId })
           objectCryptoService = new AesCryptoService(Cypher.AES_GCM_256)
-          @setObjectCryptoServiceV2(versionedObjectKey, objectCryptoService, masterAesCryptoService)
+          @setObjectCryptoService(versionedObjectKey, objectCryptoService, masterAesCryptoService)
         else if !cryptoServiceBlockCiphertext && !expectMiss
           log.error('no cryptoservice exists for this object, but a miss was not expected')
           return null
@@ -107,7 +107,7 @@ define 'kryptnostic.crypto-service-loader', [
           @cache[objectId] = objectCryptoService
         return objectCryptoService
 
-    setObjectCryptoServiceV2: (versionedObjectKey, objectCryptoService, masterAesCryptoService) ->
+    setObjectCryptoService: (versionedObjectKey, objectCryptoService, masterAesCryptoService) ->
       unless objectCryptoService._CLASS_NAME is AesCryptoService._CLASS_NAME
         throw new Error('support is only implemented for AesCryptoService')
 

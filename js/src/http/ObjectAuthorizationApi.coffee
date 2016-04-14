@@ -27,7 +27,7 @@ define 'kryptnostic.object-authorization-api', [
     validateUuid
   } = Validators
 
-  accessUrl  = -> Config.get('servicesUrlV2') + '/access'
+  accessUrl  = -> Config.get('servicesUrl') + '/access'
   ownersUrl  = (objectId) -> accessUrl() + '/owners/' + objectId
   readersUrl = (objectId) -> accessUrl() + '/readers/' + objectId
   writersUrl = (objectId) -> accessUrl() + '/writers/' + objectId

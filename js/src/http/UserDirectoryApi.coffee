@@ -22,6 +22,7 @@ define 'kryptnostic.user-directory-api', [
   getUsersUrl  = -> Configuration.get('heraclesUrlV2') + '/directory/users'
   usersInRealmUrl = -> Configuration.get('heraclesUrlV2') + '/directory'
   setFirstLoginUrl = -> Configuration.get('heraclesUrlV2') + '/directory/setlogin'
+  getUserIdFromEmail = (email) -> Configuration.get('heraclesUrlV2') + '/directory/validate/sharing/email/' + email
 
   log = Logger.get('UserDirectoryApi')
 
@@ -49,6 +50,39 @@ define 'kryptnostic.user-directory-api', [
       @getUser( uuid )
       .then (user) ->
         return user.name
+
+    getUserIdFromEmail: (email) ->
+
+      if _.isEmpty(email)
+        return Promise.resolve(null)
+
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method : 'GET',
+            url    : getUserIdFromEmail(email)
+          })
+        )
+      )
+      .then (axiosResponse) ->
+        if axiosResponse and axiosResponse.data
+          # axiosResponse.data == java.util.UUID
+          return axiosResponse.data
+        else
+          return null
+      .catch (axiosError) ->
+        kjsError = {
+          status: axiosError.status
+        }
+        if axiosError.status == 404
+          kjsError.message = 'USER_DOES_NOT_EXIST'
+          return Promise.reject(kjsError)
+        else if axiosError.status == 403
+          kjsError.message = 'SHARING_WITH_USER_BLOCKED'
+          return Promise.reject(kjsError)
+        else
+          kjsError.message = JSON.stringify(axiosError.data)
+          return Promise.reject(kjsError)
 
     resolve: ({ email }) ->
       Promise.resolve()

@@ -27,6 +27,7 @@ define 'kryptnostic.object-listing-api', [
 
   typeNameUrl = (name) -> objectsUrl() + '/typename/' + name
   objectIdsByTypeUrl = (userId, typeId) -> objectsUrl() + '/' + userId + '/type/' + typeId
+  objectKeysByTypeUrl = (userId, typeId) -> versionedObjectsUrl() + '/' + userId + '/type/' + typeId
 
   class ObjectListingApi
 
@@ -40,8 +41,24 @@ define 'kryptnostic.object-listing-api', [
         )
       )
       .then (axiosResponse) ->
-        if axiosResponse? and axiosResponse.data?
+        if axiosResponse and axiosResponse.data
           # axiosResponse.data == Set<java.util.UUID>
+          return axiosResponse.data
+        else
+          return null
+
+    getObjectKeysByTypeId: (userId, typeId) ->
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method : 'GET'
+            url    : objectKeysByTypeUrl(userId, typeId)
+          })
+        )
+      )
+      .then (axiosResponse) ->
+        if axiosResponse and axiosResponse.data
+          # axiosResponse.data == Set<com.kryptnostic.v2.storage.models.VersionedObjectKey>
           return axiosResponse.data
         else
           return null
@@ -56,7 +73,7 @@ define 'kryptnostic.object-listing-api', [
         )
       )
       .then (axiosResponse) ->
-        if axiosResponse? and axiosResponse.data?
+        if axiosResponse and axiosResponse.data
           # axiosResponse.data == java.util.UUID
           return axiosResponse.data
         else

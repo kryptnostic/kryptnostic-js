@@ -43,43 +43,57 @@ define 'kryptnostic.key-storage-api', [
 
   logger = Logger.get('KeyStorageApi')
 
-  keyStorageApi = -> Config.get('servicesUrlV2') + '/keys'
+  keyStorageApi = -> Config.get('servicesUrl') + '/keys'
+  keyStorageApiCdn = -> Config.get('servicesCdnUrl') + '/keys'
 
   #
   # FHE endpoints
   #
 
-  fheKeysUrl             = -> keyStorageApi() + '/fhe'
-  fheHashUrl             = -> fheKeysUrl() + '/hash'
-  fhePrivateKeyUrl       = -> fheKeysUrl() + '/private'
+  fheKeysUrl = -> keyStorageApi() + '/fhe'
+  fheKeysCdnUrl = -> keyStorageApiCdn() + '/fhe'
+
+  fheHashUrl = -> fheKeysUrl() + '/hash'
+  fheHashCdnUrl = -> fheKeysCdnUrl() + '/hash'
+
+  fhePrivateKeyUrl = -> fheKeysUrl() + '/private'
+  fhePrivateKeyCdnUrl = -> fheKeysCdnUrl() + '/private'
+
   fheSearchPrivateKeyUrl = -> fheKeysUrl() + '/searchprivate'
+  fheSearchPrivateKeyCdnUrl = -> fheKeysCdnUrl() + '/searchprivate'
 
   #
   # salt endpoints
   #
 
   saltUrl = (userId) -> keyStorageApi() + '/salt/' + userId
+  saltCdnUrl = (userId) -> keyStorageApiCdn() + '/salt/' + userId
 
   #
   # RSA endpoints
   #
 
-  rsaKeysUrl         = -> keyStorageApi() + '/rsa'
-  rsaPrivateKeyUrl   = -> rsaKeysUrl() + '/private'
+  rsaKeysUrl = -> keyStorageApi() + '/rsa'
+  rsaKeysCdnUrl = -> keyStorageApiCdn() + '/rsa'
+
+  rsaPrivateKeyUrl = -> rsaKeysUrl() + '/private'
   setRSAPublicKeyUrl = -> rsaKeysUrl() + '/public'
   getRSAPublicKeyUrl = (userId) -> rsaKeysUrl() + '/public/' + userId
+  getRSAPublicKeyCdnUrl = (userId) -> rsaKeysCdnUrl() + '/public/' + userId
   getRSAPublicKeyBulkUrl = -> rsaKeysUrl() + '/public/bulk'
 
   #
   # crypto service endpoints
   #
 
-  # cryptoServiceUrl  = (objectId, objectVersion) ->
-  #   keyStorageApi() + '/cryptoservice/id/' + objectId + '/' + objectVersion
-
   aesUrl = -> keyStorageApi() + '/aes'
+  aesCdnUrl = -> keyStorageApiCdn() + '/aes'
+
   aesCryptoServiceUrl = (objectId, objectVersion) ->
     aesUrl() + '/cryptoservice/id/' + objectId + '/' + objectVersion
+
+  aesCryptoServiceCdnUrl = (objectId, objectVersion) ->
+    aesCdnUrl() + '/cryptoservice/id/' + objectId + '/' + objectVersion
 
   #
   # helper functions
@@ -96,7 +110,7 @@ define 'kryptnostic.key-storage-api', [
 
     @getFHEPrivateKey: ->
       Requests.getBlockCiphertextFromUrl(
-        fhePrivateKeyUrl()
+        fhePrivateKeyCdnUrl()
       )
 
     @setFHEPrivateKey: (fhePrivateKey) ->
@@ -117,7 +131,7 @@ define 'kryptnostic.key-storage-api', [
 
     @getFHESearchPrivateKey: ->
       Requests.getBlockCiphertextFromUrl(
-        fheSearchPrivateKeyUrl()
+        fheSearchPrivateKeyCdnUrl()
       )
 
     @setFHESearchPrivateKey: (fheSearchPrivateKey) ->
@@ -267,7 +281,7 @@ define 'kryptnostic.key-storage-api', [
         return Promise.resolve(null)
 
       Requests.getAsUint8FromUrl(
-        getRSAPublicKeyUrl(userId)
+        getRSAPublicKeyCdnUrl(userId)
       )
 
     @setRSAPublicKey: (publicKey) ->
@@ -304,7 +318,7 @@ define 'kryptnostic.key-storage-api', [
         axios(
           Requests.wrapCredentials({
             method : 'GET',
-            url    : aesUrl()
+            url    : aesCdnUrl()
           })
         )
       )
@@ -356,7 +370,7 @@ define 'kryptnostic.key-storage-api', [
         return Promise.resolve(cachedObjectCryptoService)
 
       Requests.getBlockCiphertextFromUrl(
-        aesCryptoServiceUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
+        aesCryptoServiceCdnUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
       )
       .then (objectCryptoServiceBlockCiphertext) ->
         if objectCryptoServiceBlockCiphertext

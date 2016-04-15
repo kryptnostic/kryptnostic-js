@@ -63,9 +63,9 @@ define 'kryptnostic.storage-client', [
 
         cryptoServicePromise = null
         if parentObjectKey?
-          cryptoServicePromise = @cryptoServiceLoader.getObjectCryptoServiceV2(parentObjectKey)
+          cryptoServicePromise = @cryptoServiceLoader.getObjectCryptoService(parentObjectKey)
         else
-          cryptoServicePromise = @cryptoServiceLoader.getObjectCryptoServiceV2(objectKey)
+          cryptoServicePromise = @cryptoServiceLoader.getObjectCryptoService(objectKey)
 
         Promise.props({
           blockCiphertext : @objectApi.getObjectAsBlockCiphertext(objectKey),
@@ -101,7 +101,7 @@ define 'kryptnostic.storage-client', [
         promises = []
         _.forEach(objectKeys, (objectKey) =>
           promise = Promise.join(
-            @cryptoServiceLoader.getObjectCryptoServiceV2(objectKey),
+            @cryptoServiceLoader.getObjectCryptoService(objectKey),
             @objectApi.getObjectAsBlockCiphertext(objectKey)
           )
           .then (objectMaterial) ->
@@ -147,7 +147,7 @@ define 'kryptnostic.storage-client', [
       .then (parentObjectKey) =>
 
         Promise.props({
-          objectCryptoService    : @cryptoServiceLoader.getObjectCryptoServiceV2(parentObjectKey)
+          objectCryptoService    : @cryptoServiceLoader.getObjectCryptoService(parentObjectKey)
           objectBlockCiphertexts : @objectApi.getObjects(objectIds)
         })
         .then ({ objectBlockCiphertexts, objectCryptoService }) ->
@@ -171,7 +171,7 @@ define 'kryptnostic.storage-client', [
       )
       .then (parentObjectKey) =>
         Promise.props({
-          objectCryptoService : @cryptoServiceLoader.getObjectCryptoServiceV2(parentObjectKey)
+          objectCryptoService : @cryptoServiceLoader.getObjectCryptoService(parentObjectKey)
           objectMetadataTrees : @objectApi.getObjectsByTypeAndLoadLevel(
             objectIds,
             typeLoadLevels,
@@ -226,7 +226,7 @@ define 'kryptnostic.storage-client', [
           .then (objectKeyForNewlyCreatedObject) =>
             parentObjectKey = if parentObjectKey? then parentObjectKey else objectKeyForNewlyCreatedObject
             Promise.resolve(
-              @cryptoServiceLoader.getObjectCryptoServiceV2(
+              @cryptoServiceLoader.getObjectCryptoService(
                 parentObjectKey,
                 { expectMiss : true }
               )
@@ -279,7 +279,7 @@ define 'kryptnostic.storage-client', [
       )
       .then (latestObjectKey) =>
         Promise.resolve(
-          @cryptoServiceLoader.getObjectCryptoServiceV2(versionedObjectKey)
+          @cryptoServiceLoader.getObjectCryptoService(versionedObjectKey)
         )
         .then (objectCryptoService) =>
           # ToDo: for now, we encrypt the entire object, but we'll need to support encrypting an object in chunks

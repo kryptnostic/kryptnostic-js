@@ -22,7 +22,7 @@ define 'kryptnostic.search-api', [
 
   { validateVersionedObjectKey } = Validators
 
-  searchUrl       = -> Configuration.get('servicesUrlV2') + '/search'
+  searchUrl       = -> Configuration.get('servicesUrl') + '/search'
   segmentRangeUrl = (objectId, count) -> searchUrl() + '/' + objectId + '/' + count
 
   logger = Logger.get('SearchApi')

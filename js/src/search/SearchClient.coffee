@@ -73,7 +73,7 @@ define 'kryptnostic.search-client', [
 
             objectIdSet.push(objectId)
             invertedIndexSegmentsPromise = @objectApi.getObjects(invertedIndexSegmentIds)
-            objectCryptoServicePromise = @cryptoServiceLoader.getObjectCryptoServiceV2(
+            objectCryptoServicePromise = @cryptoServiceLoader.getObjectCryptoService(
               {
                 objectId: objectId,
                 objectVersion: 0 # !!! HACK !!! we're hardcoding version 0 for now

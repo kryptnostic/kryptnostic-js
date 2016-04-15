@@ -36,14 +36,20 @@ define 'kryptnostic.object-api', [
 
   logger = Logger.get('ObjectApi')
 
-  objectUrl         = -> Config.get('servicesUrlV2') + '/object'
-  objectsUrl        = -> objectUrl() + '/bulk'
-  objectIdUrl       = (objectId) -> objectUrl() + '/id/' + objectId
+  objectUrl = -> Config.get('servicesUrl') + '/object'
+  objectCdnUrl = -> Config.get('servicesCdnUrl') + '/object'
+
+  objectIdUrl = (objectId) -> objectUrl() + '/id/' + objectId
+  objectIdCdnUrl = (objectId) -> objectCdnUrl() + '/id/' + objectId
+
+  objectVersionUrl = (objectId, objectVersion) -> objectIdUrl(objectId) + '/' + objectVersion
+  objectVersionCdnUrl  = (objectId, objectVersion) -> objectIdCdnUrl(objectId) + '/' + objectVersion
+
   latestObjectIdUrl = (objectId) -> objectUrl() + '/latest/id/' + objectId
   objectMetadataUrl = (objectId) -> objectUrl() + '/objectmetadata/id/' + objectId
-  objectVersionUrl  = (objectId, objectVersion) -> objectIdUrl(objectId) + '/' + objectVersion
-  objectLevelsUrl   = -> objectUrl() + '/levels'
-  indexSegmentUrl   = -> objectUrl() + '/index-segment'
+  bulkObjectsUrl = -> objectUrl() + '/bulk'
+  objectLevelsUrl = -> objectUrl() + '/levels'
+  indexSegmentUrl = -> objectUrl() + '/index-segment'
 
   class ObjectApi
 
@@ -71,7 +77,7 @@ define 'kryptnostic.object-api', [
         axios(
           Requests.wrapCredentials({
             method  : 'POST'
-            url     : objectsUrl()
+            url     : bulkObjectsUrl()
             data    : JSON.stringify(objectIds)
             headers : DEFAULT_HEADERS
           })
@@ -195,7 +201,7 @@ define 'kryptnostic.object-api', [
 
     getObjectAsBlockCiphertext: (versionedObjectKey) ->
       Requests.getBlockCiphertextFromUrl(
-        objectVersionUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
+        objectVersionCdnUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
       )
 
     setObjectFromBlockCiphertext: (versionedObjectKey, blockCiphertext) ->

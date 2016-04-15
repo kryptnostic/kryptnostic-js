@@ -29,7 +29,7 @@ define 'kryptnostic.sharing-api', [
 
   logger = Logger.get('SharingApi')
 
-  sharingUrl             = -> Config.get('servicesUrlV2') + '/share'
+  sharingUrl             = -> Config.get('servicesUrl') + '/share'
   shareKeysUrl           = -> sharingUrl() + '/keys'
   shareObjectUrl         = -> sharingUrl() + '/object'
   revokeObjectUrl        = -> shareObjectUrl()

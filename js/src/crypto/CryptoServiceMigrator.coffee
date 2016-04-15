@@ -43,7 +43,7 @@ define 'kryptnostic.crypto-service-migrator', [
 
   logger = Logger.get('CryptoServiceMigrator')
 
-  keyStorageApi = -> Config.get('servicesUrlV2') + '/keys'
+  keyStorageApi = -> Config.get('servicesUrl') + '/keys'
   rsaCryptoServicesBulkUrl = -> keyStorageApi() + '/bulk/cryptoservices'
   aesCryptoServiceMigrationUrl = (objectId) -> keyStorageApi() + '/aes/cryptoservice-migration/id/' + objectId
 

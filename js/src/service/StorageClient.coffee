@@ -32,7 +32,11 @@ define 'kryptnostic.storage-client', [
   Logger      = require 'kryptnostic.logger'
   Validators  = require 'kryptnostic.validators'
 
-  { validateUuid, validateUuids } = Validators
+  {
+    validateUuid,
+    validateUuids,
+    validateVersionedObjectKey
+  } = Validators
 
   logger = Logger.get('StorageClient')
 
@@ -78,63 +82,50 @@ define 'kryptnostic.storage-client', [
           else
             return null
 
-    getObjects: (objectIds) ->
+    getObjects: (objectKeys) ->
 
-      objectKeyPromises = []
-      _.forEach(objectIds, (objectId) =>
-        objectKeyPromises.push(
-          @objectApi.getLatestVersionedObjectKey(objectId)
+      promises = []
+      _.forEach(objectKeys, (objectKey) =>
+
+        if not validateVersionedObjectKey(objectKey)
+          logger.error('invalid versioned object key')
+          return
+
+        promise = Promise.join(
+          @cryptoServiceLoader.getObjectCryptoService(objectKey),
+          @objectApi.getObjectAsBlockCiphertext(objectKey)
         )
+        .then (objectMaterial) ->
+          return {
+            objectKey       : objectKey,
+            cryptoService   : objectMaterial[0],
+            blockCiphertext : objectMaterial[1]
+          }
+        .catch (error) ->
+          return {
+            objectKey       : objectKey,
+            cryptoService   : null,
+            blockCiphertext : null
+          }
+
+        promises.push(promise)
       )
 
-      Promise.all(_.map(objectKeyPromises, (promise) ->
-        return promise.reflect()
-      ))
-      .then (inspections) ->
-        objectKeys = []
-        _.forEach(inspections, (inspection) ->
-          if inspection.isFulfilled()
-            objectKeys.push(inspection.value())
+      Promise.all(promises)
+      .then (resolvedPromises) ->
+
+        result = {}
+        _.forEach(resolvedPromises, (resolved) ->
+          objectKey = resolved.objectKey
+          cryptoService = resolved.cryptoService
+          blockCiphertext = resolved.blockCiphertext
+          if blockCiphertext? and cryptoService?
+            decrypted = cryptoService.decrypt(blockCiphertext)
+            result[objectKey.objectId] = decrypted
         )
-        return objectKeys
-      .then (objectKeys) =>
-        promises = []
-        _.forEach(objectKeys, (objectKey) =>
-          promise = Promise.join(
-            @cryptoServiceLoader.getObjectCryptoService(objectKey),
-            @objectApi.getObjectAsBlockCiphertext(objectKey)
-          )
-          .then (objectMaterial) ->
-            return {
-              objectKey       : objectKey,
-              cryptoService   : objectMaterial[0],
-              blockCiphertext : objectMaterial[1]
-            }
-          .catch (error) ->
-            return {
-              objectKey       : objectKey,
-              cryptoService   : null,
-              blockCiphertext : null
-            }
-
-          promises.push(promise)
-        )
-
-        Promise.all(promises)
-        .then (resolvedPromises) ->
-
-          result = {}
-          _.forEach(resolvedPromises, (resolved) ->
-            objectKey = resolved.objectKey
-            cryptoService = resolved.cryptoService
-            blockCiphertext = resolved.blockCiphertext
-            if blockCiphertext? and cryptoService?
-              decrypted = cryptoService.decrypt(blockCiphertext)
-              result[objectKey.objectId] = decrypted
-          )
-          return result
-        .catch (error) ->
-          logger.error('Failed to get objects')
+        return result
+      .catch (error) ->
+        logger.error('Failed to get objects')
 
     getChildObjects: (objectIds, parentObjectId) ->
 

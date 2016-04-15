@@ -51824,7 +51824,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(3), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var Logger, _, log, validateId, validateKey, validateNonEmptyString, validateObjectCryptoService, validateObjectType, validateUuid, validateUuids, validateVersionedObjectKey;
+	  var Logger, _, log, validateId, validateKey, validateNonEmptyString, validateObjectCryptoService, validateObjectType, validateUuid, validateUuids, validateVersionedObjectKey, validateVersionedObjectKeys;
 	  _ = __webpack_require__(3);
 	  Logger = __webpack_require__(2);
 	  log = Logger.get('validators');
@@ -51880,6 +51880,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    return true;
 	  };
+	  validateVersionedObjectKeys = function(versionedObjectKeys) {
+	    var isValid;
+	    if (!_.isArray(versionedObjectKeys)) {
+	      return false;
+	    }
+	    isValid = true;
+	    _.forEach(versionedObjectKeys, function(versionedObjectKey) {
+	      if (!validateVersionedObjectKey(versionedObjectKey)) {
+	        return isValid = false;
+	      }
+	    });
+	    return isValid;
+	  };
 	  validateObjectCryptoService = function(objectCryptoService) {
 	    if (!_.isString(objectCryptoService) || _.isEmpty(objectCryptoService)) {
 	      return false;
@@ -51894,6 +51907,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    validateObjectType: validateObjectType,
 	    validateNonEmptyString: validateNonEmptyString,
 	    validateVersionedObjectKey: validateVersionedObjectKey,
+	    validateVersionedObjectKeys: validateVersionedObjectKeys,
 	    validateObjectCryptoService: validateObjectCryptoService
 	  };
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));

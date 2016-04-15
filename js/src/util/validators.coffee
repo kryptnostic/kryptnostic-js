@@ -56,6 +56,19 @@ define 'kryptnostic.validators', [
 
     return true
 
+  validateVersionedObjectKeys = (versionedObjectKeys) ->
+
+    if not _.isArray(versionedObjectKeys)
+      return false
+
+    isValid = true
+    _.forEach(versionedObjectKeys, (versionedObjectKey) ->
+      if not validateVersionedObjectKey(versionedObjectKey)
+        isValid = false
+    )
+
+    return isValid
+
   validateObjectCryptoService = (objectCryptoService) ->
 
     if not _.isString(objectCryptoService) or _.isEmpty(objectCryptoService)
@@ -71,5 +84,6 @@ define 'kryptnostic.validators', [
     validateObjectType
     validateNonEmptyString
     validateVersionedObjectKey
+    validateVersionedObjectKeys
     validateObjectCryptoService
   }

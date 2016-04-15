@@ -12651,10 +12651,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  Logger = __webpack_require__(2);
 	  log = Logger.get('ConfigurationService');
 	  DEFAULTS = {
-	    servicesUrl: 'http://api.kryptnostic.com/v1',
-	    servicesUrlV2: 'http://api.kryptnostic.com/v2',
-	    heraclesUrl: 'https://api.kryptnostic.com/heracles/v1',
-	    heraclesUrlV2: 'https://api.kryptnostic.com/heracles/v2',
 	    credentialProvider: 'kryptnostic.credential-provider.local-storage',
 	    cachingProvider: 'kryptnostic.caching-provider.jscache'
 	  };
@@ -43965,7 +43961,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(12), __webpack_require__(23), __webpack_require__(24), __webpack_require__(28), __webpack_require__(6), __webpack_require__(33), __webpack_require__(2), __webpack_require__(34), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var BinaryUtils, BlockCiphertext, Cache, Config, DEFAULT_HEADERS, KeyStorageApi, Logger, Promise, Requests, Validators, aesCryptoServiceUrl, aesUrl, axios, fheHashUrl, fheKeysUrl, fhePrivateKeyUrl, fheSearchPrivateKeyUrl, forge, getRSAPublicKeyBulkUrl, getRSAPublicKeyUrl, keyStorageApi, logger, rsaKeysUrl, rsaPrivateKeyUrl, saltUrl, setRSAPublicKeyUrl, toCacheId, validateObjectCryptoService, validateUuid, validateUuids, validateVersionedObjectKey;
+	  var BinaryUtils, BlockCiphertext, Cache, Config, DEFAULT_HEADERS, KeyStorageApi, Logger, Promise, Requests, Validators, aesCdnUrl, aesCryptoServiceCdnUrl, aesCryptoServiceUrl, aesUrl, axios, fheHashCdnUrl, fheHashUrl, fheKeysCdnUrl, fheKeysUrl, fhePrivateKeyCdnUrl, fhePrivateKeyUrl, fheSearchPrivateKeyCdnUrl, fheSearchPrivateKeyUrl, forge, getRSAPublicKeyBulkUrl, getRSAPublicKeyCdnUrl, getRSAPublicKeyUrl, keyStorageApi, keyStorageApiCdn, logger, rsaKeysCdnUrl, rsaKeysUrl, rsaPrivateKeyUrl, saltCdnUrl, saltUrl, setRSAPublicKeyUrl, toCacheId, validateObjectCryptoService, validateUuid, validateUuids, validateVersionedObjectKey;
 	  axios = __webpack_require__(35);
 	  forge = __webpack_require__(12);
 	  Promise = __webpack_require__(22);
@@ -43982,25 +43978,46 @@ return /******/ (function(modules) { // webpackBootstrap
 	  validateUuid = Validators.validateUuid, validateUuids = Validators.validateUuids, validateVersionedObjectKey = Validators.validateVersionedObjectKey, validateObjectCryptoService = Validators.validateObjectCryptoService;
 	  logger = Logger.get('KeyStorageApi');
 	  keyStorageApi = function() {
-	    return Config.get('servicesUrlV2') + '/keys';
+	    return Config.get('servicesUrl') + '/keys';
+	  };
+	  keyStorageApiCdn = function() {
+	    return Config.get('servicesCdnUrl') + '/keys';
 	  };
 	  fheKeysUrl = function() {
 	    return keyStorageApi() + '/fhe';
 	  };
+	  fheKeysCdnUrl = function() {
+	    return keyStorageApiCdn() + '/fhe';
+	  };
 	  fheHashUrl = function() {
 	    return fheKeysUrl() + '/hash';
+	  };
+	  fheHashCdnUrl = function() {
+	    return fheKeysCdnUrl() + '/hash';
 	  };
 	  fhePrivateKeyUrl = function() {
 	    return fheKeysUrl() + '/private';
 	  };
+	  fhePrivateKeyCdnUrl = function() {
+	    return fheKeysCdnUrl() + '/private';
+	  };
 	  fheSearchPrivateKeyUrl = function() {
 	    return fheKeysUrl() + '/searchprivate';
+	  };
+	  fheSearchPrivateKeyCdnUrl = function() {
+	    return fheKeysCdnUrl() + '/searchprivate';
 	  };
 	  saltUrl = function(userId) {
 	    return keyStorageApi() + '/salt/' + userId;
 	  };
+	  saltCdnUrl = function(userId) {
+	    return keyStorageApiCdn() + '/salt/' + userId;
+	  };
 	  rsaKeysUrl = function() {
 	    return keyStorageApi() + '/rsa';
+	  };
+	  rsaKeysCdnUrl = function() {
+	    return keyStorageApiCdn() + '/rsa';
 	  };
 	  rsaPrivateKeyUrl = function() {
 	    return rsaKeysUrl() + '/private';
@@ -44011,14 +44028,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	  getRSAPublicKeyUrl = function(userId) {
 	    return rsaKeysUrl() + '/public/' + userId;
 	  };
+	  getRSAPublicKeyCdnUrl = function(userId) {
+	    return rsaKeysCdnUrl() + '/public/' + userId;
+	  };
 	  getRSAPublicKeyBulkUrl = function() {
 	    return rsaKeysUrl() + '/public/bulk';
 	  };
 	  aesUrl = function() {
 	    return keyStorageApi() + '/aes';
 	  };
+	  aesCdnUrl = function() {
+	    return keyStorageApiCdn() + '/aes';
+	  };
 	  aesCryptoServiceUrl = function(objectId, objectVersion) {
 	    return aesUrl() + '/cryptoservice/id/' + objectId + '/' + objectVersion;
+	  };
+	  aesCryptoServiceCdnUrl = function(objectId, objectVersion) {
+	    return aesCdnUrl() + '/cryptoservice/id/' + objectId + '/' + objectVersion;
 	  };
 	  toCacheId = function(versionedObjectKey) {
 	    return versionedObjectKey.objectId + '/' + versionedObjectKey.objectVersion;
@@ -44027,7 +44053,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function KeyStorageApi() {}
 
 	    KeyStorageApi.getFHEPrivateKey = function() {
-	      return Requests.getBlockCiphertextFromUrl(fhePrivateKeyUrl());
+	      return Requests.getBlockCiphertextFromUrl(fhePrivateKeyCdnUrl());
 	    };
 
 	    KeyStorageApi.setFHEPrivateKey = function(fhePrivateKey) {
@@ -44040,7 +44066,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    KeyStorageApi.getFHESearchPrivateKey = function() {
-	      return Requests.getBlockCiphertextFromUrl(fheSearchPrivateKeyUrl());
+	      return Requests.getBlockCiphertextFromUrl(fheSearchPrivateKeyCdnUrl());
 	    };
 
 	    KeyStorageApi.setFHESearchPrivateKey = function(fheSearchPrivateKey) {
@@ -44159,7 +44185,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (!validateUuid(userId)) {
 	        return Promise.resolve(null);
 	      }
-	      return Requests.getAsUint8FromUrl(getRSAPublicKeyUrl(userId));
+	      return Requests.getAsUint8FromUrl(getRSAPublicKeyCdnUrl(userId));
 	    };
 
 	    KeyStorageApi.setRSAPublicKey = function(publicKey) {
@@ -44180,7 +44206,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      return Promise.resolve(axios(Requests.wrapCredentials({
 	        method: 'GET',
-	        url: aesUrl()
+	        url: aesCdnUrl()
 	      }))).then(function(axiosResponse) {
 	        var masterAesCryptoService;
 	        if (axiosResponse && axiosResponse.data) {
@@ -44222,7 +44248,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (cachedObjectCryptoService) {
 	        return Promise.resolve(cachedObjectCryptoService);
 	      }
-	      return Requests.getBlockCiphertextFromUrl(aesCryptoServiceUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)).then(function(objectCryptoServiceBlockCiphertext) {
+	      return Requests.getBlockCiphertextFromUrl(aesCryptoServiceCdnUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)).then(function(objectCryptoServiceBlockCiphertext) {
 	        if (objectCryptoServiceBlockCiphertext) {
 	          Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, objectCryptoServiceBlockCiphertext);
 	          return objectCryptoServiceBlockCiphertext;
@@ -52701,7 +52727,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(2), __webpack_require__(6), __webpack_require__(28), __webpack_require__(34), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var Cache, Configuration, DEFAULT_HEADER, Logger, Promise, Requests, UserDirectoryApi, Validators, axios, getUserUrl, getUsersUrl, log, setFirstLoginUrl, usersInRealmUrl, validateEmail, validateUuid, validateUuids;
+	  var Cache, Configuration, DEFAULT_HEADER, Logger, Promise, Requests, UserDirectoryApi, Validators, axios, getUserIdFromEmail, getUserUrl, getUsersUrl, log, setFirstLoginUrl, usersInRealmUrl, validateEmail, validateUuid, validateUuids;
 	  axios = __webpack_require__(35);
 	  Promise = __webpack_require__(22);
 	  Logger = __webpack_require__(2);
@@ -52710,16 +52736,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	  Requests = __webpack_require__(34);
 	  Validators = __webpack_require__(36);
 	  getUserUrl = function() {
-	    return Configuration.get('heraclesUrlV2') + '/directory/user';
+	    return Configuration.get('heraclesUrl') + '/directory/user';
 	  };
 	  getUsersUrl = function() {
-	    return Configuration.get('heraclesUrlV2') + '/directory/users';
+	    return Configuration.get('heraclesUrl') + '/directory/users';
 	  };
 	  usersInRealmUrl = function() {
-	    return Configuration.get('heraclesUrlV2') + '/directory';
+	    return Configuration.get('heraclesUrl') + '/directory';
 	  };
 	  setFirstLoginUrl = function() {
-	    return Configuration.get('heraclesUrlV2') + '/directory/setlogin';
+	    return Configuration.get('heraclesUrl') + '/directory/setlogin';
+	  };
+	  getUserIdFromEmail = function(email) {
+	    return Configuration.get('heraclesUrl') + '/directory/validate/sharing/email/' + email;
 	  };
 	  log = Logger.get('UserDirectoryApi');
 	  DEFAULT_HEADER = {
@@ -52746,6 +52775,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	    UserDirectoryApi.prototype.getUserName = function(uuid) {
 	      return this.getUser(uuid).then(function(user) {
 	        return user.name;
+	      });
+	    };
+
+	    UserDirectoryApi.prototype.getUserIdFromEmail = function(email) {
+	      if (_.isEmpty(email)) {
+	        return Promise.resolve(null);
+	      }
+	      return Promise.resolve(axios(Requests.wrapCredentials({
+	        method: 'GET',
+	        url: getUserIdFromEmail(email)
+	      }))).then(function(axiosResponse) {
+	        if (axiosResponse && axiosResponse.data) {
+	          return axiosResponse.data;
+	        } else {
+	          return null;
+	        }
+	      })["catch"](function(axiosError) {
+	        var kjsError;
+	        kjsError = {
+	          status: axiosError.status
+	        };
+	        if (axiosError.status === 404) {
+	          kjsError.message = 'USER_DOES_NOT_EXIST';
+	          return Promise.reject(kjsError);
+	        } else if (axiosError.status === 403) {
+	          kjsError.message = 'SHARING_WITH_USER_BLOCKED';
+	          return Promise.reject(kjsError);
+	        } else {
+	          kjsError.message = JSON.stringify(axiosError.data);
+	          return Promise.reject(kjsError);
+	        }
 	      });
 	    };
 
@@ -52926,7 +52986,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      })(this));
 	    };
 
-	    CryptoServiceLoader.prototype.getObjectCryptoServiceV2 = function(versionedObjectKey, options) {
+	    CryptoServiceLoader.prototype.getObjectCryptoService = function(versionedObjectKey, options) {
 	      var expectMiss, objectId;
 	      options = _.defaults({}, options, DEFAULT_OPTS);
 	      expectMiss = options.expectMiss;
@@ -52947,7 +53007,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	              objectId: objectId
 	            });
 	            objectCryptoService = new AesCryptoService(Cypher.AES_GCM_256);
-	            _this.setObjectCryptoServiceV2(versionedObjectKey, objectCryptoService, masterAesCryptoService);
+	            _this.setObjectCryptoService(versionedObjectKey, objectCryptoService, masterAesCryptoService);
 	          } else if (!cryptoServiceBlockCiphertext && !expectMiss) {
 	            log.error('no cryptoservice exists for this object, but a miss was not expected');
 	            return null;
@@ -52961,7 +53021,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      })(this));
 	    };
 
-	    CryptoServiceLoader.prototype.setObjectCryptoServiceV2 = function(versionedObjectKey, objectCryptoService, masterAesCryptoService) {
+	    CryptoServiceLoader.prototype.setObjectCryptoService = function(versionedObjectKey, objectCryptoService, masterAesCryptoService) {
 	      var encryptedCryptoService, marshalledCryptoService;
 	      if (objectCryptoService._CLASS_NAME !== AesCryptoService._CLASS_NAME) {
 	        throw new Error('support is only implemented for AesCryptoService');
@@ -52992,13 +53052,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	      algorithm: 'AES',
 	      mode: 'CTR',
 	      padding: 'NoPadding',
-	      keySize: 128
+	      keySize: 128,
+	      toString: function() {
+	        return 'AES_CTR_128';
+	      }
 	    },
 	    AES_GCM_256: {
 	      algorithm: 'AES',
 	      mode: 'GCM',
 	      padding: 'NoPadding',
-	      keySize: 256
+	      keySize: 256,
+	      toString: function() {
+	        return 'AES_GCM_256';
+	      }
 	    }
 	  };
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -53084,9 +53150,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  };
 	  checkDataIntegrity = function(key, iv, salt, ciphertext, tag) {
-	    var hmacHash;
+	    var hmacHash, index, xorSum;
 	    hmacHash = computeHMAC(key, iv, salt, ciphertext);
-	    return tag === hmacHash;
+	    index = 0;
+	    xorSum = 0;
+	    while (index < tag.length) {
+	      xorSum |= tag.charCodeAt(index) ^ hmacHash.charCodeAt(index);
+	      index++;
+	    }
+	    return (tag.length === hmacHash.length) && (xorSum === 0);
 	  };
 	  AesCryptoService = (function() {
 	    AesCryptoService.prototype._CLASS_NAME = 'AesCryptoService';
@@ -59841,7 +59913,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  validateUuid = Validators.validateUuid;
 	  logger = Logger.get('CryptoServiceMigrator');
 	  keyStorageApi = function() {
-	    return Config.get('servicesUrlV2') + '/keys';
+	    return Config.get('servicesUrl') + '/keys';
 	  };
 	  rsaCryptoServicesBulkUrl = function() {
 	    return keyStorageApi() + '/bulk/cryptoservices';
@@ -59937,7 +60009,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  Promise = __webpack_require__(22);
 	  Configuration = __webpack_require__(6);
 	  registrationUrl = function() {
-	    return Configuration.get('heraclesUrlV2') + '/registration/user';
+	    return Configuration.get('heraclesUrl') + '/registration/user';
 	  };
 	  DEFAULT_HEADERS = {
 	    'Content-Type': 'application/json'

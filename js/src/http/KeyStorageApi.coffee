@@ -110,7 +110,7 @@ define 'kryptnostic.key-storage-api', [
 
     @getFHEPrivateKey: ->
       Requests.getBlockCiphertextFromUrl(
-        fhePrivateKeyCdnUrl()
+        fhePrivateKeyUrl()
       )
 
     @setFHEPrivateKey: (fhePrivateKey) ->
@@ -131,7 +131,7 @@ define 'kryptnostic.key-storage-api', [
 
     @getFHESearchPrivateKey: ->
       Requests.getBlockCiphertextFromUrl(
-        fheSearchPrivateKeyCdnUrl()
+        fheSearchPrivateKeyUrl()
       )
 
     @setFHESearchPrivateKey: (fheSearchPrivateKey) ->
@@ -281,7 +281,7 @@ define 'kryptnostic.key-storage-api', [
         return Promise.resolve(null)
 
       Requests.getAsUint8FromUrl(
-        getRSAPublicKeyCdnUrl(userId)
+        getRSAPublicKeyUrl(userId)
       )
 
     @setRSAPublicKey: (publicKey) ->
@@ -318,7 +318,7 @@ define 'kryptnostic.key-storage-api', [
         axios(
           Requests.wrapCredentials({
             method : 'GET',
-            url    : aesCdnUrl()
+            url    : aesUrl()
           })
         )
       )

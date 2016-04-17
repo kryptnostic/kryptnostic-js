@@ -44053,7 +44053,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function KeyStorageApi() {}
 
 	    KeyStorageApi.getFHEPrivateKey = function() {
-	      return Requests.getBlockCiphertextFromUrl(fhePrivateKeyCdnUrl());
+	      return Requests.getBlockCiphertextFromUrl(fhePrivateKeyUrl());
 	    };
 
 	    KeyStorageApi.setFHEPrivateKey = function(fhePrivateKey) {
@@ -44066,7 +44066,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    KeyStorageApi.getFHESearchPrivateKey = function() {
-	      return Requests.getBlockCiphertextFromUrl(fheSearchPrivateKeyCdnUrl());
+	      return Requests.getBlockCiphertextFromUrl(fheSearchPrivateKeyUrl());
 	    };
 
 	    KeyStorageApi.setFHESearchPrivateKey = function(fheSearchPrivateKey) {
@@ -44185,7 +44185,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (!validateUuid(userId)) {
 	        return Promise.resolve(null);
 	      }
-	      return Requests.getAsUint8FromUrl(getRSAPublicKeyCdnUrl(userId));
+	      return Requests.getAsUint8FromUrl(getRSAPublicKeyUrl(userId));
 	    };
 
 	    KeyStorageApi.setRSAPublicKey = function(publicKey) {
@@ -44206,7 +44206,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      return Promise.resolve(axios(Requests.wrapCredentials({
 	        method: 'GET',
-	        url: aesCdnUrl()
+	        url: aesUrl()
 	      }))).then(function(axiosResponse) {
 	        var masterAesCryptoService;
 	        if (axiosResponse && axiosResponse.data) {

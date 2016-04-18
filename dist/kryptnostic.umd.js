@@ -53015,21 +53015,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return function(arg) {
 	          var cryptoServiceBlockCiphertext, decryptedCryptoService, masterAesCryptoService, objectCryptoService;
 	          masterAesCryptoService = arg.masterAesCryptoService, cryptoServiceBlockCiphertext = arg.cryptoServiceBlockCiphertext;
-	          objectCryptoService = {};
-	          if (!cryptoServiceBlockCiphertext && expectMiss) {
-	            log.info('no cryptoService exists for this object. creating one on-the-fly', {
-	              objectId: objectId
-	            });
-	            objectCryptoService = new AesCryptoService(Cypher.AES_GCM_256);
-	            _this.setObjectCryptoService(versionedObjectKey, objectCryptoService, masterAesCryptoService);
-	          } else if (!cryptoServiceBlockCiphertext && !expectMiss) {
-	            log.error('no cryptoservice exists for this object, but a miss was not expected');
+	          if (!cryptoServiceBlockCiphertext) {
+	            log.error('CryptoService does not exist', objectId);
 	            return null;
-	          } else {
-	            decryptedCryptoService = masterAesCryptoService.decrypt(cryptoServiceBlockCiphertext);
-	            objectCryptoService = _this.marshaller.unmarshall(decryptedCryptoService, masterAesCryptoService);
-	            _this.cache[objectId] = objectCryptoService;
 	          }
+	          decryptedCryptoService = masterAesCryptoService.decrypt(cryptoServiceBlockCiphertext);
+	          objectCryptoService = _this.marshaller.unmarshall(decryptedCryptoService, masterAesCryptoService);
+	          _this.cache[objectId] = objectCryptoService;
 	          return objectCryptoService;
 	        };
 	      })(this));
@@ -53047,6 +53039,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	          _this.cache[versionedObjectKey.objectId] = objectCryptoService;
 	        };
 	      })(this));
+	    };
+
+	    CryptoServiceLoader.prototype.createObjectCryptoService = function(versionedObjectKey) {
+	      var objectCryptoService;
+	      objectCryptoService = new AesCryptoService(Cypher.AES_GCM_256);
+	      return Promise.resolve(this.getMasterAesCryptoService()).then((function(_this) {
+	        return function(masterAesCryptoService) {
+	          return _this.setObjectCryptoService(versionedObjectKey, objectCryptoService, masterAesCryptoService);
+	        };
+	      })(this)).then(function() {
+	        return objectCryptoService;
+	      });
 	    };
 
 	    return CryptoServiceLoader;

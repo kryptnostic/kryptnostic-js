@@ -26636,21 +26636,13 @@ define("function-name", function(){});
           return function(_arg) {
             var cryptoServiceBlockCiphertext, decryptedCryptoService, masterAesCryptoService, objectCryptoService;
             masterAesCryptoService = _arg.masterAesCryptoService, cryptoServiceBlockCiphertext = _arg.cryptoServiceBlockCiphertext;
-            objectCryptoService = {};
-            if (!cryptoServiceBlockCiphertext && expectMiss) {
-              log.info('no cryptoService exists for this object. creating one on-the-fly', {
-                objectId: objectId
-              });
-              objectCryptoService = new AesCryptoService(Cypher.AES_GCM_256);
-              _this.setObjectCryptoService(versionedObjectKey, objectCryptoService, masterAesCryptoService);
-            } else if (!cryptoServiceBlockCiphertext && !expectMiss) {
-              log.error('no cryptoservice exists for this object, but a miss was not expected');
+            if (!cryptoServiceBlockCiphertext) {
+              log.error('CryptoService does not exist', objectId);
               return null;
-            } else {
-              decryptedCryptoService = masterAesCryptoService.decrypt(cryptoServiceBlockCiphertext);
-              objectCryptoService = _this.marshaller.unmarshall(decryptedCryptoService, masterAesCryptoService);
-              _this.cache[objectId] = objectCryptoService;
             }
+            decryptedCryptoService = masterAesCryptoService.decrypt(cryptoServiceBlockCiphertext);
+            objectCryptoService = _this.marshaller.unmarshall(decryptedCryptoService, masterAesCryptoService);
+            _this.cache[objectId] = objectCryptoService;
             return objectCryptoService;
           };
         })(this));
@@ -26668,6 +26660,18 @@ define("function-name", function(){});
             _this.cache[versionedObjectKey.objectId] = objectCryptoService;
           };
         })(this));
+      };
+
+      CryptoServiceLoader.prototype.createObjectCryptoService = function(versionedObjectKey) {
+        var objectCryptoService;
+        objectCryptoService = new AesCryptoService(Cypher.AES_GCM_256);
+        return Promise.resolve(this.getMasterAesCryptoService()).then((function(_this) {
+          return function(masterAesCryptoService) {
+            return _this.setObjectCryptoService(versionedObjectKey, objectCryptoService, masterAesCryptoService);
+          };
+        })(this)).then(function() {
+          return objectCryptoService;
+        });
       };
 
       return CryptoServiceLoader;
@@ -30626,10 +30630,14 @@ define("function-name", function(){});
               createObjectRequest.parentObjectId = parentObjectKey;
             }
             return Promise.resolve(_this.objectApi.createObject(createObjectRequest)).then(function(objectKeyForNewlyCreatedObject) {
-              parentObjectKey = parentObjectKey != null ? parentObjectKey : objectKeyForNewlyCreatedObject;
-              return Promise.resolve(_this.cryptoServiceLoader.getObjectCryptoService(parentObjectKey, {
-                expectMiss: true
-              })).then(function(cryptoService) {
+              var cryptoServicePromise;
+              cryptoServicePromise = null;
+              if (parentObjectKey != null) {
+                cryptoServicePromise = _this.cryptoServiceLoader.getObjectCryptoService(parentObjectKey);
+              } else {
+                cryptoServicePromise = _this.cryptoServiceLoader.createObjectCryptoService(objectKeyForNewlyCreatedObject);
+              }
+              return Promise.resolve(cryptoServicePromise).then(function(cryptoService) {
                 return _this.encrypt(objectKeyForNewlyCreatedObject.objectId, storageRequest.body, cryptoService);
               }).then(function(encrypted) {
                 var blockCiphertext;

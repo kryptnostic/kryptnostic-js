@@ -93,18 +93,14 @@ define 'kryptnostic.crypto-service-loader', [
         cryptoServiceBlockCiphertext : KeyStorageApi.getAesEncryptedObjectCryptoService(versionedObjectKey)
       })
       .then ({ masterAesCryptoService, cryptoServiceBlockCiphertext }) =>
-        objectCryptoService = {}
-        if !cryptoServiceBlockCiphertext && expectMiss
-          log.info('no cryptoService exists for this object. creating one on-the-fly', { objectId })
-          objectCryptoService = new AesCryptoService(Cypher.AES_GCM_256)
-          @setObjectCryptoService(versionedObjectKey, objectCryptoService, masterAesCryptoService)
-        else if !cryptoServiceBlockCiphertext && !expectMiss
-          log.error('no cryptoservice exists for this object, but a miss was not expected')
+
+        if !cryptoServiceBlockCiphertext
+          log.error('CryptoService does not exist', objectId)
           return null
-        else
-          decryptedCryptoService = masterAesCryptoService.decrypt(cryptoServiceBlockCiphertext)
-          objectCryptoService = @marshaller.unmarshall(decryptedCryptoService, masterAesCryptoService)
-          @cache[objectId] = objectCryptoService
+
+        decryptedCryptoService = masterAesCryptoService.decrypt(cryptoServiceBlockCiphertext)
+        objectCryptoService = @marshaller.unmarshall(decryptedCryptoService, masterAesCryptoService)
+        @cache[objectId] = objectCryptoService
         return objectCryptoService
 
     setObjectCryptoService: (versionedObjectKey, objectCryptoService, masterAesCryptoService) ->
@@ -120,5 +116,17 @@ define 'kryptnostic.crypto-service-loader', [
       .then =>
         @cache[versionedObjectKey.objectId] = objectCryptoService
         return
+
+    createObjectCryptoService: (versionedObjectKey) ->
+
+      objectCryptoService = new AesCryptoService(Cypher.AES_GCM_256)
+
+      Promise.resolve(
+        @getMasterAesCryptoService()
+      )
+      .then (masterAesCryptoService) =>
+        @setObjectCryptoService(versionedObjectKey, objectCryptoService, masterAesCryptoService)
+      .then ->
+        return objectCryptoService
 
   return CryptoServiceLoader

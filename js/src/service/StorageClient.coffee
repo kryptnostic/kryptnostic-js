@@ -215,12 +215,13 @@ define 'kryptnostic.storage-client', [
             @objectApi.createObject(createObjectRequest)
           )
           .then (objectKeyForNewlyCreatedObject) =>
-            parentObjectKey = if parentObjectKey? then parentObjectKey else objectKeyForNewlyCreatedObject
+            cryptoServicePromise = null
+            if parentObjectKey?
+              cryptoServicePromise = @cryptoServiceLoader.getObjectCryptoService(parentObjectKey)
+            else
+              cryptoServicePromise = @cryptoServiceLoader.createObjectCryptoService(objectKeyForNewlyCreatedObject)
             Promise.resolve(
-              @cryptoServiceLoader.getObjectCryptoService(
-                parentObjectKey,
-                { expectMiss : true }
-              )
+              cryptoServicePromise
             )
             .then (cryptoService) =>
               # ToDo: for now, we encrypt the entire object, but we'll need to support encrypting an object in chunks

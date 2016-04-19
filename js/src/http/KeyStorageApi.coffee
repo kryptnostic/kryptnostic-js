@@ -370,7 +370,7 @@ define 'kryptnostic.key-storage-api', [
         return Promise.resolve(cachedObjectCryptoService)
 
       Requests.getBlockCiphertextFromUrl(
-        aesCryptoServiceCdnUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
+        aesCryptoServiceUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
       )
       .then (objectCryptoServiceBlockCiphertext) ->
         if objectCryptoServiceBlockCiphertext

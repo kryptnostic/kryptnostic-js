@@ -22,6 +22,7 @@ define 'kryptnostic.key-storage-api', [
 
   # Kryptnostic
   BlockCiphertext = require 'kryptnostic.block-ciphertext'
+  CredentialLoader = require 'kryptnostic.credential-loader'
 
   # utils
   BinaryUtils = require 'kryptnostic.binary-utils'
@@ -92,8 +93,8 @@ define 'kryptnostic.key-storage-api', [
   aesCryptoServiceUrl = (objectId, objectVersion) ->
     aesUrl() + '/cryptoservice/id/' + objectId + '/' + objectVersion
 
-  aesCryptoServiceCdnUrl = (objectId, objectVersion) ->
-    aesCdnUrl() + '/cryptoservice/id/' + objectId + '/' + objectVersion
+  aesCryptoServiceCdnUrl = (objectId, objectVersion, userId) ->
+    aesCdnUrl() + '/cryptoservice/id/' + objectId + '/' + objectVersion + '/' + userId
 
   #
   # helper functions
@@ -101,6 +102,11 @@ define 'kryptnostic.key-storage-api', [
 
   toCacheId = (versionedObjectKey) ->
     return versionedObjectKey.objectId + '/' + versionedObjectKey.objectVersion
+
+  getOwnUserId = ->
+    credentialLoader = new CredentialLoader()
+    credentials = credentialLoader.getCredentials()
+    return credentials.principal
 
   class KeyStorageApi
 
@@ -363,6 +369,7 @@ define 'kryptnostic.key-storage-api', [
       if not validateVersionedObjectKey(versionedObjectKey)
         return Promise.resolve(null)
 
+      userId = getOwnUserId()
       objectCacheId = toCacheId(versionedObjectKey)
       cachedObjectCryptoService = Cache.get(Cache.CRYPTO_SERVICES, objectCacheId)
 
@@ -370,7 +377,7 @@ define 'kryptnostic.key-storage-api', [
         return Promise.resolve(cachedObjectCryptoService)
 
       Requests.getBlockCiphertextFromUrl(
-        aesCryptoServiceUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)
+        aesCryptoServiceCdnUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion, userId)
       )
       .then (objectCryptoServiceBlockCiphertext) ->
         if objectCryptoServiceBlockCiphertext

@@ -43961,11 +43961,12 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(12), __webpack_require__(23), __webpack_require__(24), __webpack_require__(28), __webpack_require__(6), __webpack_require__(33), __webpack_require__(2), __webpack_require__(34), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var BinaryUtils, BlockCiphertext, Cache, Config, DEFAULT_HEADERS, KeyStorageApi, Logger, Promise, Requests, Validators, aesCdnUrl, aesCryptoServiceCdnUrl, aesCryptoServiceUrl, aesUrl, axios, fheHashCdnUrl, fheHashUrl, fheKeysCdnUrl, fheKeysUrl, fhePrivateKeyCdnUrl, fhePrivateKeyUrl, fheSearchPrivateKeyCdnUrl, fheSearchPrivateKeyUrl, forge, getRSAPublicKeyBulkUrl, getRSAPublicKeyCdnUrl, getRSAPublicKeyUrl, keyStorageApi, keyStorageApiCdn, logger, rsaKeysCdnUrl, rsaKeysUrl, rsaPrivateKeyUrl, saltCdnUrl, saltUrl, setRSAPublicKeyUrl, toCacheId, validateObjectCryptoService, validateUuid, validateUuids, validateVersionedObjectKey;
+	  var BinaryUtils, BlockCiphertext, Cache, Config, CredentialLoader, DEFAULT_HEADERS, KeyStorageApi, Logger, Promise, Requests, Validators, aesCdnUrl, aesCryptoServiceCdnUrl, aesCryptoServiceUrl, aesUrl, axios, fheHashCdnUrl, fheHashUrl, fheKeysCdnUrl, fheKeysUrl, fhePrivateKeyCdnUrl, fhePrivateKeyUrl, fheSearchPrivateKeyCdnUrl, fheSearchPrivateKeyUrl, forge, getOwnUserId, getRSAPublicKeyBulkUrl, getRSAPublicKeyCdnUrl, getRSAPublicKeyUrl, keyStorageApi, keyStorageApiCdn, logger, rsaKeysCdnUrl, rsaKeysUrl, rsaPrivateKeyUrl, saltCdnUrl, saltUrl, setRSAPublicKeyUrl, toCacheId, validateObjectCryptoService, validateUuid, validateUuids, validateVersionedObjectKey;
 	  axios = __webpack_require__(35);
 	  forge = __webpack_require__(12);
 	  Promise = __webpack_require__(22);
 	  BlockCiphertext = __webpack_require__(24);
+	  CredentialLoader = __webpack_require__(33);
 	  BinaryUtils = __webpack_require__(23);
 	  Cache = __webpack_require__(28);
 	  Config = __webpack_require__(6);
@@ -44043,11 +44044,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	  aesCryptoServiceUrl = function(objectId, objectVersion) {
 	    return aesUrl() + '/cryptoservice/id/' + objectId + '/' + objectVersion;
 	  };
-	  aesCryptoServiceCdnUrl = function(objectId, objectVersion) {
-	    return aesCdnUrl() + '/cryptoservice/id/' + objectId + '/' + objectVersion;
+	  aesCryptoServiceCdnUrl = function(objectId, objectVersion, userId) {
+	    return aesCdnUrl() + '/cryptoservice/id/' + objectId + '/' + objectVersion + '/' + userId;
 	  };
 	  toCacheId = function(versionedObjectKey) {
 	    return versionedObjectKey.objectId + '/' + versionedObjectKey.objectVersion;
+	  };
+	  getOwnUserId = function() {
+	    var credentialLoader, credentials;
+	    credentialLoader = new CredentialLoader();
+	    credentials = credentialLoader.getCredentials();
+	    return credentials.principal;
 	  };
 	  KeyStorageApi = (function() {
 	    function KeyStorageApi() {}
@@ -44239,16 +44246,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    KeyStorageApi.getAesEncryptedObjectCryptoService = function(versionedObjectKey) {
-	      var cachedObjectCryptoService, objectCacheId;
+	      var cachedObjectCryptoService, objectCacheId, userId;
 	      if (!validateVersionedObjectKey(versionedObjectKey)) {
 	        return Promise.resolve(null);
 	      }
+	      userId = getOwnUserId();
 	      objectCacheId = toCacheId(versionedObjectKey);
 	      cachedObjectCryptoService = Cache.get(Cache.CRYPTO_SERVICES, objectCacheId);
 	      if (cachedObjectCryptoService) {
 	        return Promise.resolve(cachedObjectCryptoService);
 	      }
-	      return Requests.getBlockCiphertextFromUrl(aesCryptoServiceUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)).then(function(objectCryptoServiceBlockCiphertext) {
+	      return Requests.getBlockCiphertextFromUrl(aesCryptoServiceCdnUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion, userId)).then(function(objectCryptoServiceBlockCiphertext) {
 	        if (objectCryptoServiceBlockCiphertext) {
 	          Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, objectCryptoServiceBlockCiphertext);
 	          return objectCryptoServiceBlockCiphertext;

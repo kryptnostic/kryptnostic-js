@@ -27668,7 +27668,7 @@ define("function-name", function(){});
         if (cachedObjectCryptoService) {
           return Promise.resolve(cachedObjectCryptoService);
         }
-        return Requests.getBlockCiphertextFromUrl(aesCryptoServiceCdnUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)).then(function(objectCryptoServiceBlockCiphertext) {
+        return Requests.getBlockCiphertextFromUrl(aesCryptoServiceUrl(versionedObjectKey.objectId, versionedObjectKey.objectVersion)).then(function(objectCryptoServiceBlockCiphertext) {
           if (objectCryptoServiceBlockCiphertext) {
             Cache.store(Cache.CRYPTO_SERVICES, objectCacheId, objectCryptoServiceBlockCiphertext);
             return objectCryptoServiceBlockCiphertext;

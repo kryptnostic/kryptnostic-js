@@ -58,10 +58,10 @@ define 'kryptnostic.key-storage-api', [
   fheHashCdnUrl = -> fheKeysCdnUrl() + '/hash'
 
   fhePrivateKeyUrl = -> fheKeysUrl() + '/private'
-  fhePrivateKeyCdnUrl = -> fheKeysCdnUrl() + '/private'
+  fhePrivateKeyCdnUrl = (userId) -> fheKeysCdnUrl() + '/private/' + userId
 
   fheSearchPrivateKeyUrl = -> fheKeysUrl() + '/searchprivate'
-  fheSearchPrivateKeyCdnUrl = -> fheKeysCdnUrl() + '/searchprivate'
+  fheSearchPrivateKeyCdnUrl = (userId) -> fheKeysCdnUrl() + '/searchprivate/' + userId
 
   #
   # salt endpoints
@@ -115,8 +115,9 @@ define 'kryptnostic.key-storage-api', [
     #
 
     @getFHEPrivateKey: ->
+      userId = getOwnUserId()
       Requests.getBlockCiphertextFromUrl(
-        fhePrivateKeyCdnUrl()
+        fhePrivateKeyCdnUrl(userId)
       )
 
     @setFHEPrivateKey: (fhePrivateKey) ->
@@ -136,8 +137,9 @@ define 'kryptnostic.key-storage-api', [
     #
 
     @getFHESearchPrivateKey: ->
+      userId = getOwnUserId()
       Requests.getBlockCiphertextFromUrl(
-        fheSearchPrivateKeyCdnUrl()
+        fheSearchPrivateKeyCdnUrl(userId)
       )
 
     @setFHESearchPrivateKey: (fheSearchPrivateKey) ->

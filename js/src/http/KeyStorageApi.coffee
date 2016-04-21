@@ -116,7 +116,7 @@ define 'kryptnostic.key-storage-api', [
 
     @getFHEPrivateKey: ->
       Requests.getBlockCiphertextFromUrl(
-        fhePrivateKeyUrl()
+        fhePrivateKeyCdnUrl()
       )
 
     @setFHEPrivateKey: (fhePrivateKey) ->
@@ -137,7 +137,7 @@ define 'kryptnostic.key-storage-api', [
 
     @getFHESearchPrivateKey: ->
       Requests.getBlockCiphertextFromUrl(
-        fheSearchPrivateKeyUrl()
+        fheSearchPrivateKeyCdnUrl()
       )
 
     @setFHESearchPrivateKey: (fheSearchPrivateKey) ->

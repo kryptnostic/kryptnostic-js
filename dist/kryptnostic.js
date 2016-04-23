@@ -27419,14 +27419,14 @@ define("function-name", function(){});
     fhePrivateKeyUrl = function() {
       return fheKeysUrl() + '/private';
     };
-    fhePrivateKeyCdnUrl = function() {
-      return fheKeysCdnUrl() + '/private';
+    fhePrivateKeyCdnUrl = function(userId) {
+      return fheKeysCdnUrl() + '/private/' + userId;
     };
     fheSearchPrivateKeyUrl = function() {
       return fheKeysUrl() + '/searchprivate';
     };
-    fheSearchPrivateKeyCdnUrl = function() {
-      return fheKeysCdnUrl() + '/searchprivate';
+    fheSearchPrivateKeyCdnUrl = function(userId) {
+      return fheKeysCdnUrl() + '/searchprivate/' + userId;
     };
     saltUrl = function(userId) {
       return keyStorageApi() + '/salt/' + userId;
@@ -27480,7 +27480,9 @@ define("function-name", function(){});
       function KeyStorageApi() {}
 
       KeyStorageApi.getFHEPrivateKey = function() {
-        return Requests.getBlockCiphertextFromUrl(fhePrivateKeyUrl());
+        var userId;
+        userId = getOwnUserId();
+        return Requests.getBlockCiphertextFromUrl(fhePrivateKeyCdnUrl(userId));
       };
 
       KeyStorageApi.setFHEPrivateKey = function(fhePrivateKey) {
@@ -27493,7 +27495,9 @@ define("function-name", function(){});
       };
 
       KeyStorageApi.getFHESearchPrivateKey = function() {
-        return Requests.getBlockCiphertextFromUrl(fheSearchPrivateKeyUrl());
+        var userId;
+        userId = getOwnUserId();
+        return Requests.getBlockCiphertextFromUrl(fheSearchPrivateKeyCdnUrl(userId));
       };
 
       KeyStorageApi.setFHESearchPrivateKey = function(fheSearchPrivateKey) {

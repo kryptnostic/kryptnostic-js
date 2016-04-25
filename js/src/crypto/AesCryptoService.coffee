@@ -6,6 +6,7 @@ define 'kryptnostic.aes-crypto-service', [
   'kryptnostic.block-ciphertext'
   'kryptnostic.cypher'
   'kryptnostic.logger'
+  'kryptnostic.validators'
 ], (require) ->
   'use strict'
 
@@ -20,6 +21,7 @@ define 'kryptnostic.aes-crypto-service', [
   # utils
   BinaryUtils = require 'kryptnostic.binary-utils'
   Logger      = require 'kryptnostic.logger'
+  Validators  = require 'kryptnostic.validators'
 
   # constants
   EMPTY_STRING = ''
@@ -29,6 +31,10 @@ define 'kryptnostic.aes-crypto-service', [
   IV_128 = 128
 
   logger = Logger.get('AesCryptoService')
+
+  {
+    validateBlockCipherText
+  } = Validators
 
   computeHMAC = (key, iv, salt, ciphertext) ->
     try
@@ -126,6 +132,30 @@ define 'kryptnostic.aes-crypto-service', [
         if not isValid
           throw new Error('BlockCipherText data integrity check failed')
         return @abstractCryptoService.decrypt(@key, iv, ciphertext)
+
+    decryptObjectTree: (objectTree, depth) ->
+
+      #
+      # TODO - add unit tests
+      #
+
+      if _.isEmpty(objectTree) or not depth
+        return
+
+      if depth < 0
+        return
+
+      if validateBlockCipherText(objectTree.data)
+        try
+          plaintext = @decrypt(objectTree.data)
+          objectTree.data = plaintext
+        catch e
+          objectTree.data = null
+
+      if not _.isEmpty(objectTree.children)
+        _.forEach(objectTree.children, (child) =>
+          @decryptObjectTree(child, depth - 1)
+        )
 
     decryptToUint8Array: (blockCipherText) ->
 

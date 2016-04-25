@@ -76,6 +76,25 @@ define 'kryptnostic.validators', [
 
     return true
 
+  validateBlockCipherText = (blockCipherText) ->
+
+    if not _.isObject(blockCipherText)
+      return false
+
+    if _.isEmpty(blockCipherText.contents) or not _.isString(blockCipherText.contents)
+      return false
+
+    if _.isEmpty(blockCipherText.iv) or not _.isString(blockCipherText.iv)
+      return false
+
+    if not _.isEmpty(blockCipherText.salt) and not _.isString(blockCipherText.salt)
+      return false
+
+    if not _.isEmpty(blockCipherText.tag) and not _.isString(blockCipherText.tag)
+      return false
+
+    return true
+
   return {
     validateId
     validateKey
@@ -86,4 +105,5 @@ define 'kryptnostic.validators', [
     validateVersionedObjectKey
     validateVersionedObjectKeys
     validateObjectCryptoService
+    validateBlockCipherText
   }

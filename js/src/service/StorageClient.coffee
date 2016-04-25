@@ -184,6 +184,17 @@ define 'kryptnostic.storage-client', [
           )
           return childObjects
 
+    getObjectTreeByTypeAndLoadLevelPaged: (objectTreePagedRequest) ->
+
+      Promise.props({
+        objectCryptoService: @cryptoServiceLoader.getObjectCryptoService(objectTreePagedRequest.objectKey)
+        objectMetadataTree: @objectApi.getObjectTreeByTypeAndLoadLevelPaged(objectTreePagedRequest)
+      })
+      .then ({ objectCryptoService, objectMetadataTree }) ->
+
+        objectCryptoService.decryptObjectTree(objectMetadataTree, objectTreePagedRequest.loadDepth)
+        return objectMetadataTree
+
     storeObject: (storageRequest) ->
 
       storageRequest.validate()

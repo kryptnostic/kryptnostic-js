@@ -41,6 +41,7 @@
     "karma-requirejs"           : "0.2.2",
     "karma-safari-launcher"     : "0.1.1",
     "phantomjs"                 : "1.9.18",
+    "pako"                      : "1.0.1",
     "sinon"                     : "1.16.1",
     "webpack"                   : "1.12.13"
   }

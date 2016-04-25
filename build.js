@@ -17,7 +17,7 @@
       'lodash'        : '../../bower_components/lodash/lodash',
       'loglevel'      : '../../bower_components/loglevel/dist/loglevel',
       'murmurhash3'   : '../../bower_components/murmurhash3/index',
-      'pako'          : '../../bower_components/pako/dist/pako',
+      'pako'          : '../../node_modules/pako/dist/pako',
       'require'       : '../../bower_components/requirejs/require',
       'revalidator'   : '../../node_modules/revalidator/lib/revalidator'
     },

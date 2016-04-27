@@ -26,7 +26,9 @@ define 'kryptnostic.user-directory-api', [
 
   log = Logger.get('UserDirectoryApi')
 
-  DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
+  DEFAULT_HEADERS = { 'Content-Type' : 'application/json' }
+  MUTED_CHANNEL = 'SILENCED_CHANNELS'
+
 
   { validateUuids } = Validators
 

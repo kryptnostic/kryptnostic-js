@@ -166,4 +166,33 @@ define 'kryptnostic.user-directory-api', [
         })
       ))
 
+    getMutedChannels: ->
+      Promise.resolve(axios(
+        Requests.wrapCredentials({
+          url: getUserUrl() + '/setting/' + MUTED_CHANNEL
+          headers: DEFAULT_HEADERS
+          method: 'GET'
+        })
+      ))
+
+    addMutedChannel: (channelId) ->
+      Promise.resolve(axios(
+        Requests.wrapCredentials({
+          url: getUserUrl() + '/setting/' + MUTED_CHANNEL
+          headers: DEFAULT_HEADERS
+          method: 'PUT'
+          data: [channelId]
+        })
+      ))
+
+    removeMutedChannel: (channelId) ->
+      Promise.resolve(axios(
+        Requests.wrapCredentials({
+          url: getUserUrl() + '/setting/' + MUTED_CHANNEL
+          headers: DEFAULT_HEADERS
+          method: 'DELETE'
+          data: [channelId]
+        })
+      ))
+
   return UserDirectoryApi

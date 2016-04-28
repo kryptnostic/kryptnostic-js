@@ -4,7 +4,7 @@ define 'kryptnostic.object-tree-paged-request', [
 ], (require) ->
 
   SCHEMA       = require 'kryptnostic.schema.object-tree-paged-request'
-  validator    = require 'kryptnostic.schema.validator'
+  Validator    = require 'kryptnostic.schema.validator'
 
   DEFAULT_OPTS = {}
 
@@ -15,7 +15,7 @@ define 'kryptnostic.object-tree-paged-request', [
       @validate()
 
     validate : ->
-      validator.validate(this, ObjectTreePagedRequest, SCHEMA)
+      Validator.validate(this, ObjectTreePagedRequest, SCHEMA)
 
     getRequestData: ->
 

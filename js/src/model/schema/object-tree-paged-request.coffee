@@ -37,6 +37,11 @@ define 'kryptnostic.schema.object-tree-paged-request', [], ->
         type: 'object'
         require: false
         allowEmpty: false
+      },
+      nextPageUrlPath: {
+        type: 'string'
+        required: false
+        allowEmpty: true
       }
     }
   }

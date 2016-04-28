@@ -133,29 +133,27 @@ define 'kryptnostic.aes-crypto-service', [
           throw new Error('BlockCipherText data integrity check failed')
         return @abstractCryptoService.decrypt(@key, iv, ciphertext)
 
-    decryptObjectTree: (objectTree, depth) ->
+    decryptObjectMetadataTree: (objectMetadataTree) ->
 
       #
       # TODO - add unit tests
       #
 
-      if _.isEmpty(objectTree) or not depth
+      if _.isEmpty(objectMetadataTree)
         return
 
-      if depth < 0
-        return
-
-      if validateBlockCipherText(objectTree.data)
+      if validateBlockCipherText(objectMetadataTree.data)
         try
-          plaintext = @decrypt(objectTree.data)
-          objectTree.data = plaintext
+          plaintext = @decrypt(objectMetadataTree.data)
+          objectMetadataTree.data = plaintext
         catch e
-          objectTree.data = null
+          objectMetadataTree.data = null
 
-      if not _.isEmpty(objectTree.children)
-        _.forEach(objectTree.children, (child) =>
-          @decryptObjectTree(child, depth - 1)
+      if not _.isEmpty(objectMetadataTree.children)
+        _.forEach(objectMetadataTree.children, (child) =>
+          @decryptObjectMetadataTree(child)
         )
+      return
 
     decryptToUint8Array: (blockCipherText) ->
 

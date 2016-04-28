@@ -11,6 +11,7 @@ define 'kryptnostic.object-api', [
   'kryptnostic.requests'
   'kryptnostic.object-metadata'
   'kryptnostic.validators'
+  'kryptnostic.object-tree-paged-response'
 ], (require) ->
 
   axios                 = require 'axios'
@@ -22,6 +23,7 @@ define 'kryptnostic.object-api', [
   ObjectMetadata        = require 'kryptnostic.object-metadata'
   ObjectMetadataTree    = require 'kryptnostic.object-metadata-tree'
   Validators            = require 'kryptnostic.validators'
+  ObjectTreePagedResponse = require 'kryptnostic.object-tree-paged-response'
 
   {
     validateId,
@@ -155,6 +157,8 @@ define 'kryptnostic.object-api', [
 
       if objectTreePagedRequest.latestObjectId and objectTreePagedRequest.latestObjectVersion
         objectTreeRequestUrl = objectTreeNextPageUrl(objectTreePagedRequest)
+      else if objectTreePagedRequest.nextPageUrlPath
+        objectTreeRequestUrl = objectUrl() + objectTreePagedRequest.nextPageUrlPath
       else
         objectTreeRequestUrl = objectTreePagedUrl(objectTreePagedRequest)
 
@@ -171,8 +175,12 @@ define 'kryptnostic.object-api', [
       .then (axiosResponse) ->
         if axiosResponse and axiosResponse.data
           # axiosResponse.data == com.kryptnostic.v2.storage.models.ObjectTreeLoadResponse
-          objectMetadataTree = axiosResponse.data.objectMetadataTrees[objectTreePagedRequest.objectKey.objectId]
-          return objectMetadataTree
+          objectId = objectTreePagedRequest.objectKey.objectId
+          objectTreePagedResponse = new ObjectTreePagedResponse({
+            objectMetadataTree: axiosResponse.data.objectMetadataTrees[objectId]
+            nextPageUrlPath: axiosResponse.data.scrollUp
+          })
+          return objectTreePagedResponse
         else
           return null
 

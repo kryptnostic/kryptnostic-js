@@ -35,7 +35,8 @@ define 'kryptnostic.storage-client', [
   {
     validateUuid,
     validateUuids,
-    validateVersionedObjectKey
+    validateVersionedObjectKey,
+    validateVersionedObjectKeys
   } = Validators
 
   logger = Logger.get('StorageClient')
@@ -76,7 +77,7 @@ define 'kryptnostic.storage-client', [
           cryptoService   : cryptoServicePromise
         })
         .then ({ blockCiphertext, cryptoService }) ->
-          if blockCiphertext? and cryptoService?
+          if blockCiphertext and cryptoService
             decrypted = cryptoService.decrypt(blockCiphertext)
             return decrypted
           else
@@ -119,7 +120,7 @@ define 'kryptnostic.storage-client', [
           objectKey = resolved.objectKey
           cryptoService = resolved.cryptoService
           blockCiphertext = resolved.blockCiphertext
-          if blockCiphertext? and cryptoService?
+          if blockCiphertext and cryptoService
             decrypted = cryptoService.decrypt(blockCiphertext)
             result[objectKey.objectId] = decrypted
         )
@@ -127,30 +128,61 @@ define 'kryptnostic.storage-client', [
       .catch (error) ->
         logger.error('Failed to get objects')
 
-    getChildObjects: (objectIds, parentObjectId) ->
+    #
+    # returns Array<Object> where each element contains the objectKey and the decrypted object data
+    #   [{
+    #     objectKey,
+    #     data
+    #   }]
+    #
+    getChildrenObjects: (objectKeys, parentObjectKey) ->
 
-      if not validateUuids(objectIds) or not validateUuid(parentObjectId)
-        return Promise.resolve(null)
+      if not validateVersionedObjectKeys(objectKeys)
+        return Promise.reject(new Error('objectKeys is an invalid array of VersionedObjectKeys'))
+
+      if not validateVersionedObjectKey(parentObjectKey)
+        return Promise.reject(new Error('parentObjectKey is an invalid VersionedObjectKey'))
+
+      if _.isEmpty(objectKeys)
+        return Promise.resolve([])
 
       Promise.resolve(
-        @objectApi.getLatestVersionedObjectKey(parentObjectId)
+        @cryptoServiceLoader.getObjectCryptoService(parentObjectKey)
       )
-      .then (parentObjectKey) =>
+      .then (parentObjectCryptoService) =>
 
-        Promise.props({
-          objectCryptoService    : @cryptoServiceLoader.getObjectCryptoService(parentObjectKey)
-          objectBlockCiphertexts : @objectApi.getObjects(objectIds)
-        })
-        .then ({ objectBlockCiphertexts, objectCryptoService }) ->
+        if not parentObjectCryptoService
+          return Promise.reject(new Error('failed to get parent ObjectCryptoService'))
 
-          childObjects = {}
-          _.forEach(objectIds, (objectId, index) ->
-            blockCiphertext = objectBlockCiphertexts[objectId]
-            if blockCiphertext and objectCryptoService
-              decrypted = cryptoService.decrypt(blockCiphertext)
-              childObjects[objectId] = decrypted
+        # prefill the response with the objectKeys
+        response = []
+        _.forEach(objectKeys, (objectKey) =>
+          response.push({
+            objectKey
+          })
+        )
+
+        objectPromises = []
+        _.forEach(objectKeys, (objectKey, index) =>
+          promise = Promise.resolve(
+            @objectApi.getObjectAsBlockCiphertext(objectKey)
           )
-          return childObjects
+          .then (blockCipherText) ->
+            if blockCipherText
+              decryptedObject = parentObjectCryptoService.decrypt(blockCipherText)
+              response[index].data = decryptedObject
+          .catch (error) ->
+            return
+          objectPromises.push(promise)
+        )
+
+        Promise.all(objectPromises)
+        .then ->
+          return response
+
+      .catch (e) ->
+        logger.error(e)
+        return Promise.reject(new Error('failed to get children objects'))
 
     getChildObjectsByTypeAndLoadLevel: (objectIds, parentObjectId, typeLoadLevels, loadDepth) ->
 
@@ -188,12 +220,12 @@ define 'kryptnostic.storage-client', [
 
       Promise.props({
         objectCryptoService: @cryptoServiceLoader.getObjectCryptoService(objectTreePagedRequest.objectKey)
-        objectMetadataTree: @objectApi.getObjectTreeByTypeAndLoadLevelPaged(objectTreePagedRequest)
+        objectTreePagedResponse: @objectApi.getObjectTreeByTypeAndLoadLevelPaged(objectTreePagedRequest)
       })
-      .then ({ objectCryptoService, objectMetadataTree }) ->
+      .then ({ objectCryptoService, objectTreePagedResponse }) ->
 
-        objectCryptoService.decryptObjectTree(objectMetadataTree, objectTreePagedRequest.loadDepth)
-        return objectMetadataTree
+        objectCryptoService.decryptObjectMetadataTree(objectTreePagedResponse.objectMetadataTree)
+        return objectTreePagedResponse
 
     storeObject: (storageRequest) ->
 

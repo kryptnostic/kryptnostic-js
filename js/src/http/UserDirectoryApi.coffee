@@ -27,8 +27,6 @@ define 'kryptnostic.user-directory-api', [
   log = Logger.get('UserDirectoryApi')
 
   DEFAULT_HEADERS = { 'Content-Type' : 'application/json' }
-  MUTED_CHANNEL = 'SILENCED_CHANNELS'
-
 
   { validateUuids } = Validators
 
@@ -168,32 +166,31 @@ define 'kryptnostic.user-directory-api', [
         })
       ))
 
-    getMutedChannels: ->
+    getMutedChannels: (setting) ->
       Promise.resolve(axios(
         Requests.wrapCredentials({
-          url: getUserUrl() + '/setting/' + MUTED_CHANNEL
-          headers: DEFAULT_HEADERS
+          url: getUserUrl() + '/setting/' + setting
           method: 'GET'
         })
       ))
 
-    addMutedChannel: (channelId) ->
+    addMutedChannel: (uuid, setting) ->
       Promise.resolve(axios(
         Requests.wrapCredentials({
-          url: getUserUrl() + '/setting/' + MUTED_CHANNEL
+          url: getUserUrl() + '/setting/' + setting
           headers: DEFAULT_HEADERS
           method: 'PUT'
-          data: [channelId]
+          data: [uuid]
         })
       ))
 
-    removeMutedChannel: (channelId) ->
+    removeMutedChannel: (uuid, setting) ->
       Promise.resolve(axios(
         Requests.wrapCredentials({
-          url: getUserUrl() + '/setting/' + MUTED_CHANNEL
+          url: getUserUrl() + '/setting/' + setting
           headers: DEFAULT_HEADERS
           method: 'DELETE'
-          data: [channelId]
+          data: [uuid]
         })
       ))
 

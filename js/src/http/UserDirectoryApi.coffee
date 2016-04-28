@@ -23,6 +23,7 @@ define 'kryptnostic.user-directory-api', [
   usersInRealmUrl = -> Configuration.get('heraclesUrl') + '/directory'
   setFirstLoginUrl = -> Configuration.get('heraclesUrl') + '/directory/setlogin'
   getUserIdFromEmail = (email) -> Configuration.get('heraclesUrl') + '/directory/validate/sharing/email/' + email
+  getUserSettingUrl = (userSetting) -> getUserUrl() + '/setting/' + userSetting
 
   log = Logger.get('UserDirectoryApi')
 
@@ -169,7 +170,7 @@ define 'kryptnostic.user-directory-api', [
     getMutedChannels: (setting) ->
       Promise.resolve(axios(
         Requests.wrapCredentials({
-          url: getUserUrl() + '/setting/' + setting
+          url: getUserSettingUrl(setting)
           method: 'GET'
         })
       ))
@@ -177,7 +178,7 @@ define 'kryptnostic.user-directory-api', [
     addMutedChannel: (uuid, setting) ->
       Promise.resolve(axios(
         Requests.wrapCredentials({
-          url: getUserUrl() + '/setting/' + setting
+          url: getUserSettingUrl(setting)
           headers: DEFAULT_HEADERS
           method: 'PUT'
           data: [uuid]
@@ -187,7 +188,7 @@ define 'kryptnostic.user-directory-api', [
     removeMutedChannel: (uuid, setting) ->
       Promise.resolve(axios(
         Requests.wrapCredentials({
-          url: getUserUrl() + '/setting/' + setting
+          url: getUserSettingUrl(setting)
           headers: DEFAULT_HEADERS
           method: 'DELETE'
           data: [uuid]

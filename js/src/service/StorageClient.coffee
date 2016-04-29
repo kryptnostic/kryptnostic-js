@@ -156,7 +156,7 @@ define 'kryptnostic.storage-client', [
 
         # prefill the response with the objectKeys
         response = []
-        _.forEach(objectKeys, (objectKey) =>
+        _.forEach(objectKeys, (objectKey) ->
           response.push({
             objectKey
           })

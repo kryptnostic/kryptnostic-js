@@ -1,3 +1,5 @@
+# coffeelint: disable=cyclomatic_complexity
+
 define 'kryptnostic.aes-crypto-service', [
   'require'
   'forge'
@@ -136,7 +138,7 @@ define 'kryptnostic.aes-crypto-service', [
     decryptObjectMetadataTree: (objectMetadataTree) ->
 
       #
-      # TODO - add unit tests
+      # ToDo - add unit tests
       #
 
       if _.isEmpty(objectMetadataTree)

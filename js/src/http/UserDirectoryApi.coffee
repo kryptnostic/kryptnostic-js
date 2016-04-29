@@ -167,7 +167,7 @@ define 'kryptnostic.user-directory-api', [
         })
       ))
 
-    getMutedChannels: (setting) ->
+    getUserSetting: (setting) ->
       Promise.resolve(axios(
         Requests.wrapCredentials({
           url: getUserSettingUrl(setting)
@@ -175,7 +175,7 @@ define 'kryptnostic.user-directory-api', [
         })
       ))
 
-    addMutedChannel: (uuid, setting) ->
+    addUserSetting: (uuid, setting) ->
       Promise.resolve(axios(
         Requests.wrapCredentials({
           url: getUserSettingUrl(setting)
@@ -185,7 +185,7 @@ define 'kryptnostic.user-directory-api', [
         })
       ))
 
-    removeMutedChannel: (uuid, setting) ->
+    removeUserSetting: (uuid, setting) ->
       Promise.resolve(axios(
         Requests.wrapCredentials({
           url: getUserSettingUrl(setting)

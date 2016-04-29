@@ -1,3 +1,5 @@
+# coffeelint: disable=cyclomatic_complexity
+
 define 'kryptnostic.aes-crypto-service', [
   'require'
   'forge'
@@ -6,6 +8,7 @@ define 'kryptnostic.aes-crypto-service', [
   'kryptnostic.block-ciphertext'
   'kryptnostic.cypher'
   'kryptnostic.logger'
+  'kryptnostic.validators'
 ], (require) ->
   'use strict'
 
@@ -20,6 +23,7 @@ define 'kryptnostic.aes-crypto-service', [
   # utils
   BinaryUtils = require 'kryptnostic.binary-utils'
   Logger      = require 'kryptnostic.logger'
+  Validators  = require 'kryptnostic.validators'
 
   # constants
   EMPTY_STRING = ''
@@ -29,6 +33,10 @@ define 'kryptnostic.aes-crypto-service', [
   IV_128 = 128
 
   logger = Logger.get('AesCryptoService')
+
+  {
+    validateBlockCipherText
+  } = Validators
 
   computeHMAC = (key, iv, salt, ciphertext) ->
     try
@@ -126,6 +134,28 @@ define 'kryptnostic.aes-crypto-service', [
         if not isValid
           throw new Error('BlockCipherText data integrity check failed')
         return @abstractCryptoService.decrypt(@key, iv, ciphertext)
+
+    decryptObjectMetadataTree: (objectMetadataTree) ->
+
+      #
+      # ToDo - add unit tests
+      #
+
+      if _.isEmpty(objectMetadataTree)
+        return
+
+      if validateBlockCipherText(objectMetadataTree.data)
+        try
+          plaintext = @decrypt(objectMetadataTree.data)
+          objectMetadataTree.data = plaintext
+        catch e
+          objectMetadataTree.data = null
+
+      if not _.isEmpty(objectMetadataTree.children)
+        _.forEach(objectMetadataTree.children, (child) =>
+          @decryptObjectMetadataTree(child)
+        )
+      return
 
     decryptToUint8Array: (blockCipherText) ->
 

@@ -11,7 +11,7 @@ define 'kryptnostic.object-api', [
   'kryptnostic.requests'
   'kryptnostic.object-metadata'
   'kryptnostic.validators'
-  'kryptnostic.object-tree-load-request'
+  'kryptnostic.object-tree-paged-response'
 ], (require) ->
 
   axios                 = require 'axios'
@@ -22,8 +22,8 @@ define 'kryptnostic.object-api', [
   Promise               = require 'bluebird'
   ObjectMetadata        = require 'kryptnostic.object-metadata'
   ObjectMetadataTree    = require 'kryptnostic.object-metadata-tree'
-  ObjectTreeLoadRequest = require 'kryptnostic.object-tree-load-request'
   Validators            = require 'kryptnostic.validators'
+  ObjectTreePagedResponse = require 'kryptnostic.object-tree-paged-response'
 
   {
     validateId,
@@ -45,28 +45,18 @@ define 'kryptnostic.object-api', [
   objectVersionUrl = (objectId, objectVersion) -> objectIdUrl(objectId) + '/' + objectVersion
   objectVersionCdnUrl  = (objectId, objectVersion) -> objectIdCdnUrl(objectId) + '/' + objectVersion
 
+  bulkObjectsUrl = -> objectUrl() + '/bulk'
+  indexSegmentUrl = -> objectUrl() + '/index-segment'
   latestObjectIdUrl = (objectId) -> objectUrl() + '/latest/id/' + objectId
   objectMetadataUrl = (objectId) -> objectUrl() + '/objectmetadata/id/' + objectId
-  bulkObjectsUrl = -> objectUrl() + '/bulk'
+
   objectLevelsUrl = -> objectUrl() + '/levels'
-  indexSegmentUrl = -> objectUrl() + '/index-segment'
+  objectTreePagedUrl = ({ objectKey, pageSize }) ->
+    objectLevelsUrl() + '/' + objectKey.objectId + '/' + pageSize
+  objectTreeNextPageUrl = ({ objectKey, pageSize, latestObjectId, latestObjectVersion }) ->
+    objectTreePagedUrl(objectKey, pageSize) + '/' + latestObjectId + '/' + latestObjectVersion
 
   class ObjectApi
-
-    getObject: (objectId) ->
-
-      #
-      # rethink this API. what makes more sense, a bulk GET or a regular single object GET?
-      #
-
-      if not validateUuid(objectId)
-        return Promise.resolve(null)
-
-      Promise.resolve(
-        @getObjects([objectId])
-      )
-      .then (objects) ->
-        return objects[objectId]
 
     getObjects: (objectIds) ->
 
@@ -137,29 +127,69 @@ define 'kryptnostic.object-api', [
 
     getObjectsByTypeAndLoadLevel: (objectIds, typeLoadLevels, loadDepth, createdAfter, objectIdsToFilter) ->
 
-      objectTreeLoadRequest = new ObjectTreeLoadRequest({
+      requestData = {
         objectIds         : objectIds
         loadLevels        : typeLoadLevels
         depth             : loadDepth
         createdAfter      : createdAfter
         objectIdsToFilter : objectIdsToFilter
-      })
+      }
 
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
             method  : 'POST'
             url     : objectLevelsUrl()
-            data    : JSON.stringify(objectTreeLoadRequest)
+            data    : requestData
             headers : DEFAULT_HEADERS
           })
         )
       )
       .then (axiosResponse) ->
-        if axiosResponse? and axiosResponse.data?
+        if axiosResponse and axiosResponse.data
           # axiosResponse.data == Map<java.util.UUID, com.kryptnostic.v2.storage.models.ObjectMetadataEncryptedNode>
           # return new ObjectMetadataTree(axiosResponse.data)
           return axiosResponse.data
+        else
+          return null
+
+    getObjectTreeByTypeAndLoadLevelPaged: (objectTreePagedRequest) ->
+
+      if objectTreePagedRequest.latestObjectId and objectTreePagedRequest.latestObjectVersion
+        objectTreeRequestUrl = objectTreeNextPageUrl(objectTreePagedRequest)
+      else if objectTreePagedRequest.nextPageUrlPath
+        objectTreeRequestUrl = objectUrl() + objectTreePagedRequest.nextPageUrlPath
+      else
+        objectTreeRequestUrl = objectTreePagedUrl(objectTreePagedRequest)
+
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method  : 'POST'
+            url     : objectTreeRequestUrl
+            data    : objectTreePagedRequest.getRequestData()
+            headers : DEFAULT_HEADERS
+          })
+        )
+      )
+      .then (axiosResponse) ->
+        if axiosResponse and axiosResponse.data
+          # axiosResponse.data == com.kryptnostic.v2.storage.models.ObjectTreeLoadResponse
+          objectId = objectTreePagedRequest.objectKey.objectId
+          objectMetadataTree = axiosResponse.data.objectMetadataTrees[objectId]
+          nextPageUrlPath = axiosResponse.data.scrollUp
+          #
+          # !!!HACK!!! the backend will incorrectly return a valid scrollUp when:
+          #   1. there is only a single page, i.e., when the total number of children is less than the page size
+          #   2. we've reached the last page
+          #
+          if not _.isEmpty(nextPageUrlPath) and (_.size(objectMetadataTree.children) < objectTreePagedRequest.pageSize)
+            nextPageUrlPath = null
+          objectTreePagedResponse = new ObjectTreePagedResponse({
+            objectMetadataTree
+            nextPageUrlPath
+          })
+          return objectTreePagedResponse
         else
           return null
 

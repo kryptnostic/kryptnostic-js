@@ -176,9 +176,18 @@ define 'kryptnostic.object-api', [
         if axiosResponse and axiosResponse.data
           # axiosResponse.data == com.kryptnostic.v2.storage.models.ObjectTreeLoadResponse
           objectId = objectTreePagedRequest.objectKey.objectId
+          objectMetadataTree = axiosResponse.data.objectMetadataTrees[objectId]
+          nextPageUrlPath = axiosResponse.data.scrollUp
+          #
+          # !!!HACK!!! the backend will incorrectly return a valid scrollUp when:
+          #   1. there is only a single page, i.e., when the total number of children is less than the page size
+          #   2. we've reached the last page
+          #
+          if not _.isEmpty(nextPageUrlPath) and (_.size(objectMetadataTree.children) < objectTreePagedRequest.pageSize)
+            nextPageUrlPath = null
           objectTreePagedResponse = new ObjectTreePagedResponse({
-            objectMetadataTree: axiosResponse.data.objectMetadataTrees[objectId]
-            nextPageUrlPath: axiosResponse.data.scrollUp
+            objectMetadataTree
+            nextPageUrlPath
           })
           return objectTreePagedResponse
         else

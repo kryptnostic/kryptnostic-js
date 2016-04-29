@@ -21,11 +21,8 @@ define 'kryptnostic.object-tree-paged-request', [
 
       requestData = {}
       requestData.depth = @loadDepth
-      requestData.scrollSize = @pageSize
+      requestData.pageSize = @pageSize
       requestData.loadLevels = @typeLoadLevels
-
-      if not _.isEmpty(@objectIdsToFilter)
-        requestData.objectIdsToFilter = @objectIdsToFilter
 
       return requestData
 

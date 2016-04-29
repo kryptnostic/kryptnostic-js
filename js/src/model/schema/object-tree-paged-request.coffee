@@ -30,12 +30,7 @@ define 'kryptnostic.schema.object-tree-paged-request', [], ->
       },
       pageSize: {
         type: 'number'
-        required: false
-        allowEmpty: false
-      },
-      objectIdsToFilter: {
-        type: 'object'
-        require: false
+        required: true
         allowEmpty: false
       },
       nextPageUrlPath: {

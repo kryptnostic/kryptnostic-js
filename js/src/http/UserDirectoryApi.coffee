@@ -23,10 +23,11 @@ define 'kryptnostic.user-directory-api', [
   usersInRealmUrl = -> Configuration.get('heraclesUrl') + '/directory'
   setFirstLoginUrl = -> Configuration.get('heraclesUrl') + '/directory/setlogin'
   getUserIdFromEmail = (email) -> Configuration.get('heraclesUrl') + '/directory/validate/sharing/email/' + email
+  getUserSettingUrl = (userSetting) -> getUserUrl() + '/setting/' + userSetting
 
   log = Logger.get('UserDirectoryApi')
 
-  DEFAULT_HEADER = { 'Content-Type' : 'application/json' }
+  DEFAULT_HEADERS = { 'Content-Type' : 'application/json' }
 
   { validateUuids } = Validators
 
@@ -163,6 +164,34 @@ define 'kryptnostic.user-directory-api', [
         Requests.wrapCredentials({
           url: setFirstLoginUrl()
           method: 'POST'
+        })
+      ))
+
+    getUserSetting: (setting) ->
+      Promise.resolve(axios(
+        Requests.wrapCredentials({
+          url: getUserSettingUrl(setting)
+          method: 'GET'
+        })
+      ))
+
+    addUserSetting: (uuid, setting) ->
+      Promise.resolve(axios(
+        Requests.wrapCredentials({
+          url: getUserSettingUrl(setting)
+          headers: DEFAULT_HEADERS
+          method: 'PUT'
+          data: [uuid]
+        })
+      ))
+
+    removeUserSetting: (uuid, setting) ->
+      Promise.resolve(axios(
+        Requests.wrapCredentials({
+          url: getUserSettingUrl(setting)
+          headers: DEFAULT_HEADERS
+          method: 'DELETE'
+          data: [uuid]
         })
       ))
 

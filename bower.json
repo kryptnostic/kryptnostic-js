@@ -1,6 +1,6 @@
 {
   "name"       : "kryptnostic-js",
-  "version"    : "0.10.6",
+  "version"    : "0.10.7",
   "main"       : "dist/kryptnostic.js",
   "homepage"   : "https://github.com/kryptnostic/kryptnostic-js",
   "license"    : "Apache-2.0",
@@ -50,7 +50,6 @@
     "lodash"             : "3.10.0",
     "loglevel"           : "1.3.1",
     "murmurhash3"        : "https://raw.githubusercontent.com/karanlyons/murmurHash3.js/master/murmurHash3.js",
-    "pako"               : "0.2.6",
     "require-cs"         : "0.5.0",
     "requirejs"          : "2.1.18"
   }

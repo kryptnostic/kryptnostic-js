@@ -52753,7 +52753,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(2), __webpack_require__(6), __webpack_require__(28), __webpack_require__(34), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var Cache, Configuration, DEFAULT_HEADER, Logger, Promise, Requests, UserDirectoryApi, Validators, axios, getUserIdFromEmail, getUserUrl, getUsersUrl, log, setFirstLoginUrl, usersInRealmUrl, validateEmail, validateUuid, validateUuids;
+	  var Cache, Configuration, DEFAULT_HEADERS, Logger, Promise, Requests, UserDirectoryApi, Validators, axios, getUserIdFromEmail, getUserSettingUrl, getUserUrl, getUsersUrl, log, setFirstLoginUrl, usersInRealmUrl, validateEmail, validateUuid, validateUuids;
 	  axios = __webpack_require__(35);
 	  Promise = __webpack_require__(22);
 	  Logger = __webpack_require__(2);
@@ -52776,8 +52776,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  getUserIdFromEmail = function(email) {
 	    return Configuration.get('heraclesUrl') + '/directory/validate/sharing/email/' + email;
 	  };
+	  getUserSettingUrl = function(userSetting) {
+	    return getUserUrl() + '/setting/' + userSetting;
+	  };
 	  log = Logger.get('UserDirectoryApi');
-	  DEFAULT_HEADER = {
+	  DEFAULT_HEADERS = {
 	    'Content-Type': 'application/json'
 	  };
 	  validateUuids = Validators.validateUuids;
@@ -52934,6 +52937,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return Promise.resolve(axios(Requests.wrapCredentials({
 	        url: setFirstLoginUrl(),
 	        method: 'POST'
+	      })));
+	    };
+
+	    UserDirectoryApi.prototype.getUserSetting = function(setting) {
+	      return Promise.resolve(axios(Requests.wrapCredentials({
+	        url: getUserSettingUrl(setting),
+	        method: 'GET'
+	      })));
+	    };
+
+	    UserDirectoryApi.prototype.addUserSetting = function(uuid, setting) {
+	      return Promise.resolve(axios(Requests.wrapCredentials({
+	        url: getUserSettingUrl(setting),
+	        headers: DEFAULT_HEADERS,
+	        method: 'PUT',
+	        data: [uuid]
+	      })));
+	    };
+
+	    UserDirectoryApi.prototype.removeUserSetting = function(uuid, setting) {
+	      return Promise.resolve(axios(Requests.wrapCredentials({
+	        url: getUserSettingUrl(setting),
+	        headers: DEFAULT_HEADERS,
+	        method: 'DELETE',
+	        data: [uuid]
 	      })));
 	    };
 

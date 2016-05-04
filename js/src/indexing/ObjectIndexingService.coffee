@@ -42,6 +42,7 @@ define 'kryptnostic.indexing.object-indexing-service', [
   Validators   = require 'kryptnostic.validators'
 
   # constants
+  BATCH_SIZE = 10000
   MINIMUM_TOKEN_LENGTH = 1
 
   { validateVersionedObjectKey } = Validators
@@ -107,7 +108,10 @@ define 'kryptnostic.indexing.object-indexing-service', [
       # 2. randomly shuffle the inverted index segments
       @shuffle(invertedIndexSegments)
 
-      # 3. reserve a range of integers for each inverted index segment
+      # 3 split the inverted index segments into batches for uploading in bulk
+      batchedInvertedIndexSegments = _.chunk(invertedIndexSegments, BATCH_SIZE)
+
+      # 4. reserve a range of integers for each inverted index segment
       Promise.props({
         objectSearchPair: @sharingApi.getObjectSearchPair(parentObjectKey),
         objectCryptoService: @cryptoServiceLoader.getObjectCryptoService(parentObjectKey),
@@ -119,38 +123,50 @@ define 'kryptnostic.indexing.object-indexing-service', [
         if not objectCryptoService
           return
 
-        # 4. calculate the objectIndexPair from the objectSearchPair
+        # 5. calculate the objectIndexPair from the objectSearchPair
         pairs = @calculateObjectIndexPairAndObjectSearchPair(parentObjectKey, objectSearchPair)
         objectIndexPair = pairs.objectIndexPair
         objectSearchPair = pairs.objectSearchPair
 
-        # 5. loop over each inverted index segment
-        _.forEach(invertedIndexSegments, (segment, segmentIndex) =>
+        # 6. loop over each inverted index segment in each batch
+        _.forEach(batchedInvertedIndexSegments, (batch, batchIndex) =>
 
-          # 5.1 compute the SHA-256 hash of the segment's address
-          segmentAddressHash = @computeSegmentAddressHash(
-            segment.token,
-            segmentRangeStartIndex,
-            segmentIndex,
-            objectIndexPair
-          )
-          if segmentAddressHash
+          indexSegmentRequests = []
+          _.forEach(batch, (segment, segmentIndex) =>
 
-            # 5.2 create an object in which to store the encrypted inverted index segment
-            Promise.resolve(
-              @createInvertedIndexSegmentObject(segmentAddressHash, objectKey, parentObjectKey)
+            # we need the inverted index segment's position in the entire list of inverted index segments
+            segmentIndexInRange = (batchIndex * BATCH_SIZE) + segmentIndex
+
+            # 6.1 compute the SHA-256 hash of the segment's address
+            segmentAddressHash = @computeSegmentAddressHash(
+              segment.token,
+              segmentRangeStartIndex,
+              segmentIndexInRange,
+              objectIndexPair
             )
-            .then (objectKeyForNewlyCreatedObject) =>
 
-              # 5.3 encrypt the inverted index segment
+            # the address hash could be null if we decide to not index the token
+            if segmentAddressHash
+
+              # 6.2 encrypt the inverted index segment
               encryptedSegment = @encryptInvertedIndexSegment(segment, parentObjectKey, objectCryptoService)
 
-              # 5.4 upload the encrypted inverted index segment in the newly created object
-              @objectApi.setObjectFromBlockCiphertext(objectKeyForNewlyCreatedObject, encryptedSegment)
+              # ToDo - create a IndexSegmentRequest class
+              indexSegmentRequests.push({
+                address: segmentAddressHash,
+                contents: encryptedSegment
+              })
+          )
 
-              # DONE!
-              return
+          # 7. store this batch of encrypted inverted index segments
+          @objectApi.createIndexSegments(parentObjectKey, indexSegmentRequests)
+
+          # done with this batch of inverted index segments
+          return
         )
+
+        # done with all inverted index segments
+        return
 
       return
 

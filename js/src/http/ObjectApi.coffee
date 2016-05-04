@@ -46,7 +46,6 @@ define 'kryptnostic.object-api', [
   objectVersionCdnUrl  = (objectId, objectVersion) -> objectIdCdnUrl(objectId) + '/' + objectVersion
 
   bulkObjectsUrl = -> objectUrl() + '/bulk'
-  indexSegmentUrl = -> objectUrl() + '/index-segment'
   latestObjectIdUrl = (objectId) -> objectUrl() + '/latest/id/' + objectId
   objectMetadataUrl = (objectId) -> objectUrl() + '/objectmetadata/id/' + objectId
 
@@ -55,6 +54,9 @@ define 'kryptnostic.object-api', [
     objectLevelsUrl() + '/' + objectKey.objectId + '/' + pageSize
   objectTreeNextPageUrl = ({ objectKey, pageSize, latestObjectId, latestObjectVersion }) ->
     objectTreePagedUrl(objectKey, pageSize) + '/' + latestObjectId + '/' + latestObjectVersion
+
+  indexSegmentUrl = -> objectUrl() + '/index-segment'
+  bulkIndexSegmentsUrl = (objectId, objectVersion) -> objectVersionUrl(objectId, objectVersion) + '/index-segments'
 
   class ObjectApi
 
@@ -74,7 +76,7 @@ define 'kryptnostic.object-api', [
         )
       )
       .then (axiosResponse) ->
-        if axiosResponse? and axiosResponse.data?
+        if axiosResponse and axiosResponse.data
           # axiosResponse.data == Map<java.util.UUID, com.kryptnostic.kodex.v1.crypto.ciphers.BlockCiphertext>
           return _.mapValues(axiosResponse.data, (blockCiphertext) ->
             try
@@ -119,7 +121,7 @@ define 'kryptnostic.object-api', [
         )
       )
       .then (axiosResponse) ->
-        if axiosResponse? and axiosResponse.data?
+        if axiosResponse and axiosResponse.data
           # axiosResponse.data == com.kryptnostic.v2.storage.models.ObjectMetadata
           return new ObjectMetadata(axiosResponse.data)
         else
@@ -205,7 +207,7 @@ define 'kryptnostic.object-api', [
         )
       )
       .then (axiosResponse) ->
-        if axiosResponse? and axiosResponse.data?
+        if axiosResponse and axiosResponse.data
           # axiosResponse.data == com.kryptnostic.v2.storage.models.VersionedObjectKey
           return axiosResponse.data
         else
@@ -223,11 +225,23 @@ define 'kryptnostic.object-api', [
         )
       )
       .then (axiosResponse) ->
-        if axiosResponse? and axiosResponse.data?
+        if axiosResponse and axiosResponse.data
           # axiosResponse.data == com.kryptnostic.v2.storage.models.VersionedObjectKey
           return axiosResponse.data
         else
           return null
+
+    createIndexSegments: (parentObjectKey, indexSegmentRequests) ->
+      Promise.resolve(
+        axios(
+          Requests.wrapCredentials({
+            method  : 'POST'
+            url     : bulkIndexSegmentsUrl(parentObjectKey.objectId, parentObjectKey.objectVersion)
+            data    : JSON.stringify(indexSegmentRequests)
+            headers : DEFAULT_HEADERS
+          })
+        )
+      )
 
     getObjectAsBlockCiphertext: (versionedObjectKey) ->
       Requests.getBlockCiphertextFromUrl(
@@ -245,11 +259,6 @@ define 'kryptnostic.object-api', [
           })
         )
       )
-      .then (axiosResponse) ->
-        if axiosResponse? and axiosResponse.data?
-          return axiosResponse.data
-        else
-          return null
 
     deleteObjectTrees: (objectIds) ->
       Promise.resolve(

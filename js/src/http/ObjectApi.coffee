@@ -55,8 +55,8 @@ define 'kryptnostic.object-api', [
   objectTreeNextPageUrl = ({ objectKey, pageSize, latestObjectId, latestObjectVersion }) ->
     objectTreePagedUrl(objectKey, pageSize) + '/' + latestObjectId + '/' + latestObjectVersion
 
-  indexSegmentUrl = -> objectUrl() + '/index-segment'
-  bulkIndexSegmentsUrl = (objectId, objectVersion) -> objectVersionUrl(objectId, objectVersion) + '/index-segments'
+  bulkIndexSegmentsUrl = (objectId, objectVersion) ->
+    objectVersionUrl(objectId, objectVersion) + '/index-segments'
 
   class ObjectApi
 
@@ -202,24 +202,6 @@ define 'kryptnostic.object-api', [
             method  : 'POST'
             url     : objectUrl()
             data    : JSON.stringify(createObjectRequest)
-            headers : DEFAULT_HEADERS
-          })
-        )
-      )
-      .then (axiosResponse) ->
-        if axiosResponse and axiosResponse.data
-          # axiosResponse.data == com.kryptnostic.v2.storage.models.VersionedObjectKey
-          return axiosResponse.data
-        else
-          return null
-
-    createIndexSegment: (createIndexSegmentRequest) ->
-      Promise.resolve(
-        axios(
-          Requests.wrapCredentials({
-            method  : 'POST'
-            url     : indexSegmentUrl()
-            data    : JSON.stringify(createIndexSegmentRequest)
             headers : DEFAULT_HEADERS
           })
         )

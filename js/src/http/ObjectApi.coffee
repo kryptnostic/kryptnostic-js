@@ -12,6 +12,7 @@ define 'kryptnostic.object-api', [
   'kryptnostic.object-metadata'
   'kryptnostic.validators'
   'kryptnostic.object-tree-paged-response'
+  'kryptnostic.paging-direction'
 ], (require) ->
 
   axios                 = require 'axios'
@@ -24,6 +25,7 @@ define 'kryptnostic.object-api', [
   ObjectMetadataTree    = require 'kryptnostic.object-metadata-tree'
   Validators            = require 'kryptnostic.validators'
   ObjectTreePagedResponse = require 'kryptnostic.object-tree-paged-response'
+  PagingDirection       = require 'kryptnostic.paging-direction'
 
   {
     validateId,
@@ -50,10 +52,23 @@ define 'kryptnostic.object-api', [
   objectMetadataUrl = (objectId) -> objectUrl() + '/objectmetadata/id/' + objectId
 
   objectLevelsUrl = -> objectUrl() + '/levels'
-  objectTreePagedUrl = ({ objectKey, pageSize }) ->
-    objectLevelsUrl() + '/' + objectKey.objectId + '/' + pageSize
-  objectTreeNextPageUrl = ({ objectKey, pageSize, latestObjectId, latestObjectVersion }) ->
-    objectTreePagedUrl(objectKey, pageSize) + '/' + latestObjectId + '/' + latestObjectVersion
+
+  objectTreeInitialPageUrl = (rootObjectKey, pageSize) ->
+    objectLevelsUrl() +
+      '/' + pageSize +
+      '/' + rootObjectKey.objectId + '/' + rootObjectKey.objectVersion
+
+  objectTreePrevPageUrl = (rootObjectKey, lastChildObjectKey, pageSize) ->
+    objectLevelsUrl() +
+      '/prev/' + pageSize +
+      '/' + rootObjectKey.objectId + '/' + rootObjectKey.objectVersion +
+      '/' + lastChildObjectKey.objectId + '/' + lastChildObjectKey.objectVersion
+
+  objectTreeNextPageUrl = (rootObjectKey, lastChildObjectKey, pageSize) ->
+    objectLevelsUrl() +
+      '/next/' + pageSize +
+      '/' + rootObjectKey.objectId + '/' + rootObjectKey.objectVersion +
+      '/' + lastChildObjectKey.objectId + '/' + lastChildObjectKey.objectVersion
 
   bulkIndexSegmentsUrl = (objectId, objectVersion) ->
     objectVersionUrl(objectId, objectVersion) + '/index-segments'
@@ -157,12 +172,23 @@ define 'kryptnostic.object-api', [
 
     getObjectTreeByTypeAndLoadLevelPaged: (objectTreePagedRequest) ->
 
-      if objectTreePagedRequest.latestObjectId and objectTreePagedRequest.latestObjectVersion
-        objectTreeRequestUrl = objectTreeNextPageUrl(objectTreePagedRequest)
-      else if objectTreePagedRequest.nextPageUrlPath
-        objectTreeRequestUrl = objectUrl() + objectTreePagedRequest.nextPageUrlPath
+      if PagingDirection.BACKWARDS is objectTreePagedRequest.pagingDirection
+        objectTreeRequestUrl = objectTreePrevPageUrl(
+          objectTreePagedRequest.rootObjectKey,
+          objectTreePagedRequest.lastChildObjectKey,
+          objectTreePagedRequest.pageSize
+        )
+      else if PagingDirection.FORWARDS is objectTreePagedRequest.pagingDirection
+        objectTreeRequestUrl = objectTreeNextPageUrl(
+          objectTreePagedRequest.rootObjectKey,
+          objectTreePagedRequest.lastChildObjectKey,
+          objectTreePagedRequest.pageSize
+        )
       else
-        objectTreeRequestUrl = objectTreePagedUrl(objectTreePagedRequest)
+        objectTreeRequestUrl = objectTreeInitialPageUrl(
+          objectTreePagedRequest.rootObjectKey,
+          objectTreePagedRequest.pageSize
+        )
 
       Promise.resolve(
         axios(
@@ -177,19 +203,12 @@ define 'kryptnostic.object-api', [
       .then (axiosResponse) ->
         if axiosResponse and axiosResponse.data
           # axiosResponse.data == com.kryptnostic.v2.storage.models.ObjectTreeLoadResponse
-          objectId = objectTreePagedRequest.objectKey.objectId
+          objectId = objectTreePagedRequest.rootObjectKey.objectId
           objectMetadataTree = axiosResponse.data.objectMetadataTrees[objectId]
-          nextPageUrlPath = axiosResponse.data.scrollUp
-          #
-          # !!!HACK!!! the backend will incorrectly return a valid scrollUp when:
-          #   1. there is only a single page, i.e., when the total number of children is less than the page size
-          #   2. we've reached the last page
-          #
-          if not _.isEmpty(nextPageUrlPath) and (_.size(objectMetadataTree.children) < objectTreePagedRequest.pageSize)
-            nextPageUrlPath = null
+          isLastPage = _.size(objectMetadataTree.children) < objectTreePagedRequest.pageSize
           objectTreePagedResponse = new ObjectTreePagedResponse({
             objectMetadataTree
-            nextPageUrlPath
+            isLastPage
           })
           return objectTreePagedResponse
         else

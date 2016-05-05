@@ -2,19 +2,13 @@ define 'kryptnostic.schema.object-tree-paged-request', [], ->
 
   SCHEMA = {
     properties: {
-      objectKey: {
+      rootObjectKey: {
         type: 'object'
         required: true
         allowEmpty: false
       },
-      latestObjectId: {
-        type: 'string'
-        required: false
-        allowEmpty: false
-        pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[1-4][0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$'
-      },
-      latestObjectVersion: {
-        type: 'number'
+      lastChildObjectKey: {
+        type: 'object'
         required: false
         allowEmpty: false
       },
@@ -25,7 +19,7 @@ define 'kryptnostic.schema.object-tree-paged-request', [], ->
       },
       loadDepth: {
         type: 'number'
-        required: false
+        required: true
         allowEmpty: false
       },
       pageSize: {
@@ -33,10 +27,10 @@ define 'kryptnostic.schema.object-tree-paged-request', [], ->
         required: true
         allowEmpty: false
       },
-      nextPageUrlPath: {
+      pagingDirection: {
         type: 'string'
         required: false
-        allowEmpty: true
+        allowEmpty: false
       }
     }
   }

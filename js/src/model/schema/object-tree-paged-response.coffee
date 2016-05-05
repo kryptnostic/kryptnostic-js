@@ -7,10 +7,10 @@ define 'kryptnostic.schema.object-tree-paged-response', [], ->
         required: true
         allowEmpty: false
       },
-      nextPageUrlPath: {
-        type: ['string', 'null']
+      isLastPage: {
+        type: 'boolean'
         required: true
-        allowEmpty: true
+        allowEmpty: false
       }
     }
   }

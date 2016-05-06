@@ -51836,7 +51836,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(3), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var Logger, _, log, validateId, validateKey, validateNonEmptyString, validateObjectCryptoService, validateObjectType, validateUuid, validateUuids, validateVersionedObjectKey, validateVersionedObjectKeys;
+	  var Logger, _, log, validateBlockCipherText, validateId, validateKey, validateNonEmptyString, validateObjectCryptoService, validateObjectType, validateUuid, validateUuids, validateVersionedObjectKey, validateVersionedObjectKeys;
 	  _ = __webpack_require__(3);
 	  Logger = __webpack_require__(2);
 	  log = Logger.get('validators');
@@ -51911,6 +51911,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    return true;
 	  };
+	  validateBlockCipherText = function(blockCipherText) {
+	    if (!_.isObject(blockCipherText)) {
+	      return false;
+	    }
+	    if (_.isEmpty(blockCipherText.contents) || !_.isString(blockCipherText.contents)) {
+	      return false;
+	    }
+	    if (_.isEmpty(blockCipherText.iv) || !_.isString(blockCipherText.iv)) {
+	      return false;
+	    }
+	    if (!_.isEmpty(blockCipherText.salt) && !_.isString(blockCipherText.salt)) {
+	      return false;
+	    }
+	    if (!_.isEmpty(blockCipherText.tag) && !_.isString(blockCipherText.tag)) {
+	      return false;
+	    }
+	    return true;
+	  };
 	  return {
 	    validateId: validateId,
 	    validateKey: validateKey,
@@ -51920,7 +51938,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    validateNonEmptyString: validateNonEmptyString,
 	    validateVersionedObjectKey: validateVersionedObjectKey,
 	    validateVersionedObjectKeys: validateVersionedObjectKeys,
-	    validateObjectCryptoService: validateObjectCryptoService
+	    validateObjectCryptoService: validateObjectCryptoService,
+	    validateBlockCipherText: validateBlockCipherText
 	  };
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
@@ -53176,21 +53195,23 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12), __webpack_require__(47), __webpack_require__(23), __webpack_require__(24), __webpack_require__(52), __webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(12), __webpack_require__(47), __webpack_require__(23), __webpack_require__(24), __webpack_require__(52), __webpack_require__(2), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 	  'use strict';
-	  var AbstractCryptoService, AesCryptoService, BITS_PER_BYTE, BinaryUtils, BlockCiphertext, Cypher, EMPTY_STRING, HMAC_HASH_FUNCTION, IV_128, IV_96, Logger, checkDataIntegrity, computeHMAC, forge, logger;
+	  var AbstractCryptoService, AesCryptoService, BITS_PER_BYTE, BinaryUtils, BlockCiphertext, Cypher, EMPTY_STRING, HMAC_HASH_FUNCTION, IV_128, IV_96, Logger, Validators, checkDataIntegrity, computeHMAC, forge, logger, validateBlockCipherText;
 	  forge = __webpack_require__(12);
 	  AbstractCryptoService = __webpack_require__(47);
 	  BlockCiphertext = __webpack_require__(24);
 	  Cypher = __webpack_require__(52);
 	  BinaryUtils = __webpack_require__(23);
 	  Logger = __webpack_require__(2);
+	  Validators = __webpack_require__(36);
 	  EMPTY_STRING = '';
 	  BITS_PER_BYTE = 8;
 	  HMAC_HASH_FUNCTION = 'sha256';
 	  IV_96 = 96;
 	  IV_128 = 128;
 	  logger = Logger.get('AesCryptoService');
+	  validateBlockCipherText = Validators.validateBlockCipherText;
 	  computeHMAC = function(key, iv, salt, ciphertext) {
 	    var e, hmac, hmacHash;
 	    try {
@@ -53289,6 +53310,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	          throw new Error('BlockCipherText data integrity check failed');
 	        }
 	        return this.abstractCryptoService.decrypt(this.key, iv, ciphertext);
+	      }
+	    };
+
+	    AesCryptoService.prototype.decryptObjectMetadataTree = function(objectMetadataTree) {
+	      var e, plaintext;
+	      if (_.isEmpty(objectMetadataTree)) {
+	        return;
+	      }
+	      if (validateBlockCipherText(objectMetadataTree.data)) {
+	        try {
+	          plaintext = this.decrypt(objectMetadataTree.data);
+	          objectMetadataTree.data = plaintext;
+	        } catch (_error) {
+	          e = _error;
+	          objectMetadataTree.data = null;
+	        }
+	      }
+	      if (!_.isEmpty(objectMetadataTree.children)) {
+	        _.forEach(objectMetadataTree.children, (function(_this) {
+	          return function(child) {
+	            return _this.decryptObjectMetadataTree(child);
+	          };
+	        })(this));
 	      }
 	    };
 

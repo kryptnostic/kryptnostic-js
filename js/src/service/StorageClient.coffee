@@ -224,7 +224,7 @@ define 'kryptnostic.storage-client', [
       })
       .then ({ objectCryptoService, objectTreePagedResponse }) ->
 
-        if not _.isObject(objectCryptoService)
+        if not _.isObject(objectCryptoService) || _.isEmpty(objectCryptoService)
           return null
 
         objectCryptoService.decryptObjectMetadataTree(objectTreePagedResponse.objectMetadataTree)

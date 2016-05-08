@@ -31036,6 +31036,9 @@ define("function-name", function(){});
         }).then(function(_arg) {
           var objectCryptoService, objectTreePagedResponse;
           objectCryptoService = _arg.objectCryptoService, objectTreePagedResponse = _arg.objectTreePagedResponse;
+          if (!_.isObject(objectCryptoService) || _.isEmpty(objectCryptoService)) {
+            return null;
+          }
           objectCryptoService.decryptObjectMetadataTree(objectTreePagedResponse.objectMetadataTree);
           return objectTreePagedResponse;
         });

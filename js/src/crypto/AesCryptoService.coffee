@@ -141,7 +141,7 @@ define 'kryptnostic.aes-crypto-service', [
       # ToDo - add unit tests
       #
 
-      if _.isEmpty(objectMetadataTree)
+      if not _.isObject(objectMetadataTree) or _.isEmpty(objectMetadataTree)
         return
 
       if validateBlockCipherText(objectMetadataTree.data)

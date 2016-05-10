@@ -38,8 +38,7 @@ define 'kryptnostic.key-storage-api', [
   {
     validateUuid,
     validateUuids,
-    validateVersionedObjectKey,
-    validateObjectCryptoService
+    validateVersionedObjectKey
   } = Validators
 
   logger = Logger.get('KeyStorageApi')

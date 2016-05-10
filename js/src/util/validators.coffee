@@ -71,13 +71,6 @@ define 'kryptnostic.validators', [
 
     return isValid
 
-  validateObjectCryptoService = (objectCryptoService) ->
-
-    if not _.isString(objectCryptoService) or _.isEmpty(objectCryptoService)
-      return false
-
-    return true
-
   validateBlockCipherText = (blockCipherText) ->
 
     if not _.isObject(blockCipherText)
@@ -106,6 +99,5 @@ define 'kryptnostic.validators', [
     validateNonEmptyString
     validateVersionedObjectKey
     validateVersionedObjectKeys
-    validateObjectCryptoService
     validateBlockCipherText
   }

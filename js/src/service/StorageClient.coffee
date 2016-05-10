@@ -66,67 +66,69 @@ define 'kryptnostic.storage-client', [
       })
       .then ({ objectKey, parentObjectKey }) =>
 
-        cryptoServicePromise = null
+        objectCryptoServicePromise = null
         if parentObjectKey?
-          cryptoServicePromise = @cryptoServiceLoader.getObjectCryptoService(parentObjectKey)
+          objectCryptoServicePromise = @cryptoServiceLoader.getObjectCryptoService(parentObjectKey)
         else
-          cryptoServicePromise = @cryptoServiceLoader.getObjectCryptoService(objectKey)
+          objectCryptoServicePromise = @cryptoServiceLoader.getObjectCryptoService(objectKey)
 
         Promise.props({
-          blockCiphertext : @objectApi.getObjectAsBlockCiphertext(objectKey),
-          cryptoService   : cryptoServicePromise
+          blockCipherText: @objectApi.getObjectAsBlockCiphertext(objectKey),
+          objectCryptoService: objectCryptoServicePromise
         })
-        .then ({ blockCiphertext, cryptoService }) ->
-          if blockCiphertext and cryptoService
-            decrypted = cryptoService.decrypt(blockCiphertext)
+        .then ({ blockCipherText, objectCryptoService }) ->
+          if blockCipherText and objectCryptoService
+            decrypted = objectCryptoService.decrypt(blockCipherText)
             return decrypted
           else
             return null
 
+    #
+    # returns Array<Object> where each element contains the objectKey and the decrypted object data
+    #   [{
+    #     objectKey,
+    #     data
+    #   }]
+    #
     getObjects: (objectKeys) ->
 
-      promises = []
-      _.forEach(objectKeys, (objectKey) =>
+      if not validateVersionedObjectKeys(objectKeys)
+        return Promise.reject(new Error('objectKeys is an invalid array of VersionedObjectKeys'))
 
-        if not validateVersionedObjectKey(objectKey)
-          logger.error('invalid versioned object key')
-          return
+      if _.isEmpty(objectKeys)
+        return Promise.resolve([])
 
-        promise = Promise.join(
-          @cryptoServiceLoader.getObjectCryptoService(objectKey),
-          @objectApi.getObjectAsBlockCiphertext(objectKey)
-        )
-        .then (objectMaterial) ->
-          return {
-            objectKey       : objectKey,
-            cryptoService   : objectMaterial[0],
-            blockCiphertext : objectMaterial[1]
-          }
-        .catch (error) ->
-          return {
-            objectKey       : objectKey,
-            cryptoService   : null,
-            blockCiphertext : null
-          }
-
-        promises.push(promise)
+      # prefill the response with the objectKeys
+      response = []
+      _.forEach(objectKeys, (objectKey) ->
+        response.push({
+          objectKey
+        })
       )
 
-      Promise.all(promises)
-      .then (resolvedPromises) ->
+      objectPromises = []
+      _.forEach(objectKeys, (objectKey, index) =>
 
-        result = {}
-        _.forEach(resolvedPromises, (resolved) ->
-          objectKey = resolved.objectKey
-          cryptoService = resolved.cryptoService
-          blockCiphertext = resolved.blockCiphertext
-          if blockCiphertext and cryptoService
-            decrypted = cryptoService.decrypt(blockCiphertext)
-            result[objectKey.objectId] = decrypted
-        )
-        return result
-      .catch (error) ->
-        logger.error('Failed to get objects')
+        promise = Promise.props({
+          objectCryptoService: @cryptoServiceLoader.getObjectCryptoService(objectKey),
+          blockCipherText: @objectApi.getObjectAsBlockCiphertext(objectKey)
+        })
+        .then ({ objectCryptoService, blockCipherText }) ->
+          if blockCipherText and objectCryptoService
+            decryptedObject = objectCryptoService.decrypt(blockCipherText)
+            response[index].data = decryptedObject
+        .catch (e) ->
+          return
+
+        objectPromises.push(promise)
+      )
+
+      Promise.all(objectPromises)
+      .then ->
+        return response
+      .catch (e) ->
+        logger.error(e)
+        return Promise.reject(new Error('failed to get objects'))
 
     #
     # returns Array<Object> where each element contains the objectKey and the decrypted object data
@@ -171,7 +173,7 @@ define 'kryptnostic.storage-client', [
             if blockCipherText
               decryptedObject = parentObjectCryptoService.decrypt(blockCipherText)
               response[index].data = decryptedObject
-          .catch (error) ->
+          .catch (e) ->
             return
           objectPromises.push(promise)
         )
@@ -184,37 +186,20 @@ define 'kryptnostic.storage-client', [
         logger.error(e)
         return Promise.reject(new Error('failed to get children objects'))
 
-    getChildObjectsByTypeAndLoadLevel: (objectIds, parentObjectId, typeLoadLevels, loadDepth) ->
+    getObjectTreeByTypeAndLoadLevel: (objectTreeRequest) ->
 
-      if not validateUuids(objectIds) or not validateUuid(parentObjectId)
-        return Promise.resolve(null)
+      Promise.props({
+        objectCryptoService: @cryptoServiceLoader.getObjectCryptoService(objectTreeRequest.rootObjectKey)
+        objectTreeResponse: @objectApi.getObjectTreeByTypeAndLoadLevel(objectTreeRequest)
+      })
+      .then ({ objectCryptoService, objectTreeResponse }) ->
 
-      Promise.resolve(
-        @objectApi.getLatestVersionedObjectKey(parentObjectId)
-      )
-      .then (parentObjectKey) =>
-        Promise.props({
-          objectCryptoService : @cryptoServiceLoader.getObjectCryptoService(parentObjectKey)
-          objectMetadataTrees : @objectApi.getObjectsByTypeAndLoadLevel(
-            objectIds,
-            typeLoadLevels,
-            loadDepth
-          )
-        })
-        .then ({ objectMetadataTrees, objectCryptoService }) ->
-          childObjects = {}
-          _.forEach(objectIds, (objectId, index) ->
-            result = objectMetadataTrees[objectId]
-            blockCiphertext = objectMetadataTrees[objectId].data
-            if blockCiphertext and objectCryptoService
-              try
-                decrypted = objectCryptoService.decrypt(blockCiphertext)
-                result.data = decrypted
-              catch e
-                result.data = ''
-            childObjects[objectId] = result
-          )
-          return childObjects
+        if not _.isObject(objectCryptoService) or _.isEmpty(objectCryptoService) or
+            not _.isObject(objectTreeResponse) or _.isEmpty(objectTreeResponse)
+          return null
+
+        objectCryptoService.decryptObjectMetadataTree(objectTreeResponse.objectMetadataTree)
+        return objectTreeResponse
 
     getObjectTreeByTypeAndLoadLevelPaged: (objectTreePagedRequest) ->
 
@@ -224,7 +209,8 @@ define 'kryptnostic.storage-client', [
       })
       .then ({ objectCryptoService, objectTreePagedResponse }) ->
 
-        if not _.isObject(objectCryptoService) || _.isEmpty(objectCryptoService)
+        if not _.isObject(objectCryptoService) or _.isEmpty(objectCryptoService) or
+            not _.isObject(objectTreePagedResponse) or _.isEmpty(objectTreePagedResponse)
           return null
 
         objectCryptoService.decryptObjectMetadataTree(objectTreePagedResponse.objectMetadataTree)
@@ -261,20 +247,20 @@ define 'kryptnostic.storage-client', [
             @objectApi.createObject(createObjectRequest)
           )
           .then (objectKeyForNewlyCreatedObject) =>
-            cryptoServicePromise = null
+            objCryptoServicePromise = null
             if parentObjectKey?
-              cryptoServicePromise = @cryptoServiceLoader.getObjectCryptoService(parentObjectKey)
+              objCryptoServicePromise = @cryptoServiceLoader.getObjectCryptoService(parentObjectKey)
             else
-              cryptoServicePromise = @cryptoServiceLoader.createObjectCryptoService(objectKeyForNewlyCreatedObject)
+              objCryptoServicePromise = @cryptoServiceLoader.createObjectCryptoService(objectKeyForNewlyCreatedObject)
             Promise.resolve(
-              cryptoServicePromise
+              objCryptoServicePromise
             )
-            .then (cryptoService) =>
+            .then (objectCryptoService) =>
               # ToDo: for now, we encrypt the entire object, but we'll need to support encrypting an object in chunks
-              @encrypt(objectKeyForNewlyCreatedObject.objectId, storageRequest.body, cryptoService)
+              @encrypt(objectKeyForNewlyCreatedObject.objectId, storageRequest.body, objectCryptoService)
             .then (encrypted) =>
-              blockCiphertext = encrypted.body.data[0].block
-              @objectApi.setObjectFromBlockCiphertext(objectKeyForNewlyCreatedObject, blockCiphertext)
+              blockCipherText = encrypted.body.data[0].block
+              @objectApi.setObjectFromBlockCiphertext(objectKeyForNewlyCreatedObject, blockCipherText)
             .then =>
               if storageRequest.isSearchable
                 @objectIndexingService.enqueueIndexTask(
@@ -287,12 +273,12 @@ define 'kryptnostic.storage-client', [
               return storageResponse
       )
 
-    encrypt : (objectId, body, cryptoService) ->
+    encrypt : (objectId, body, objectCryptoService) ->
       kryptnosticObject = KryptnosticObject.createFromDecrypted({
         id: objectId,
         body: body
       })
-      return kryptnosticObject.encrypt(cryptoService)
+      return kryptnosticObject.encrypt(objectCryptoService)
 
     # submitObjectBlocks : (kryptnosticObject) ->
     #   Promise.resolve()
@@ -323,8 +309,8 @@ define 'kryptnostic.storage-client', [
           # ToDo: for now, we encrypt the entire object, but we'll need to support encrypting an object in chunks
           @encrypt(latestObjectKey.objectId, content, objectCryptoService)
         .then (encrypted) =>
-          blockCiphertext = encrypted.body.data[0].block
-          @objectApi.setObjectFromBlockCiphertext(versionedObjectKey, blockCiphertext)
+          blockCipherText = encrypted.body.data[0].block
+          @objectApi.setObjectFromBlockCiphertext(versionedObjectKey, blockCipherText)
 
           # ToDo: index updated object for it to be searchable
           @objectIndexingService.enqueueIndexTask(

@@ -8,8 +8,9 @@ describe('KryptoEngine - Initialize Without FHE Keys', () => {
   beforeAll(() => jasmine.addMatchers(JasmineMatchers));
 
   KryptoEngine.init();
-  const engine = KryptoEngine.getEngine();
 
-  KryptoEngineTestSuite.run(engine);
+  KryptoEngineTestSuite.run(
+    KryptoEngine.getEngine()
+  );
 
 });

@@ -5,7 +5,6 @@ import * as MockDataUtils from '../utils/MockDataUtils';
 
 const MOCK_SEARCH_TOKEN = MockDataUtils.generateRandomUint8Array(KryptoConstants.SEARCH_TOKEN_SIZE);
 
-// krypto1 and krypto2 should compute as if they are exactly the same
 let krypto1 = null;
 let krypto2 = null;
 
@@ -15,6 +14,10 @@ describe('Krypto', () => {
 
   beforeEach(() => {
 
+    /*
+     * krypto1 will generate FHE keys as it initializes, and krypto2 will be initialized with krypto1's FHE keys. the
+     * idea is that krypto1 and krypto2 should compute as if they are exactly the same instance.
+     */
     krypto1 = new Krypto();
     krypto2 = new Krypto(
       new Uint8Array(krypto1.getPrivateKey()),
@@ -68,11 +71,16 @@ describe('Krypto', () => {
 
     expect(objIndexPair1).toEqual(origObjIndexPair);
 
-    krypto2 = new Krypto();
     const objSearchPair2 = new Uint8Array(krypto2.calculateObjectSearchPairFromObjectIndexPair(origObjIndexPair));
     const objIndexPair2 = new Uint8Array(krypto2.calculateObjectIndexPairFromObjectSearchPair(objSearchPair2));
 
     expect(objIndexPair2).toEqual(origObjIndexPair);
+
+    const krypto3 = new Krypto();
+    const objSearchPair3 = new Uint8Array(krypto3.calculateObjectSearchPairFromObjectIndexPair(origObjIndexPair));
+    const objIndexPair3 = new Uint8Array(krypto3.calculateObjectIndexPairFromObjectSearchPair(objSearchPair3));
+
+    expect(objIndexPair3).toEqual(origObjIndexPair);
   });
 
   it('should calculate different ObjectSearchPairs from different ObjectIndexPairs', () => {
@@ -111,7 +119,7 @@ describe('Krypto', () => {
       .toEqual(new Uint8Array(krypto2.calculateObjectSharePairFromObjectSearchPair(objSearchPair2)));
   });
 
-  it('should calculate different ObjectSearchPairs from ObjectSharePairs', () => {
+  it('should calculate different ObjectSearchPairs from any ObjectSharePairs', () => {
 
     const objIndexPair1 = new Uint8Array(krypto1.generateObjectIndexPair());
     const objIndexPair2 = new Uint8Array(krypto2.generateObjectIndexPair());
@@ -121,27 +129,41 @@ describe('Krypto', () => {
     const objSharePair2 = new Uint8Array(krypto2.calculateObjectSharePairFromObjectSearchPair(objSearchPair2));
 
     expect(new Uint8Array(krypto1.calculateObjectSearchPairFromObjectSharePair(objSharePair1)))
-      .not.toEqual(new Uint8Array(krypto2.calculateObjectSearchPairFromObjectSharePair(objSharePair2)));
+      .not.toEqual(new Uint8Array(krypto2.calculateObjectSearchPairFromObjectSharePair(objSharePair1)));
 
     expect(new Uint8Array(krypto1.calculateObjectSearchPairFromObjectSharePair(objSharePair1)))
+      .not.toEqual(new Uint8Array(krypto2.calculateObjectSearchPairFromObjectSharePair(objSharePair2)));
+
+    expect(new Uint8Array(krypto1.calculateObjectSearchPairFromObjectSharePair(objSharePair2)))
       .not.toEqual(new Uint8Array(krypto2.calculateObjectSearchPairFromObjectSharePair(objSharePair1)));
 
     expect(new Uint8Array(krypto1.calculateObjectSearchPairFromObjectSharePair(objSharePair2)))
       .not.toEqual(new Uint8Array(krypto2.calculateObjectSearchPairFromObjectSharePair(objSharePair2)));
   });
 
+  it('should calculate different encrypted search tokens', () => {
+
+    const encryptedSearchToken1 = new Uint8Array(krypto1.calculateEncryptedSearchToken(MOCK_SEARCH_TOKEN));
+    const encryptedSearchToken2 = new Uint8Array(krypto2.calculateEncryptedSearchToken(MOCK_SEARCH_TOKEN));
+
+    expect(encryptedSearchToken1).not.toEqual(encryptedSearchToken2);
+  });
+
   it('should calculate the same metadata address', () => {
 
     const objIndexPair1 = new Uint8Array(krypto1.generateObjectIndexPair());
-    const metatdataAddress1 = new Uint8Array(krypto1.calculateMetadataAddress(objIndexPair1, MOCK_SEARCH_TOKEN));
-    const metatdataAddress2 = new Uint8Array(krypto2.calculateMetadataAddress(objIndexPair1, MOCK_SEARCH_TOKEN));
+    const encryptedSearchToken1 = new Uint8Array(krypto1.calculateEncryptedSearchToken(MOCK_SEARCH_TOKEN));
+    const metatdataAddress1 = new Uint8Array(krypto1.calculateMetadataAddress(objIndexPair1, encryptedSearchToken1));
+    const metatdataAddress2 = new Uint8Array(krypto2.calculateMetadataAddress(objIndexPair1, encryptedSearchToken1));
 
     expect(metatdataAddress1).toEqual(metatdataAddress2);
 
     const objIndexPair2 = new Uint8Array(krypto2.generateObjectIndexPair());
-    const metatdataAddress3 = new Uint8Array(krypto1.calculateMetadataAddress(objIndexPair2, MOCK_SEARCH_TOKEN));
-    const metatdataAddress4 = new Uint8Array(krypto2.calculateMetadataAddress(objIndexPair2, MOCK_SEARCH_TOKEN));
+    const encryptedSearchToken2 = new Uint8Array(krypto2.calculateEncryptedSearchToken(MOCK_SEARCH_TOKEN));
+    const metatdataAddress3 = new Uint8Array(krypto1.calculateMetadataAddress(objIndexPair2, encryptedSearchToken2));
+    const metatdataAddress4 = new Uint8Array(krypto2.calculateMetadataAddress(objIndexPair2, encryptedSearchToken2));
 
     expect(metatdataAddress3).toEqual(metatdataAddress4);
   });
+
 });

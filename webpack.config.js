@@ -58,7 +58,7 @@ const kjsDefinePlugin = new webpack.DefinePlugin({
 const kjsUglifyJsPlugin = new webpack.optimize.UglifyJsPlugin({
   sourceMap: true,
   compress: {
-    screw_ie8: true, // jscs:ignore
+    screw_ie8: true,
     warnings: true
   }
 });

@@ -17,10 +17,9 @@ describe('KryptoEngine - Initialize With FHE Keys', () => {
   beforeAll(() => jasmine.addMatchers(JasmineMatchers));
 
   KryptoEngine.init(MOCK_FHE_PRIVATE_KEY, MOCK_FHE_SEARCH_PRIVATE_KEY);
-  const engine = KryptoEngine.getEngine();
 
   KryptoEngineTestSuite.run(
-    engine,
+    KryptoEngine.getEngine(),
     MOCK_FHE_PRIVATE_KEY,
     MOCK_FHE_SEARCH_PRIVATE_KEY
   );

@@ -11,6 +11,7 @@ define 'kryptnostic.object-api', [
   'kryptnostic.requests'
   'kryptnostic.object-metadata'
   'kryptnostic.validators'
+  'kryptnostic.object-tree-response'
   'kryptnostic.object-tree-paged-response'
   'kryptnostic.paging-direction'
 ], (require) ->
@@ -22,8 +23,8 @@ define 'kryptnostic.object-api', [
   Config                = require 'kryptnostic.configuration'
   Promise               = require 'bluebird'
   ObjectMetadata        = require 'kryptnostic.object-metadata'
-  ObjectMetadataTree    = require 'kryptnostic.object-metadata-tree'
   Validators            = require 'kryptnostic.validators'
+  ObjectTreeResponse    = require 'kryptnostic.object-tree-response'
   ObjectTreePagedResponse = require 'kryptnostic.object-tree-paged-response'
   PagingDirection       = require 'kryptnostic.paging-direction'
 
@@ -142,22 +143,14 @@ define 'kryptnostic.object-api', [
         else
           return null
 
-    getObjectsByTypeAndLoadLevel: (objectIds, typeLoadLevels, loadDepth, createdAfter, objectIdsToFilter) ->
-
-      requestData = {
-        objectIds         : objectIds
-        loadLevels        : typeLoadLevels
-        depth             : loadDepth
-        createdAfter      : createdAfter
-        objectIdsToFilter : objectIdsToFilter
-      }
+    getObjectTreeByTypeAndLoadLevel: (objectTreeRequest) ->
 
       Promise.resolve(
         axios(
           Requests.wrapCredentials({
             method  : 'POST'
             url     : objectLevelsUrl()
-            data    : requestData
+            data    : objectTreeRequest.getRequestData()
             headers : DEFAULT_HEADERS
           })
         )
@@ -165,8 +158,12 @@ define 'kryptnostic.object-api', [
       .then (axiosResponse) ->
         if axiosResponse and axiosResponse.data
           # axiosResponse.data == Map<java.util.UUID, com.kryptnostic.v2.storage.models.ObjectMetadataEncryptedNode>
-          # return new ObjectMetadataTree(axiosResponse.data)
-          return axiosResponse.data
+          objectId = objectTreeRequest.rootObjectKey.objectId
+          objectMetadataTree = axiosResponse.data[objectId]
+          objectTreeResponse = new ObjectTreeResponse({
+            objectMetadataTree
+          })
+          return objectTreeResponse
         else
           return null
 

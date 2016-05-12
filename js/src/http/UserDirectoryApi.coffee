@@ -207,10 +207,10 @@ define 'kryptnostic.user-directory-api', [
 
     sendConfirmationToken: (uuid, token) ->
       Promise.resolve(axios(
-        {
+        Requests.wrapCredentials({
           url: getVerification() + uuid + '/' + token
           method: 'GET'
         })
-      )
+      ))
 
   return UserDirectoryApi

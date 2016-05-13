@@ -4,7 +4,8 @@ define 'kryptnostic.registration-client', [
   'kryptnostic.registration-api'
   'kryptnostic.credential-service'
   'kryptnostic.user-registration-request'
-  'kryptnostic.kryptnostic-workers-api'
+  'kryptnostic.kryptnostic-workers-api',
+  'kryptnostic.user-directory-api'
 ], (require) ->
 
   Logger                  = require 'kryptnostic.logger'
@@ -53,8 +54,8 @@ define 'kryptnostic.registration-client', [
           @userDirectoryApi.resendConfirmationEmail({
             principal  : uuid,
             credential : credential
-            })
-          ])
+          })
+        ])
       .then ->
         log.info('initialized user salt')
         log.info('user registration complete')

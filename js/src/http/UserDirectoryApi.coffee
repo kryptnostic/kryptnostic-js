@@ -22,6 +22,9 @@ define 'kryptnostic.user-directory-api', [
   getUsersUrl  = -> Configuration.get('heraclesUrl') + '/directory/users'
   usersInRealmUrl = -> Configuration.get('heraclesUrl') + '/directory'
   setFirstLoginUrl = -> Configuration.get('heraclesUrl') + '/directory/setlogin'
+  getConfirmationUrl = -> Configuration.get('heraclesUrl') + '/registration/confirmation/resend'
+  getVerificationUrl = (uuid, token) -> Configuration.get('heraclesUrl') +
+      '/registration/verification/' + uuid + '/' + token
   getUserIdFromEmail = (email) -> Configuration.get('heraclesUrl') + '/directory/validate/sharing/email/' + email
   getUserSettingUrl = (userSetting) -> getUserUrl() + '/setting/' + userSetting
 
@@ -192,6 +195,22 @@ define 'kryptnostic.user-directory-api', [
           headers: DEFAULT_HEADERS
           method: 'DELETE'
           data: [uuid]
+        })
+      ))
+
+    resendConfirmationEmail: (credentials = {}) ->
+      Promise.resolve(axios(
+        Requests.wrapCredentials({
+          url: getConfirmationUrl()
+          method: 'GET'
+        }, credentials)
+      ))
+
+    sendConfirmationToken: (uuid, token) ->
+      Promise.resolve(axios(
+        Requests.wrapCredentials({
+          url: getVerificationUrl(uuid, token)
+          method: 'GET'
         })
       ))
 

@@ -41784,6 +41784,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	var queueIndex = -1;
 
 	function cleanUpNextTick() {
+	    if (!draining || !currentQueue) {
+	        return;
+	    }
 	    draining = false;
 	    if (currentQueue.length) {
 	        queue = currentQueue.concat(queue);
@@ -52765,7 +52768,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(35), __webpack_require__(22), __webpack_require__(2), __webpack_require__(6), __webpack_require__(28), __webpack_require__(34), __webpack_require__(36)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var Cache, Configuration, DEFAULT_HEADERS, Logger, Promise, Requests, UserDirectoryApi, Validators, axios, getUserIdFromEmail, getUserSettingUrl, getUserUrl, getUsersUrl, log, setFirstLoginUrl, usersInRealmUrl, validateEmail, validateUuid, validateUuids;
+	  var Cache, Configuration, DEFAULT_HEADERS, Logger, Promise, Requests, UserDirectoryApi, Validators, axios, getConfirmationUrl, getUserIdFromEmail, getUserSettingUrl, getUserUrl, getUsersUrl, getVerificationUrl, log, setFirstLoginUrl, usersInRealmUrl, validateEmail, validateUuid, validateUuids;
 	  axios = __webpack_require__(35);
 	  Promise = __webpack_require__(22);
 	  Logger = __webpack_require__(2);
@@ -52784,6 +52787,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	  setFirstLoginUrl = function() {
 	    return Configuration.get('heraclesUrl') + '/directory/setlogin';
+	  };
+	  getConfirmationUrl = function() {
+	    return Configuration.get('heraclesUrl') + '/registration/confirmation/resend';
+	  };
+	  getVerificationUrl = function(uuid, token) {
+	    return Configuration.get('heraclesUrl') + '/registration/verification/' + uuid + '/' + token;
 	  };
 	  getUserIdFromEmail = function(email) {
 	    return Configuration.get('heraclesUrl') + '/directory/validate/sharing/email/' + email;
@@ -52974,6 +52983,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	        headers: DEFAULT_HEADERS,
 	        method: 'DELETE',
 	        data: [uuid]
+	      })));
+	    };
+
+	    UserDirectoryApi.prototype.resendConfirmationEmail = function(credentials) {
+	      if (credentials == null) {
+	        credentials = {};
+	      }
+	      return Promise.resolve(axios(Requests.wrapCredentials({
+	        url: getConfirmationUrl(),
+	        method: 'GET'
+	      }, credentials)));
+	    };
+
+	    UserDirectoryApi.prototype.sendConfirmationToken = function(uuid, token) {
+	      return Promise.resolve(axios(Requests.wrapCredentials({
+	        url: getVerificationUrl(uuid, token),
+	        method: 'GET'
 	      })));
 	    };
 
@@ -60421,19 +60447,21 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2), __webpack_require__(75), __webpack_require__(20), __webpack_require__(77), __webpack_require__(39)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var CredentialService, KryptnosticWorkersApi, Logger, Promise, RegistrationApi, RegistrationClient, UserRegistrationRequest, log;
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2), __webpack_require__(75), __webpack_require__(20), __webpack_require__(77), __webpack_require__(39), __webpack_require__(50)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var CredentialService, KryptnosticWorkersApi, Logger, Promise, RegistrationApi, RegistrationClient, UserDirectoryApi, UserRegistrationRequest, log;
 	  Logger = __webpack_require__(2);
 	  RegistrationApi = __webpack_require__(75);
 	  CredentialService = __webpack_require__(20);
 	  UserRegistrationRequest = __webpack_require__(77);
 	  KryptnosticWorkersApi = __webpack_require__(39);
+	  UserDirectoryApi = __webpack_require__(50);
 	  Promise = __webpack_require__(22);
 	  log = Logger.get('RegistrationClient');
 	  RegistrationClient = (function() {
 	    function RegistrationClient() {
 	      this.registrationApi = new RegistrationApi();
 	      this.credentialService = new CredentialService();
+	      this.userDirectoryApi = new UserDirectoryApi();
 	      KryptnosticWorkersApi.startWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER);
 	      KryptnosticWorkersApi.startWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER);
 	    }
@@ -60459,11 +60487,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	          log.info('registered new user account', {
 	            uuid: uuid
 	          });
-	          return _this.credentialService.initializeSalt({
-	            uuid: uuid,
-	            encryptedSalt: encryptedSalt,
-	            credential: credential
-	          });
+	          return Promise.all([
+	            _this.credentialService.initializeSalt({
+	              uuid: uuid,
+	              encryptedSalt: encryptedSalt,
+	              credential: credential
+	            }), _this.userDirectoryApi.resendConfirmationEmail({
+	              principal: uuid,
+	              credential: credential
+	            })
+	          ]);
 	        };
 	      })(this)).then(function() {
 	        log.info('initialized user salt');

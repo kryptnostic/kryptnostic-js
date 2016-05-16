@@ -26,8 +26,10 @@ const UGLIFYJS_PLUGIN = new webpack.optimize.UglifyJsPlugin({
   sourceMap: false,
   compress: {
     screw_ie8: true,
-    warnings: true,
-  }
+    unused: false,
+    warnings: true
+  },
+  mangle: false
 });
 
 module.exports = function kryptoKarmaConfig(config) {

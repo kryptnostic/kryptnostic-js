@@ -15,20 +15,26 @@ const webpack = require('webpack');
 const NODE_ENV = process.env.NODE_ENV;
 const PROD_ENV = 'PROD';
 
-const FILES = {
-  KJS_ENTRY_POINT: path.join(__dirname, 'src/app.js')
+const DIRECTORY_PATHS = {
+  DIST: path.join(__dirname, 'dist'),
+  SOURCE: path.join(__dirname, 'src'),
+  TEST: path.join(__dirname, 'test')
+};
+
+const FILE_PATHS = {
+  BUILD_ENTRY_POINT: path.join(__dirname, 'src/app.js')
+};
+
+const FILE_REGEXES = {
+  FORGE_JS: /forge.*\.js$/,
+  KJS: /kryptnostic.*\.js$/,
+  KRYPTO_JS: /krypto\.js$/
 };
 
 const KJS_LIB_TARGET = 'umd';
 const KJS_LIB_NAMESPACE = 'KJS';
 const KJS_LIB_FILENAME = (NODE_ENV === PROD_ENV) ? 'kryptnostic.min.js' : 'kryptnostic.js';
 const KJS_LIB_SOURCEMAP_FILENAME = `${KJS_LIB_FILENAME}.map`;
-
-const PATHS = {
-  DIST: path.join(__dirname, 'dist'),
-  SOURCE: path.join(__dirname, 'src'),
-  TEST: path.join(__dirname, 'test')
-};
 
 const KJS_BANNER = `
 ${pkg.name} - v${pkg.version}
@@ -40,42 +46,15 @@ Copyright (c) 2014-2016, Kryptnostic, Inc. All rights reserved.
 
 /*
  *
- * plugins
+ * aliases
  *
  */
 
-const kjsBannerPlugin = new webpack.BannerPlugin(
-  KJS_BANNER,
-  {
-    entryOnly: true
-  }
-);
+function getAliases() {
 
-const kjsDefinePlugin = new webpack.DefinePlugin({
-  __VERSION__: JSON.stringify(`v${pkg.version}`)
-});
-
-const kjsUglifyJsPlugin = new webpack.optimize.UglifyJsPlugin({
-  sourceMap: true,
-  compress: {
-    screw_ie8: true,
-    warnings: true
-  }
-});
-
-function getPlugins() {
-
-  const plugins = [
-    kjsDefinePlugin,
-    new webpack.NoErrorsPlugin()
-  ];
-
-  if (NODE_ENV === PROD_ENV) {
-    plugins.push(kjsBannerPlugin);
-    plugins.push(kjsUglifyJsPlugin);
-  }
-
-  return plugins;
+  return {
+    forge: FILE_PATHS.FORGE_JS
+  };
 }
 
 /*
@@ -88,8 +67,8 @@ const BABEL_LOADER = {
   loader: 'babel',
   test: /\.js$/,
   include: [
-    PATHS.SOURCE,
-    PATHS.TEST
+    DIRECTORY_PATHS.SOURCE,
+    DIRECTORY_PATHS.TEST
   ]
 };
 
@@ -111,15 +90,65 @@ function getLoaders() {
 
 /*
  *
+ * plugins
+ *
+ */
+
+const kjsBannerPlugin = new webpack.BannerPlugin(
+  KJS_BANNER,
+  {
+    entryOnly: true,
+    include: [
+      FILE_REGEXES.KJS
+    ]
+  }
+);
+
+const kjsDefinePlugin = new webpack.DefinePlugin({
+  __VERSION__: JSON.stringify(`v${pkg.version}`)
+});
+
+const kjsUglifyJsPlugin = new webpack.optimize.UglifyJsPlugin({
+  sourceMap: false,
+  compress: {
+    screw_ie8: true,
+    unused: false,
+    warnings: false
+  },
+  comments: false,
+  mangle: false
+});
+
+function getPlugins() {
+
+  const plugins = [
+    new webpack.NoErrorsPlugin()
+  ];
+
+  plugins.push(kjsDefinePlugin);
+
+  if (NODE_ENV === PROD_ENV) {
+    plugins.push(kjsUglifyJsPlugin);
+  }
+
+  // the BannerPlugin comes last to avoid being removed by UglifyJs
+  plugins.push(kjsBannerPlugin);
+
+  return plugins;
+}
+
+/*
+ *
  * webpack config
  *
  */
 
 const kjsWebpackConfig = {
-  context: PATHS.SOURCE,
-  entry: FILES.KJS_ENTRY_POINT,
+  cache: false,
+  context: DIRECTORY_PATHS.SOURCE,
+  entry: FILE_PATHS.BUILD_ENTRY_POINT,
   output: {
-    path: PATHS.DIST,
+    path: DIRECTORY_PATHS.DIST,
     library: KJS_LIB_NAMESPACE,
     libraryTarget: KJS_LIB_TARGET,
     filename: KJS_LIB_FILENAME,
@@ -128,15 +157,17 @@ const kjsWebpackConfig = {
   module: {
     loaders: getLoaders().loaders,
     noParse: [
-      /krypto\.js$/
+      FILE_REGEXES.FORGE_JS,
+      FILE_REGEXES.KRYPTO_JS
     ]
   },
   resolve: {
+    alias: getAliases(),
+    extensions: ['', '.js'],
     root: [
-      PATHS.SOURCE,
-      PATHS.TEST
-    ],
-    extensions: ['', '.js']
+      DIRECTORY_PATHS.SOURCE,
+      DIRECTORY_PATHS.TEST
+    ]
   },
   plugins: getPlugins(),
   bail: true

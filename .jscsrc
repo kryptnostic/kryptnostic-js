@@ -1,5 +1,4 @@
 {
-  "esnext": true,
   "preset": "airbnb",
   "excludeFiles": [
     "dist/**"

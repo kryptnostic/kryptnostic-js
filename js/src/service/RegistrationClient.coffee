@@ -4,8 +4,7 @@ define 'kryptnostic.registration-client', [
   'kryptnostic.registration-api'
   'kryptnostic.credential-service'
   'kryptnostic.user-registration-request'
-  'kryptnostic.kryptnostic-workers-api',
-  'kryptnostic.user-directory-api'
+  'kryptnostic.kryptnostic-workers-api'
 ], (require) ->
 
   Logger                  = require 'kryptnostic.logger'
@@ -13,7 +12,6 @@ define 'kryptnostic.registration-client', [
   CredentialService       = require 'kryptnostic.credential-service'
   UserRegistrationRequest = require 'kryptnostic.user-registration-request'
   KryptnosticWorkersApi   = require 'kryptnostic.kryptnostic-workers-api'
-  UserDirectoryApi        = require 'kryptnostic.user-directory-api'
   Promise                 = require 'bluebird'
 
   log = Logger.get('RegistrationClient')
@@ -24,7 +22,6 @@ define 'kryptnostic.registration-client', [
 
       @registrationApi   = new RegistrationApi()
       @credentialService = new CredentialService()
-      @userDirectoryApi = new UserDirectoryApi()
 
       KryptnosticWorkersApi.startWebWorker(
         KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER
@@ -49,13 +46,7 @@ define 'kryptnostic.registration-client', [
         @registrationApi.register(userRegistrationRequest)
       .then (uuid) =>
         log.info('registered new user account', { uuid })
-        Promise.all([
-          @credentialService.initializeSalt({ uuid, encryptedSalt, credential }),
-          @userDirectoryApi.resendConfirmationEmail({
-            principal  : uuid,
-            credential : credential
-          })
-        ])
+        @credentialService.initializeSalt({ uuid, encryptedSalt, credential })
       .then ->
         log.info('initialized user salt')
         log.info('user registration complete')

@@ -198,12 +198,12 @@ define 'kryptnostic.user-directory-api', [
         })
       ))
 
-    resendConfirmationEmail: (credentials = {}) ->
+    resendConfirmationEmail: () ->
       Promise.resolve(axios(
         Requests.wrapCredentials({
           url: getConfirmationUrl()
           method: 'GET'
-        }, credentials)
+        })
       ))
 
     sendConfirmationToken: (uuid, token) ->

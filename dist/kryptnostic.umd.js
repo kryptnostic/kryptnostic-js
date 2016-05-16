@@ -52986,14 +52986,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      })));
 	    };
 
-	    UserDirectoryApi.prototype.resendConfirmationEmail = function(credentials) {
-	      if (credentials == null) {
-	        credentials = {};
-	      }
+	    UserDirectoryApi.prototype.resendConfirmationEmail = function() {
 	      return Promise.resolve(axios(Requests.wrapCredentials({
 	        url: getConfirmationUrl(),
 	        method: 'GET'
-	      }, credentials)));
+	      })));
 	    };
 
 	    UserDirectoryApi.prototype.sendConfirmationToken = function(uuid, token) {
@@ -60447,21 +60444,19 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2), __webpack_require__(75), __webpack_require__(20), __webpack_require__(77), __webpack_require__(39), __webpack_require__(50)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
-	  var CredentialService, KryptnosticWorkersApi, Logger, Promise, RegistrationApi, RegistrationClient, UserDirectoryApi, UserRegistrationRequest, log;
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, __webpack_require__(2), __webpack_require__(75), __webpack_require__(20), __webpack_require__(77), __webpack_require__(39)], __WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
+	  var CredentialService, KryptnosticWorkersApi, Logger, Promise, RegistrationApi, RegistrationClient, UserRegistrationRequest, log;
 	  Logger = __webpack_require__(2);
 	  RegistrationApi = __webpack_require__(75);
 	  CredentialService = __webpack_require__(20);
 	  UserRegistrationRequest = __webpack_require__(77);
 	  KryptnosticWorkersApi = __webpack_require__(39);
-	  UserDirectoryApi = __webpack_require__(50);
 	  Promise = __webpack_require__(22);
 	  log = Logger.get('RegistrationClient');
 	  RegistrationClient = (function() {
 	    function RegistrationClient() {
 	      this.registrationApi = new RegistrationApi();
 	      this.credentialService = new CredentialService();
-	      this.userDirectoryApi = new UserDirectoryApi();
 	      KryptnosticWorkersApi.startWebWorker(KryptnosticWorkersApi.FHE_KEYS_GEN_WORKER);
 	      KryptnosticWorkersApi.startWebWorker(KryptnosticWorkersApi.RSA_KEYS_GEN_WORKER);
 	    }
@@ -60487,16 +60482,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	          log.info('registered new user account', {
 	            uuid: uuid
 	          });
-	          return Promise.all([
-	            _this.credentialService.initializeSalt({
-	              uuid: uuid,
-	              encryptedSalt: encryptedSalt,
-	              credential: credential
-	            }), _this.userDirectoryApi.resendConfirmationEmail({
-	              principal: uuid,
-	              credential: credential
-	            })
-	          ]);
+	          return _this.credentialService.initializeSalt({
+	            uuid: uuid,
+	            encryptedSalt: encryptedSalt,
+	            credential: credential
+	          });
 	        };
 	      })(this)).then(function() {
 	        log.info('initialized user salt');

@@ -24,23 +24,22 @@
   "license": "Apache-2.0",
   "main": "dist/kryptnostic.js",
   "scripts": {
-    "build": "npm run build:dev",
+    "build": "npm-run-all forge:install --parallel build:dev build:prod",
     "build:dev": "npm run webpack:dev",
-    "build:prod": "npm-run-all lint forge:install webpack:prod",
+    "build:prod": "npm-run-all lint webpack:prod",
     "forge:install": "cd node_modules/node-forge && npm install && npm run minify && npm run bundle",
-    "lint": "npm-run-all --parallel lint:*",
+    "lint": "npm run lint:eslint",
     "lint:eslint": "eslint --config .eslintrc src test",
-    "lint:jscs": "jscs --config .jscsrc src test",
-    "test": "NODE_ENV=TEST npm-run-all test:kjs test:krypto",
+    "test": "BUILD_ENV=TEST npm-run-all test:kjs test:krypto",
     "test:kjs": "karma start test/kjs.karma.config.js",
     "test:krypto": "karma start test/krypto.karma.config.js",
     "test:karma:run": "karma run test/kjs.karma.config.js --",
     "test:karma:start": "karma start test/kjs.karma.config.js --singleRun=false",
     "test:karma:watch": "karma start test/kjs.karma.config.js --singleRun=false --autoWatch=true",
     "test:karma:browser": "karma start test/kjs.karma.config.js --singleRun=false --autoWatch=true --browsers=Chrome --reporters=kjhtml",
-    "webpack:dev": "NODE_ENV=DEV webpack --config webpack.config.js",
-    "webpack:dev:watch": "NODE_ENV=DEV webpack --config webpack.config.js --watch",
-    "webpack:prod": "NODE_ENV=PROD webpack --config webpack.config.js"
+    "webpack:dev": "BUILD_ENV=DEV webpack --config webpack.config.js",
+    "webpack:dev:watch": "BUILD_ENV=DEV webpack --config webpack.config.js --watch",
+    "webpack:prod": "BUILD_ENV=PROD webpack --config webpack.config.js"
   },
   "dependencies": {
     "babel-polyfill": "^6.7.0",
@@ -68,7 +67,7 @@
     "exports-loader": "^0.6.3",
     "jasmine": "^2.4.1",
     "jasmine-core": "^2.4.1",
-    "jscs": "^3.0.0",
+    "json-loader": "^0.5.4",
     "karma": "^0.13.22",
     "karma-babel-preprocessor": "^6.0.1",
     "karma-chrome-launcher": "^0.2.2",
@@ -81,7 +80,6 @@
     "karma-webpack": "^1.7.0",
     "npm-run-all": "^1.5.2",
     "phantomjs-prebuilt": "^2.1.6",
-    "webpack": "^1.13.0",
-    "webpack-dev-server": "^1.14.1"
+    "webpack": "^2.1.0-beta"
   }
 }

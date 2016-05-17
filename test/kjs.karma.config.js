@@ -4,8 +4,10 @@
  * http://karma-runner.github.io/0.13/config/configuration-file.html
  */
 
+const webpack = require('webpack');
+
+const BUILD_ENV = process.env.BUILD_ENV;
 const TEST_ENV = 'TEST';
-const NODE_ENV = process.env.NODE_ENV;
 
 const FILES = {
 
@@ -21,7 +23,7 @@ const FILES = {
 
 const BABEL_LOADER = {
   loader: 'babel',
-  test: /\.js?$/,
+  test: /\.js$/,
   exclude: [
     /node_modules/,
     /krypto\.js$/
@@ -30,6 +32,22 @@ const BABEL_LOADER = {
     cacheDirectory: true
   }
 };
+
+/*
+ * workaround to address webpack 2 throwing errors: https://github.com/webpack/node-libs-browser/issues/19
+ */
+const JSON_LOADER = {
+  loader: 'json',
+  test: /\.json$/,
+  include: [
+    /node_modules/
+  ],
+  exclude: [
+    /krypto\.js$/
+  ]
+};
+
+const PROGRESS_PLUGIN = new webpack.ProgressPlugin();
 
 module.exports = function kjsKarmaConfig(config) {
 
@@ -43,7 +61,7 @@ module.exports = function kjsKarmaConfig(config) {
    * KryptoEngine will have to be bundled seperately.
    */
   const testFiles = [];
-  if (NODE_ENV === TEST_ENV) {
+  if (BUILD_ENV === TEST_ENV) {
     testFiles.push(
       { pattern: FILES.ISOLATED_TESTS, included: true, watched: false },
       { pattern: FILES.BUNDLED_TESTS, included: true, watched: false }
@@ -56,7 +74,7 @@ module.exports = function kjsKarmaConfig(config) {
   }
 
   const filePreProcessors = {};
-  if (NODE_ENV === TEST_ENV) {
+  if (BUILD_ENV === TEST_ENV) {
     filePreProcessors[FILES.ISOLATED_TESTS] = ['webpack'];
     filePreProcessors[FILES.BUNDLED_TESTS] = ['webpack'];
   }
@@ -137,9 +155,13 @@ module.exports = function kjsKarmaConfig(config) {
       cache: true,
       module: {
         loaders: [
-          BABEL_LOADER
+          BABEL_LOADER,
+          JSON_LOADER
         ]
-      }
+      },
+      plugins: [
+        PROGRESS_PLUGIN
+      ]
     },
 
     /*

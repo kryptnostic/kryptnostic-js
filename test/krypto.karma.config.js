@@ -22,14 +22,29 @@ const BABEL_LOADER = {
   }
 };
 
+/*
+ * workaround to address webpack 2 throwing errors: https://github.com/webpack/node-libs-browser/issues/19
+ */
+const JSON_LOADER = {
+  loader: 'json',
+  test: /\.json$/,
+  include: [
+    /node_modules/
+  ],
+  exclude: [
+    /krypto\.js$/
+  ]
+};
+
+const PROGRESS_PLUGIN = new webpack.ProgressPlugin();
 const UGLIFYJS_PLUGIN = new webpack.optimize.UglifyJsPlugin({
-  sourceMap: false,
   compress: {
     screw_ie8: true,
     unused: false,
     warnings: true
   },
-  mangle: false
+  mangle: false,
+  sourceMap: false
 });
 
 module.exports = function kryptoKarmaConfig(config) {
@@ -111,11 +126,13 @@ module.exports = function kryptoKarmaConfig(config) {
       cache: true,
       module: {
         loaders: [
-          BABEL_LOADER
+          BABEL_LOADER,
+          JSON_LOADER
         ]
       },
       plugins: [
-        UGLIFYJS_PLUGIN
+        UGLIFYJS_PLUGIN,
+        PROGRESS_PLUGIN
       ]
     },
 

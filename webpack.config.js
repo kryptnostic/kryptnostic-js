@@ -11,18 +11,26 @@ const webpack = require('webpack');
  *
  */
 
-// process.env.NODE_ENV is expected to be defined externally (see package.json)
-const NODE_ENV = process.env.NODE_ENV;
+// process.env.BUILD_ENV is expected to be defined externally (see package.json)
+const BUILD_ENV = process.env.BUILD_ENV;
 const PROD_ENV = 'PROD';
 
 const DIRECTORY_PATHS = {
   DIST: path.join(__dirname, 'dist'),
+  NODE: path.join(__dirname, 'node_modules'),
   SOURCE: path.join(__dirname, 'src'),
   TEST: path.join(__dirname, 'test')
 };
 
+const FILE_NAMES = {
+  FORGE_JS: 'forge.min.js',
+  KRYPTO_JS: 'krypto.js'
+};
+
 const FILE_PATHS = {
-  BUILD_ENTRY_POINT: path.join(__dirname, 'src/app.js')
+  FORGE_JS: `${DIRECTORY_PATHS.NODE}/node-forge/js/${FILE_NAMES.FORGE_JS}`,
+  KRYPTO_JS: `${DIRECTORY_PATHS.NODE}/krypto-js/${FILE_NAMES.KRYPTO_JS}`,
+  BUILD_ENTRY_POINT: `${DIRECTORY_PATHS.SOURCE}/test.js`
 };
 
 const FILE_REGEXES = {
@@ -33,7 +41,7 @@ const FILE_REGEXES = {
 
 const KJS_LIB_TARGET = 'umd';
 const KJS_LIB_NAMESPACE = 'KJS';
-const KJS_LIB_FILENAME = (NODE_ENV === PROD_ENV) ? 'kryptnostic.min.js' : 'kryptnostic.js';
+const KJS_LIB_FILENAME = (BUILD_ENV === PROD_ENV) ? 'kryptnostic.min.js' : 'kryptnostic.js';
 const KJS_LIB_SOURCEMAP_FILENAME = `${KJS_LIB_FILENAME}.map`;
 
 const KJS_BANNER = `
@@ -94,29 +102,27 @@ function getLoaders() {
  *
  */
 
-const kjsBannerPlugin = new webpack.BannerPlugin(
-  KJS_BANNER,
-  {
-    entryOnly: true,
-    include: [
-      FILE_REGEXES.KJS
-    ]
-  }
-);
+const kjsBannerPlugin = new webpack.BannerPlugin({
+  banner: KJS_BANNER,
+  entryOnly: true,
+  include: [
+    FILE_REGEXES.KJS
+  ]
+});
 
 const kjsDefinePlugin = new webpack.DefinePlugin({
   __VERSION__: JSON.stringify(`v${pkg.version}`)
 });
 
 const kjsUglifyJsPlugin = new webpack.optimize.UglifyJsPlugin({
-  sourceMap: false,
   compress: {
     screw_ie8: true,
     unused: false,
     warnings: false
   },
   comments: false,
-  mangle: false
+  mangle: false,
+  sourceMap: false
 });
 
 function getPlugins() {
@@ -127,7 +133,7 @@ function getPlugins() {
 
   plugins.push(kjsDefinePlugin);
 
-  if (NODE_ENV === PROD_ENV) {
+  if (BUILD_ENV === PROD_ENV) {
     plugins.push(kjsUglifyJsPlugin);
   }
 
@@ -164,9 +170,10 @@ const kjsWebpackConfig = {
   resolve: {
     alias: getAliases(),
     extensions: ['', '.js'],
-    root: [
+    modules: [
+      // order matters
       DIRECTORY_PATHS.SOURCE,
-      DIRECTORY_PATHS.TEST
+      'node_modules'
     ]
   },
   plugins: getPlugins(),

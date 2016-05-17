@@ -30,7 +30,7 @@
     "forge:install": "cd node_modules/node-forge && npm install && npm run minify && npm run bundle",
     "lint": "npm run lint:eslint",
     "lint:eslint": "eslint --config .eslintrc src test",
-    "test": "BUILD_ENV=TEST npm-run-all test:kjs test:krypto",
+    "test": "BUILD_ENV=TEST npm-run-all --parallel test:kjs test:krypto",
     "test:kjs": "karma start test/kjs.karma.config.js",
     "test:krypto": "karma start test/krypto.karma.config.js",
     "test:karma:run": "karma run test/kjs.karma.config.js --",

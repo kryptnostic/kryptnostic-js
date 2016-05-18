@@ -1,5 +1,5 @@
 {
-  "extends": "airbnb/base",
+  "extends": "airbnb-base",
   "parser": "babel-eslint",
   "env": {
       "browser": true,
@@ -10,6 +10,7 @@
     "jasmine"
   ],
   "rules": {
+    "import/no-unresolved": 0,
     "jasmine/no-focused-tests": 2,
     "jasmine/no-disabled-tests": 2,
     "jasmine/no-spec-dupes": [2, "branch"],
@@ -27,5 +28,12 @@
     ],
     "padded-blocks": 0,
     "space-before-function-paren": [2, "never"]
+  },
+  "settings": {
+    "import/resolver": {
+      "webpack": {
+        "config": "webpack.config.js"
+      }
+    }
   }
 }

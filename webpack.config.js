@@ -150,6 +150,7 @@ function getPlugins() {
  */
 
 const kjsWebpackConfig = {
+  bail: true,
   cache: false,
   context: DIRECTORY_PATHS.SOURCE,
   entry: FILE_PATHS.BUILD_ENTRY_POINT,
@@ -167,6 +168,7 @@ const kjsWebpackConfig = {
       FILE_REGEXES.KRYPTO_JS
     ]
   },
+  plugins: getPlugins(),
   resolve: {
     alias: getAliases(),
     extensions: ['', '.js'],
@@ -176,8 +178,11 @@ const kjsWebpackConfig = {
       'node_modules'
     ]
   },
-  plugins: getPlugins(),
-  bail: true
+  worker: {
+    output: {
+      filename: '[hash].worker.js'
+    }
+  }
 };
 
 module.exports = kjsWebpackConfig;

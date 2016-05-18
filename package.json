@@ -62,7 +62,9 @@
     "babel-preset-es2015": "^6.9.0",
     "bluebird": "^3.3.4",
     "eslint": "^2.10.0",
-    "eslint-config-airbnb": "^6.2.0",
+    "eslint-config-airbnb-base": "^3.0.1",
+    "eslint-import-resolver-webpack": "^0.2.4",
+    "eslint-plugin-import": "^1.8.0",
     "eslint-plugin-jasmine": "^1.6.0",
     "exports-loader": "^0.6.3",
     "jasmine": "^2.4.1",
@@ -80,6 +82,8 @@
     "karma-webpack": "^1.7.0",
     "npm-run-all": "^1.5.2",
     "phantomjs-prebuilt": "^2.1.6",
-    "webpack": "^2.1.0-beta"
+    "webpack": "^2.1.0-beta",
+    "webpack-dev-server": "^2.1.0-beta",
+    "worker-loader": "^0.7.0"
   }
 }

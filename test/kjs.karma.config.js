@@ -12,13 +12,13 @@ const TEST_ENV = 'TEST';
 const FILES = {
 
   // match all test files: *.test.js, *.isotest.js
-  ALL_TESTS: './**/*\.?(iso)test\.js',
+  ALL_TESTS: './**/*.?(iso)test.js',
 
   // match all test files that will run in a single bundle: webpack.testing.context.js
   BUNDLED_TESTS: './webpack.testing.context.js',
 
   // match all test files that must run in an individual (dedicated) bundle (KryptoEngine tests): *.isotest.js
-  ISOLATED_TESTS: './**/*\.isotest\.js'
+  ISOLATED_TESTS: './**/*.isotest.js'
 };
 
 module.exports = function kjsKarmaConfig(theKarmaConfigObject) {

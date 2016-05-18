@@ -10,7 +10,7 @@
 sudo: false
 language: node_js
 node_js:
-  - "4.3"
+  - "6"
 
 #
 # in the new Travis CI container-based infrastructure, "sudo" is no longer available, so we can't install Chrome via apt-get.

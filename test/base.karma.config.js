@@ -141,6 +141,11 @@ module.exports = function getBaseKarmaConfig(theKarmaConfigObject) {
     autoWatch: false,
 
     /*
+     * the amount of time (in ms) Karma will wait for a message from a browser before disconnecting from it
+     */
+    browserNoActivityTimeout: 60000, // 60s
+
+    /*
      * continuous integration mode
      * if true, Karma will start and capture all configured browsers, run the tests, and then exit with an exit code of
      * 0 or 1; 0 if all tests passed, 1 if any tests failed

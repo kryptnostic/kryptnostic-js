@@ -39,7 +39,8 @@
     "test:karma:browser": "karma start test/kjs.karma.config.js --singleRun=false --autoWatch=true --browsers=Chrome --reporters=kjhtml",
     "webpack:dev": "BUILD_ENV=DEV webpack --config webpack.config.js",
     "webpack:dev:watch": "BUILD_ENV=DEV webpack --config webpack.config.js --watch",
-    "webpack:prod": "BUILD_ENV=PROD webpack --config webpack.config.js"
+    "webpack:prod": "BUILD_ENV=PROD webpack --config webpack.config.js",
+    "webpack:server": "webpack-dev-server --config webpack.config.js"
   },
   "dependencies": {
     "babel-polyfill": "^6.9.0",
@@ -82,6 +83,7 @@
     "karma-webpack": "^1.7.0",
     "npm-run-all": "^1.5.2",
     "phantomjs-prebuilt": "^2.1.6",
+    "text-encoding": "^0.6.0",
     "webpack": "^2.1.0-beta",
     "webpack-dev-server": "^2.1.0-beta",
     "worker-loader": "^0.7.0"

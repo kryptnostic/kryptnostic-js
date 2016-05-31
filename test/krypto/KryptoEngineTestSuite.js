@@ -1,4 +1,4 @@
-import * as KryptoConstants from '../../src/KryptoConstants';
+import * as KryptoConstants from '../../src/krypto/KryptoConstants';
 import * as MockDataUtils from '../utils/MockDataUtils';
 
 const MOCK_SEARCH_TOKEN = MockDataUtils.generateRandomUint8Array(KryptoConstants.SEARCH_TOKEN_SIZE);

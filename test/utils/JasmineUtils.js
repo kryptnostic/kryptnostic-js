@@ -1,3 +1,25 @@
+function toBeUint8Array() {
+
+  return {
+    compare: (value) => {
+
+      const objectType = Object.prototype.toString.call(value);
+      const isUint8Array = objectType === '[object Uint8Array]';
+
+      const result = {
+        pass: isUint8Array,
+        message: undefined
+      };
+
+      if (!result.pass) {
+        result.message = `expected an Uint8Array, but got ${objectType}`;
+      }
+
+      return result;
+    }
+  };
+}
+
 function toBeUint8ArrayOfSize() {
 
   return {
@@ -36,6 +58,7 @@ function toBeUint8ArrayOfSize() {
 }
 
 const MATCHERS = {
+  toBeUint8Array,
   toBeUint8ArrayOfSize
 };
 

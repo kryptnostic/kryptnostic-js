@@ -1,6 +1,5 @@
 import { Krypto } from 'exports?Krypto=Module.KryptnosticClient!krypto-js';
-import { JasmineMatchers } from '../utils/JasmineUtils';
-import * as KryptoConstants from '../../src/KryptoConstants';
+import * as KryptoConstants from '../../src/krypto/KryptoConstants';
 import * as MockDataUtils from '../utils/MockDataUtils';
 
 const MOCK_SEARCH_TOKEN = MockDataUtils.generateRandomUint8Array(KryptoConstants.SEARCH_TOKEN_SIZE);
@@ -9,8 +8,6 @@ let krypto1 = null;
 let krypto2 = null;
 
 describe('Krypto', () => {
-
-  beforeAll(() => jasmine.addMatchers(JasmineMatchers));
 
   beforeEach(() => {
 

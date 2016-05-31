@@ -1,5 +1,5 @@
 import { Krypto } from 'exports?Krypto=Module.KryptnosticClient!krypto-js';
-import KryptoEngine from '../../src/KryptoEngine';
+import KryptoEngine from '../../src/krypto/KryptoEngine';
 import * as KryptoEngineTestSuite from './KryptoEngineTestSuite';
 
 import { JasmineMatchers } from '../utils/JasmineUtils';

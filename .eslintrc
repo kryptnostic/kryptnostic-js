@@ -15,6 +15,7 @@
     "jasmine/no-disabled-tests": 2,
     "jasmine/no-spec-dupes": [2, "branch"],
     "jasmine/no-suite-dupes": [2, "branch"],
+    "arrow-body-style": [2, "always"],
     "brace-style": [2, "stroustrup"],
     "comma-dangle": [2, "never"],
     "max-len": [

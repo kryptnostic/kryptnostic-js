@@ -1,4 +1,4 @@
-import * as KryptoConstants from '../../src/KryptoConstants';
+import * as KryptoConstants from '../../src/krypto/KryptoConstants';
 
 function testForConstant(constant, expectedValue) {
 

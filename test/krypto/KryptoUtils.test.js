@@ -1,5 +1,5 @@
-import * as KryptoConstants from '../../src/KryptoConstants';
-import * as KryptoUtils from '../../src/KryptoUtils';
+import * as KryptoConstants from '../../src/krypto/KryptoConstants';
+import * as KryptoUtils from '../../src/krypto/KryptoUtils';
 import * as MockDataUtils from '../utils/MockDataUtils';
 
 /*
@@ -43,13 +43,15 @@ function testForInvalidInput(functionToTest) {
   it('should return false for invalid input', () => {
 
     // invoking with invalid input should not throw an exception
-    INVALID_INPUT.forEach((input) =>
-      expect(() => functionToTest(input)).not.toThrow()
-    );
+    INVALID_INPUT.forEach((input) => {
+      expect(() => {
+        functionToTest(input);
+      }).not.toThrow();
+    });
 
-    INVALID_INPUT.forEach((input) =>
-      expect(functionToTest(input)).toBe(false)
-    );
+    INVALID_INPUT.forEach((input) => {
+      expect(functionToTest(input)).toBe(false);
+    });
   });
 }
 
@@ -57,9 +59,9 @@ function testForInvalidTypedArrays(functionToTest) {
 
   it('should return false for invalid TypedArrays', () => {
 
-    INVALID_TYPED_ARRAYS.forEach((input) =>
-      expect(functionToTest(input)).toBe(false)
-    );
+    INVALID_TYPED_ARRAYS.forEach((input) => {
+      expect(functionToTest(input)).toBe(false);
+    });
   });
 }
 

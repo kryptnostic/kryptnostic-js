@@ -1,4 +1,4 @@
-import KryptoEngine from '../../src/KryptoEngine';
+import KryptoEngine from '../../src/krypto/KryptoEngine';
 
 describe('KryptoEngine - Singleton', () => {
 

@@ -1,0 +1,23 @@
+/*
+ * @flow
+ */
+
+declare class SubtleCryptoAPI {
+  static isAvailable() :boolean;
+  static encrypt() :Promise;
+  static decrypt() :Promise;
+  static sign() :Promise;
+  static verify() :Promise;
+  static digest() :Promise;
+  static generateKey() :Promise;
+  static deriveKey() :Promise;
+  static deriveBits() :Promise;
+  static importKey() :Promise;
+  static exportKey() :Promise;
+  static wrapKey() :Promise;
+  static unwrapKey() :Promise;
+}
+
+export {
+  SubtleCryptoAPI
+};

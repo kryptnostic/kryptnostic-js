@@ -30,7 +30,7 @@ const FILE_NAMES = {
 const FILE_PATHS = {
   FORGE_JS: `${DIRECTORY_PATHS.NODE}/node-forge/js/${FILE_NAMES.FORGE_JS}`,
   KRYPTO_JS: `${DIRECTORY_PATHS.NODE}/krypto-js/${FILE_NAMES.KRYPTO_JS}`,
-  BUILD_ENTRY_POINT: `${DIRECTORY_PATHS.SOURCE}/test.js`
+  BUILD_ENTRY_POINT: `${DIRECTORY_PATHS.SOURCE}/playground.js`
 };
 
 const FILE_REGEXES = {
@@ -114,6 +114,10 @@ const kjsDefinePlugin = new webpack.DefinePlugin({
   __VERSION__: JSON.stringify(`v${pkg.version}`)
 });
 
+const kjsProvidePlugin = new webpack.ProvidePlugin({
+  _: 'lodash'
+});
+
 const kjsUglifyJsPlugin = new webpack.optimize.UglifyJsPlugin({
   compress: {
     screw_ie8: true,
@@ -132,6 +136,7 @@ function getPlugins() {
   ];
 
   plugins.push(kjsDefinePlugin);
+  // plugins.push(kjsProvidePlugin);
 
   if (BUILD_ENV === PROD_ENV) {
     plugins.push(kjsUglifyJsPlugin);

@@ -3,3 +3,6 @@
 
 [options]
 esproposal.class_static_fields=enable
+
+[libs]
+decls/kryptnostic.js.flow

@@ -1,6 +1,7 @@
 /*
  * @flow
  */
+
 import * as KryptoConstants from './KryptoConstants';
 
 export function isValidFHEPrivateKey(fhePrivateKey :?Uint8Array) :boolean {
